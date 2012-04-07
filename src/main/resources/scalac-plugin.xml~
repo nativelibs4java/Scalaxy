@@ -1,0 +1,4 @@
+<plugin>
+  <name>Scalaxy</name>
+  <classname>scalaxy.ScalaxyPlugin</classname>
+</plugin>
