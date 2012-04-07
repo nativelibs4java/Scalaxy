@@ -6,7 +6,7 @@ This is an experimental rewrite of ScalaCL / Scalaxy using Scala 2.10 and its po
 *   Natural expression of rewrite patterns and replacements that makes it easy to extend the plugin
 *   Support for AOP-style rewrites
 
-To compile a file test.scala using the compiler plugin, use paulp's sbt script :
+To compile a file test.scala using the compiler plugin, use [paulp's sbt script](https://github.com/paulp/sbt-extras) :
 
     sbt -sbt-snapshot "run test.scala"
     
