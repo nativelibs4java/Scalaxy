@@ -107,8 +107,10 @@ extends Replacements
       }
       override def importSymbol(sym: from.Symbol) = {
         val is = super.importSymbol(sym)
-        if (sym != from.NoSymbol && sym.info.decls != from.EmptyScope && is.info.decls == global.EmptyScope)
-          println("Converted " + sym + " with info " + sym.info + " and decls = " + sym.info.decls + " to " + is + " with info " + is.info + " with empty scope")
+        try {
+          if (sym != from.NoSymbol && sym.info != from.NoType && sym.info.decls != from.EmptyScope && (is.info == global.NoType || is.info.decls == global.EmptyScope))
+            println("Converted " + sym + " with info " + sym.info + " and decls = " + sym.info.decls + " to " + is + " with info " + is.info + " with empty scope")
+        } catch { case _ => }
         is
       }
     }

@@ -33,8 +33,14 @@ extends TypingTransformers
     def getType(t: global.Type) = {
       if (t == null)
         None
-      else
-        typeStrBindings.get(t.toString)
+      else {
+        try {
+          typeStrBindings.get(t.toString)
+        } catch { case ex =>
+          println("Type.toString : " + ex) 
+          None
+        }
+      }
     }
     def bindName(n: global.Name, v: global.Tree) =
       copy(nameBindings = nameBindings + (n -> v))
