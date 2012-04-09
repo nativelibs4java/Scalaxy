@@ -10,7 +10,6 @@ object ForLoops {
       while (ii < end) {
         val i = ii
         body
-        //println("Did " + i + " / " + end + " iteration")
         ii = ii + 1  
       }
     }

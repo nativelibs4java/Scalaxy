@@ -45,23 +45,16 @@ import scala.util.parsing.input.Position
  * http://www.scala-lang.org/node/140
  * http://lamp.epfl.ch/~emir/bqbase/2005/06/02/nscTutorial.html
  * http://code.google.com/p/simple-build-tool/wiki/CompilerPlugins
- 
- * mvn scala:run -DmainClass=com.nativelibs4java.scalaxy.plugin.Compile "-DaddArgs=-d|out|examples/Test.scala|-Xprint:scalacl-stream"
- 
- |-classpath|../ScalaCL/target/scalacl-0.3-SNAPSHOT-shaded.jar"
- * scala -cp target/scalacl-compiler-1.0-SNAPSHOT-shaded.jar scalacl.plugin.Compile -d out src/examples/BasicExample.scala
- * javap -c -classpath out/ scalacl.examples.BasicExample
+ *
+ * sbt -sbt-snapshot "run test.scala"
  */
 object ScalaxyPluginDef extends PluginDef {
   override val name = "Scalaxy"
   override val description =
-    "This plugin rewrites some Scala loop-like constructs so they execute faster (e.g. Array.map, .foreach, .filter...)."
+    "This plugin rewrites some Scala constructs (like for loops) to make them faster."
     
   override def envVarPrefix = "SCALAXY_"
   
-    //"This plugin transforms some Scala functions into OpenCL kernels (for CLCollection[T].map and filter's arguments), so they can run on a GPU.\n" +
-    //"It will also soon feature autovectorization of ScalaCL programs, detecting parallelizable loops and unnecessary collection creations."
-
   override def createOptions(settings: Settings): PluginOptions =
     new PluginOptions(this, settings)
     
