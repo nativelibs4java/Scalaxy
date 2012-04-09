@@ -23,13 +23,17 @@ object ScalaxyBuild extends Build
     Project(id = "scalaxy", base = file("."), settings = standardSettings ++ Seq(
       scalacOptions in console in Compile <+= (packageBin in Compile) map("-Xplugin:" + _)
     )).
-    dependsOn(core, macros).
-    aggregate(core, macros)
+    dependsOn(core, macros, rewrites).
+    aggregate(core, macros, rewrites)
 
   lazy val core = 
     Project(id = "scalaxy-core", base = file("Core"), settings = standardSettings ++ Seq(
       libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-compiler" % _)
     )).
+    dependsOn(macros)
+                 
+  lazy val rewrites = 
+    Project(id = "scalaxy-rewrites", base = file("Rewrites")).
     dependsOn(macros)
                  
   lazy val macros = 
