@@ -1,5 +1,5 @@
-object RunMe extends App {
-//class RunMe {
+//object RunMe extends App {
+class RunMe {
   
   {
     val i = 10
