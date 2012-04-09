@@ -83,7 +83,10 @@ extends Replacements
         tree match {
           case from.Ident(n) =>
             val in = importName(n)
-            bindings.nameBindings.get(in).getOrElse {
+            bindings.nameBindings.get(in).map(t => {
+              //println("Replaced tree " + tree + " by " + t)
+              t
+            }).getOrElse {
               //println("No name binding for " + n + ", so using conversion " + in)
               val imp = global.Ident(in)
               imp.tpe = importType(tree.tpe)
@@ -98,7 +101,10 @@ extends Replacements
           null
         } else {
           val it = resolveType(super.importType(tpe))
-          bindings.getType(it).getOrElse {
+          bindings.getType(it).map(t => {
+            //println("Replaced type " + tpe + " by " + t)
+            t
+          }).getOrElse {
             //println("Imported " + tpe + " as " + it)
             //println("No type binding for " + tpe + ", so using conversion " + it + " (bindings = " + bindings + ")")
             it
@@ -107,10 +113,11 @@ extends Replacements
       }
       override def importSymbol(sym: from.Symbol) = {
         val is = super.importSymbol(sym)
-        try {
+        /*try {
           if (sym != from.NoSymbol && sym.info != from.NoType && sym.info.decls != from.EmptyScope && (is.info == global.NoType || is.info.decls == global.EmptyScope))
             println("Converted " + sym + " with info " + sym.info + " and decls = " + sym.info.decls + " to " + is + " with info " + is.info + " with empty scope")
         } catch { case _ => }
+        */
         is
       }
     }

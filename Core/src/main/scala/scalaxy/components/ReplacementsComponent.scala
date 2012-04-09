@@ -68,15 +68,15 @@ extends PluginComponent
       }
     }.traverse(tree)
   }
-  val replacements = replacementHolders.flatMap(getReplacementDefinitions(_)).map { 
+  val replacements = replacementHolders.filter(_ != null).flatMap(getReplacementDefinitions(_)).map { 
     case (n, r) =>
-      println("Converting pattern from mirror to global :")
-      val orig = r.pattern
-      println("\tmirror = " + orig)
+      //println("Converting pattern from mirror to global :")
+      //val orig = r.pattern
+      //println("\tmirror = " + orig)
       //println("\tmirror = " + mirrorNodeToString(orig))
       //eraseSymbols(orig)
-      val conv = mirrorToGlobal(orig, EmptyBindings)
-      println("\t  conv = " + conv)
+      val conv = mirrorToGlobal(r.pattern, EmptyBindings)
+      //println("\t  conv = " + conv)
       //println("\t  conv = " + nodeToString(conv))
       //println("\t  rep = " + r.replacement)
       //println("\t  rep = " + mirrorNodeToString(r.replacement))
@@ -104,44 +104,60 @@ extends PluginComponent
           //val rep = replace(replacement, bindings)
           println("Replacement '" + n + "':\n\t" + replacement.toString.replaceAll("\n", "\n\t"))
           expanded = replacement
-        } catch { case ex =>
-          //ex.printStackTrace
-          println("Replacement '" + n + "' failed for " + tree + " : " + ex)
+        } catch { 
+          case NoTreeMatchException(_, _, _) =>
+          case NoTypeMatchException(expected, found, msg) =>
+            //ex.printStackTrace
+            //println("Replacement '" + n + "' failed at " + tree.pos + " : " + ex)
+            
+            println("ERROR: " + msg +
+              " (\n\texpected = " + expected + ": " + Option(expected).map(_.getClass.getName) + 
+              ",\n\tfound = " + found + ": " + Option(found).map(_.getClass.getName) + "\n)"
+            )
         }
       }
       
-      if (expanded eq sup) {
-        sup
-      } else {
-        val expectedTpe = tree.tpe.dealias.deconst /*match {
-          case MethodType(Nil, t) => t
-          case t => t
-        }*/
-        println("expectedTpe = " + expectedTpe + ": " + expectedTpe.getClass.getName)
-        //println("expanded = " + nodeToString(expanded))
-        println("expanded = " + expanded)
-        //val mode = PATTERNmode
-        val mode = EXPRmode
-        
-        healSymbols(currentOwner, expanded)
-        /*
-        new Traverser {
-          override def traverse(tree: Tree) = {
+      try {
+        if (expanded eq sup) {
+          sup
+        } else {
+          val expectedTpe = tree.tpe.dealias.deconst
+          
+          //println("expectedTpe = " + expectedTpe + ": " + expectedTpe.getClass.getName)
+          //println("expanded = " + expanded)
+          //println("expanded = " + nodeToString(expanded))
+          val mode = EXPRmode
+          
+          val tpe = expanded.tpe
+          //eraseTypes(expanded)
+          //expanded.tpe = null
+          expanded = healSymbols(unit, currentOwner, expanded, expectedTpe)
+          expanded = typer.typed(expanded, mode, expectedTpe)
+          /*
+          
+          expanded.tpe = NoType
+          
+          new Traverser { override def traverse(tree: Tree) = {
             try {
               super.traverse(tree)
-              typer.typed(tree, mode, expectedTpe)
-            } catch { case ex =>
-              println("Error while examining " + tree)
-              println(nodeToString(tree))
-              ex.printStackTrace
-              System.exit(1)
+            } catch { case ex => 
+              println("Failed to traverse-type " + tree + " : " + ex)
             }
-          }
-        }.traverse(expanded)
-        */
-        expanded = typer.typed(expanded, mode, expectedTpe)
-        //expanded = typer.typed(expanded)
-        expanded
+            typer.typed(tree)
+          }}.traverse(expanded)
+          
+          //expanded.tpe = NoType
+          expanded = typer.typed(expanded, mode, expectedTpe)
+          //expanded = typer.typed(expanded)
+          */
+          if (expanded.tpe == null || expanded.tpe == NoType)
+            expanded.tpe = tpe
+          expanded
+        }
+      } catch { case ex =>
+        ex.printStackTrace
+        println("Error while trying to replace " + tree + " : " + ex)
+        tree
       }
     }
   }

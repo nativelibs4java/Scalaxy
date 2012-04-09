@@ -26,18 +26,25 @@ extends TypingTransformers
     nameBindings: Map[global.Name, global.Tree] = Map(), 
     typeBindings: Map[global.Type, global.Type] = Map()
   ) {
-    val typeStrBindings = typeBindings map {
+    /*val typeStrBindings = typeBindings map {
       case (from, to) =>
         (from.toString, to)
-    }
+    }*/
     def getType(t: global.Type) = {
       if (t == null)
         None
       else {
         try {
-          typeStrBindings.get(t.toString)
+          val v = typeBindings.get(t)
+          //if (v == None)
+          //  println("No type binding for " + t)
+          v
+          //typeStrBindings.get(t.toString)
         } catch { case ex =>
-          println("Type.toString : " + ex) 
+          println("ERROR: Type.toString : " + ex)
+          println("keys = " + typeBindings.keys.mkString(", "))
+          //ex.printStackTrace
+          //System.exit(1) // TODO REMOVEME
           None
         }
       }
@@ -69,7 +76,7 @@ extends TypingTransformers
           sym.asType
         case global.SingleType(pre, sym) =>
           val t = sym.asType
-          //println("Found SINGLE TYPE(" + pre + ", " + sym + ") = " + tpe + " -> " + t)
+          //println("Found SingleType(" + pre + ", " + sym + ") = " + tpe + " -> " + t)
           if (t != null && t != global.NoType)
             t//normalize(t)
           else
@@ -90,19 +97,29 @@ extends TypingTransformers
   def getNamesDefinedIn(stats: List[global.Tree]): Set[global.Name] =
     stats.collect { case global.ValDef(_, name, _, _) => name: global.Name } toSet
   
-  case class NoMatchException(expected: Any, found: Any, msg: String)
-  extends RuntimeException(
-    msg + 
-    " (\n\texpected = " + expected + ": " + Option(expected).map(_.getClass.getName) + 
-    ",\n\tfound = " + found + ": " + Option(found).map(_.getClass.getName) + "\n)")
-  
+  case class NoTreeMatchException(expected: Any, found: Any, msg: String)
+  extends RuntimeException(msg)
+    
+  case class NoTypeMatchException(expected: Any, found: Any, msg: String)
+  extends RuntimeException(msg)
+    
   def matchAndResolveBindings(pattern0: global.Type, tree0: global.Type)(implicit internalDefs: InternalDefs): Bindings = {
     import global._
     
     val pattern = resolveType(pattern0)
     val tree = resolveType(tree0)
     
+    if (pattern.typeSymbol.isPackage || tree.typeSymbol.isPackage) {
+      if (!pattern.typeSymbol.isPackage || !tree.typeSymbol.isPackage)
+        throw new NoTypeMatchException(pattern0, tree0, "Package vs. non-package types")
+    }
     
+    def isNoType(t: Type) =
+      t == null || t == NoType || t == UnitClass.tpe || {
+        val s = t.toString
+        s == "<notype>" || s == "scala.this.Unit"
+      }
+      
     //def normalize(t: Type) = Option(t).map(_.normalize.deconst.dealias)
     
     //def empt(t: global.Type) = 
@@ -111,8 +128,10 @@ extends TypingTransformers
     def typeStr(t: Any) = 
       if (t == null) "?" else t.getClass.getName + " <- " + t.getClass.getSuperclass.getName
       
-    println("Matching types " + pattern + " (" + typeStr(pattern) + ") vs. " + tree + " (" + typeStr(tree) + ")")
+    //println("Matching types " + pattern + " (" + typeStr(pattern) + ") vs. " + tree + " (" + typeStr(tree) + ")")
     val ret = (pattern, tree) match {
+      case (_, _) if isNoType(pattern) && isNoType(tree) =>
+        EmptyBindings
       //case (_, _) if empt(pattern) && empt(tree) =>
       //  EmptyBindings
         
@@ -127,30 +146,25 @@ extends TypingTransformers
         matchAndResolveBindings(List((lo, lo2), (hi, hi2)))
         
       case (MethodType(paramtypes, result), MethodType(paramtypes2, result2)) =>
-        //println("MethodType")
         matchAndResolveBindings(result, result2)
         //matchAndResolveBindings((result, result2):: paramtypes.zip(paramtypes2))
         
       case (NullaryMethodType(result), NullaryMethodType(result2)) =>
-        //println("NullaryMethodType")
         matchAndResolveBindings(result, result2)
         
       case (PolyType(tparams, result), PolyType(tparams2, result2)) =>
-        //println("PolyType")
         matchAndResolveBindings(result, result2)
         //matchAndResolveBindings((result, result2):: tparams.zip(tparams2))
         
       case (ExistentialType(tparams, result), ExistentialType(tparams2, result2)) =>
-        //println("PolyType")
         matchAndResolveBindings(result, result2)
         //matchAndResolveBindings((result, result2):: tparams.zip(tparams2))
       
       case (TypeRef(pre, sym, args), TypeRef(pre2, sym2, args2)) =>
         //matchAndResolveBindings(pre, pre2)
-        //println("TypeRef")
         // TODO test sym vs. sym2
         if (args.size != args2.size) {
-          throw NoMatchException(pattern, tree, "Different number of args in type ref")
+          throw NoTypeMatchException(pattern0, tree0, "Different number of args in type ref")
         } else {
           if (args.isEmpty)
             EmptyBindings//Bindings(Map(), Map(pattern -> tree))
@@ -159,20 +173,20 @@ extends TypingTransformers
         }
       case _ =>
         if (Option(pattern).toString == Option(tree).toString) {
-          println("Monkey type matching of " + pattern + " vs. " + tree)
+          //println("Monkey type matching of " + pattern + " vs. " + tree)
           EmptyBindings
         } else {
-          throw NoMatchException(pattern, tree, "Type matching failed")
+          throw NoTypeMatchException(pattern0, tree0, "Type matching failed")
         }
     }
     
-    println("Successfully bound " + pattern + " vs. " + tree)
+    //println("Successfully bound " + pattern + " vs. " + tree)
     ret.bindType(pattern, tree)
   }
   def matchAndResolveBindings(pattern: global.Tree, tree: global.Tree, depth: Int = 0)(implicit internalDefs: InternalDefs = Set()): Bindings = {
     //println("internalDefs = " + internalDefs) 
     //println("matchAndResolveBindings(" + pattern + ", " + tree + ")")
-    println("M " + pattern)
+    //println("M " + pattern)
     val treesMatching: Bindings = (pattern, tree) match {
       case (_, _) if pattern.isEmpty && tree.isEmpty =>
         EmptyBindings
@@ -191,13 +205,13 @@ extends TypingTransformers
           
       case (global.ValDef(mods, name, tpt, rhs), global.ValDef(mods2, name2, tpt2, rhs2))
       if mods.modifiers == mods2.modifiers =>
-        println("TPT1 = " + tpt)
-        println("TPT2 = " + tpt2)
+        //println("TPT1 = " + tpt)
+        //println("TPT2 = " + tpt2)
         matchAndResolveBindings(List((rhs, rhs2), (tpt, tpt2)), depth + 1)(internalDefs + name).
         bindName(name, global.Ident(name2))
       
       case (global.Function(vparams, body), global.Function(vparams2, body2)) =>
-        println("GOT FUNCTION !!!")
+        //println("GOT FUNCTION !!!")
         matchAndResolveBindings((body, body2) :: vparams.zip(vparams2), depth + 1)(internalDefs ++ vparams.map(_.name))
         
       case (global.TypeApply(fun, args), global.TypeApply(fun2, args2)) =>
@@ -217,21 +231,21 @@ extends TypingTransformers
       
       case _ =>
         if (Option(pattern).toString == Option(tree).toString) {
-          println("Monkey type matching of " + pattern + " vs. " + tree)
+          //println("Monkey matching of " + pattern + " vs. " + tree)
           EmptyBindings
         } else {
-          throw NoMatchException(pattern, tree, "Different types")
+          throw NoTreeMatchException(pattern, tree, "Different trees")
         }
     }
     
-    val tp = resolveType(pattern.tpe)
-    val tt = resolveType(tree.tpe)
+    val tp = pattern.tpe//resolveType(pattern.tpe)
+    val tt = tree.tpe//resolveType(tree.tpe)
     
     treesMatching ++ {
       try {
         matchAndResolveBindings(tp, tt)
       } catch { case ex =>
-        println("Failed type matching on " + tp + " (" + pattern.tpe + ") vs. " + tt + " (" + tree.tpe + ")")
+        //println("Failed type matching on " + tp + " (" + pattern.tpe + ") vs. " + tt + " (" + tree.tpe + ")")
         EmptyBindings
       }
     }
@@ -242,7 +256,7 @@ extends TypingTransformers
       override def transform(tree: global.Tree) = tree match {
         case global.TypeTree() =>
           val opt = bindings.getType(tree.tpe)
-          println("Replacement of " + tree + " = " + opt)
+          //println("Replacement of " + tree + " = " + opt)
           super.transform(opt.map(global.TypeTree(_)).getOrElse(tree))
         case global.Ident(n) =>
           bindings.nameBindings.get(n).getOrElse(tree)

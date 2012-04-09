@@ -11,6 +11,8 @@ object ScalaxyBuild extends Build
     version := "0.3-SNAPSHOT",
     
     scalaVersion := "2.10.0-SNAPSHOT",
+    //scalaVersion := "2.10.0-M2",
+    
     resolvers += Resolver.sonatypeRepo("snapshots"),
     
     scalacOptions ++= Seq("-encoding", "UTF-8", "-deprecation", "-unchecked"),
