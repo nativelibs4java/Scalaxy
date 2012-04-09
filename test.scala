@@ -2,11 +2,17 @@ object RunMe extends App {
 //class RunMe {
   
   {
-    import scala.math._
     import math.Numeric.Implicits._
+    import Ordering.Implicits._
     
-    def foo[T](a:T, b:T)(implicit ev:Numeric[T]) =
-      a + b
+    def foo[T](a:T, b:T)(implicit ev:Numeric[T]) = {
+      val x = a + b
+      val y = a - b
+      val d = -(x - y)
+      println(x)
+      println(y)
+      d < x
+    }
       //new FastNumericOps(a).+(b)
       
     println("FOOO " + foo(1, 2))
