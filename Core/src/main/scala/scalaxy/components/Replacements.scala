@@ -26,29 +26,9 @@ extends TypingTransformers
     nameBindings: Map[global.Name, global.Tree] = Map(), 
     typeBindings: Map[global.Type, global.Type] = Map()
   ) {
-    /*val typeStrBindings = typeBindings map {
-      case (from, to) =>
-        (from.toString, to)
-    }*/
-    def getType(t: global.Type) = {
-      if (t == null)
-        None
-      else {
-        try {
-          val v = typeBindings.get(t)
-          //if (v == None)
-          //  println("No type binding for " + t)
-          v
-          //typeStrBindings.get(t.toString)
-        } catch { case ex =>
-          println("ERROR: Type.toString : " + ex)
-          println("keys = " + typeBindings.keys.mkString(", "))
-          //ex.printStackTrace
-          //System.exit(1) // TODO REMOVEME
-          None
-        }
-      }
-    }
+    def getType(t: global.Type) =
+      Option(t).flatMap(typeBindings.get(_))
+    
     def bindName(n: global.Name, v: global.Tree) =
       copy(nameBindings = nameBindings + (n -> v))
      
@@ -60,13 +40,6 @@ extends TypingTransformers
   }
   val EmptyBindings = Bindings()
   
-  /*def combine(x: Option[Bindings], y: Option[Bindings]): Option[Bindings] = (x, y) match {
-    case (None, _) => None
-    case (_, None) => None
-    case (Some(b1), Some(b2)) => 
-      Some(b1 ++ b2)
-  }
-  */
   def combine(a: Bindings, b: Bindings) = a ++ b
     
   def resolveType(tpe: global.Type): global.Type = 
@@ -76,14 +49,13 @@ extends TypingTransformers
           sym.asType
         case global.SingleType(pre, sym) =>
           val t = sym.asType
-          //println("Found SingleType(" + pre + ", " + sym + ") = " + tpe + " -> " + t)
           if (t != null && t != global.NoType)
-            t//normalize(t)
+            t
           else
             tpe
         case _ =>
           tpe
-      }).orNull//getOrElse(global.NoType)
+      }).orNull
       
   def matchAndResolveBindings(reps: List[(global.Tree, global.Tree)], depth: Int)(implicit internalDefs: InternalDefs): Bindings = {
     reps.map({ case (a, b) => matchAndResolveBindings(a, b, depth)}).reduceLeft(_ ++ _)
@@ -120,10 +92,6 @@ extends TypingTransformers
         s == "<notype>" || s == "scala.this.Unit"
       }
       
-    def typeStr(t: Any) = 
-      if (t == null) "?" else t.getClass.getName + " <- " + t.getClass.getSuperclass.getName
-      
-    //println("Matching types " + pattern + " (" + typeStr(pattern) + ") vs. " + tree + " (" + typeStr(tree) + ")")
     val ret = (pattern, tree) match {
       case (_, _) if isNoType(pattern) && isNoType(tree) =>
         EmptyBindings
@@ -233,19 +201,4 @@ extends TypingTransformers
       }
     }
   } 
-  /*
-  def replace(replacement: global.Tree, bindings: Bindings) = {
-    new global.Transformer {
-      override def transform(tree: global.Tree) = tree match {
-        case global.TypeTree() =>
-          val opt = bindings.getType(tree.tpe)
-          //println("Replacement of " + tree + " = " + opt)
-          super.transform(opt.map(global.TypeTree(_)).getOrElse(tree))
-        case global.Ident(n) =>
-          bindings.nameBindings.get(n).getOrElse(tree)
-        case _ =>
-          super.transform(tree)
-      }
-    }.transform(replacement)
-  }*/
 }
