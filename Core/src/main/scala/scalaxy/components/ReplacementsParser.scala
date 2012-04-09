@@ -44,10 +44,30 @@ object ReplacementDefinitions {
     //val holderType = classToType(holderCls)//holderSym.tpe//.deconst.dealias
     //val holder = holderCls.newInstance.asInstanceOf[AnyRef]
     
-    holderType.members.filter(_.isMethod).map(m => (m, m.tpe)).collect {
-      case (m, PolyType(paramsyms, MethodType(paramtypes, result))) 
+    def dbgStr(t: Type) = {
+      t + " (" + t.getClass.getName + " <- " + t.getClass.getSuperclass.getName + ") = " + debugString(t)
+    }
+    object FollowMethodResult {
+      def unapply(t: Type): Option[Type] = t match {
+        case MethodType(_, r) =>
+          unapply(r)
+        case _ =>
+          Some(t)
+      }
+    }
+    holderType.members.filter(_.isMethod).map(m => (m, m.tpe)).collect { 
+      case (m, PolyType(paramsyms, mt @ FollowMethodResult(result)))
       if result == ReplacementClass.tpe =>
-        val defaultParams = paramtypes.map(s => getDefaultValue(s.tpe).asInstanceOf[AnyRef])
+        def getParamTypes(t: Type): List[Type] = t match {
+          case MethodType(tt, r) =>
+            tt.map(_.tpe) ++ getParamTypes(r)
+          case _ =>
+            List()
+        }
+        val actualParamTypes = getParamTypes(mt)
+        val defaultParams = 
+          actualParamTypes.map(getDefaultValue(_).asInstanceOf[AnyRef])
+          
         val r = invokeMethod(holder, m, defaultParams)
         //println("r = " + r)
         (holder + "." + m.name, r.asInstanceOf[Replacement])

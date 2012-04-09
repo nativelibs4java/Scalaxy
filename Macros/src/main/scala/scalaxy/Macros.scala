@@ -5,28 +5,21 @@ class Replacement(val pattern: mirror.Tree, val replacement: mirror.Tree) {
   override def toString =
     "Replacement(" + pattern + ", " + replacement + ")"
 }
+
+//sealed trait AnalysisResult
+//case class Warning(pos: mirror.Position, msg: String) extends AnalysisResult
+//case class Error(pos: mirror.Position, msg: String) extends AnalysisResult
+
+//class Analysis(val pattern: mirror.Tree, f: )
   
 object Macros {
-  
-  //mirror.{ Tree => mirror.Tree, Name => mirror.Name, Ident => MIdent }
-  
-  
-  /*
-  def selectTerms(terms: mirror.Name*): mirror.Tree = {
-    val x :: xs = terms.toList
-    terms.foldLeft[mirror.Tree](mirror.Ident(mirror.newTermTree(x)))(
-      (t, n) => mirror.Select(t, mirror.n)
-    )
-  }*/
-  
-  def macro Replacement[T](pattern: T, replacement: T): Replacement = {
-    val rpattern = reify(pattern)
-    val rreplacement = reify(replacement)
+  implicit def tree2pos(tree: mirror.Tree) = 
+    tree.pos
     
-    //println("pattern = " + rpattern)
+  def macro Replacement[T](pattern: T, replacement: T): Replacement = {
     New(
       Select(Ident(newTermName("scalaxy")), newTypeName("Replacement")), 
-      List(List(rpattern, rreplacement))
+      List(List(reify(pattern), reify(replacement)))
     )
   }
   

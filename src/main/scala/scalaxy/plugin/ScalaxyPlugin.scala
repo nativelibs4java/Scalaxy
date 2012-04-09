@@ -63,6 +63,7 @@ object ScalaxyPluginDef extends PluginDef {
       new ReplacementsComponent(global, options, 
         //rewrites.Example,
         //rewrites.Streams,
+        rewrites.Numeric,
         rewrites.ForLoops
       )
     )

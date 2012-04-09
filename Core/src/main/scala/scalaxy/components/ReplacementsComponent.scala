@@ -54,6 +54,7 @@ extends PluginComponent
   val replacements = replacementHolders.filter(_ != null).flatMap(getReplacementDefinitions(_)).map { 
     case (n, r) =>
       val conv = mirrorToGlobal(r.pattern, EmptyBindings)
+      //println("Registered replacement '" + n + "'")
       (n, ConvertedReplacement(conv, bindings => {
         mirrorToGlobal(r.replacement, bindings)
       }))

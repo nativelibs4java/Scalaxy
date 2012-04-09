@@ -143,53 +143,59 @@ extends TypingTransformers
     //println("internalDefs = " + internalDefs) 
     //println("matchAndResolveBindings(" + pattern + ", " + tree + ")")
     //println("M " + pattern)
-    val treesMatching: Bindings = (pattern, tree) match {
-      case (_, _) if pattern.isEmpty && tree.isEmpty =>
-        EmptyBindings
-        
-      case (global.This(_), global.This(_)) =>
-        EmptyBindings
-        
-      case (_: global.TypeTree, _: global.TypeTree) =>
-        Bindings(Map(), Map(pattern.tpe -> tree.tpe))
-        
-      case (global.Ident(n), _) =>
-        if (internalDefs.contains(n))
+    val treesMatching: Bindings = try {
+      (pattern, tree) match {
+        case (_, _) if pattern.isEmpty && tree.isEmpty =>
           EmptyBindings
-        else
-          Bindings(Map(n -> tree), Map())
           
-      case (global.ValDef(mods, name, tpt, rhs), global.ValDef(mods2, name2, tpt2, rhs2))
-      if mods.modifiers == mods2.modifiers =>
-        matchAndResolveBindings(List((rhs, rhs2), (tpt, tpt2)), depth + 1)(internalDefs + name).
-        bindName(name, global.Ident(name2))
-      
-      case (global.Function(vparams, body), global.Function(vparams2, body2)) =>
-        matchAndResolveBindings((body, body2) :: vparams.zip(vparams2), depth + 1)(internalDefs ++ vparams.map(_.name))
-        
-      case (global.TypeApply(fun, args), global.TypeApply(fun2, args2)) =>
-        matchAndResolveBindings((fun, fun2) :: args.zip(args2), depth + 1)
-      
-      case (global.Apply(a, b), global.Apply(a2, b2)) =>
-        matchAndResolveBindings((a, a2) :: b.zip(b2), depth + 1)
-        
-      case (global.Block(l, v), global.Block(l2, v2)) =>
-        matchAndResolveBindings((v, v2) :: l.zip(l2), depth + 1)(internalDefs ++ getNamesDefinedIn(l))
-        
-      case (global.Select(a, n), global.Select(a2, n2)) if n == n2 =>
-          matchAndResolveBindings(a, a2, depth + 1)
-      
-      // TODO
-      //case (ClassDef(mods, name, tparams, impl), ClassDef(mods2, name2, tparams2, impl2)) =
-      //  matchAndResolveBindings(impl, impl)(internalDefs + name)
-      
-      case _ =>
-        if (Option(pattern).toString == Option(tree).toString) {
-          println("WARNING: Monkey matching of " + pattern + " vs. " + tree)
+        case (global.This(_), global.This(_)) =>
           EmptyBindings
-        } else {
-          throw NoTreeMatchException(pattern, tree, "Different trees")
-        }
+          
+        case (_: global.TypeTree, _: global.TypeTree) =>
+          Bindings(Map(), Map(pattern.tpe -> tree.tpe))
+          
+        case (global.Ident(n), _) =>
+          if (internalDefs.contains(n))
+            EmptyBindings
+          else
+            Bindings(Map(n -> tree), Map())
+            
+        case (global.ValDef(mods, name, tpt, rhs), global.ValDef(mods2, name2, tpt2, rhs2))
+        if mods.modifiers == mods2.modifiers =>
+          matchAndResolveBindings(List((rhs, rhs2), (tpt, tpt2)), depth + 1)(internalDefs + name).
+          bindName(name, global.Ident(name2))
+        
+        case (global.Function(vparams, body), global.Function(vparams2, body2)) =>
+          matchAndResolveBindings((body, body2) :: vparams.zip(vparams2), depth + 1)(internalDefs ++ vparams.map(_.name))
+          
+        case (global.TypeApply(fun, args), global.TypeApply(fun2, args2)) =>
+          matchAndResolveBindings((fun, fun2) :: args.zip(args2), depth + 1)
+        
+        case (global.Apply(a, b), global.Apply(a2, b2)) =>
+          matchAndResolveBindings((a, a2) :: b.zip(b2), depth + 1)
+          
+        case (global.Block(l, v), global.Block(l2, v2)) =>
+          matchAndResolveBindings((v, v2) :: l.zip(l2), depth + 1)(internalDefs ++ getNamesDefinedIn(l))
+          
+        case (global.Select(a, n), global.Select(a2, n2)) if n == n2 =>
+            matchAndResolveBindings(a, a2, depth + 1)
+        
+        // TODO
+        //case (ClassDef(mods, name, tparams, impl), ClassDef(mods2, name2, tparams2, impl2)) =
+        //  matchAndResolveBindings(impl, impl)(internalDefs + name)
+        
+        case _ =>
+          if (Option(pattern).toString == Option(tree).toString) {
+            println("WARNING: Monkey matching of " + pattern + " vs. " + tree)
+            EmptyBindings
+          } else {
+            throw NoTreeMatchException(pattern, tree, "Different trees")
+          }
+      }
+    } catch { case ex => 
+      //if (depth > 0)
+      //  println("Failed tree matching on " + pattern + " vs. " + tree + " : " + ex)
+      throw ex
     }
     
     treesMatching ++ {

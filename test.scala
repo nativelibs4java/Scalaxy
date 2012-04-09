@@ -1,5 +1,16 @@
-//object RunMe extends App {
-class RunMe {
+object RunMe extends App {
+//class RunMe {
+  
+  {
+    import scala.math._
+    import math.Numeric.Implicits._
+    
+    def foo[T](a:T, b:T)(implicit ev:Numeric[T]) =
+      a + b
+      //new FastNumericOps(a).+(b)
+      
+    println("FOOO " + foo(1, 2))
+  }
   
   {
     val i = 10

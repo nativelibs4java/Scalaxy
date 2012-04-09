@@ -10,6 +10,11 @@ This is an experimental rewrite of ScalaCL / Scalaxy using Scala 2.10 and its po
 To compile a file test.scala using the compiler plugin, use [paulp's sbt script](https://github.com/paulp/sbt-extras) :
 
     sbt -sbt-snapshot "run test.scala"
+
+
+To see what's happening, you might want to print the AST before and after the rewrite :
+
+    sbt -sbt-snapshot "run test.scala -Xprint:typer -Xprint:scalaxy-rewriter"
     
 The rewrites are defined in `Core/src/main/scala/scalaxy/rewrites` and look like this :
 
