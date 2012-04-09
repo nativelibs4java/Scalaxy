@@ -33,7 +33,7 @@ object ScalaxyBuild extends Build
     dependsOn(macros)
                  
   lazy val rewrites = 
-    Project(id = "scalaxy-rewrites", base = file("Rewrites")).
+    Project(id = "scalaxy-rewrites", base = file("Rewrites"), settings = standardSettings).
     dependsOn(macros)
                  
   lazy val macros = 
