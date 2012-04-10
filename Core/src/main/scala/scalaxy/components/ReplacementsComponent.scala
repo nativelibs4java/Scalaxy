@@ -74,12 +74,14 @@ extends PluginComponent
           println("Replacement '" + n + "':\n\t" + replacement.toString.replaceAll("\n", "\n\t"))
           expanded = replacement
         } catch { 
-          case NoTreeMatchException(_, _, _) =>
           case NoTypeMatchException(expected, found, msg) =>
+          case NoTreeMatchException(expected, found, msg) =>
+            /*
             println("ERROR: in replacement '" + n + "' at " + tree.pos + " : " + msg +
               " (\n\texpected = " + expected + ": " + Option(expected).map(_.getClass.getName) + 
               ",\n\tfound = " + found + ": " + Option(found).map(_.getClass.getName) + "\n)"
             )
+            */
         }
       }
       

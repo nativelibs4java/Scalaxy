@@ -57,11 +57,11 @@ extends TypingTransformers
           tpe
       }).orNull
       
-  def matchAndResolveBindings(reps: List[(global.Tree, global.Tree)], depth: Int)(implicit internalDefs: InternalDefs): Bindings = {
-    reps.map({ case (a, b) => matchAndResolveBindings(a, b, depth)}).reduceLeft(_ ++ _)
+  def matchAndResolveTreeBindings(reps: List[(global.Tree, global.Tree)], depth: Int)(implicit internalDefs: InternalDefs): Bindings = {
+    reps.map({ case (a, b) => matchAndResolveTreeBindings(a, b, depth)}).reduceLeft(_ ++ _)
   }
-  def matchAndResolveBindings(reps: List[(global.Type, global.Type)])(implicit internalDefs: InternalDefs): Bindings = {
-    reps.map({ case (a, b) => matchAndResolveBindings(a, b)}).reduceLeft(_ ++ _)
+  def matchAndResolveTypeBindings(reps: List[(global.Type, global.Type)])(implicit internalDefs: InternalDefs): Bindings = {
+    reps.map({ case (a, b) => matchAndResolveTypeBindings(a, b)}).reduceLeft(_ ++ _)
   }
   
   type InternalDefs = Set[global.Name]
@@ -75,136 +75,140 @@ extends TypingTransformers
   case class NoTypeMatchException(expected: Any, found: Any, msg: String)
   extends RuntimeException(msg)
     
-  def matchAndResolveBindings(pattern0: global.Type, tree0: global.Type)(implicit internalDefs: InternalDefs): Bindings = {
+  def matchAndResolveTypeBindings(pattern0: global.Type, tree0: global.Type)(implicit internalDefs: InternalDefs = Set()): Bindings = {
     import global._
     
     val pattern = resolveType(pattern0)
     val tree = resolveType(tree0)
     
-    if (pattern.typeSymbol.isPackage || tree.typeSymbol.isPackage) {
-      if (!pattern.typeSymbol.isPackage || !tree.typeSymbol.isPackage)
-        throw new NoTypeMatchException(pattern0, tree0, "Package vs. non-package types")
-    }
-    
-    def isNoType(t: Type) =
-      t == null || t == NoType || t == UnitClass.tpe || {
-        val s = t.toString
-        s == "<notype>" || s == "scala.this.Unit"
-      }
+    if (pattern != null && pattern == tree) {
+      EmptyBindings
+    } else {
+      if (pattern != null && tree != null)
+        if (pattern.typeSymbol.isPackage || tree.typeSymbol.isPackage)
+          if (!pattern.typeSymbol.isPackage || !tree.typeSymbol.isPackage)
+            throw new NoTypeMatchException(pattern0, tree0, "Package vs. non-package types")
       
-    val ret = (pattern, tree) match {
-      case (_, _) if isNoType(pattern) && isNoType(tree) =>
-        EmptyBindings
-        
-      case (RefinedType(parents, decls), RefinedType(parents2, decls2)) =>
-        EmptyBindings
-        
-      case (TypeBounds(lo, hi), TypeBounds(lo2, hi2)) =>
-        matchAndResolveBindings(List((lo, lo2), (hi, hi2)))
-        
-      case (MethodType(paramtypes, result), MethodType(paramtypes2, result2)) =>
-        matchAndResolveBindings(result, result2)
-        // TODO matchAndResolveBindings((result, result2):: paramtypes.zip(paramtypes2))
-        
-      case (NullaryMethodType(result), NullaryMethodType(result2)) =>
-        matchAndResolveBindings(result, result2)
-        
-      case (PolyType(tparams, result), PolyType(tparams2, result2)) =>
-        matchAndResolveBindings(result, result2)
-        // TODO matchAndResolveBindings((result, result2):: tparams.zip(tparams2))
-        
-      case (ExistentialType(tparams, result), ExistentialType(tparams2, result2)) =>
-        matchAndResolveBindings(result, result2)
-        // TODO matchAndResolveBindings((result, result2):: tparams.zip(tparams2))
-      
-      case (TypeRef(pre, sym, args), TypeRef(pre2, sym2, args2)) =>
-        // TODO test sym vs. sym2, pre vs. pre2
-        if (args.size != args2.size) {
-          throw NoTypeMatchException(pattern0, tree0, "Different number of args in type ref")
-        } else {
-          if (args.isEmpty)
-            EmptyBindings//Bindings(Map(), Map(pattern -> tree))
-          else
-            matchAndResolveBindings(args.zip(args2))
+      def isNoType(t: Type) =
+        t == null || t == NoType || t == UnitClass.tpe || {
+          val s = t.toString
+          s == "<notype>" || s == "scala.this.Unit"
         }
-      case _ =>
-        if (Option(pattern).toString == Option(tree).toString) {
-          println("WARNING: Monkey type matching of " + pattern + " vs. " + tree)
-          EmptyBindings
-        } else {
-          throw NoTypeMatchException(pattern0, tree0, "Type matching failed")
-        }
-    }
-    
-    //println("Successfully bound " + pattern + " vs. " + tree)
-    ret.bindType(pattern, tree)
-  }
-  def matchAndResolveBindings(pattern: global.Tree, tree: global.Tree, depth: Int = 0)(implicit internalDefs: InternalDefs = Set()): Bindings = {
-    //println("internalDefs = " + internalDefs) 
-    //println("matchAndResolveBindings(" + pattern + ", " + tree + ")")
-    //println("M " + pattern)
-    val treesMatching: Bindings = try {
-      (pattern, tree) match {
-        case (_, _) if pattern.isEmpty && tree.isEmpty =>
+        
+      val ret = (pattern, tree) match {
+        case (_, _) if isNoType(pattern) && isNoType(tree) =>
           EmptyBindings
           
-        case (global.This(_), global.This(_)) =>
+        case (RefinedType(parents, decls), RefinedType(parents2, decls2)) =>
           EmptyBindings
           
-        case (_: global.TypeTree, _: global.TypeTree) =>
-          Bindings(Map(), Map(pattern.tpe -> tree.tpe))
+        case (TypeBounds(lo, hi), TypeBounds(lo2, hi2)) =>
+          matchAndResolveTypeBindings(List((lo, lo2), (hi, hi2)))
           
-        case (global.Ident(n), _) =>
-          if (internalDefs.contains(n))
-            EmptyBindings
-          else
-            Bindings(Map(n -> tree), Map())
-            
-        case (global.ValDef(mods, name, tpt, rhs), global.ValDef(mods2, name2, tpt2, rhs2))
-        if mods.modifiers == mods2.modifiers =>
-          matchAndResolveBindings(List((rhs, rhs2), (tpt, tpt2)), depth + 1)(internalDefs + name).
-          bindName(name, global.Ident(name2))
-        
-        case (global.Function(vparams, body), global.Function(vparams2, body2)) =>
-          matchAndResolveBindings((body, body2) :: vparams.zip(vparams2), depth + 1)(internalDefs ++ vparams.map(_.name))
+        case (MethodType(paramtypes, result), MethodType(paramtypes2, result2)) =>
+          matchAndResolveTypeBindings(result, result2)
+          // TODO matchAndResolveTypeBindings((result, result2):: paramtypes.zip(paramtypes2))
           
-        case (global.TypeApply(fun, args), global.TypeApply(fun2, args2)) =>
-          matchAndResolveBindings((fun, fun2) :: args.zip(args2), depth + 1)
-        
-        case (global.Apply(a, b), global.Apply(a2, b2)) =>
-          matchAndResolveBindings((a, a2) :: b.zip(b2), depth + 1)
+        case (NullaryMethodType(result), NullaryMethodType(result2)) =>
+          matchAndResolveTypeBindings(result, result2)
           
-        case (global.Block(l, v), global.Block(l2, v2)) =>
-          matchAndResolveBindings((v, v2) :: l.zip(l2), depth + 1)(internalDefs ++ getNamesDefinedIn(l))
+        case (PolyType(tparams, result), PolyType(tparams2, result2)) =>
+          matchAndResolveTypeBindings(result, result2)
+          // TODO matchAndResolveTypeBindings((result, result2):: tparams.zip(tparams2))
           
-        case (global.Select(a, n), global.Select(a2, n2)) if n == n2 =>
-            matchAndResolveBindings(a, a2, depth + 1)
+        case (ExistentialType(tparams, result), ExistentialType(tparams2, result2)) =>
+          matchAndResolveTypeBindings(result, result2)
+          // TODO matchAndResolveTypeBindings((result, result2):: tparams.zip(tparams2))
         
-        // TODO
-        //case (ClassDef(mods, name, tparams, impl), ClassDef(mods2, name2, tparams2, impl2)) =
-        //  matchAndResolveBindings(impl, impl)(internalDefs + name)
-        
+        case (TypeRef(pre, sym, args), TypeRef(pre2, sym2, args2)) =>
+          // TODO test sym vs. sym2, pre vs. pre2
+          if (args.size != args2.size) {
+            throw NoTypeMatchException(pattern0, tree0, "Different number of args in type ref")
+          } else {
+            if (args.isEmpty)
+              EmptyBindings//Bindings(Map(), Map(pattern -> tree))
+            else
+              matchAndResolveTypeBindings(args.zip(args2))
+          }
         case _ =>
           if (Option(pattern).toString == Option(tree).toString) {
-            println("WARNING: Monkey matching of " + pattern + " vs. " + tree)
+            println("WARNING: Monkey type matching of " + pattern + " vs. " + tree)
             EmptyBindings
           } else {
-            throw NoTreeMatchException(pattern, tree, "Different trees")
+            throw NoTypeMatchException(pattern0, tree0, "Type matching failed")
           }
       }
-    } catch { case ex => 
-      //if (depth > 0)
-      //  println("Failed tree matching on " + pattern + " vs. " + tree + " : " + ex)
-      throw ex
+      
+      //println("Successfully bound " + pattern + " vs. " + tree)
+      if (pattern != null && tree != null)
+        ret.bindType(pattern, tree)
+      else
+        ret
     }
-    
-    treesMatching ++ {
-      try {
-        matchAndResolveBindings(pattern.tpe, tree.tpe)
-      } catch { case ex =>
-        //println("Failed type matching on " + tp + " (" + pattern.tpe + ") vs. " + tt + " (" + tree.tpe + ")")
+  }
+  def matchAndResolveTreeBindings(pattern: global.Tree, tree: global.Tree, depth: Int = 0)(implicit internalDefs: InternalDefs = Set()): Bindings = {
+    (pattern, tree) match {
+      case (_, _) if pattern.isEmpty && tree.isEmpty =>
         EmptyBindings
-      }
+        
+      case (global.This(_), global.This(_)) =>
+        EmptyBindings
+        
+      case (_: global.TypeTree, _: global.TypeTree) =>
+        Bindings(Map(), Map(pattern.tpe -> tree.tpe))
+        
+      case (global.Ident(n), _) =>
+        if (internalDefs.contains(n))
+          EmptyBindings
+        else tree match {
+          case global.Ident(nn) if n.toString == nn.toString =>
+            EmptyBindings
+          case _ =>
+            //println("GOT BINDING " + pattern + " -> " + tree + " (tree is " + tree.getClass.getName + ")")
+            Bindings(Map(n -> tree), Map())
+        }
+          
+      case (global.ValDef(mods, name, tpt, rhs), global.ValDef(mods2, name2, tpt2, rhs2))
+      if mods.modifiers == mods2.modifiers =>
+        val r = matchAndResolveTreeBindings(List((rhs, rhs2), (tpt, tpt2)), depth + 1)(internalDefs + name)
+        if (name == name2)
+          r
+        else
+          r.bindName(name, global.Ident(name2))
+      
+      case (global.Function(vparams, body), global.Function(vparams2, body2)) =>
+        matchAndResolveTreeBindings((body, body2) :: vparams.zip(vparams2), depth + 1)(internalDefs ++ vparams.map(_.name))
+        
+      case (global.TypeApply(fun, args), global.TypeApply(fun2, args2)) =>
+        matchAndResolveTreeBindings((fun, fun2) :: args.zip(args2), depth + 1)
+      
+      case (global.Apply(a, b), global.Apply(a2, b2)) =>
+        matchAndResolveTreeBindings((a, a2) :: b.zip(b2), depth + 1)
+        
+      case (global.Block(l, v), global.Block(l2, v2)) =>
+        matchAndResolveTreeBindings((v, v2) :: l.zip(l2), depth + 1)(internalDefs ++ getNamesDefinedIn(l))
+        
+      case (global.Select(a, n), global.Select(a2, n2)) if n == n2 =>
+          matchAndResolveTreeBindings(a, a2, depth + 1)
+      
+      // TODO
+      //case (ClassDef(mods, name, tparams, impl), ClassDef(mods2, name2, tparams2, impl2)) =
+      //  matchAndResolveTreeBindings(impl, impl)(internalDefs + name)
+      
+      case _ =>
+        if (Option(pattern).toString == Option(tree).toString) {
+          println("WARNING: Monkey matching of " + pattern + " vs. " + tree)
+          EmptyBindings
+        } else {
+          throw NoTreeMatchException(pattern, tree, "Different trees")
+        }
     }
+  }
+  // Throws lots of exceptions : NoTreeMatchException and NoTypeMatchException
+  def matchAndResolveBindings(pattern: global.Tree, tree: global.Tree): Bindings = {
+    val typeBindings = matchAndResolveTypeBindings(pattern.tpe, tree.tpe)
+    val treeBindings = matchAndResolveTreeBindings(pattern, tree)
+    
+    typeBindings ++ treeBindings
   } 
 }
