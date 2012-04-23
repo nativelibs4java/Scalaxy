@@ -2,19 +2,18 @@ package scalaxy.matchers
 
 import scala.reflect.mirror._
 
-object PositiveConstant {
-  def unapply(tree: Tree): Option[Int] =
-    Option(tree) collect {
-      case Literal(Constant(v: Int)) if v > 0 =>
+object IntConstant {
+  def unapply(t: Tree): Option[Int] =
+    Option(t) collect {
+      case Literal(Constant(v: Int)) =>
         v
     }
 }
-object NegativeConstant {
-  def unapply(tree: Tree): Option[Int] =
-    Option(tree) collect {
-      case Literal(Constant(v: Int)) if v < 0 =>
-        v
-    }
+object PositiveIntConstant {
+  def unapply(t: Tree) = IntConstant.unapply(t).filter(_ > 0)
+}
+object NegativeIntConstant {
+  def unapply(t: Tree) = IntConstant.unapply(t).filter(_ < 0)
 }
 
 object True {

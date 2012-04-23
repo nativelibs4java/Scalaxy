@@ -48,7 +48,7 @@ import scala.util.parsing.input.Position
  *
  * sbt -sbt-snapshot "run test.scala"
  */
-object ScalaxyPluginDef extends PluginDef {
+trait ScalaxyPluginDefLike extends PluginDef {
   override val name = "Scalaxy"
   override val description =
     "This plugin rewrites some Scala constructs (like for loops) to make them faster."
@@ -57,20 +57,25 @@ object ScalaxyPluginDef extends PluginDef {
   
   override def createOptions(settings: Settings): PluginOptions =
     new PluginOptions(this, settings)
-    
+  
+  def matchActionHolders: Seq[AnyRef]
+  
   override def createComponents(global: Global, options: PluginOptions): List[PluginComponent] =
     List(
-      new MatchActionsComponent(global, options, 
-        //rewrites.Example,
-        //rewrites.Streams,
-        rewrites.Java,
-        rewrites.Numeric,
-        rewrites.ForLoops
-      )
+      new MatchActionsComponent(global, options, matchActionHolders:_*)
     )
       
   override def getCopyrightMessage: String =
     "Scalaxy Plugin\nCopyright Olivier Chafik 2010-2012"
+}
+object ScalaxyPluginDef extends ScalaxyPluginDefLike {
+  override def matchActionHolders = Seq(
+    //rewrites.Example,
+    //rewrites.Streams,
+    rewrites.Java,
+    rewrites.Numeric,
+    rewrites.ForLoops
+  )
 }
 
 class ScalaxyPlugin(override val global: Global) 

@@ -11,7 +11,6 @@ import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.io.PrintWriter
 import scala.collection.mutable.HashMap
-import scala.concurrent.ops
 import scala.io.Source
 
 import java.net.URI
@@ -25,7 +24,8 @@ import javax.tools.JavaFileObject
 import javax.tools.ToolProvider
 import org.junit.Assert._
 import scala.tools.nsc.Settings
-import scala.actors.Futures._
+import scala.concurrent._
+import scala.concurrent.util.Duration
 import Function.{tupled, untupled}
 
 object Results {
@@ -136,46 +136,25 @@ trait BaseTestUtils {
     def flatten(s: Traversable[String]) = s.map("{\n" + _ + "\n};").mkString("\n")
     ensurePluginCompilesSnippetsToSameByteCode(flatten(sourcesAndReferences.map(_._1)), flatten(sourcesAndReferences.map(_._2)))
   }
-  def ensurePluginCompilesSnippetsToSameByteCode(source: String, reference: String, allowSameResult: Boolean = false) = {
+  def ensurePluginCompilesSnippetsToSameByteCode(source: String, reference: String, allowSameResult: Boolean = false, printDifferences: Boolean = true) = {
     val (_, testMethodName) = testClassInfo
     
-    import scala.concurrent.ops._
-    implicit val runner = new scala.concurrent.ThreadRunner
-  
-    /*
-    val expectedFut = future { getSnippetBytecode(className, reference, "expected", SharedCompilerWithoutPlugins1) }
-    val withoutPluginFut = future { getSnippetBytecode(className, source, "withoutPlugin", SharedCompilerWithoutPlugins2) }
-    val withPluginFut = future { getSnippetBytecode(className, source, "withPlugin", SharedCompilerWithPlugins) }//ScalaxyTestUtils.compilerWithPlugin) }
-    val (expected, withoutPlugin, withPlugin) = (expectedFut(), withoutPluginFut(), withPluginFut())
-    */
-    val enableFuture = true
-
-    def futEx[V](b: => V): () => V = if (!enableFuture) () => b else {
-      val f = future { try { Right(b) } catch { case ex => Left(ex) } }
-      () => f() match {
-        case Left(ex) =>
-          ex.printStackTrace
-          assertTrue(ex.toString, false)
-          error("")
-        case Right(v) =>
-          v
-      }
-    }
-
-    val withPluginFut = futEx { getSnippetBytecode(testMethodName, source, "withPlugin", SharedCompilerWithPlugins) }
+    val withPluginFut = future { getSnippetBytecode(testMethodName, source, "withPlugin", SharedCompilerWithPlugins) }
     val expected = getSnippetBytecode(testMethodName, reference, "expected", SharedCompilerWithoutPlugins)
     val withoutPlugin = if (allowSameResult) null else getSnippetBytecode(testMethodName, source, "withoutPlugin", SharedCompilerWithoutPlugins)
-    val withPlugin = withPluginFut()
+    val withPlugin = Await.result(withPluginFut, Duration.Inf)
 
     if (!allowSameResult)
       assertTrue("Expected result already found without any plugin !!! (was the Scala compiler improved ?)", expected != withoutPlugin)
       
     if (expected != withPlugin) {
-      def trans(tit: String, s: String) =
-        println(tit + " :\n\t" + s.replaceAll("\n", "\n\t"))
-
-      trans("EXPECTED", expected)
-      trans("FOUND", withPlugin)
+      if (printDifferences) {
+        def trans(tit: String, s: String) =
+          println(tit + " :\n\t" + s.replaceAll("\n", "\n\t"))
+  
+        trans("EXPECTED", expected)
+        trans("FOUND", withPlugin)
+      }
 
       assertEquals(expected, withPlugin)
     }
@@ -185,7 +164,7 @@ trait BaseTestUtils {
     val p = Runtime.getRuntime.exec("javap " + args.mkString(" "))//"javap", args)
 
     var err = new StringBuffer
-    ops.spawn {
+    future {
       import scala.util.control.Exception._
       val inputStream = new BufferedReader(new InputStreamReader(p.getErrorStream))
       var str: String = null
@@ -202,7 +181,7 @@ trait BaseTestUtils {
     val out = Source.fromInputStream(p.getInputStream).toList
     if (p.waitFor != 0) {
       Thread.sleep(100)
-      error("javap (args = " + args.mkString(" ") + ") failed with :\n" + err.synchronized { err.toString } + "\nAnd :\n" + out)
+      sys.error("javap (args = " + args.mkString(" ") + ") failed with :\n" + err.synchronized { err.toString } + "\nAnd :\n" + out)
     }
     out
   }
@@ -307,7 +286,7 @@ trait BaseTestUtils {
     
     val testClass = loader.loadClass(packageName + "." + className)
     val testMethod = testClass.getMethod(testMethodName)//, classOf[Int])
-    val testConstructor = testClass.getConstructors.first
+    val testConstructor = testClass.getConstructors.head
     
     new RunnableCode(pluginOptions) {
       override def newInstance(constructorArgs: Any*) = new RunnableMethod {

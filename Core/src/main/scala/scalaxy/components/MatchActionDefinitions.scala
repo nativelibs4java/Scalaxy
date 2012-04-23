@@ -70,6 +70,7 @@ object MatchActionDefinitions {
       //if result.stat_<:<(MatchActionClass.tpe) => // == ReplacementClass.tpe =>
         def getParamTypes(t: Type): List[Type] = t match {
           case MethodType(tt, r) =>
+            //println("Found method (" + m.name + ", m.type = " + dbgStr(m.tpe) + ") : type " + dbgStr(t) + " with tt = " + tt + " and r = " + r)
             tt.map(_.tpe) ++ getParamTypes(r)
           case PolyType(_, mt) =>
             getParamTypes(mt)
@@ -88,7 +89,7 @@ object MatchActionDefinitions {
           else 
             None
         } catch { case ex =>
-          /*if (m.toString.contains("simpleForeachTo")) {
+          /*if (m.toString.contains("removeDevilConstant")) {
             ex.printStackTrace
             println("Method " + m + " failed with " + defaultParams.mkString(", ") + " : " + ex)
           }*/

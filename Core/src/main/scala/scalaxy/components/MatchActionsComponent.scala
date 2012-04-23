@@ -51,20 +51,30 @@ extends PluginComponent
   
   case class ConvertedMatchAction(pattern: Tree, matchAction: MatchAction[Any])
   
-  val matchActions = matchActionHolders.filter(_ != null).flatMap(getMatchActionDefinitions(_)).map { 
-    case (n, m) =>
-      val conv = mirrorToGlobal(m.pattern, EmptyBindings)
-      println("Registered match action '" + n + "'")// = " + m)
-      (n, ConvertedMatchAction(conv, m))/*bindings => {
-        mirrorToGlobal(r.replacement, bindings)
-      }))*/
-  } 
+  val matchActions = {
+    val filteredHolders = matchActionHolders.filter(_ != null)
+    val rawMatchActions = filteredHolders.flatMap(holder => {
+      val defs = getMatchActionDefinitions(holder)
+      if (defs.isEmpty)
+        sys.error("ERROR: no definition in holder " + holder)
+      defs
+    })
+    println("Found " + rawMatchActions.size + " match actions in " + filteredHolders.size + " different holders")
+    
+    rawMatchActions.map { 
+      case (n, m) =>
+        val conv = mirrorToGlobal(m.pattern, EmptyBindings)
+        println("Registered match action '" + n + "' = " + m)
+        (n, ConvertedMatchAction(conv, m))
+    } 
+  }
   
   def newTransformer(unit: CompilationUnit) = new TypingTransformer(unit) {  
     override def transform(tree: Tree): Tree = {
       val sup = super.transform(tree)
       var expanded = sup
   
+      //println("NOW AT TREE " + tree + " : " + tree.getClass.getName)
       for ((n, convertedMatchAction) <- matchActions) {
         try {
           val bindings @ Bindings(nameBindings, typeBindings) = 
@@ -103,13 +113,17 @@ extends PluginComponent
           }
         } catch { 
           case NoTypeMatchException(expected, found, msg) =>
+            if (false)
+              println("TYPE ERROR: in replacement '" + n + "' at " + tree.pos + " : " + msg +
+                " (\n\texpected = " + expected + ": " + Option(expected).map(_.getClass.getName) + 
+                ",\n\tfound = " + found + ": " + Option(found).map(_.getClass.getName) + "\n)"
+              )
           case NoTreeMatchException(expected, found, msg) =>
-            /*
-            println("ERROR: in replacement '" + n + "' at " + tree.pos + " : " + msg +
-              " (\n\texpected = " + expected + ": " + Option(expected).map(_.getClass.getName) + 
-              ",\n\tfound = " + found + ": " + Option(found).map(_.getClass.getName) + "\n)"
-            )
-            */
+            if (false)
+              println("TREE ERROR: in replacement '" + n + "' at " + tree.pos + " : " + msg +
+                " (\n\texpected = " + expected + ": " + Option(expected).map(_.getClass.getName) + 
+                ",\n\tfound = " + found + ": " + Option(found).map(_.getClass.getName) + "\n)"
+              )
         }
       }
       

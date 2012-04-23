@@ -45,7 +45,9 @@ object ScalaxyBuild extends Build
     //exportJars := true, // use jars in classpath
   )
   lazy val commonDepsSettings = Seq(
-    libraryDependencies <+= scalaVersion(v => "org.scalatest" % ("scalatest_2.9.1"/* + v*/) % "1.7.1" % "test")
+    libraryDependencies += "junit" % "junit" % "4.10" % "test",
+    libraryDependencies += "com.novocode" % "junit-interface" % "0.8" % "test"
+    //libraryDependencies <+= scalaVersion(v => "org.scalatest" % ("scalatest_2.9.1"/* + v*/) % "1.7.1" % "test")
     //libraryDependencies += "org.scala-tools.testing" %% "scalacheck" % "1.9" % "test"
   )
   

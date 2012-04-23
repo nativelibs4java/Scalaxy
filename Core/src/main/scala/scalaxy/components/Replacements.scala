@@ -43,18 +43,17 @@ extends TypingTransformers
   def combine(a: Bindings, b: Bindings) = a ++ b
     
   def resolveType(tpe: global.Type): global.Type = 
-      /*.map(_.deconst.dealias.normalize)*/
-      Option(tpe).map({
+      Option(tpe).map(_.dealias.deconst.normalize).map({
         case global.ThisType(sym) =>
           sym.asType
-        case global.SingleType(pre, sym) =>
+        case tt @ global.SingleType(pre, sym) =>
           val t = sym.asType
           if (t != null && t != global.NoType)
             t
           else
-            tpe
-        case _ =>
-          tpe
+            tt
+        case tt =>
+          tt
       }).orNull
       
   def matchAndResolveTreeBindings(reps: List[(global.Tree, global.Tree)], depth: Int)(implicit internalDefs: InternalDefs): Bindings = {
@@ -147,11 +146,20 @@ extends TypingTransformers
     }
   }
   def matchAndResolveTreeBindings(pattern: global.Tree, tree: global.Tree, depth: Int = 0)(implicit internalDefs: InternalDefs = Set()): Bindings = {
+    //if (depth > 0)
+    //println("Going down : " + global.nodeToString(pattern) + " vs. " + global.nodeToString(tree))
+      
     (pattern, tree) match {
       case (_, _) if pattern.isEmpty && tree.isEmpty =>
         EmptyBindings
         
       case (global.This(_), global.This(_)) =>
+        EmptyBindings
+        
+      case (global.Literal(global.Constant(a)), global.Literal(global.Constant(a2))) if a == a2 =>
+      //case (global.Literal(c), global.Literal(c2)) =>
+        // if a == a2 =>
+        //println("FOUND LITERALS c = " + c + ", c2 = " + c2 + ": " + c2.tpe) 
         EmptyBindings
         
       case (_: global.TypeTree, _: global.TypeTree) =>
@@ -205,9 +213,34 @@ extends TypingTransformers
         }
     }
   }
+  
+  def getOrFixType(tree: global.Tree) = {
+    val t = tree.tpe
+    if (t == null)
+      tree match {
+        case global.Literal(global.Constant(v)) =>
+          v match {
+            case _: Int => IntClass.tpe
+            case _: Short => ShortClass.tpe
+            case _: Long => LongClass.tpe
+            case _: Double => DoubleClass.tpe
+            case _: Float => FloatClass.tpe
+            case _: Char => CharClass.tpe
+            case _: Boolean => BooleanClass.tpe
+            case _: String => StringClass.tpe
+            case _: Unit => UnitClass.tpe
+            case _ =>
+              null
+          }
+        case _ =>
+          null
+      }
+    else
+      t
+  }
   // Throws lots of exceptions : NoTreeMatchException and NoTypeMatchException
   def matchAndResolveBindings(pattern: global.Tree, tree: global.Tree): Bindings = {
-    val typeBindings = matchAndResolveTypeBindings(pattern.tpe, tree.tpe)
+    val typeBindings = matchAndResolveTypeBindings(getOrFixType(pattern), getOrFixType(tree))
     val treeBindings = matchAndResolveTreeBindings(pattern, tree)
     
     typeBindings ++ treeBindings
