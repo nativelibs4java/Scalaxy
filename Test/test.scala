@@ -1,6 +1,24 @@
 object RunMe extends App {
 //class RunMe {
+  //import scalaxy._//macros._
   
+  //println(tree(Seq(1, 2, 3)))
+  
+  {
+    val th = new Thread(new Runnable { override def run = println("...") })
+    th.start
+    th.stop
+  }
+  
+  {
+    class C {
+      private val i = 10
+    }
+    val f = classOf[C].getField("i")
+    f.setAccessible(true)
+  }
+  
+  /*
   {
     import math.Numeric.Implicits._
     import Ordering.Implicits._
@@ -32,6 +50,10 @@ object RunMe extends App {
     for (i <- 1 until 10)
       println("i = " + i + " // v = " + v) 
   }
+  println(trans(Seq(1, 2, 3)))
+  println(trans(Seq(2, 3, 4), 10))
+  */
+  
   /*def transManual(col: Seq[Int]) = {
     col.map(a => {
       val b = ((a:Int) => a + 1)(a)
@@ -46,7 +68,4 @@ object RunMe extends App {
   run
   
   */
-  println(trans(Seq(1, 2, 3)))
-  println(trans(Seq(2, 3, 4), 10))
-  
 }

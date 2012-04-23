@@ -60,9 +60,10 @@ object ScalaxyPluginDef extends PluginDef {
     
   override def createComponents(global: Global, options: PluginOptions): List[PluginComponent] =
     List(
-      new ReplacementsComponent(global, options, 
+      new MatchActionsComponent(global, options, 
         //rewrites.Example,
         //rewrites.Streams,
+        rewrites.Java,
         rewrites.Numeric,
         rewrites.ForLoops
       )

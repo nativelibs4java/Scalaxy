@@ -160,13 +160,13 @@ extends TypingTransformers
       case (global.Ident(n), _) =>
         if (internalDefs.contains(n))
           EmptyBindings
-        else tree match {
+        else /*tree match {
           case global.Ident(nn) if n.toString == nn.toString =>
             EmptyBindings
-          case _ =>
+          case _ =>*/
             //println("GOT BINDING " + pattern + " -> " + tree + " (tree is " + tree.getClass.getName + ")")
             Bindings(Map(n -> tree), Map())
-        }
+        //}
           
       case (global.ValDef(mods, name, tpt, rhs), global.ValDef(mods2, name2, tpt2, rhs2))
       if mods.modifiers == mods2.modifiers =>
@@ -189,6 +189,7 @@ extends TypingTransformers
         matchAndResolveTreeBindings((v, v2) :: l.zip(l2), depth + 1)(internalDefs ++ getNamesDefinedIn(l))
         
       case (global.Select(a, n), global.Select(a2, n2)) if n == n2 =>
+        //println("Matched select " + a + " vs. " + a2)
           matchAndResolveTreeBindings(a, a2, depth + 1)
       
       // TODO

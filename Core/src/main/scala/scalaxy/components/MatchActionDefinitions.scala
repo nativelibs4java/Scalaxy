@@ -1,12 +1,13 @@
 package scalaxy; package components
 
-object ReplacementDefinitions {
+object MatchActionDefinitions {
   import scala.reflect.api._
   import scala.reflect.runtime._
   import scala.reflect.runtime.Mirror._
   import definitions._
   
-  private lazy val ReplacementClass = staticClass("scalaxy.Replacement")//definitions.getClass(newTypeName("scalaxy.Replacement"))
+  //private lazy val ReplacementClass = staticClass("scalaxy.Replacement")//definitions.getClass(newTypeName("scalaxy.Replacement"))
+  private lazy val MatchActionClass = staticClass("scalaxy.MatchAction")
   
   private lazy val defaultValues = Map(
     IntClass.tpe -> 0,
@@ -34,7 +35,7 @@ object ReplacementDefinitions {
       invoke(target, method)(params)
     }
   }
-  def getReplacementDefinitions(holder: AnyRef): Seq[(String, Replacement)] = {
+  def getMatchActionDefinitions(holder: AnyRef): Seq[(String, MatchAction[Any])] = {
     //val holder = Example
     //val holderSym = staticClass("scalaxy.Example")
     //val holder = companionInstance(holderSym)
@@ -51,13 +52,22 @@ object ReplacementDefinitions {
       def unapply(t: Type): Option[Type] = t match {
         case MethodType(_, r) =>
           unapply(r)
+        case PolyType(_, mt) =>
+          unapply(mt)
         case _ =>
           Some(t)
       }
     }
-    holderType.members.filter(_.isMethod).map(m => (m, m.tpe)).collect { 
-      case (m, PolyType(paramsyms, mt @ FollowMethodResult(result)))
-      if result == ReplacementClass.tpe =>
+    val methods = holderType.members.filter(_.isMethod)
+    //println("Scanning holder " + holder + " : " + methods.size + " methods")
+    //for (m <- methods) println("\t" + m.name)
+      
+    methods.map(m => (m, m.tpe)).collect({ 
+      //case (m, PolyType(paramsyms, mt @ FollowMethodResult(result)))
+      case (m, mt @ FollowMethodResult(result))
+      =>
+      // TODO
+      //if result.stat_<:<(MatchActionClass.tpe) => // == ReplacementClass.tpe =>
         def getParamTypes(t: Type): List[Type] = t match {
           case MethodType(tt, r) =>
             tt.map(_.tpe) ++ getParamTypes(r)
@@ -68,9 +78,19 @@ object ReplacementDefinitions {
         val defaultParams = 
           actualParamTypes.map(getDefaultValue(_).asInstanceOf[AnyRef])
           
-        val r = invokeMethod(holder, m, defaultParams)
-        //println("r = " + r)
-        (holder + "." + m.name, r.asInstanceOf[Replacement])
-    }
+        try {
+          val r = invokeMethod(holder, m, defaultParams)
+          //println("r = " + r + " : " + r.getClass.getName)
+          if (r.isInstanceOf[MatchAction[_]])
+            Some((holder + "." + m.name, r.asInstanceOf[MatchAction[Any]]))
+          else 
+            None
+        } catch { case ex =>
+          None
+        }
+      case (m, t) =>
+        println("Unable to parse method '" + m.name + "' : " + dbgStr(t))
+        None
+    }).flatten
   }
 }

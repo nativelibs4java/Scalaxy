@@ -12,7 +12,8 @@ object ScalaxyBuild extends Build
     infoSettings ++
     compilationSettings ++ 
     mavenSettings ++
-    scalaSettings
+    scalaSettings ++
+    commonDepsSettings
     
   lazy val infoSettings = Seq(
     organization := "com.nativelibs4java",
@@ -42,6 +43,10 @@ object ScalaxyBuild extends Build
     
     resolvers += Resolver.sonatypeRepo("snapshots")
     //exportJars := true, // use jars in classpath
+  )
+  lazy val commonDepsSettings = Seq(
+    libraryDependencies <+= scalaVersion(v => "org.scalatest" % ("scalatest_2.9.1"/* + v*/) % "1.7.1" % "test")
+    //libraryDependencies += "org.scala-tools.testing" %% "scalacheck" % "1.9" % "test"
   )
   
   lazy val scalaxy = 

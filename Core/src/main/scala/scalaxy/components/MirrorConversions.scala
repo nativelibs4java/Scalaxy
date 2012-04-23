@@ -13,10 +13,10 @@ extends Replacements
 
   import global.definitions._
   
-  def newImporter(bindings: Bindings) = {
+  
+  def newMirrorToGlobalImporter(bindings: Bindings) = {
     new global.Importer {
       val from = mirror.asInstanceOf[scala.reflect.internal.SymbolTable]
-      
       override def importTree(tree: from.Tree): global.Tree = {
         tree match {
           case from.Ident(n) =>
@@ -46,13 +46,31 @@ extends Replacements
       }
     }
   }
+  def newGlobalToMirrorImporter = {
+    val mm = mirror.asInstanceOf[scala.reflect.internal.SymbolTable]
+    new mm.Importer {
+      val from = global
+      //val from = global.asInstanceOf[scala.reflect.internal.SymbolTable]
+      override def importTree(tree: from.Tree): mm.Tree = {
+        tree match {
+          case from.Ident(n) =>
+            val in = importName(n)
+            val imp = mm.Ident(in)
+            imp.tpe = importType(tree.tpe)
+            imp
+          case _ =>
+            super.importTree(tree)
+        }
+      }
+    }
+  }
   
   /**
    * TODO report missing API : scala.reflect.api.SymbolTable 
    * (scala.reflect.mirror does not extend scala.reflect.internal.SymbolTable publicly !)
    */
   def mirrorToGlobal(m: mirror.Tree, bindings: Bindings): global.Tree = {
-    val importer = newImporter(bindings) 
+    val importer = newMirrorToGlobalImporter(bindings) 
     new mirror.Traverser {
       override def traverse(t: mirror.Tree) = {
         val tpe = t.tpe
@@ -69,8 +87,18 @@ extends Replacements
   }
   
   implicit def mirrorToGlobal(m: mirror.Name, bindings: Bindings): global.Name = { 
-    val importer = newImporter(bindings) 
+    val importer = newMirrorToGlobalImporter(bindings) 
     importer.importName(m.asInstanceOf[importer.from.Name])
+  }
+  
+  def globalToMirror(t: global.Name): mirror.Name = {
+    val importer = newGlobalToMirrorImporter
+    importer.importName(t.asInstanceOf[importer.from.Name]).asInstanceOf[mirror.Name]
+  }
+  
+  def globalToMirror(t: global.Tree): mirror.Tree = {
+    val importer = newGlobalToMirrorImporter
+    importer.importTree(t.asInstanceOf[importer.from.Tree]).asInstanceOf[mirror.Tree]
   }
   
   /*

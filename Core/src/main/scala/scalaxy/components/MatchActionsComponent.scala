@@ -15,7 +15,7 @@ import scala.reflect._
 
 //import scala.tools.nsc.typechecker.Contexts._
 
-object ReplacementsComponent {
+object MatchActionsComponent {
   val runsAfter = List[String](
     "typer"
   )
@@ -25,7 +25,7 @@ object ReplacementsComponent {
   val phaseName = "scalaxy-rewriter"
 }
 
-class ReplacementsComponent(val global: Global, val options: PluginOptions, val replacementHolders: AnyRef*)
+class MatchActionsComponent(val global: Global, val options: PluginOptions, val matchActionHolders: AnyRef*)
 extends PluginComponent
    with Transform
    with TypingTransformers
@@ -43,21 +43,21 @@ extends PluginComponent
   import typer.typed
   import analyzer.{SearchResult, ImplicitSearch, UnTyper}
 
-  override val runsAfter = ReplacementsComponent.runsAfter
-  override val runsBefore = ReplacementsComponent.runsBefore
-  override val phaseName = ReplacementsComponent.phaseName
+  override val runsAfter = MatchActionsComponent.runsAfter
+  override val runsBefore = MatchActionsComponent.runsBefore
+  override val phaseName = MatchActionsComponent.phaseName
 
-  import ReplacementDefinitions._
+  import MatchActionDefinitions._
   
-  case class ConvertedReplacement(pattern: Tree, replacement: Bindings => Tree)
+  case class ConvertedMatchAction(pattern: Tree, matchAction: MatchAction[Any])
   
-  val replacements = replacementHolders.filter(_ != null).flatMap(getReplacementDefinitions(_)).map { 
-    case (n, r) =>
-      val conv = mirrorToGlobal(r.pattern, EmptyBindings)
-      println("Registered replacement '" + n + "'")
-      (n, ConvertedReplacement(conv, bindings => {
+  val matchActions = matchActionHolders.filter(_ != null).flatMap(getMatchActionDefinitions(_)).map { 
+    case (n, m) =>
+      val conv = mirrorToGlobal(m.pattern, EmptyBindings)
+      println("Registered match action '" + n + "'")// = " + m)
+      (n, ConvertedMatchAction(conv, m))/*bindings => {
         mirrorToGlobal(r.replacement, bindings)
-      }))
+      }))*/
   } 
   
   def newTransformer(unit: CompilationUnit) = new TypingTransformer(unit) {  
@@ -65,14 +65,42 @@ extends PluginComponent
       val sup = super.transform(tree)
       var expanded = sup
   
-      for ((n, r) <- replacements) {
+      for ((n, convertedMatchAction) <- matchActions) {
         try {
-          val bindings @ Bindings(nameBindings, typeBindings) = matchAndResolveBindings(r.pattern, expanded)
+          val bindings @ Bindings(nameBindings, typeBindings) = 
+            matchAndResolveBindings(convertedMatchAction.pattern, expanded)
+            
           println("Bindings for '" + n + "':\n\t" + (nameBindings ++ typeBindings).mkString("\n\t"))
           
-          val replacement = r.replacement(bindings)
-          println("Replacement '" + n + "':\n\t" + replacement.toString.replaceAll("\n", "\n\t"))
-          expanded = replacement
+          convertedMatchAction.matchAction match {
+            case r: Replacement[_] =>
+              val replacement = mirrorToGlobal(r.replacement, bindings)
+              println("Replacement '" + n + "':\n\t" + replacement.toString.replaceAll("\n", "\n\t"))
+              expanded = replacement
+            case MatchWarning(_, message) =>
+              unit.warning(tree.pos, message)
+            case MatchError(_, message) =>
+              unit.error(tree.pos, message)
+            case ConditionalAction(_, when, then) =>
+              val treesToTest: Seq[mirror.Tree] = 
+                when.map(n => { 
+                  globalToMirror(nameBindings(global.newTermName(n)))
+                })
+              
+              if (then.isDefinedAt(treesToTest)) {
+                then.apply(treesToTest) match {
+                  case r: ReplaceBy[_] =>
+                    val replacement = mirrorToGlobal(r.replacement, bindings)
+                    println("Replace by '" + n + "':\n\t" + replacement.toString.replaceAll("\n", "\n\t"))
+                    expanded = replacement
+                  case Warning(message) =>
+                    unit.warning(tree.pos, message)
+                  case Error(message) =>
+                    unit.error(tree.pos, message)
+                  case null =>
+                }
+              }
+          }
         } catch { 
           case NoTypeMatchException(expected, found, msg) =>
           case NoTreeMatchException(expected, found, msg) =>

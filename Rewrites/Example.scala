@@ -1,10 +1,10 @@
 package scalaxy; package rewrites
 
-import Macros._
+import macros._
 
 object Example {
   
-  def intToStringQuoter[U](i: Int) = Replacement(
+  def intToStringQuoter[U](i: Int) = replace(
     i.toString,
     "'" + i.toString + "'"
   )

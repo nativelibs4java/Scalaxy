@@ -1,10 +1,13 @@
 package scalaxy; package rewrites
 
-import Macros._
+import macros._
+import matchers._
+//import scala.reflect.mirror._
 
 object ForLoops {
-  def simpleForeachUntil[U](start: Int, end: Int, body: U) = Replacement(
-    for (i <- start until end) body,
+  def simpleForeachUntil[U](start: Int, end: Int, body: U) = replace(
+    for (i <- start until end) 
+      body,
     {
       var ii = start
       while (ii < end) {
@@ -14,7 +17,7 @@ object ForLoops {
       }
     }
   )
-  def simpleForeachTo[U](start: Int, end: Int, body: U) = Replacement(
+  def simpleForeachTo[U](start: Int, end: Int, body: U) = replace(
     for (i <- start to end) body,
     {
       var ii = start
@@ -25,8 +28,37 @@ object ForLoops {
       }
     }
   )
+  
+  def rgForeachUntilBy[U](start: Int, end: Int, step: Int, body: U) = 
+    when(
+      for (i <- start until end by step) 
+        body
+    )(
+      step
+    ) {
+      case Seq(PositiveConstant(_)) =>
+        replacement {
+          var ii = start
+          while (ii < end) {
+            val i = ii
+            body
+            ii = ii + step 
+          }
+        }
+      case Seq(NegativeConstant(_)) =>
+        replacement {
+          var ii = start
+          while (ii > end) {
+            val i = ii
+            body
+            ii = ii - step 
+          }
+        }
+      case _ =>
+        warning("Cannot optimize : step is not constant")
+    }
   /*
-  def simpleForeachUntil[U](start: Int, end: Int, body: Int => U) = Replacement(
+  def simpleForeachUntil[U](start: Int, end: Int, body: Int => U) = replace(
     for (i <- start until end) body(i),
     {
       var ii = start
@@ -37,7 +69,7 @@ object ForLoops {
       }
     }
   )
-  def simpleForeachTo[U](start: Int, end: Int, body: Int => U) = Replacement(
+  def simpleForeachTo[U](start: Int, end: Int, body: Int => U) = replace(
     for (i <- start to end) body(i),
     {
       var ii = start
