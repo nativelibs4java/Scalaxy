@@ -45,9 +45,11 @@ class TestsTest extends BaseTestUtils {
     ensurePluginCompilesSnippetsToSameByteCode(
       """ 
         println(666)
+        //println(888)
       """,
       """ 
         println(667)
+        //println(999)
       """
     )
   }

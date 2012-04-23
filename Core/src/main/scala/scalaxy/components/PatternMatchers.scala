@@ -5,7 +5,7 @@ import scala.tools.nsc.ast.TreeDSL
 import scala.tools.nsc.transform.TypingTransformers
 import Function.tupled
 
-trait Replacements
+trait PatternMatchers
 extends TypingTransformers
 //   with MirrorConversions
 {
@@ -223,6 +223,7 @@ extends TypingTransformers
             case _: Int => IntClass.tpe
             case _: Short => ShortClass.tpe
             case _: Long => LongClass.tpe
+            case _: Byte => ByteClass.tpe
             case _: Double => DoubleClass.tpe
             case _: Float => FloatClass.tpe
             case _: Char => CharClass.tpe
@@ -238,6 +239,7 @@ extends TypingTransformers
     else
       t
   }
+  
   // Throws lots of exceptions : NoTreeMatchException and NoTypeMatchException
   def matchAndResolveBindings(pattern: global.Tree, tree: global.Tree): Bindings = {
     val typeBindings = matchAndResolveTypeBindings(getOrFixType(pattern), getOrFixType(tree))

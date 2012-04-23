@@ -1,6 +1,7 @@
 package scalaxy; package components
 
-object MatchActionDefinitions {
+object MatchActionDefinitions 
+{
   import scala.reflect.api._
   import scala.reflect.runtime._
   import scala.reflect.runtime.Mirror._

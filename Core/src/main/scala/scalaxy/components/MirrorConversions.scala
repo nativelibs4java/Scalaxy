@@ -7,7 +7,7 @@ import scala.reflect._
 import Function.tupled
 
 trait MirrorConversions
-extends Replacements
+extends PatternMatchers
 {
   this: PluginComponent =>
 

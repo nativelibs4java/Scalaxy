@@ -30,10 +30,11 @@ extends PluginComponent
    with Transform
    with TypingTransformers
    with Modes
-   with Replacements
+   
+   with WithOptions
+   with PatternMatchers
    with MirrorConversions
    with SymbolHealers
-   with WithOptions
 {
   import global._
   import global.definitions._
@@ -64,7 +65,7 @@ extends PluginComponent
     rawMatchActions.map { 
       case (n, m) =>
         val conv = mirrorToGlobal(m.pattern, EmptyBindings)
-        println("Registered match action '" + n + "' = " + m)
+        println("Registered match action '" + n + "'")// = " + m)
         (n, ConvertedMatchAction(conv, m))
     } 
   }
