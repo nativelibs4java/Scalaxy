@@ -71,6 +71,8 @@ object MatchActionDefinitions {
         def getParamTypes(t: Type): List[Type] = t match {
           case MethodType(tt, r) =>
             tt.map(_.tpe) ++ getParamTypes(r)
+          case PolyType(_, mt) =>
+            getParamTypes(mt)
           case _ =>
             List()
         }
@@ -86,6 +88,10 @@ object MatchActionDefinitions {
           else 
             None
         } catch { case ex =>
+          /*if (m.toString.contains("simpleForeachTo")) {
+            ex.printStackTrace
+            println("Method " + m + " failed with " + defaultParams.mkString(", ") + " : " + ex)
+          }*/
           None
         }
       case (m, t) =>

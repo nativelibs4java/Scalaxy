@@ -36,7 +36,7 @@ object ForLoops {
     )(
       step
     ) {
-      case Seq(PositiveConstant(_)) =>
+      case PositiveConstant(_) :: Nil =>
         replacement {
           var ii = start
           while (ii < end) {

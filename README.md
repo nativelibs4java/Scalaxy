@@ -17,10 +17,14 @@ To see what's happening, you might want to print the AST before and after the re
     
 The rewrites are defined in `Rewrites` and look like this :
 
-	import scalaxy.Macros._
-	object ForLoops {
+	import scalaxy.macros._
+	import scalaxy.matchers._
+	
+	object SomeExamples {
+	
 	  def simpleForeachUntil[U](start: Int, end: Int, body: U) = Replacement(
-		for (i <- start until end) body,
+		for (i <- start until end) 
+			body,
 		{
 		  var ii = start
 		  while (ii < end) {
@@ -30,5 +34,16 @@ The rewrites are defined in `Rewrites` and look like this :
 		  }
 		}
 	  )
+		
+	  def forbidThreadStop(t: Thread) = 
+		fail("You must NOT call Thread.stop() !") {
+		  t.stop
+		}
+	  
+	  def warnAccessibleField(f: java.lang.reflect.Field, b: Boolean) =
+		when(f.setAccessible(b))(b) {
+		  case True() :: Nil =>
+			warning("You shouldn't do that")
+		}
 	}
 

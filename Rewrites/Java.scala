@@ -7,8 +7,8 @@ object Java {
   
   
   def warnAccessibleField(f: java.lang.reflect.Field, b: Boolean) =
-    when(f.setAccessible(b))(f, b) {
-      case Seq(_, True()) =>
+    when(f.setAccessible(b))(b) {
+      case True() :: Nil =>
         warning("You shouldn't do that")
       case r => 
         println("Failed to match case in warnAccessibleField : " + r)
@@ -20,10 +20,4 @@ object Java {
       t.stop
     }
   
-  //def replaceAccessibleField(f: java.lang.reflect.Field, b: Boolean) =
-  //  replace(f.setAccessible(b), f.setAccessible(false))
-    
-    
-    
-  println("Auto warn " + warnAccessibleField(null, false))
 }  

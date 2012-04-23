@@ -82,8 +82,8 @@ extends PluginComponent
             case MatchError(_, message) =>
               unit.error(tree.pos, message)
             case ConditionalAction(_, when, then) =>
-              val treesToTest: Seq[mirror.Tree] = 
-                when.map(n => { 
+              val treesToTest: List[mirror.Tree] = 
+                when.toList.map(n => { 
                   globalToMirror(nameBindings(global.newTermName(n)))
                 })
               

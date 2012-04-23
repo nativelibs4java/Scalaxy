@@ -21,7 +21,7 @@ case class MatchWarning[T](pattern: mirror.Tree, message: String) extends MatchA
 case class ConditionalAction[T](
   pattern: mirror.Tree, 
   when: Seq[String], 
-  then: PartialFunction[Seq[mirror.Tree], Action[T]]
+  then: PartialFunction[List[mirror.Tree], Action[T]]
 ) extends MatchAction[T]
 
 package object macros {
@@ -47,7 +47,7 @@ package object macros {
     )
   }
   
-  def macro when[T](pattern: T)(identifiers: Any*)(then: PartialFunction[Seq[mirror.Tree], Action[T]])
+  def macro when[T](pattern: T)(identifiers: Any*)(then: PartialFunction[List[mirror.Tree], Action[T]])
   : ConditionalAction[T] = 
   {
     val scalaCollection = 
