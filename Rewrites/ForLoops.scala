@@ -51,7 +51,7 @@ object ForLoops {
           while (ii > end) {
             val i = ii
             body
-            ii = ii - step 
+            ii = ii + step 
           }
         }
       case _ =>
