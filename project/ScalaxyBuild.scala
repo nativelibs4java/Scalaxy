@@ -37,7 +37,7 @@ object ScalaxyBuild extends Build
     pomIncludeRepository := { _ => false }
   )
   lazy val scalaSettings = Seq(
-    scalaVersion := "2.10.0-SNAPSHOT",
+    scalaVersion := "2.10.0-M2",//"2.10.0-SNAPSHOT",
     //scalaHome := Some(file("/Users/ochafik/bin/scala-2.10.0.latest"))
     crossScalaVersions := Seq("2.10.0-M2"),
     
