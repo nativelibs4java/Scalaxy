@@ -53,4 +53,16 @@ class TestsTest extends BaseTestUtils {
       """
     )
   }
+  
+  @Test
+  def testVarargs {
+    ensurePluginCompilesSnippetsToSameByteCode(
+      """
+        println(String.format("i = %d, j = %d", 1, 2))
+      """,
+      """
+        System.out.printf("i = %d, j = %d" + "\n", 1, 2)
+      """
+    )
+  }
 }

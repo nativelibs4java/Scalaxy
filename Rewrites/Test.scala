@@ -12,4 +12,9 @@ object Test
       case IntConstant(888) :: Nil =>
         replacement(999)
     }
+    
+  def replaceVarargs(fmt: String, args: Object*) = replace(
+    println(String.format(fmt, args:_*)),
+    System.out.printf(fmt + "\n", args:_*)
+  )
 }
