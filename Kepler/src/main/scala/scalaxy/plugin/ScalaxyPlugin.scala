@@ -73,8 +73,8 @@ object ScalaxyPluginDef extends ScalaxyPluginDefLike {
     //rewrites.Example,
     //rewrites.Streams,
     
-    //rewrites.Java,
-    //rewrites.Numeric,
+    rewrites.Java,
+    rewrites.Numeric,
     rewrites.ForLoops
   )
 }

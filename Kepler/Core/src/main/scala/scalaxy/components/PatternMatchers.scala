@@ -150,8 +150,8 @@ extends TypingTransformers
     }
   }
   def matchAndResolveTreeBindings(pattern: global.Tree, tree: global.Tree, depth: Int = 0)(implicit internalDefs: InternalDefs = Set()): Bindings = {
-    if (depth > 0)
-      println("Going down : " + global.nodeToString(pattern) + ": " + pattern.getClass.getName + " vs. " + global.nodeToString(tree) + ": " + tree.getClass.getName)
+    //if (depth > 1)
+    //  println("Going down : " + global.nodeToString(pattern) + ": " + pattern.getClass.getName + " vs. " + global.nodeToString(tree) + ": " + tree.getClass.getName)
     
     /*
     def normalize(t: global.Tree) = t match {

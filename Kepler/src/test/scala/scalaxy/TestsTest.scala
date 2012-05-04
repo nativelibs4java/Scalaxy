@@ -5,6 +5,7 @@ import plugin._
 import org.junit._
 import Assert._
 
+//@Ignore
 class TestsTest extends BaseTestUtils {
 
   override def pluginDef = new ScalaxyPluginDefLike {

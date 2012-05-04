@@ -5,5 +5,5 @@ package scalaxy
 import scala.reflect.mirror._
 
 trait Compilet {
-  def matchActions: Seq[(String, MatchAction)]
+  //def matchActions: Seq[(String, MatchAction)]
 }

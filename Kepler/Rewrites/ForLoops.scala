@@ -5,11 +5,10 @@ import matchers._
 //import scala.reflect.mirror._
 
 object ForLoops extends Compilet {
-  override val matchActions = Seq(
+  /*override val matchActions = Seq(
     "foreach" -> simpleForeachUntil(0, 0, {})
-  )
+  )*/
   
-  /*
   def simpleForeachUntil[U : TypeTag](start: Int, end: Int, body: U) = replace(
     for (i <- start until end) 
       body,
@@ -21,21 +20,11 @@ object ForLoops extends Compilet {
         ii = ii + 1  
       }
     }
-  )*/
-  def simpleForeachUntil[U : TypeTag](start: Int, end: Int, body: U) = replace(
-    for (i <- start until end) body,
-    {
-      var ii = start
-      while (ii < end) {
-        val i = ii
-        body
-        ii = ii + 1  
-      }
-    }
   )
-  /*
+  
   def simpleForeachTo[U : TypeTag](start: Int, end: Int, body: U) = replace(
-    for (i <- start to end) body,
+    for (i <- start to end) 
+      body,
     {
       var ii = start
       while (ii <= end) {
@@ -74,7 +63,7 @@ object ForLoops extends Compilet {
       case _ =>
         warning("Cannot optimize : step is not constant")
     }
-  */
+    
   /*
   def simpleForeachUntil[U](start: Int, end: Int, body: Int => U) = replace(
     for (i <- start until end) body(i),

@@ -62,38 +62,32 @@ extends PluginComponent
     })
     println("Found " + rawMatchActions.size + " match actions in " + filteredHolders.size + " different holders")
     
-    val tb = mirror.mkToolBox()
-    //val tb = mkToolBox()
+    lazy val mirrorToolBox = mirror.mkToolBox()
+    lazy val globalToolBox = mkToolBox()
     
-    //println(tb.asInstanceOf[scala.reflect.api.ToolBoxes#Toolbox].instance.phase)
-    //= (new instance.Run).typerPhase // need to manually set a phase, because otherwise TypeHistory will crash
-        
-    //tb.set(Typer)
+    // TODO fix bugs that happen when this is true and/or false : 
+    val typeCheckInMirrorSpace = true
     
-    rawMatchActions.map { 
+    rawMatchActions.flatMap { 
       case (n, m) =>
-        //val t = m.patternTree
-        val t = tb.typeCheck(m.patternTree)//, m.patternType.tpe)
-        
-        var conv = mirrorToGlobal(t, EmptyBindings)
-        //conv = tb.typeCheck(conv)
-        /*
-        conv = new Transformer { 
-          override def transform(tree: Tree) = {
-            try {
-              typed { super.transform(tree) }
-            } catch { case ex =>
-              println("Typing recursively " + tree)
-              ex.printStackTrace
-              throw ex
-            }
-          }
-        }.transform(conv)
-        */
-        println("Registered match action '" + n + "' = " + m)
-        println("Converted pattern = " + conv)
-        (n, ConvertedMatchAction(conv, m))
-    } 
+        try {
+          val converted =
+            if (typeCheckInMirrorSpace) 
+              mirrorToGlobal(mirrorToolBox.typeCheck(m.patternTree), EmptyBindings)
+            else 
+              globalToolBox.typeCheck(mirrorToGlobal(m.patternTree, EmptyBindings))
+            
+          println("Registered match action '" + n + "' = " + m)
+          println("Converted pattern = " + converted)
+          
+          Some(n -> ConvertedMatchAction(converted, m))
+        } catch { 
+          case ex =>
+            println("Failed to convert match action '" + n + "':\n\t" + ex + "\n\t" + m)
+            ex.printStackTrace
+            None
+        }
+    }
   }
   
   def newTransformer(unit: CompilationUnit) = new TypingTransformer(unit) {  
@@ -140,13 +134,14 @@ extends PluginComponent
           }
         } catch { 
           case NoTypeMatchException(expected, found, msg) =>
-            if (false)
+            if (false) {
               println("TYPE ERROR: in replacement '" + n + "' at " + tree.pos + " : " + msg +
                 " (\n\texpected = " + expected + ": " + Option(expected).map(_.getClass.getName) + 
                 ",\n\tfound = " + found + ": " + Option(found).map(_.getClass.getName) + "\n)"
               )
+            }
           case NoTreeMatchException(expected, found, msg, depth) =>
-            if (depth > 0) {
+            if (false) {//(depth > 1) {
               println("TREE ERROR: in replacement '" + n + "' at " + tree.pos + " : " + msg +
                 " (\n\texpected = " + expected + ": " + Option(expected).map(_.getClass.getName) + 
                 ",\n\tfound = " + found + ": " + Option(found).map(_.getClass.getName) + "\n)"

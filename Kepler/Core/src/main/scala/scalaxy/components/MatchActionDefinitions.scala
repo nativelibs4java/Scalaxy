@@ -51,21 +51,16 @@ object MatchActionDefinitions
     case _ => null
   }
   def getMatchActionDefinitions(holder: AnyRef): Seq[(String, MatchAction)] = {
-    holder match {
-      case c: Compilet =>
-        c.matchActions
-      case _ =>
-        for (m <- holder.getClass.getMethods; if classOf[MatchAction].isAssignableFrom(m.getReturnType)) 
-        yield {
-          val args = m.getParameterTypes.map(defaultValue(_))
-          val r = m.invoke(holder, args:_*)
-          (m.getName, r.asInstanceOf[MatchAction]) 
-        }
+    for (m <- holder.getClass.getMethods; if classOf[MatchAction].isAssignableFrom(m.getReturnType)) 
+    yield {
+      val args = m.getParameterTypes.map(defaultValue(_))
+      val r = m.invoke(holder, args:_*)
+      (m.getName, r.asInstanceOf[MatchAction]) 
     }
   }
   /**
-   * Scala reflection is just way too broken for now (with objects, at least)
-   * TODO try again later !
+   * Scala reflection is just way too broken as of 2.10.0-M2 / M3 (with objects, at least)
+   * TODO try again in later versions !
    */
   def getMatchActionDefinitionsWithReflection(holder: AnyRef): Seq[(String, MatchAction)] = {
     //val holder = Example
