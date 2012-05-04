@@ -73,9 +73,9 @@ extends PluginComponent
         try {
           val converted =
             if (typeCheckInMirrorSpace) 
-              mirrorToGlobal(mirrorToolBox.typeCheck(m.patternTree), EmptyBindings)
+              mirrorToGlobal(mirrorToolBox.typeCheck(m.pattern.tree), EmptyBindings)
             else 
-              globalToolBox.typeCheck(mirrorToGlobal(m.patternTree, EmptyBindings))
+              globalToolBox.typeCheck(mirrorToGlobal(m.pattern.tree, EmptyBindings))
             
           println("Registered match action '" + n + "' = " + m)
           println("Converted pattern = " + converted)
@@ -105,7 +105,7 @@ extends PluginComponent
           
           convertedMatchAction.matchAction match {
             case r @ Replacement(_, _) =>
-              val replacement = mirrorToGlobal(r.replacementTree, bindings)
+              val replacement = mirrorToGlobal(r.replacement.tree, bindings)
               println("Replacement '" + n + "':\n\t" + replacement.toString.replaceAll("\n", "\n\t"))
               expanded = replacement
             case MatchWarning(_, message) =>

@@ -10,7 +10,7 @@ package object macros
   def warn(message: String)(pattern: Any): MatchWarning =
     macro MacroImpls.warn
   
-  def replace[T](pattern: T, replacement: T): Replacement/*[T]*/ = 
+  def replace[T](pattern: T, replacement: T): Replacement = 
     macro MacroImpls.replace[T]
   
   def when[T](pattern: T)(idents: Any*)(thenMatch: PartialFunction[List[Tree], Action[T]]) : ConditionalAction[T] = 
@@ -24,4 +24,7 @@ package object macros
     
   def replacement[T](replacement: T): ReplaceBy[T] = 
     macro MacroImpls.replacement[T]
+    
+  def expr[T](x: T): Expr[T] = 
+    macro MacroImpls.expr[T]
 }

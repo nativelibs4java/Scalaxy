@@ -6,39 +6,22 @@ package scalaxy
 import scala.reflect.mirror._
 
 trait MatchAction {
-  def patternTree: Tree//Expr[_]
+  def pattern: Expr[_]
 }
 
-object Utils {
-  lazy val tb = mkToolBox() 
-  def typed[T](x: Expr[T]) = {
-    //Expr[T](
-    tb.typeCheck(x.tree, x.tpe)
-    //)
-  }
-}
-
-case class Replacement(//[T](
-  //pattern: Tree, replacement: Tree
+case class Replacement(
   pattern: Expr[Any], replacement: Expr[Any]
-) extends MatchAction {
-  def patternTree = pattern.tree ; def replacementTree = replacement.tree
-  //def patternTree = pattern ; def replacementTree = replacement
-}
+) extends MatchAction
 
 case class MatchError(
   pattern: Expr[Any], 
   message: String
-) extends MatchAction {
-  def patternTree = pattern.tree
-}
+) extends MatchAction
 
 case class MatchWarning(
   pattern: Expr[Any], 
   message: String
-) extends MatchAction {
-  def patternTree = pattern.tree
-}
+) extends MatchAction
 
 sealed trait Action[T]
 
