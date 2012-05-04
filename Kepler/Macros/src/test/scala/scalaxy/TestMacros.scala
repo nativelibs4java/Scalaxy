@@ -57,19 +57,19 @@ class TestMacros
   }
   @Test
   def testWarning {
-    warning[Unit]("hehe") match { 
+    macros.warning[Unit]("hehe") match { 
       case Warning("hehe") => 
     }
   }
   @Test
   def testError {
-    error[Unit]("hehe") match { 
+    macros.error[Unit]("hehe") match { 
       case Error("hehe") => 
     }
   }
   @Test
   def testReplacement {
-    replacement(1) match { 
+    macros.replacement(1) match { 
       case ReplaceBy(Expr(Literal(Constant(1)))) =>
       case v =>
         assertTrue("got " + v, false)

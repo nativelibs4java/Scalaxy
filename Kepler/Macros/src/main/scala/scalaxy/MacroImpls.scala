@@ -2,14 +2,12 @@ package scalaxy
 
 //import language.experimental.macros
 
-//package macros {
-
 import scala.reflect._
-import makro._
+import makro.Context
 
 object MacroImpls 
 {
-  def expr[T](c: Context)(x: c.Expr[T]): c.Expr[mirror.Expr[T]] = {
+  private def expr[T](c: Context)(x: c.Expr[T]): c.Expr[mirror.Expr[T]] = {
     c.mirror.Expr[mirror.Expr[T]](
       c.reifyTree(
         c.reflectMirrorPrefix, 
@@ -53,10 +51,4 @@ object MacroImpls
     
   def replacement[T: c.TypeTag](c: Context)(replacement: c.Expr[T]): c.Expr[ReplaceBy[T]] = 
     c.reify(new ReplaceBy[T](expr(c)(replacement).eval))
-    
-  def error[T: c.TypeTag](c: Context)(message: c.Expr[String]): c.Expr[Error[T]] = 
-    c.reify(new Error[T](message.eval))
-  
-  def warning[T: c.TypeTag](c: Context)(message: c.Expr[String]): c.Expr[Warning[T]] = 
-    c.reify(new Warning[T](message.eval))
 }

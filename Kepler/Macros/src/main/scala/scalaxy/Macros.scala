@@ -24,7 +24,4 @@ package object macros
     
   def replacement[T](replacement: T): ReplaceBy[T] = 
     macro MacroImpls.replacement[T]
-    
-  def expr[T](x: T): Expr[T] = 
-    macro MacroImpls.expr[T]
 }
