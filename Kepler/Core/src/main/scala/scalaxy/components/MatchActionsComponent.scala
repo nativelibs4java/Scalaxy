@@ -48,9 +48,10 @@ extends PluginComponent
   override val runsBefore = MatchActionsComponent.runsBefore
   override val phaseName = MatchActionsComponent.phaseName
 
-  import MatchActionDefinitions._
+  override val patternUniverse = mirror 
+  override val candidateUniverse = global
   
-  case class ConvertedMatchAction(pattern: Tree, matchAction: MatchAction)
+  import MatchActionDefinitions._
   
   val matchActions = {
     val filteredHolders = matchActionHolders.filter(_ != null)
@@ -62,6 +63,7 @@ extends PluginComponent
     })
     println("Found " + rawMatchActions.size + " match actions in " + filteredHolders.size + " different holders")
     
+    /*
     lazy val mirrorToolBox = mirror.mkToolBox()
     lazy val globalToolBox = mkToolBox()
     
@@ -88,6 +90,8 @@ extends PluginComponent
             None
         }
     }
+    */
+    rawMatchActions.toMap
   }
   
   def newTransformer(unit: CompilationUnit) = new TypingTransformer(unit) {  
@@ -96,14 +100,15 @@ extends PluginComponent
       var expanded = sup
   
       //println("NOW AT TREE " + tree + " : " + tree.getClass.getName)
-      for ((n, convertedMatchAction) <- matchActions) {
+      for ((n, matchAction) <- matchActions) {
         try {
-          val bindings @ Bindings(nameBindings, typeBindings) = 
-            matchAndResolveBindings(convertedMatchAction.pattern, expanded)
+          val bindings = 
+            matchAndResolveBindings(matchAction.pattern.tree.asInstanceOf[patternUniverse.Tree], expanded.asInstanceOf[candidateUniverse.Tree])
             
-          println("Bindings for '" + n + "':\n\t" + (nameBindings ++ typeBindings).mkString("\n\t"))
+          println("Bindings for '" + n + "':\n\t" + (bindings.nameBindings ++ bindings.typeBindings).mkString("\n\t"))
           
-          convertedMatchAction.matchAction match {
+          //matchAction.matchAction match {
+          matchAction match  {
             case r @ Replacement(_, _) =>
               val replacement = mirrorToGlobal(r.replacement.tree, bindings)
               println("Replacement '" + n + "':\n\t" + replacement.toString.replaceAll("\n", "\n\t"))
@@ -115,7 +120,7 @@ extends PluginComponent
             case ConditionalAction(_, when, thenMatch) =>
               val treesToTest: List[mirror.Tree] = 
                 when.toList.map(n => { 
-                  globalToMirror(nameBindings(global.newTermName(n)))
+                  globalToMirror(bindings.nameBindings(n.toString).asInstanceOf[global.Tree])
                 })
               
               if (thenMatch.isDefinedAt(treesToTest)) {
@@ -147,7 +152,7 @@ extends PluginComponent
                 ",\n\tfound = " + found + ": " + Option(found).map(_.getClass.getName) + "\n)"
               )
               println("Tree was " + tree)
-              println("Match action was " + convertedMatchAction)
+              println("Match action was " + matchAction)
             }
         }
       }

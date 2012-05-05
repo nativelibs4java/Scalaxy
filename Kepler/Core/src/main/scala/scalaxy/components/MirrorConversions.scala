@@ -19,8 +19,8 @@ extends PatternMatchers
       
       override def importTree(tree: from.Tree) = tree match {
         case from.Ident(n) =>
-          val in = importName(n)
-          bindings.nameBindings.get(in).getOrElse(super.importTree(tree))
+          //val in = importName(n).asInstanceOf[patternUniverse.Name]
+          bindings.nameBindings.get(n.toString).getOrElse(super.importTree(tree)).asInstanceOf[global.Tree]
         case _ =>
           super.importTree(tree)
       }
@@ -28,8 +28,8 @@ extends PatternMatchers
         if (tpe == null)
           null
         else {
-          val it = resolveType(super.importType(tpe))
-          bindings.getType(it).getOrElse(it)
+          val it = resolveType(global)(super.importType(tpe))
+          bindings.getType(it.asInstanceOf[patternUniverse.Type]).getOrElse(it).asInstanceOf[global.Type]
         }
       }
     }
