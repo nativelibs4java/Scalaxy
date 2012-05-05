@@ -8,10 +8,12 @@ import makro.Context
 object MacroImpls 
 {
   private def expr[T](c: Context)(x: c.Expr[T]): c.Expr[mirror.Expr[T]] = {
+    val typeChecked = c.typeCheck(x.tree)
+    assert(typeChecked.tpe != null, "Unable to typecheck " + x.tree)
     c.mirror.Expr[mirror.Expr[T]](
       c.reifyTree(
         c.reflectMirrorPrefix, 
-        c.typeCheck(x.tree)
+        typeChecked
       )
     )
   }

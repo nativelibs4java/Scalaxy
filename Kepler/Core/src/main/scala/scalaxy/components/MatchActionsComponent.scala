@@ -53,6 +53,25 @@ extends PluginComponent
   
   import MatchActionDefinitions._
   
+  trait TreeFixer {
+    val universe: api.Universe
+    
+    def fixTypedExpression[T](name: String, x: universe.Expr[T]) = {
+      if (x.tree.tpe == null) {
+        if (x.tpe != null) {
+          x.tree.tpe = x.tpe
+          println("Fixed pattern tree type for '" + name + "' :\n\t" + x.tree + ": " + x.tree.tpe)
+        } else {
+          println("Failed to fix pattern tree typefor '" + name + "' :\n\t" + x.tree)
+        }
+      }
+    }
+  }
+  
+  val treeFixer = new TreeFixer {
+    val universe = patternUniverse
+  }
+  
   val matchActions = {
     val filteredHolders = matchActionHolders.filter(_ != null)
     val rawMatchActions = filteredHolders.flatMap(holder => {
@@ -61,6 +80,10 @@ extends PluginComponent
         sys.error("ERROR: no definition in holder " + holder)
       defs
     })
+    
+    for ((n, a) <- rawMatchActions) {
+      treeFixer.fixTypedExpression(n.toString, a.pattern.asInstanceOf[treeFixer.universe.Expr[Any]])
+    }
     println("Found " + rawMatchActions.size + " match actions in " + filteredHolders.size + " different holders")
     
     /*
@@ -91,7 +114,19 @@ extends PluginComponent
         }
     }
     */
+    
+    for ((n, m) <- rawMatchActions) {
+      println("Registered match action '" + n + "'")// = " + m)
+      println("\tpattern = " + m.pattern)
+      println("\tpattern.tpe = " + m.pattern.tpe)
+      println("\tpattern.tree.tpe = " + m.pattern.tree.tpe)
+    }
+    
     rawMatchActions.toMap
+    /*
+    val ret = rawMatchActions.filter(_._1.toString == "simpleForeachUntil")
+    ret.toMap
+    */
   }
   
   def newTransformer(unit: CompilationUnit) = new TypingTransformer(unit) {  
@@ -138,15 +173,15 @@ extends PluginComponent
               }
           }
         } catch { 
-          case NoTypeMatchException(expected, found, msg) =>
-            if (false) {
+          case NoTypeMatchException(expected, found, msg, depth) =>
+            if (depth > 0) {
               println("TYPE ERROR: in replacement '" + n + "' at " + tree.pos + " : " + msg +
                 " (\n\texpected = " + expected + ": " + Option(expected).map(_.getClass.getName) + 
                 ",\n\tfound = " + found + ": " + Option(found).map(_.getClass.getName) + "\n)"
               )
             }
           case NoTreeMatchException(expected, found, msg, depth) =>
-            if (false) {//(depth > 1) {
+            if (depth > 0) {
               println("TREE ERROR: in replacement '" + n + "' at " + tree.pos + " : " + msg +
                 " (\n\texpected = " + expected + ": " + Option(expected).map(_.getClass.getName) + 
                 ",\n\tfound = " + found + ": " + Option(found).map(_.getClass.getName) + "\n)"

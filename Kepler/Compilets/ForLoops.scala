@@ -21,7 +21,6 @@ object ForLoops extends Compilet {
       }
     }
   )
-  
   def simpleForeachTo[U : TypeTag](start: Int, end: Int, body: U) = replace(
     for (i <- start to end) 
       body,
