@@ -9,7 +9,7 @@ import Assert._
 class TestsTest extends BaseTestUtils {
 
   override def pluginDef = new ScalaxyPluginDefLike {
-    override def matchActionHolders = Seq(rewrites.Test)
+    override def matchActionHolders = Seq(compilets.Test)
   }
   
   @Test

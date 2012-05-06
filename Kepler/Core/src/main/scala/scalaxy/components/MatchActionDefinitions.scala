@@ -2,13 +2,36 @@ package scalaxy; package components
 
 object MatchActionDefinitions 
 {
-  //import scala.reflect.api._
-  //import scala.reflect.runtime._
-  //import scala.reflect.runtime.Mirror._
+  private def defaultValue(c: Class[_]): AnyRef = c match {
+    case _ if c == classOf[Int] => java.lang.Integer.valueOf(0)
+    case _ if c == classOf[Long] => java.lang.Long.valueOf(0L)
+    case _ if c == classOf[Short] => java.lang.Short.valueOf(0: Short)
+    case _ if c == classOf[Char] => java.lang.Character.valueOf('\0')
+    case _ if c == classOf[Boolean] => java.lang.Boolean.FALSE
+    case _ if c == classOf[Double] => java.lang.Double.valueOf(0.0)
+    case _ if c == classOf[Float] => java.lang.Float.valueOf(0.0f)
+    case _ if c == classOf[Byte] => java.lang.Byte.valueOf(0: Byte)
+    case _ if classOf[TypeTag[_]].isAssignableFrom(c) => scala.reflect.mirror.ConcreteTypeTag.Any
+    case _ => null
+  }
+  
+  def getMatchActionDefinitions(holder: AnyRef): Seq[(String, MatchAction)] = {
+    for (m <- holder.getClass.getMethods; 
+         if classOf[MatchAction].isAssignableFrom(m.getReturnType)
+    ) yield 
+    {
+      val r = m.invoke(holder, m.getParameterTypes.map(defaultValue(_)):_*)
+      (m.getName, r.asInstanceOf[MatchAction]) 
+    }
+  }
+  /**
+   * Scala reflection is just way too broken as of 2.10.0-M2 / M3 (with objects, at least)
+   * TODO try again calling compilet methods using Scala reflection in later versions !
+   */
+  /*
   import scala.reflect.mirror._
   import definitions._
   
-  //private lazy val ReplacementClass = staticClass("scalaxy.Replacement")//definitions.getClass(newTypeName("scalaxy.Replacement"))
   private lazy val MatchActionClass = staticClass("scalaxy.MatchAction")
   
   private lazy val defaultValues = Map(
@@ -32,37 +55,13 @@ object MatchActionDefinitions
         throw new RuntimeException("No method '" + methodName + "' found in " + target.getClass.getName + ":\n" + getClass.getDeclaredMethods.mkString("\n"))
       )
       javaMethod.invoke(target, params:_*)
-      //println("mm = " + mm)
     } else {
       invoke(target, method)(params)
     }
   }
   
-  private def defaultValue(c: Class[_]): AnyRef = c match {
-    case _ if c == classOf[Int] => java.lang.Integer.valueOf(0)
-    case _ if c == classOf[Long] => java.lang.Long.valueOf(0L)
-    case _ if c == classOf[Short] => java.lang.Short.valueOf(0: Short)
-    case _ if c == classOf[Char] => java.lang.Character.valueOf('\0')
-    case _ if c == classOf[Boolean] => java.lang.Boolean.FALSE
-    case _ if c == classOf[Double] => java.lang.Double.valueOf(0.0)
-    case _ if c == classOf[Float] => java.lang.Float.valueOf(0.0f)
-    case _ if c == classOf[Byte] => java.lang.Byte.valueOf(0: Byte)
-    case _ if classOf[TypeTag[_]].isAssignableFrom(c) => scala.reflect.mirror.ConcreteTypeTag.Any
-    case _ => null
-  }
-  def getMatchActionDefinitions(holder: AnyRef): Seq[(String, MatchAction)] = {
-    for (m <- holder.getClass.getMethods; if classOf[MatchAction].isAssignableFrom(m.getReturnType)) 
-    yield {
-      val args = m.getParameterTypes.map(defaultValue(_))
-      val r = m.invoke(holder, args:_*)
-      (m.getName, r.asInstanceOf[MatchAction]) 
-    }
-  }
-  /**
-   * Scala reflection is just way too broken as of 2.10.0-M2 / M3 (with objects, at least)
-   * TODO try again in later versions !
-   */
-  def getMatchActionDefinitionsWithReflection(holder: AnyRef): Seq[(String, MatchAction)] = {
+  @deprecated("Broken code, try again with 2.10.0 final !")
+  private def getMatchActionDefinitionsWithReflection(holder: AnyRef): Seq[(String, MatchAction)] = {
     //val holder = Example
     //val holderSym = staticClass("scalaxy.Example")
     //val holder = companionInstance(holderSym)
@@ -120,10 +119,6 @@ object MatchActionDefinitions
           else 
             None
         } catch { case ex =>
-          /*if (m.toString.contains("removeDevilConstant")) {
-            ex.printStackTrace
-            println("Method " + m + " failed with " + defaultParams.mkString(", ") + " : " + ex)
-          }*/
           None
         }
       case (m, t) =>
@@ -131,4 +126,5 @@ object MatchActionDefinitions
         None
     }).flatten
   }
+  */
 }

@@ -1,4 +1,4 @@
-package scalaxy; package rewrites
+package scalaxy; package compilets
 
 import macros._
 

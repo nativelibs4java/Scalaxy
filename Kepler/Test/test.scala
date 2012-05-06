@@ -19,8 +19,16 @@ object RunMe extends App {
   }
   */
   def trans(col: Seq[Int], v: Int) = {
+    {
+      var ii = 1;
+      while (ii < 10) {
+        val i = ii
+        println("i = " + (i + 1) + " // v = " + v);
+        ii = ii.$plus(1)
+      }
+    }
     for (i <- 1 until 10)
-      println("i = " + i + " // v = " + v) 
+      println("i = " + (i + 1) + " // v = " + v) 
   }
   /*
   {

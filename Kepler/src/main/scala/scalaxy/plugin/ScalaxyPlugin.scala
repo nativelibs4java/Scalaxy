@@ -70,12 +70,15 @@ trait ScalaxyPluginDefLike extends PluginDef {
 }
 object ScalaxyPluginDef extends ScalaxyPluginDefLike {
   override def matchActionHolders = Seq(
-    //rewrites.Example,
-    //rewrites.Streams,
+    //compilets.Example,
+    //compilets.Streams,
     
-    rewrites.Java,
-    rewrites.Numeric,
-    rewrites.ForLoops
+    //compilets.Java,
+    //compilets.Numeric,
+    //compilets.ForLoops
+    //compilets.Maps,
+    
+    compilets.SingleForLoop
   )
 }
 

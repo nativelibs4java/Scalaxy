@@ -48,8 +48,8 @@ extends PluginComponent
   override val runsBefore = MatchActionsComponent.runsBefore
   override val phaseName = MatchActionsComponent.phaseName
 
-  override val patternUniverse = mirror 
-  override val candidateUniverse = global
+  override val patternUniv = mirror 
+  override val candidateUniv = global
   
   import MatchActionDefinitions._
   
@@ -69,7 +69,7 @@ extends PluginComponent
   }
   
   val treeFixer = new TreeFixer {
-    val universe = patternUniverse
+    val universe = patternUniv
   }
   
   val matchActions = {
@@ -116,10 +116,10 @@ extends PluginComponent
     */
     
     for ((n, m) <- rawMatchActions) {
-      println("Registered match action '" + n + "'")// = " + m)
-      println("\tpattern = " + m.pattern)
-      println("\tpattern.tpe = " + m.pattern.tpe)
-      println("\tpattern.tree.tpe = " + m.pattern.tree.tpe)
+      println("Registered match action '" + n + "' with pattern : " + m.pattern.tree)// = " + m)
+      //println("\tpattern = " + m.pattern)
+      //println("\tpattern.tpe = " + m.pattern.tpe)
+      //println("\tpattern.tree.tpe = " + m.pattern.tree.tpe)
     }
     
     rawMatchActions.toMap
@@ -138,7 +138,7 @@ extends PluginComponent
       for ((n, matchAction) <- matchActions) {
         try {
           val bindings = 
-            matchAndResolveBindings(matchAction.pattern.tree.asInstanceOf[patternUniverse.Tree], expanded.asInstanceOf[candidateUniverse.Tree])
+            matchAndResolveBindings(matchAction.pattern.tree.asInstanceOf[patternUniv.Tree], expanded.asInstanceOf[candidateUniv.Tree])
             
           println("Bindings for '" + n + "':\n\t" + (bindings.nameBindings ++ bindings.typeBindings).mkString("\n\t"))
           
@@ -174,14 +174,16 @@ extends PluginComponent
           }
         } catch { 
           case NoTypeMatchException(expected, found, msg, depth) =>
-            if (depth > 0) {
+            if (false)//depth > 0) 
+            {
               println("TYPE ERROR: in replacement '" + n + "' at " + tree.pos + " : " + msg +
                 " (\n\texpected = " + expected + ": " + Option(expected).map(_.getClass.getName) + 
                 ",\n\tfound = " + found + ": " + Option(found).map(_.getClass.getName) + "\n)"
               )
             }
           case NoTreeMatchException(expected, found, msg, depth) =>
-            if (depth > 0) {
+            if (false)//depth > 0) 
+            {
               println("TREE ERROR: in replacement '" + n + "' at " + tree.pos + " : " + msg +
                 " (\n\texpected = " + expected + ": " + Option(expected).map(_.getClass.getName) + 
                 ",\n\tfound = " + found + ": " + Option(found).map(_.getClass.getName) + "\n)"
@@ -196,13 +198,17 @@ extends PluginComponent
         if (expanded eq sup) {
           sup
         } else {
-          val expectedTpe = tree.tpe.dealias.deconst
+          val expectedTpe = tree.tpe.dealias.deconst.normalize
           
           val tpe = expanded.tpe
           //eraseTypes(expanded)
           //expanded.tpe = null
           expanded = healSymbols(unit, currentOwner, expanded, expectedTpe)
           expanded = typer.typed(expanded, EXPRmode, expectedTpe)
+          
+          println()
+          println("FINAL EXPANSION = \n" + nodeToString(expanded))
+          println()
           
           if (expanded.tpe == null || expanded.tpe == NoType)
             expanded.tpe = tpe

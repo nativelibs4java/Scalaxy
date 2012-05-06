@@ -9,7 +9,7 @@ import Assert._
 class ForLoopsTest extends BaseTestUtils {
 
   override def pluginDef = new ScalaxyPluginDefLike {
-    override def matchActionHolders = Seq(rewrites.ForLoops)
+    override def matchActionHolders = Seq(compilets.ForLoops)
   }
   
   @Test
