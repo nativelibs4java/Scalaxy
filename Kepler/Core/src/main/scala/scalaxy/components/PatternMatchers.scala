@@ -135,11 +135,14 @@ extends TypingTransformers
   case class NoTreeMatchException(expected: Any, found: Any, msg: String, depth: Int)
   extends RuntimeException(msg)
     
-  case class NoTypeMatchException(expected: Any, found: Any, msg: String, depth: Int)
+  case class NoTypeMatchException(expected: Any, found: Any, msg: String, depth: Int, insideExpected: AnyRef = null, insideFound: AnyRef = null)
   extends RuntimeException(msg)
     
   def isNoType(u: api.Universe)(t: u.Type) =
-    t == null || t == u.NoType || t == u.definitions.UnitClass.asType || {
+    t == null || 
+    t == u.NoType || 
+    t == u.NoPrefix ||
+    t == u.definitions.UnitClass.asType || {
       val s = t.toString
       s == "<notype>" || s == "scala.this.Unit"
     }
@@ -155,13 +158,13 @@ extends TypingTransformers
           
   def isTypeParameter(t: patternUniv.Type) = {
     t != null && {
-      //implicit def s2ps(tp: api.Symbols#Symbol) = tp
       type PlasticSymbol = {
         def isTypeParameter: Boolean
       }
       
       val s = t.typeSymbol
-      s != null && s.asInstanceOf[PlasticSymbol].isTypeParameter
+      s != null && s.asInstanceOf[PlasticSymbol].isTypeParameter ||
+      TypeVars.isTypeVar(t.asInstanceOf[mirror.Type])
     }
   } 
     
@@ -174,29 +177,35 @@ extends TypingTransformers
     val pattern = resolveType(patternUniv)(pattern0)
     val tree = resolveType(candidateUniv)(tree0)
     
-    //println("Going down in types (depth " + depth + "):")
-    //println("\ttype pattern = " + pattern + ": " + clstr(pattern))
-    //println("\ttype found = " + tree + ": " + clstr(tree))
+    if (pattern.toString.contains(".api")) {
+      println("Going down in types (depth " + depth + "):")
+      println("\ttype pattern = " + pattern + ": " + clstr(pattern))
+      println("\ttype found = " + tree + ": " + clstr(tree))
+    }
     
-    if (pattern != null && pattern == tree) {
-      EmptyBindings
-    } else {
+    //if (pattern != null && pattern == tree) {
+    //  EmptyBindings
+    //} else 
+    {
+      /*
       if (pattern != null && tree != null)
-        if (pattern.typeSymbol.isPackage || tree.typeSymbol.isPackage)
-          if (!pattern.typeSymbol.isPackage || !tree.typeSymbol.isPackage)
-            throw new NoTypeMatchException(pattern0, tree0, "Package vs. non-package types", depth)
-      
+        if (pattern.typeSymbol.isPackage != tree.typeSymbol.isPackage)
+          throw new NoTypeMatchException(pattern0, tree0, "Package vs. non-package types", depth)
+      */
       val patNoType = isNoType(patternUniv)(pattern)
       val candNoType = isNoType(candidateUniv)(tree)
-      
-      if (candNoType && !patNoType)
-        throw NoTypeMatchException(pattern0, tree0, "Type matching failed", depth)
       
       val ret = (pattern, tree) match {
         // TODO remove null acceptance once macro typechecker is fixed !
         case (_, _) if pattern == null || patNoType && candNoType => 
           EmptyBindings
           
+        case (_, _) if isTypeParameter(pattern) =>
+          Bindings(Map(), Map(pattern -> tree))
+          
+        case (_, _) if candNoType && !patNoType =>
+          throw NoTypeMatchException(pattern0, tree0, "Type matching failed", depth)
+        
         case (patternUniv.RefinedType(parents, decls), RefinedType(parents2, decls2)) =>
           EmptyBindings
           
@@ -215,24 +224,22 @@ extends TypingTransformers
         case (patternUniv.ExistentialType(tparams, result), ExistentialType(tparams2, result2)) =>
           matchAndResolveTypeBindings((result, result2) :: zipTypes(tparams, tparams2), depth + 1)
         
-        /*
         case (patternUniv.TypeRef(pre, sym, args), TypeRef(pre2, sym2, args2)) 
-        if args.size == args2.size &&
-           pattern.kind == tree.kind && 
-           sym.kind == sym2.kind
+        if args.size == args2.size //&&
+           //pattern.kind == tree.kind && 
+           //sym.kind == sym2.kind //&& 
+           //sym.toString == sym2.toString // TODO remove this ugly hack !
         =>
           //if (pattern.kind != tree.kind)
           //  throw NoTypeMatchException(pattern0, tree0, "Different type kinds : " + pattern.kind + " vs. " + tree.kind, depth)
-          println("pattern.sym = " + sym + " (" + sym.kind + "), tree.sym = " + sym2 + " (" + sym2.kind + ")")
-          println("pattern.pre = " + pre + " (" + pre.kind + "), tree.pre = " + pre2 + " (" + pre2.kind + ")")
+          if (pattern.toString.contains(".api")) {
+            println("pattern.sym = " + sym + " (" + sym.kind + "), tree.sym = " + sym2 + " (" + sym2.kind + ")")
+            println("pattern.pre = " + pre + " (" + pre.kind + "), tree.pre = " + pre2 + " (" + pre2.kind + ")")
+          }
           //matchAndResolveTypeBindings(sym.asType, sym2.asType, depth + 1) ++ 
           matchAndResolveTypeBindings(pre, pre2, depth + 1) ++
           matchAndResolveTypeBindings(args.zip(args2), depth + 1)
-        */
         
-        case (_, _) if isTypeParameter(pattern) =>
-          Bindings(Map(), Map(pattern -> tree))
-          
         case _ =>
           if (Option(pattern).toString == Option(tree).toString) {
             println("WARNING: Monkey type matching of " + pattern + " vs. " + tree)
@@ -261,7 +268,12 @@ extends TypingTransformers
     
     //if (depth > 0)
     //
-    val typeBindings = matchAndResolveTypeBindings(patternType, candidateType, depth)
+    val typeBindings = try {
+      matchAndResolveTypeBindings(patternType, candidateType, depth)
+    } catch { 
+      case ex: NoTypeMatchException =>
+        throw ex.copy(insideExpected = pattern, insideFound = tree)
+    }
     //println("Going down in trees (depth " + depth + "):")
     //println("\tpattern = " + pattern + ": " + patternType + " (" + pattern.getClass.getName + ", " + clstr(patternType) + ")")
     //println("\tfound = " + tree + ": " + candidateType + " (" + tree.getClass.getName + ", " + clstr(candidateType) + ")")

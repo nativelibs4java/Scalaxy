@@ -27,6 +27,9 @@ object ScalaxyBuild extends Build
   )
   lazy val mavenSettings = Seq(
     publishMavenStyle := true,
+    
+    //publishTo := Some(Resolver.file("file",  new File(Path.userHome.absolutePath+"/.m2/repository")))
+
     publishTo <<= version { (v: String) =>
       val nexus = "https://oss.sonatype.org/"
       if (v.trim.endsWith("-SNAPSHOT")) 
@@ -54,11 +57,17 @@ object ScalaxyBuild extends Build
   
   lazy val scalaxy = 
     Project(id = "scalaxy", base = file("."), settings = standardSettings ++ Seq(
+      scalacOptions in console in Compile <+= (packageBin in compilerPlugin in Compile) map("-Xplugin:" + _)
+    )).
+    dependsOn(core, macros, compilets, compilerPlugin).
+    aggregate(core, macros, compilets, compilerPlugin)
+
+  lazy val compilerPlugin = 
+    Project(id = "scalaxy-compiler-plugin", base = file("Compiler"), settings = standardSettings ++ Seq(
       scalacOptions in console in Compile <+= (packageBin in Compile) map("-Xplugin:" + _)
     )).
-    dependsOn(core, macros, compilets).
-    aggregate(core, macros, compilets)
-
+    dependsOn(core, macros, compilets)
+    
   lazy val core = 
     Project(id = "scalaxy-core", base = file("Core"), settings = standardSettings ++ Seq(
       libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-compiler" % _)

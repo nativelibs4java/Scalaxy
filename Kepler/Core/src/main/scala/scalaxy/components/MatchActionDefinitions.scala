@@ -1,7 +1,9 @@
 package scalaxy; package components
 
+
 object MatchActionDefinitions 
 {
+  
   private def defaultValue(c: Class[_]): AnyRef = c match {
     case _ if c == classOf[Int] => java.lang.Integer.valueOf(0)
     case _ if c == classOf[Long] => java.lang.Long.valueOf(0L)
@@ -11,16 +13,26 @@ object MatchActionDefinitions
     case _ if c == classOf[Double] => java.lang.Double.valueOf(0.0)
     case _ if c == classOf[Float] => java.lang.Float.valueOf(0.0f)
     case _ if c == classOf[Byte] => java.lang.Byte.valueOf(0: Byte)
-    case _ if classOf[TypeTag[_]].isAssignableFrom(c) => scala.reflect.mirror.ConcreteTypeTag.Any
+    //case _ if classOf[TypeTag[_]].isAssignableFrom(c) => scala.reflect.mirror.ConcreteTypeTag.Any
     case _ => null
   }
   
   def getMatchActionDefinitions(holder: AnyRef): Seq[(String, MatchAction)] = {
+    var nTypeTags = 0
     for (m <- holder.getClass.getMethods; 
          if classOf[MatchAction].isAssignableFrom(m.getReturnType)
     ) yield 
     {
-      val r = m.invoke(holder, m.getParameterTypes.map(defaultValue(_)):_*)
+      val r = m.invoke(holder, m.getParameterTypes.map(c => {
+        if (c == classOf[TypeTag[_]]) {
+          val tt = TypeVars.getNthTypeVarTag(nTypeTags)
+          nTypeTags += 1
+          tt
+        } else {
+          defaultValue(c)
+        }
+      }):_*)
+      
       (m.getName, r.asInstanceOf[MatchAction]) 
     }
   }
