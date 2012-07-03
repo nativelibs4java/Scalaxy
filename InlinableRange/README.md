@@ -6,7 +6,9 @@ Please use [paulp/sbt-extras](https://github.com/paulp/sbt-extras)'s [sbt script
 
 Run with:
 
-    sbt
+    sbt ~test
+    
+(you should be get a "failed optimization" compilation warning, and see two series of 0 to 10 println)
     
 Current prototype only aims at validating the macro approach, with the very limited scope of ranges with constant start, end and step parameters.
 
