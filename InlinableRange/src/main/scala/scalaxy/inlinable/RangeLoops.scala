@@ -3,8 +3,11 @@ package scalaxy.inlinable
 import language.experimental.macros
 import reflect.makro.Context
 
+import collection._
+
 trait RangeLoops
 extends TreeBuilders
+with CommonMatchers
 with InlinableRangeMatchers
 {
   val universe: reflect.makro.Universe
@@ -15,64 +18,81 @@ with InlinableRangeMatchers
   
   def newWhileRangeLoop(
       fresh: String => String,
-      start: Int, 
-      end: Int, 
-      step: Int, 
+      start: Tree, 
+      end: Tree, 
+      step: Option[Tree], 
       isInclusive: Boolean, 
       param: ValDef, 
       body: Tree): Tree = 
   {
-    val iVar = newVar(fresh("i"), IntClass.asType, newInt(start))
+    val iVar = newVar(fresh("i"), IntClass.asType, start)
     val iVal = newVar(fresh("ii"), IntClass.asType, iVar())
-    val endVal = newVal(fresh("end"), IntClass.asType, newInt(end))
+    val stepVal = newVar(fresh("step"), IntClass.asType, step.getOrElse(newInt(1)))
+    val endVal = newVal(fresh("end"), IntClass.asType, end)
 
     val transformedBody = resetAllAttrs(transform(body) {
       case tree if tree.symbol == param.symbol => iVal()
     })
 
-    val conditionOp = IntClass.asType.member(
-      if (isInclusive) {
-        if (step < 0) nme.GT else nme.LT
-      } else {
-        if (step < 0) nme.GE else nme.LE
-      }
-    )
-    val condition = binOp(iVar(), conditionOp, endVal())
+    def positiveCondition =
+      binOp(
+        iVar(), 
+        intOp(if (isInclusive) nme.LE else nme.LT), 
+        endVal()
+      )
+      
+    def negativeCondition =
+      binOp(
+        iVar(),
+        intOp(if (isInclusive) nme.GE else nme.GT), 
+        endVal()
+      )
+    
+    val outerDecls = new mutable.ListBuffer[Tree]
+    
+    outerDecls += iVar
+    outerDecls += endVal
+    outerDecls += stepVal
+    
+    val condition = step match {
+      case None | Some(PositiveIntConstant(_)) =>
+        println("step(" + step + ") is > 0")
+        positiveCondition
+      case Some(NegativeIntConstant(_)) =>
+        println("step(" + step + ") is < 0")
+        negativeCondition
+      case _ =>
+        println("step(" + step + ") has unknown sign")
+        // we don't know if the step is positive or negative: cool!
+        val isPositiveVal = newVal(
+          fresh("isStepPositive"), 
+          BooleanClass.asType,
+          binOp(stepVal(), intOp(nme.GT), newInt(0))
+        )
+        outerDecls += isPositiveVal
+        
+        boolOr(
+          boolAnd(isPositiveVal(), positiveCondition),
+          boolAnd(boolNot(isPositiveVal()), negativeCondition)
+        )
+    }
+    
+    println("condition = " + condition)
 
     Block(
+      outerDecls.result ++
       List(
-        iVar,
-        endVal,
         newWhileLoop(
           fresh,
           condition,
           Block(
             iVal,
             transformedBody,
-            Assign(iVar(), intAdd(iVar(), newInt(step)))
+            Assign(iVar(), intAdd(iVar(), stepVal()))
           )
         )
       ),
       newUnit
     )
-    /*
-    val transformedBody = transform(body) {
-      case tree if param.symbol == tree.symbol => Ident("i")
-    }
-
-    val startExpr = c.Expr[Int](start.asInstanceOf[c.Tree])
-    val endExpr = c.Expr[Int](end.asInstanceOf[c.Tree])
-    val bodyExpr = c.Expr[Unit](transformedBody.asInstanceOf[c.Tree])
-
-    c.reify {
-      var ii = startExpr.splice
-      val end = endExpr.splice
-      while (ii < end) {
-        val i = ii
-        bodyExpr.splice
-        ii += 1
-      }
-    }
-    */
   }
 }

@@ -34,6 +34,32 @@ extends InlinableNames
   def binOp(a: Tree, op: Symbol, b: Tree) =
     Apply(Select(a, op), List(b))
 
+  def intOp(name: Name) = 
+    IntClass.asType.member(name) 
+    
+  def boolOp(name: Name) = 
+    BooleanClass.asType.member(name) 
+    
+  def boolAnd(a: Tree, b: Tree) = {
+    if (a == null)
+      b
+    else if (b == null)
+      a
+    else
+      binOp(a, boolOp(nme.ZAND /* AMPAMP */), b)
+  }
+  def boolOr(a: Tree, b: Tree) = {
+    if (a == null)
+      b
+    else if (b == null)
+      a
+    else
+      binOp(a, boolOp(nme.ZOR), b)
+  }
+  def boolNot(a: => Tree) = {
+    Select(a, nme.UNARY_!)
+  }
+  
   def intAdd(a: => Tree, b: => Tree) =
     binOp(a, IntClass.asType.member(nme.PLUS), b)
 

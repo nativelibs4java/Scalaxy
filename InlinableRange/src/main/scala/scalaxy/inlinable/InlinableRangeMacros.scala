@@ -11,7 +11,7 @@ private[inlinable] object InlinableRangeMacros
   
   def rangeForeachImpl(c: Context)(f: c.Expr[Int => Unit]): c.Expr[Unit] = {
     c.Expr[Unit](
-      new RangeLoops with CommonMatchers {
+      new RangeLoops {
         override val universe = c.universe
         import universe._
         import definitions._
@@ -31,16 +31,10 @@ private[inlinable] object InlinableRangeMacros
           c.typeCheck(f.tree).asInstanceOf[Tree] match {
             case Function(List(param @ ValDef(mods, name, tpt, rhs)), body) =>
               c.prefix.tree.asInstanceOf[Tree] match {
-                // TODO handle non-constant cases!
-                case InlinableRangeTree(
-                  IntConstant(start), 
-                  IntConstant(end), 
-                  IntConstant(step),
-                  isInclusive
-                ) =>
+                case InlinableRangeTree(start, end, step, isInclusive) =>
                   val optimized = 
                     newWhileRangeLoop(c.fresh(_), start, end, step, isInclusive, param, body)
-                  c.info(c.enclosingPosition, successMessage, force = true)
+                  //c.info(c.enclosingPosition, successMessage, force = true)
                   optimized
                 case _ =>
                   c.warning(c.prefix.tree.pos, errorMessageFormat.format("unsupported range: " + c.prefix.tree))
