@@ -4,13 +4,15 @@ import language.experimental.macros
 import reflect.makro.Context
 
 trait RangeLoops
-extends InlinableNames
-with TreeBuilders
+extends TreeBuilders
+with InlinableRangeMatchers
 {
   val universe: reflect.makro.Universe
   import universe._
   import definitions._
 
+  def resetAllAttrs(tree: Tree): Tree
+  
   def newWhileRangeLoop(
       fresh: String => String,
       start: Int, 
@@ -24,9 +26,9 @@ with TreeBuilders
     val iVal = newVar(fresh("ii"), IntClass.asType, iVar())
     val endVal = newVal(fresh("end"), IntClass.asType, newInt(end))
 
-    val transformedBody = transform(body) {
+    val transformedBody = resetAllAttrs(transform(body) {
       case tree if tree.symbol == param.symbol => iVal()
-    }
+    })
 
     val conditionOp = IntClass.asType.member(
       if (isInclusive) {

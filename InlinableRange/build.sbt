@@ -1,6 +1,9 @@
 scalaVersion := "2.10.0-M4"
 
-scalacOptions += "-Xprint:typer"
+//scalacOptions ++= Seq(
+//	"-Xprint:typer",
+//	"-Ymacro-debug-verbose"
+//)
 
 libraryDependencies <+= (scalaVersion)("org.scala-lang" % "scala-compiler" % _)
 

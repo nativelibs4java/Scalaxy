@@ -3,32 +3,22 @@ package scalaxy.inlinable
 import language.experimental.macros
 import reflect.makro.Context
 
+
 private[inlinable] object InlinableRangeMacros
 {
-  private[this] val errorPrefix = "Failed to optimize loop"
-
+  private[this] val errorMessageFormat = "Failed to optimize loop (%s)"
+  private[this] val successMessage = "Optimized this loop"
+  
   def rangeForeachImpl(c: Context)(f: c.Expr[Int => Unit]): c.Expr[Unit] = {
     c.Expr[Unit](
-      new RangeLoops {
+      new RangeLoops with CommonMatchers {
         override val universe = c.universe
         import universe._
         import definitions._
 
-        object StartEndInclusive {
-          def unapply(tree: Tree): Option[(Int, Int, Boolean)] = Option(tree) collect {
-            case
-              Apply(
-                Select(
-                  Apply(
-                    Select(_, intWrapperName()),
-                    List(Literal(Constant(start: Int)))),
-                  junction @ (toName() | untilName())),
-                List(Literal(Constant(end: Int))))
-            =>
-              (start, end, toName.unapply(junction))
-          }
-        }
-
+        override def resetAllAttrs(tree: Tree): Tree =
+          c.resetAllAttrs(tree.asInstanceOf[c.Tree]).asInstanceOf[Tree]
+        
         lazy val defaultReplacement = {
           Apply(
             Select(
@@ -37,29 +27,32 @@ private[inlinable] object InlinableRangeMacros
             List(f.tree.asInstanceOf[Tree]))
         }
 
-        val result = c.typeCheck(f.tree).asInstanceOf[Tree] match {
-          case Function(List(param @ ValDef(mods, name, tpt, rhs)), body) =>
-            c.prefix.tree.asInstanceOf[Tree] match {
-              // TODO handle non-constant cases!
-              case
-                StartEndInclusive(start, end, isInclusive)
-              =>
-                newWhileRangeLoop(c.fresh(_), start, end, step = 1, isInclusive, param, body)
-              case
-                Apply(
-                  Select(
-                    StartEndInclusive(start, end, isInclusive),
-                    byName()),
-                  List(Literal(Constant(step: Int))))
-              =>
-                newWhileRangeLoop(c.fresh(_), start, end, step, isInclusive, param, body)
-              case _ =>
-                c.warning(c.prefix.tree.pos, errorPrefix + " (unsupported range: " + c.prefix.tree + ")")
-                defaultReplacement
-            }
-          case _ =>
-            c.warning(f.tree.pos, errorPrefix + " (unsupported body function: " + f.tree + ")")
-            defaultReplacement
+        val result = try {
+          c.typeCheck(f.tree).asInstanceOf[Tree] match {
+            case Function(List(param @ ValDef(mods, name, tpt, rhs)), body) =>
+              c.prefix.tree.asInstanceOf[Tree] match {
+                // TODO handle non-constant cases!
+                case InlinableRangeTree(
+                  IntConstant(start), 
+                  IntConstant(end), 
+                  IntConstant(step),
+                  isInclusive
+                ) =>
+                  val optimizedLoop = 
+                    newWhileRangeLoop(c.fresh(_), start, end, step, isInclusive, param, body)
+                  c.info(c.enclosingPosition, successMessage, force = true)
+                  optimizedLoop
+                case _ =>
+                  c.warning(c.prefix.tree.pos, errorMessageFormat.format("unsupported range: " + c.prefix.tree))
+                  defaultReplacement
+              }
+            case _ =>
+              c.warning(f.tree.pos, errorMessageFormat.format("unsupported body function: " + f.tree))
+              defaultReplacement
+          }
+        } catch { case ex =>
+          ex.printStackTrace
+          c.warning(c.enclosingPosition, errorMessageFormat.format("internal error: " + ex))  
         }
       }.result.asInstanceOf[c.Tree]
     )
