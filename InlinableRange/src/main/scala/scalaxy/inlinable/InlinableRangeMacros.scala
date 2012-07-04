@@ -38,10 +38,10 @@ private[inlinable] object InlinableRangeMacros
                   IntConstant(step),
                   isInclusive
                 ) =>
-                  val optimizedLoop = 
+                  val optimized = 
                     newWhileRangeLoop(c.fresh(_), start, end, step, isInclusive, param, body)
                   c.info(c.enclosingPosition, successMessage, force = true)
-                  optimizedLoop
+                  optimized
                 case _ =>
                   c.warning(c.prefix.tree.pos, errorMessageFormat.format("unsupported range: " + c.prefix.tree))
                   defaultReplacement

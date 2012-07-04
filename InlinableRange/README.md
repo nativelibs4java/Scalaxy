@@ -12,7 +12,7 @@ Run with:
     
 Current prototype only aims at validating the macro approach, with the very limited scope of ranges with constant start, end and step parameters.
 
-Once this works, you can expect:
-- full Range foreach support (including non-constant bounds)
+TODO list:
+- full Range foreach support (add non-constant bounds)
 - _maybe_ Array.foreach support and other pin-pointed optimizations, but only after InlinableRange is integrated to Scala
 
