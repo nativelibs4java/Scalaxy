@@ -1,6 +1,7 @@
 package scalaxy
 
-import scala.reflect.mirror._
+import scala.reflect.runtime._
+import scala.reflect.runtime.universe._
 
 package object macros
 { 

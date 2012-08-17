@@ -1,14 +1,13 @@
 package scalaxy; package compilets
 
+import scala.reflect.mirror._
+
 import macros._
 import matchers._
 //import scala.reflect.mirror._
 
-object ForLoops extends Compilet {
-  /*override val matchActions = Seq(
-    "foreach" -> simpleForeachUntil(0, 0, {})
-  )*/
-  
+object ForLoops extends Compilet 
+{
   def simpleForeachUntil[U : TypeTag](start: Int, end: Int, body: U) = replace(
     for (i <- start until end) 
       body,
@@ -21,6 +20,7 @@ object ForLoops extends Compilet {
       }
     }
   )
+  
   def simpleForeachTo[U : TypeTag](start: Int, end: Int, body: U) = replace(
     for (i <- start to end) 
       body,
@@ -75,6 +75,7 @@ object ForLoops extends Compilet {
       }
     }
   )
+  
   def simpleForeachTo[U](start: Int, end: Int, body: Int => U) = replace(
     for (i <- start to end) body(i),
     {

@@ -1,6 +1,7 @@
 package scalaxy.matchers
 
-import scala.reflect.mirror._
+import scala.reflect.runtime._
+import scala.reflect.runtime.universe._
 
 object IntConstant {
   def unapply(t: Tree): Option[Int] =

@@ -1,6 +1,9 @@
 package scalaxy; package components
 
+
 import scala.reflect._
+import scala.reflect.runtime._
+import scala.reflect.runtime.universe._
 
 object TypeVars {
   /*
@@ -41,26 +44,26 @@ object TypeVars {
   // TODO ditch this ugly hack and use Tx classes above, or (better) free types.
   ///*
   private val typeTags = Seq(
-    typeTag[api.Universe#Tree],
-    typeTag[api.Universe#Select],
-    typeTag[api.Universe#Ident],
-    typeTag[api.Universe#ValDef],
-    typeTag[api.Universe#DefDef],
-    typeTag[api.Universe#TypeTree],
-    typeTag[api.Universe#Function],
-    typeTag[api.Universe#TypeApply],
-    typeTag[api.Universe#Typed],
-    typeTag[api.Universe#TypeDef],
-    typeTag[api.Universe#UnApply],
-    typeTag[api.Universe#Try],
-    typeTag[api.Universe#Template],
-    typeTag[api.Universe#Match]
+    typeTag[scala.reflect.api.Universe#TreeApi],
+    typeTag[scala.reflect.api.Universe#SelectApi],
+    typeTag[scala.reflect.api.Universe#IdentApi],
+    typeTag[scala.reflect.api.Universe#ValDefApi],
+    typeTag[scala.reflect.api.Universe#DefDefApi],
+    typeTag[scala.reflect.api.Universe#TypeTreeApi],
+    typeTag[scala.reflect.api.Universe#FunctionApi],
+    typeTag[scala.reflect.api.Universe#TypeApplyApi],
+    typeTag[scala.reflect.api.Universe#TypedApi],
+    typeTag[scala.reflect.api.Universe#TypeDefApi],
+    typeTag[scala.reflect.api.Universe#UnApplyApi],
+    typeTag[scala.reflect.api.Universe#TryApi],
+    typeTag[scala.reflect.api.Universe#TemplateApi],
+    typeTag[scala.reflect.api.Universe#MatchApi]
   )
   //*/
   
-  private val types = typeTags.map(_.tpe).toSet
+  private val types = typeTags.map(_.tpe.asInstanceOf[base.Universe#Type]).toSet
   
-  def isTypeVar(tpe: mirror.Type) =
+  def isTypeVar(mirror: base.Universe)(tpe: mirror.Type) =
     types.contains(tpe)
   
   def getNthTypeVarTag(i: Int) =

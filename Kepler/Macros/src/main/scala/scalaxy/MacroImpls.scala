@@ -1,38 +1,42 @@
 package scalaxy
 
-//import language.experimental.macros
+import language.experimental.macros
+                                         
+import scala.reflect.makro.Context
 
-import scala.reflect._
-import makro.Context
+import scala.reflect.runtime._
+import scala.reflect.runtime.universe._
 
 object MacroImpls 
 {
-  private def expr[T](c: Context)(x: c.Expr[T]): c.Expr[mirror.Expr[T]] = {
+  
+  private def expr[T](c: Context)(x: c.Expr[T]): c.Expr[Expr[T]] = {
     val tree = x.tree//c.typeCheck(x.tree)
     //assert(typeChecked.tpe != null, "Unable to typecheck " + x.tree)
-    c.mirror.Expr[mirror.Expr[T]](
+    c.Expr[Expr[T]](
       c.reifyTree(
-        c.reflectMirrorPrefix, 
+        c.runtimeUniverse,
+        c.universe.EmptyTree, //c.reflectMirrorPrefix, 
         tree
       )
     )
   }
-  private def tree(c: Context)(x: c.Expr[Any]): c.mirror.Tree = 
+  private def tree(c: Context)(x: c.Expr[Any]): c.universe.Tree = 
     expr[Any](c)(x).tree
   
   def fail(c: Context)(message: c.Expr[String])(pattern: c.Expr[Any]): c.Expr[MatchError] = 
-    c.reify(new MatchError(expr(c)(pattern).eval, message.eval))
+    c.reify(new MatchError(expr(c)(pattern).splice, message.splice))
   
   def warn(c: Context)(message: c.Expr[String])(pattern: c.Expr[Any]): c.Expr[MatchWarning] = 
-    c.reify(new MatchWarning(expr(c)(pattern).eval, message.eval))
+    c.reify(new MatchWarning(expr(c)(pattern).splice, message.splice))
   
-  def replace[T: c.TypeTag](c: Context)(pattern: c.Expr[T], replacement: c.Expr[T]): c.Expr[Replacement] =
-    c.reify(new Replacement(expr(c)(pattern).eval, expr(c)(replacement).eval))
+  def replace[T](c: Context)(pattern: c.Expr[T], replacement: c.Expr[T]): c.Expr[Replacement] =
+    c.reify(new Replacement(expr(c)(pattern).splice, expr(c)(replacement).splice))
   
-  def when[T: c.TypeTag](c: Context)(pattern: c.Expr[T])(idents: c.Expr[Any]*)(thenMatch: c.Expr[PartialFunction[List[mirror.Tree], Action[T]]])
+  def when[T](c: Context)(pattern: c.Expr[T])(idents: c.Expr[Any]*)(thenMatch: c.Expr[PartialFunction[List[Tree], Action[T]]])
   : c.Expr[ConditionalAction[T]] = 
   {
-    import c.mirror._
+    import c.universe._
     val scalaCollection = 
       Select(Ident(newTermName("scala")), newTermName("collection"))
       
@@ -52,5 +56,5 @@ object MacroImpls
   }
     
   def replacement[T: c.TypeTag](c: Context)(replacement: c.Expr[T]): c.Expr[ReplaceBy[T]] = 
-    c.reify(new ReplaceBy[T](expr(c)(replacement).eval))
+    c.reify(new ReplaceBy[T](expr(c)(replacement).splice))
 }

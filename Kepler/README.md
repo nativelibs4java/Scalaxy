@@ -1,7 +1,10 @@
 *Not in a usable state right now !*
 
-This is an experimental rewrite of [ScalaCL / Scalaxy](http://code.google.com/p/scalacl/) using Scala 2.10 and its powerful macro system (tested with Scala 2.10.0-M2 and the snapshot from 20120409) :
+This is an experimental rewrite of [ScalaCL / Scalaxy](http://code.google.com/p/scalacl/) using Scala 2.10 and its powerful macro system.
 
+Folder `OlderScalaVersions` targets Scala 2.10.0-M2, while folder `Kepler` targets Scala 2.10.0-M6 (broken right now).
+
+Key features:
 *   Natural expression of rewrite patterns and replacements that makes it easy to express rewrites
 *   Will eventually support all the rewrites from ScalaCL 0.2, and more
 *   Easy to express AOP-style rewrites (to add or remove logs, runtime checks, etc...)

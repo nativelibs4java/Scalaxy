@@ -1,7 +1,7 @@
 import sbt._
 import Keys._
 
-object ScalaxyBuild extends Build 
+object Scalaxy extends Build 
 {
   override lazy val settings = super.settings ++ Seq(
     shellPrompt := { s => Project.extract(s).currentProject.id + "> " }
@@ -40,8 +40,8 @@ object ScalaxyBuild extends Build
     pomIncludeRepository := { _ => false }
   )
   lazy val scalaSettings = Seq(
-    scalaVersion := "2.10.0-SNAPSHOT",
-    //scalaVersion := "2.10.0-M3",
+    //scalaVersion := "2.10.0-SNAPSHOT",
+    scalaVersion := "2.10.0-M4",
     //scalaHome := Some(file("/Users/ochafik/bin/scala-2.10.0.latest"))
     //crossScalaVersions := Seq("2.10.0-M2"),
     
@@ -80,6 +80,7 @@ object ScalaxyBuild extends Build
                  
   lazy val macros = 
     Project(id = "scalaxy-macros", base = file("Macros"), settings = standardSettings ++ Seq(
-      scalacOptions ++= Seq("-Xmacros", "-language:experimental.macros")
+      libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-compiler" % _),
+      scalacOptions ++= Seq("-language:experimental.macros")
     )) 
 }

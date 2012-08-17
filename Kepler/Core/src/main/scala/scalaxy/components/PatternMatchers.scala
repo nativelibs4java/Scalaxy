@@ -39,22 +39,23 @@ extends TypingTransformers
         nameBindings ++ b.nameBindings, typeBindings ++ b.typeBindings
       )
       
+    def convertToExpected[T](v: Any) = v.asInstanceOf[T]
+    
     def apply(replacement: patternUniv.Tree): candidateUniv.Tree = 
     {
       //val toto = candidateUniv.asInstanceOf[scala.reflect.internal.Importers]
       val importer = new candidateUniv.StandardImporter {
         val from = patternUniv.asInstanceOf[scala.reflect.internal.SymbolTable]
-        override def importTree(tree: from.Tree): candidateUniv.Tree = {
+        override def importTree(tree: from.Tree) = convertToExpected {//: candidateUniv.Tree = {
           tree match {
             case from.Ident(n) =>
               nameBindings.get(n.toString).
-              getOrElse(super.importTree(tree)).
-              asInstanceOf[candidateUniv.Tree]
+              getOrElse(super.importTree(tree))
               //{ val imp = candidateUniv.Ident(in) ; imp.tpe = importType(tree.tpe) ; imp })
             case _ =>
               super.importTree(tree)
           }
-        }
+        }//.asInstanceOf[candidateUniv.Tree]//
         /*
         override def importType(tpe: from.Type): candidateUniv.Type = {
           if (tpe == null) {
@@ -97,9 +98,9 @@ extends TypingTransformers
   def resolveType(u: api.Universe)(tpe: u.Type): u.Type = 
       Option(tpe).map(normalize(u)(_)).map({
         case u.ThisType(sym) =>
-          sym.asType
+          sym.asTypeSymbol.asType
         case tt @ u.SingleType(pre, sym) =>
-          val t = sym.asType
+          val t = sym.asTypeSymbol.asType
           if (t != null && t != candidateUniv.NoType)
             t
           else
@@ -142,7 +143,7 @@ extends TypingTransformers
     t == null || 
     t == u.NoType || 
     t == u.NoPrefix ||
-    t == u.definitions.UnitClass.asType || {
+    t == u.UnitTpe || {
       val s = t.toString
       s == "<notype>" || s == "scala.this.Unit"
     }
@@ -151,7 +152,7 @@ extends TypingTransformers
     v.getClass.getName + " <- " + v.getClass.getSuperclass.getName
     
   def types(u: api.Universe)(syms: List[u.Symbol]) = 
-    syms.map(_.asType)
+    syms.map(_.asTypeSymbol.asType)
           
   def zipTypes(syms1: List[patternUniv.Symbol], syms2: List[candidateUniv.Symbol]) = 
     types(patternUniv)(syms1).zip(types(candidateUniv)(syms2))
@@ -163,8 +164,24 @@ extends TypingTransformers
       }
       
       val s = t.typeSymbol
-      s != null && s.asInstanceOf[PlasticSymbol].isTypeParameter ||
-      TypeVars.isTypeVar(t.asInstanceOf[mirror.Type])
+      
+      {
+        try {
+          s != null &&
+          s.asInstanceOf[PlasticSymbol].isTypeParameter
+        } catch { case _ => 
+          false // TODO report to Eugene:
+          /*
+            scala.NotImplementedError: an implementation is missing
+            at scala.Predef$.$qmark$qmark$qmark(Predef.scala:235)
+            at scala.reflect_compat$class.mirror(compat.scala:20)
+            at scala.reflect.package$.mirror$lzycompute(package.scala:3)
+            at scala.reflect.package$.mirror(package.scala:3)
+            at scalaxy.components.PatternMatchers$class.isTypeParameter(PatternMatchers.scala:168)
+	      */
+        }
+      } ||
+      TypeVars.isTypeVar(mirror)(t.asInstanceOf[mirror.Type])
     }
   } 
     
@@ -177,11 +194,11 @@ extends TypingTransformers
     val pattern = resolveType(patternUniv)(pattern0)
     val tree = resolveType(candidateUniv)(tree0)
     
-    if (pattern.toString.contains(".api")) {
-      println("Going down in types (depth " + depth + "):")
-      println("\ttype pattern = " + pattern + ": " + clstr(pattern))
-      println("\ttype found = " + tree + ": " + clstr(tree))
-    }
+    //if (pattern.toString.contains(".api")) {
+    //  println("Going down in types (depth " + depth + "):")
+    //  println("\ttype pattern = " + pattern + ": " + clstr(pattern))
+    //  println("\ttype found = " + tree + ": " + clstr(tree))
+    //}
     
     //if (pattern != null && pattern == tree) {
     //  EmptyBindings
@@ -310,7 +327,7 @@ extends TypingTransformers
           //}
             
         case (patternUniv.ValDef(mods, name, tpt, rhs), candidateUniv.ValDef(mods2, name2, tpt2, rhs2))
-        if mods.modifiers == mods2.modifiers =>
+        if mods.flags == mods2.flags =>
           val r = matchAndResolveTreeBindings(
             List((rhs, rhs2), (tpt, tpt2)), depth + 1
           )(
@@ -374,22 +391,22 @@ extends TypingTransformers
   }
   
   def getOrFixType(u: api.Universe)(tree: u.Tree) = {
-    import u.definitions._
+    import u._
     val t = tree.tpe
     if (t == null)
       tree match {
-        case u.Literal(u.Constant(v)) =>
+        case Literal(Constant(v)) =>
           v match {
-            case _: Int => IntClass.asType
-            case _: Short => ShortClass.asType
-            case _: Long => LongClass.asType
-            case _: Byte => ByteClass.asType
-            case _: Double => DoubleClass.asType
-            case _: Float => FloatClass.asType
-            case _: Char => CharClass.asType
-            case _: Boolean => BooleanClass.asType
-            case _: String => StringClass.asType
-            case _: Unit => UnitClass.asType
+            case _: Int => IntTpe
+            case _: Short => ShortTpe
+            case _: Long => LongTpe
+            case _: Byte => ByteTpe
+            case _: Double => DoubleTpe
+            case _: Float => FloatTpe
+            case _: Char => CharTpe
+            case _: Boolean => BooleanTpe
+            case _: String => StringTpe
+            case _: Unit => UnitTpe
             case _ =>
               null
           }

@@ -13,7 +13,11 @@ extends PatternMatchers
 
   import global.definitions._
   
-  def newMirrorToGlobalImporter(bindings: Bindings) = {
+  /**
+   * TODO report missing API : scala.reflect.api.SymbolTable 
+   * (scala.reflect.mirror does not extend scala.reflect.internal.SymbolTable publicly !)
+   */
+  def newMirrorToGlobalImporter(mirror: base.Universe)(bindings: Bindings) = {
     new global.StandardImporter {
       val from = mirror.asInstanceOf[scala.reflect.internal.SymbolTable]
       
@@ -34,7 +38,8 @@ extends PatternMatchers
       }
     }
   }
-  def newGlobalToMirrorImporter = {
+  
+  def newGlobalToMirrorImporter(mirror: base.Universe) = {
     val mm = mirror.asInstanceOf[scala.reflect.internal.SymbolTable]
     new mm.StandardImporter {
       val from = global//.asInstanceOf[scala.reflect.internal.SymbolTable]
@@ -47,28 +52,29 @@ extends PatternMatchers
     }
   }
   
-  @deprecated("dying code")
-  private def fixMissingMirrorTypes(m: mirror.Tree) = {
-    new mirror.Traverser {
-      override def traverse(t: mirror.Tree) = {
-        val tpe = t.tpe
-        if (tpe == null || tpe == mirror.NoType) {
-          val sym = t.symbol
-          if (sym != null && sym != mirror.NoSymbol) {
-            t.tpe = sym.asType
-          }
-        }
-        super.traverse(t)
-      }
-    }.traverse(m)
-  }
+  //@deprecated("dying code")
+  //private def fixMissingMirrorTypes(m: mirror.Tree) = {
+  //  new mirror.Traverser {
+  //    override def traverse(t: mirror.Tree) = {
+  //      val tpe = t.tpe
+  //      if (tpe == null || tpe == mirror.NoType) {
+  //        val sym = t.symbol
+  //        if (sym != null && sym != mirror.NoSymbol) {
+  //          t.tpe = sym.asType
+  //        }
+  //      }
+  //      super.traverse(t)
+  //    }
+  //  }.traverse(m)
+  //}
   
   /**
-   * TODO report missing API : scala.reflect.api.SymbolTable 
-   * (scala.reflect.mirror does not extend scala.reflect.internal.SymbolTable publicly !)
-   */
-  def mirrorToGlobal(m: mirror.Tree, bindings: Bindings): global.Tree = {
-    val importer = newMirrorToGlobalImporter(bindings)
+    scala.reflect.mirror
+    scala.reflect.runtime.universe
+  */
+  def mirrorToGlobal(mirror: base.Universe)(m: mirror.Tree, bindings: Bindings): global.Tree = {
+    val importer =
+      newMirrorToGlobalImporter(mirror)(bindings)
     //fixMissingMirrorTypes(m)
     try {
       importer.importTree(m.asInstanceOf[importer.from.Tree])
@@ -78,8 +84,8 @@ extends PatternMatchers
     }
   }
   
-  def globalToMirror(t: global.Tree): mirror.Tree = {
-    val importer = newGlobalToMirrorImporter
+  def globalToMirror(mirror: base.Universe)(t: global.Tree): mirror.Tree = {
+    val importer = newGlobalToMirrorImporter(mirror)
     importer.importTree(t.asInstanceOf[importer.from.Tree]).asInstanceOf[mirror.Tree]
   }
   

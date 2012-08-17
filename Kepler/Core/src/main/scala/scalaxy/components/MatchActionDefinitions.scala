@@ -1,5 +1,7 @@
 package scalaxy; package components
 
+//import scala.reflect.mirror._
+import scala.reflect.runtime._
 
 object MatchActionDefinitions 
 {
@@ -24,7 +26,7 @@ object MatchActionDefinitions
     ) yield 
     {
       val r = m.invoke(holder, m.getParameterTypes.map(c => {
-        if (c == classOf[TypeTag[_]]) {
+        if (c == classOf[universe.TypeTag[_]]) {
           val tt = TypeVars.getNthTypeVarTag(nTypeTags)
           nTypeTags += 1
           tt
@@ -47,14 +49,14 @@ object MatchActionDefinitions
   private lazy val MatchActionClass = staticClass("scalaxy.MatchAction")
   
   private lazy val defaultValues = Map(
-    IntClass.asType -> 0,
-    ShortClass.asType -> (0: Short),
-    LongClass.asType -> (0: Long),
-    ByteClass.asType -> (0: Byte),
-    FloatClass.asType -> 0f,
-    DoubleClass.asType -> 0.0,
-    BooleanClass.asType -> false,
-    CharClass.asType -> '\0'
+    IntTpe -> 0,
+    ShortTpe -> (0: Short),
+    LongTpe -> (0: Long),
+    ByteTpe -> (0: Byte),
+    FloatTpe -> 0f,
+    DoubleTpe -> 0.0,
+    BooleanTpe -> false,
+    CharTpe -> '\0'
   )
   private def getDefaultValue(tpe: Type): Any = 
     defaultValues.get(tpe).getOrElse(null)

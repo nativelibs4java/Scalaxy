@@ -7,8 +7,9 @@ import org.junit._
 import Assert._
 import scalaxy.macros.fail
 
-import scala.reflect.mirror._
-    
+import scala.reflect.runtime.universe._
+import scala.reflect.{ClassTag, TypeTag}
+
 class TestMacros 
 {
   /*
@@ -23,9 +24,9 @@ class TestMacros
   import math.Numeric.Implicits._
   import Ordering.Implicits._
   
-  def plus[T : TypeTag](a: T, b: T)(implicit n: Numeric[T]) = replace(
+  def plus[T : TypeTag : Numeric](a: T, b: T) = replace(
     a + b, // Numeric.Implicits.infixNumericOps[T](a)(n).+(b)
-    n.plus(a, b)
+    implicitly[Numeric[T]].plus(a, b)
   )
   
   @Test

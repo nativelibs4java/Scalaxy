@@ -2,7 +2,7 @@ package scalaxy
 
 //package macros
 
-import scala.reflect.mirror._
+import scala.reflect.runtime.universe._
 
 trait Compilet {
   //def matchActions: Seq[(String, MatchAction)]

@@ -1,48 +1,50 @@
 package scalaxy; package compilets
 
+import scala.reflect.mirror._
+
 import macros._
 
 object Numeric {
   import math.Numeric.Implicits._
   import Ordering.Implicits._
   
-  def plus[T : TypeTag](a: T, b: T)(implicit n: Numeric[T]) = replace(
-    a + b, // Numeric.Implicits.infixNumericOps[T : TypeTag](a)(n).+(b)
-    n.plus(a, b)
+  def plus[T : TypeTag : Numeric](a: T, b: T) = replace(
+    a + b, // Numeric.Implicits.infixNumericOps[T : TypeTag](a)(implicitly[Numeric[T]]).+(b)
+    implicitly[Numeric[T]].plus(a, b)
   )
   
-  def minus[T : TypeTag](a: T, b: T)(implicit n: Numeric[T]) = replace(
+  def minus[T : TypeTag : Numeric](a: T, b: T) = replace(
     a - b,
-    n.minus(a, b)
+    implicitly[Numeric[T]].minus(a, b)
   )
   
-  def times[T : TypeTag](a: T, b: T)(implicit n: Numeric[T]) = replace(
+  def times[T : TypeTag : Numeric](a: T, b: T) = replace(
     a * b,
-    n.times(a, b)
+    implicitly[Numeric[T]].times(a, b)
   )
   
-  def negate[T : TypeTag](a: T)(implicit n: Numeric[T]) = replace(
+  def negate[T : TypeTag : Numeric](a: T) = replace(
     - a,
-    n.negate(a)
+    implicitly[Numeric[T]].negate(a)
   )
   
-  def gt[T : TypeTag](a: T, b: T)(implicit n: Numeric[T]) = replace(
+  def gt[T : TypeTag : Numeric](a: T, b: T) = replace(
     a > b,
-    n.gt(a, b)
+    implicitly[Numeric[T]].gt(a, b)
   )
   
-  def gteq[T : TypeTag](a: T, b: T)(implicit n: Numeric[T]) = replace(
+  def gteq[T : TypeTag : Numeric](a: T, b: T) = replace(
     a >= b,
-    n.gteq(a, b)
+    implicitly[Numeric[T]].gteq(a, b)
   )
   
-  def lt[T : TypeTag](a: T, b: T)(implicit n: Numeric[T]) = replace(
+  def lt[T : TypeTag : Numeric](a: T, b: T) = replace(
     a < b,
-    n.lt(a, b)
+    implicitly[Numeric[T]].lt(a, b)
   )
   
-  def lteq[T : TypeTag](a: T, b: T)(implicit n: Numeric[T]) = replace(
+  def lteq[T : TypeTag : Numeric](a: T, b: T) = replace(
     a <= b,
-    n.lteq(a, b)
+    implicitly[Numeric[T]].lteq(a, b)
   )
 }

@@ -84,7 +84,12 @@ extends TypingTransformers
               }
               
             case Ident(n) =>
-              if (tree.symbol == null || tree.symbol == NoSymbol || tree.symbol.owner.isNestedIn(rootOwner)) {
+              if (tree.symbol == null || 
+                  tree.symbol == NoSymbol ||
+                  tree.symbol.owner == NoSymbol ||
+                  rootOwner != NoSymbol &&
+                  tree.symbol.owner.isNestedIn(rootOwner)) 
+              {
                 for (s <- syms.get(n))
                   tree.setSymbol(s)
               }
@@ -97,6 +102,7 @@ extends TypingTransformers
           }
         } catch { case ex =>
           println("ERROR while assigning missing symbols to " + tree + " : " + ex)
+          ex.printStackTrace
           throw ex
         }
       }

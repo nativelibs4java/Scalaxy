@@ -3,7 +3,21 @@ package scalaxy
 
 //import language.experimental.macros
 
-import scala.reflect.mirror._
+import scala.reflect.runtime._
+import scala.reflect.runtime.universe._
+
+object RuntimeMirrorUtils {
+  def expr[T](tree: Tree): Expr[T] = {
+    Expr[T](
+      currentMirror,//.runtimeMirror, 
+      new reflect.base.TreeCreator { 
+        override def apply[U <: reflect.base.Universe with Singleton](m: reflect.base.MirrorOf[U]) =
+          tree.asInstanceOf[U#Tree]
+      }
+    )
+  }
+}
+import RuntimeMirrorUtils._
 
 trait MatchAction {
   def pattern: Expr[_]
@@ -16,8 +30,8 @@ case class Replacement(
 ) extends MatchAction {
   override def typeCheck(f: (Tree, Type) => Tree) =
     Replacement(
-      Expr[Any](f(pattern.tree, pattern.tpe)),
-      Expr[Any](f(replacement.tree, replacement.tpe))
+      expr[Any](f(pattern.tree, pattern.staticTpe)),
+      expr[Any](f(replacement.tree, replacement.staticTpe))
     )
 }
 
@@ -27,7 +41,7 @@ case class MatchError(
 ) extends MatchAction {
   override def typeCheck(f: (Tree, Type) => Tree) =
     MatchError(
-      Expr[Any](f(pattern.tree, pattern.tpe)),
+      expr[Any](f(pattern.tree, pattern.staticTpe)),
       message
     )
 }
@@ -38,7 +52,7 @@ case class MatchWarning(
 ) extends MatchAction {
   override def typeCheck(f: (Tree, Type) => Tree) =
     MatchWarning(
-      Expr[Any](f(pattern.tree, pattern.tpe)),
+      expr[Any](f(pattern.tree, pattern.staticTpe)),
       message
     )
 }
@@ -52,7 +66,7 @@ case class ReplaceBy[T](
 ) extends Action[T] {
   override def typeCheck(f: (Tree, Type) => Tree) =
     ReplaceBy[T](
-      Expr[T](f(replacement.tree, replacement.tpe))
+      expr[T](f(replacement.tree, replacement.staticTpe))
     )
 }
 
@@ -79,7 +93,7 @@ case class ConditionalAction[T](
   
   override def typeCheck(f: (Tree, Type) => Tree) =
     ConditionalAction[T](
-      Expr[T](f(pattern.tree, pattern.tpe)),
+      expr[T](f(pattern.tree, pattern.staticTpe)),
       when,
       new PartialFunction[List[Tree], Action[T]] {
         override def isDefinedAt(list: List[Tree]) =

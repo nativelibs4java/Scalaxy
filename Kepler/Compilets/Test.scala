@@ -1,5 +1,7 @@
 package scalaxy; package compilets
 
+import scala.reflect.mirror._
+
 import macros._
 import matchers._
 
