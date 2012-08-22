@@ -4,7 +4,7 @@ import scala.reflect.mirror._
 
 import macros._
 
-object Numeric {
+object Numerics {
   import math.Numeric.Implicits._
   import Ordering.Implicits._
   

@@ -74,7 +74,7 @@ object ScalaxyPluginDef extends ScalaxyPluginDefLike {
     //compilets.Streams,
     
     //compilets.Java,
-    compilets.Numeric,
+    compilets.Numerics,
     compilets.ForLoops
     //compilets.Maps,
     

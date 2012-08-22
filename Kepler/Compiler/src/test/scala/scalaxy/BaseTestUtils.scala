@@ -88,8 +88,11 @@ trait BaseTestUtils {
     //srcFile.delete
 
   }*/
+  
+  def commonImports = ""
+  
   def getSnippetBytecode(className: String, source: String, subDir: String, compiler: SharedCompiler) = {
-    val src = "class " + className + " { def invoke(): Unit = {\n" + source + "\n}}"
+    val src = "class " + className + " { def invoke(): Unit = {\n" + commonImports + "\n" + source + "\n}}"
     val outDir = new File(baseOutDir, subDir)
     outDir.mkdirs
     val srcFile = new File(outDir, className + ".scala")

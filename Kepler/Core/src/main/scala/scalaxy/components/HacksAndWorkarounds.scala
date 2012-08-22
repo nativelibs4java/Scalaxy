@@ -1,5 +1,6 @@
 package scalaxy; package components
 
+// This will hopefully not exist anymore when 2.10.0.final is out!
 object HacksAndWorkarounds 
 {
   // TODO turn to false once macro type is fixed !
