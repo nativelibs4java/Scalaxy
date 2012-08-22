@@ -1,8 +1,6 @@
 *Not in a usable state right now !*
 
-This is an experimental rewrite of [ScalaCL / Scalaxy](http://code.google.com/p/scalacl/) using Scala 2.10 and its powerful macro system.
-
-Folder `OlderScalaVersions` targets Scala 2.10.0-M2, while folder `Kepler` targets Scala 2.10.0-M6 (broken right now).
+This is an experimental rewrite of [ScalaCL / Scalaxy](http://code.google.com/p/scalacl/) using Scala 2.10.0-M6 and its powerful macro system.
 
 Key features:
 *   Natural expression of rewrite patterns and replacements that makes it easy to express rewrites
@@ -12,11 +10,11 @@ Key features:
 
 To compile a file test.scala using the compiler plugin, use [paulp's sbt script](https://github.com/paulp/sbt-extras) :
 
-    sbt -sbt-snapshot "run test.scala"
+    sbt "run test.scala"
 
 To see what's happening, you might want to print the AST before and after the rewrite :
 
-    sbt -sbt-snapshot "run test.scala -Xprint:typer -Xprint:scalaxy-rewriter"
+    sbt "run test.scala -Xprint:typer -Xprint:scalaxy-rewriter"
     
 The rewrites are defined in `Rewrites` and look like this :
 
