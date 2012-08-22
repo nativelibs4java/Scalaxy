@@ -30,8 +30,8 @@ case class Replacement(
 ) extends MatchAction {
   override def typeCheck(f: (Tree, Type) => Tree) =
     Replacement(
-      expr[Any](f(pattern.tree, pattern.staticTpe)),
-      expr[Any](f(replacement.tree, replacement.staticTpe))
+      expr[Any](f(pattern.tree, pattern.staticType)),
+      expr[Any](f(replacement.tree, replacement.staticType))
     )
 }
 
@@ -41,7 +41,7 @@ case class MatchError(
 ) extends MatchAction {
   override def typeCheck(f: (Tree, Type) => Tree) =
     MatchError(
-      expr[Any](f(pattern.tree, pattern.staticTpe)),
+      expr[Any](f(pattern.tree, pattern.staticType)),
       message
     )
 }
@@ -52,7 +52,7 @@ case class MatchWarning(
 ) extends MatchAction {
   override def typeCheck(f: (Tree, Type) => Tree) =
     MatchWarning(
-      expr[Any](f(pattern.tree, pattern.staticTpe)),
+      expr[Any](f(pattern.tree, pattern.staticType)),
       message
     )
 }
@@ -66,7 +66,7 @@ case class ReplaceBy[T](
 ) extends Action[T] {
   override def typeCheck(f: (Tree, Type) => Tree) =
     ReplaceBy[T](
-      expr[T](f(replacement.tree, replacement.staticTpe))
+      expr[T](f(replacement.tree, replacement.staticType))
     )
 }
 
@@ -93,7 +93,7 @@ case class ConditionalAction[T](
   
   override def typeCheck(f: (Tree, Type) => Tree) =
     ConditionalAction[T](
-      expr[T](f(pattern.tree, pattern.staticTpe)),
+      expr[T](f(pattern.tree, pattern.staticType)),
       when,
       new PartialFunction[List[Tree], Action[T]] {
         override def isDefinedAt(list: List[Tree]) =

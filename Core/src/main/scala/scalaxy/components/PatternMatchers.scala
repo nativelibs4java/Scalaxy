@@ -95,10 +95,10 @@ extends TypingTransformers
   def resolveType(u: api.Universe)(tpe: u.Type): u.Type = 
       Option(tpe).map(normalize(u)(_)).map({
         case u.ThisType(sym) =>
-          sym.asTypeSymbol.asType
+          sym.asType.toType
         case tt @ u.SingleType(pre, sym) if !sym.isPackage =>
           try {
-            val t = sym.asTypeSymbol.asType
+            val t = sym.asType.toType
             if (t != null && t != candidateUniv.NoType)
               t
             else
@@ -148,7 +148,7 @@ extends TypingTransformers
     t == null || 
     t == u.NoType || 
     t == u.NoPrefix ||
-    t == u.UnitTpe || {
+    t == u.definitions.UnitClass.asType.toType || {
       val s = t.toString
       s == "<notype>" || s == "scala.this.Unit"
     }
@@ -160,7 +160,7 @@ extends TypingTransformers
       v.getClass.getName + " <- " + v.getClass.getSuperclass.getName
     
   def types(u: api.Universe)(syms: List[u.Symbol]) = 
-    syms.map(_.asTypeSymbol.asType)
+    syms.map(_.asType.toType)
           
   def zipTypes(syms1: List[patternUniv.Symbol], syms2: List[candidateUniv.Symbol]) = 
     types(patternUniv)(syms1).zip(types(candidateUniv)(syms2))
@@ -207,6 +207,10 @@ extends TypingTransformers
     val pattern = resolveType(patternUniv)(pattern0)
     val tree = resolveType(candidateUniv)(tree0)
     
+    lazy val candidateUnitTpe =       
+      candidateUniv.definitions.UnitClass.asType.toType
+    lazy val patternUnitTpe =
+      patternUniv.definitions.UnitClass.asType.toType
     //lazy val desc = "(" + pattern + ": " + clstr(pattern) + " vs. " + tree + ": " + clstr(tree) + ")"
     
     if (HacksAndWorkarounds.workAroundNullPatternTypes &&
@@ -237,7 +241,7 @@ extends TypingTransformers
         case (patternUniv.NoPrefix, candidateUniv.NoPrefix) => 
           EmptyBindings
           
-        case (patternUniv.UnitTpe, candidateUniv.UnitTpe) => 
+        case (patternUnitTpe, candidateUnitTpe) => 
           EmptyBindings
           
         case (_, _) if isTypeParameter(pattern) =>
@@ -428,8 +432,9 @@ extends TypingTransformers
     v + Option(v).map(_ => ": " + v.getClass.getName + " <- " + v.getClass.getSuperclass.getSimpleName).getOrElse("")
                 
   
-  def getOrFixType(u: api.Universe)(tree: u.Tree) = {
+  def getOrFixType(u: api.Universe)(tree: u.Tree): u.Type = {
     import u._
+    import u.definitions._
     val t = tree.tpe
     if (t == null)
       tree match {
@@ -443,8 +448,8 @@ extends TypingTransformers
             case _: Float => FloatTpe
             case _: Char => CharTpe
             case _: Boolean => BooleanTpe
-            case _: String => StringTpe
-            case _: Unit => UnitTpe
+            case _: String => StringClass.asType.toType
+            case _: Unit => UnitClass.asType.toType
             case _ =>
               null
           }

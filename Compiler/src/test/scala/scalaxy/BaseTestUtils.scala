@@ -142,6 +142,7 @@ trait BaseTestUtils {
   def ensurePluginCompilesSnippetsToSameByteCode(source: String, reference: String, allowSameResult: Boolean = false, printDifferences: Boolean = true) = {
     val (_, testMethodName) = testClassInfo
     
+    import ExecutionContext.Implicits.global
     val withPluginFut = future { getSnippetBytecode(testMethodName, source, "withPlugin", SharedCompilerWithPlugins) }
     val expected = getSnippetBytecode(testMethodName, reference, "expected", SharedCompilerWithoutPlugins)
     val withoutPlugin = if (allowSameResult) null else getSnippetBytecode(testMethodName, source, "withoutPlugin", SharedCompilerWithoutPlugins)
@@ -167,6 +168,7 @@ trait BaseTestUtils {
     val p = Runtime.getRuntime.exec("javap " + args.mkString(" "))//"javap", args)
 
     var err = new StringBuffer
+    import ExecutionContext.Implicits.global
     future {
       import scala.util.control.Exception._
       val inputStream = new BufferedReader(new InputStreamReader(p.getErrorStream))

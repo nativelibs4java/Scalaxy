@@ -2,12 +2,12 @@ package scalaxy
 
 import language.experimental.macros
                                          
-import scala.reflect.makro.Context
+import scala.reflect.macros.Context
 
 import scala.reflect.runtime._
 import scala.reflect.runtime.universe._
 
-object MacroImpls 
+object MacroImpls
 {
   
   private def expr[T](c: Context)(x: c.Expr[T]): c.Expr[Expr[T]] = {
@@ -36,13 +36,13 @@ object MacroImpls
     expr[Any](c)(x).tree
   
   def fail(c: Context)(message: c.Expr[String])(pattern: c.Expr[Any]): c.Expr[MatchError] = 
-    c.reify(new MatchError(expr(c)(pattern).splice, message.splice))
+    c.universe.reify(new MatchError(expr(c)(pattern).splice, message.splice))
   
   def warn(c: Context)(message: c.Expr[String])(pattern: c.Expr[Any]): c.Expr[MatchWarning] = 
-    c.reify(new MatchWarning(expr(c)(pattern).splice, message.splice))
+    c.universe.reify(new MatchWarning(expr(c)(pattern).splice, message.splice))
   
   def replace[T](c: Context)(pattern: c.Expr[T], replacement: c.Expr[T]): c.Expr[Replacement] =
-    c.reify(new Replacement(expr(c)(pattern).splice, expr(c)(replacement).splice))
+    c.universe.reify(new Replacement(expr(c)(pattern).splice, expr(c)(replacement).splice))
   
   def when[T](c: Context)(pattern: c.Expr[T])(idents: c.Expr[Any]*)(thenMatch: c.Expr[PartialFunction[List[Tree], Action[T]]])
   : c.Expr[ConditionalAction[T]] = 
@@ -66,6 +66,6 @@ object MacroImpls
     )
   }
     
-  def replacement[T: c.TypeTag](c: Context)(replacement: c.Expr[T]): c.Expr[ReplaceBy[T]] = 
-    c.reify(new ReplaceBy[T](expr(c)(replacement).splice))
+  def replacement[T: c.AbsTypeTag](c: Context)(replacement: c.Expr[T]): c.Expr[ReplaceBy[T]] = 
+    c.universe.reify(new ReplaceBy[T](expr(c)(replacement).splice))
 }

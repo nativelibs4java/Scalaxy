@@ -10,9 +10,9 @@ trait ExprTreeFixer {
 
   def fixTypedExpression[T](name: String, x: universe.Expr[T]) = {
     if (x.tree.tpe == null) {
-      if (x.staticTpe != null) {
+      if (x.staticType != null) {
         //x.tree.tpe = x.staticTpe
-        x.tree.asInstanceOf[TreeWithWritableType].tpe = x.staticTpe
+        x.tree.asInstanceOf[TreeWithWritableType].tpe = x.staticType
         //println("Fixed pattern tree type for '" + name + "' :\n\t" + x.tree + ": " + x.tree.tpe)
       } else {
         println("Failed to fix pattern tree typefor '" + name + "' :\n\t" + x.tree)

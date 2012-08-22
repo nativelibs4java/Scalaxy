@@ -1,6 +1,6 @@
 package scalaxy; package compilets
 
-import scala.reflect.mirror._
+import scala.reflect.runtime.universe._
 
 import macros._
 

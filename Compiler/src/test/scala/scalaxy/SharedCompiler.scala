@@ -31,6 +31,8 @@ class SharedCompiler(enablePlugins: Boolean, pluginDef: PluginDef) {
   /// A compiler and a compiler future
   var instances: (Compiler, Future[Compiler]) = null
   def newInstances = {
+    import ExecutionContext.Implicits.global
+
     val fut = future { createCompiler }
     if (instances == null) {
       instances = (createCompiler, fut)
