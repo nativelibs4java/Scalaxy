@@ -23,7 +23,7 @@ extends TypingTransformers
   import scala.tools.nsc.symtab.Flags._
 
   def healSymbols(unit: CompilationUnit, rootOwner: Symbol, root: Tree, expectedTpe: Type): Tree = {
-    new Traverser {
+    new Transformer {
       var syms = new collection.mutable.HashMap[Name, Symbol]()
       currentOwner = rootOwner
       
@@ -37,9 +37,9 @@ extends TypingTransformers
           syms = oldSyms
         }
       }
-      override def traverse(tree: Tree) = {
+      override def transform(tree: Tree) = {
         try {
-          def traverseValDef(vd: ValDef) = {
+          def transformValDef(vd: ValDef) = {
             val ValDef(mods, name, tpt, rhs) = vd
             val sym = (
               if (mods.hasFlag(MUTABLE))
@@ -53,8 +53,8 @@ extends TypingTransformers
             syms(name) = sym
     
             atOwner(sym) {
-              traverse(tpt)
-              traverse(rhs)
+              transform(tpt)
+              transform(rhs)
             }
             
             typer.typed(rhs)
@@ -64,12 +64,16 @@ extends TypingTransformers
               tpe = tpe.widen
               
             sym.setInfo(Option(tpe).getOrElse(NoType))
+            
+            val rep = ValDef(mods, name, TypeTree(tpe), rhs)
+            rep.symbol = sym
+            rep
           }
           
           tree match {
             case (_: Block) | (_: ClassDef) =>
               subSyms {
-                super.traverse(tree)
+                super.transform(tree)
               }
               
             case Function(vparams, body) =>
@@ -78,10 +82,11 @@ extends TypingTransformers
               
               atOwner(sym) {
                 subSyms {
-                  vparams.foreach(traverseValDef _)
-                  traverse(body)
+                  vparams.foreach(transformValDef _)
+                  transform(body)
                 }
               }
+              tree
               
             case Ident(n) =>
               if (tree.symbol == null || 
@@ -93,20 +98,21 @@ extends TypingTransformers
                 for (s <- syms.get(n))
                   tree.setSymbol(s)
               }
+              tree
               
             case vd: ValDef =>
-              traverseValDef(vd)
+              transformValDef(vd)
               
             case _ =>
-              super.traverse(tree)
+              super.transform(tree)
           }
         } catch { case ex =>
           println("ERROR while assigning missing symbols to " + tree + " : " + ex)
-          ex.printStackTrace
+          println(ex)
+          //ex.printStackTrace
           throw ex
         }
       }
-    }.traverse(root)
-    root
+    }.transform(root)
   }
 }

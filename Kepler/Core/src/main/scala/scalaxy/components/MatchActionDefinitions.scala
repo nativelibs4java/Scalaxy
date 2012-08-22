@@ -3,9 +3,15 @@ package scalaxy; package components
 //import scala.reflect.mirror._
 import scala.reflect.runtime._
 
+case class MatchActionDefinition(
+  name: String,
+  paramCount: Int,
+  typeParamCount: Int,
+  matchAction: MatchAction
+)
+
 object MatchActionDefinitions 
 {
-  
   private def defaultValue(c: Class[_]): AnyRef = c match {
     case _ if c == classOf[Int] => java.lang.Integer.valueOf(0)
     case _ if c == classOf[Long] => java.lang.Long.valueOf(0L)
@@ -19,23 +25,25 @@ object MatchActionDefinitions
     case _ => null
   }
   
-  def getMatchActionDefinitions(holder: AnyRef): Seq[(String, MatchAction)] = {
-    var nTypeTags = 0
+  def getMatchActionDefinitions(holder: AnyRef): Seq[MatchActionDefinition] = {
+    var typeParamCount = 0
+    var paramCount = 0
     for (m <- holder.getClass.getMethods; 
          if classOf[MatchAction].isAssignableFrom(m.getReturnType)
     ) yield 
     {
       val r = m.invoke(holder, m.getParameterTypes.map(c => {
         if (c == classOf[universe.TypeTag[_]]) {
-          val tt = TypeVars.getNthTypeVarTag(nTypeTags)
-          nTypeTags += 1
+          val tt = TypeVars.getNthTypeVarTag(typeParamCount)
+          typeParamCount += 1
           tt
         } else {
+          paramCount += 1
           defaultValue(c)
         }
       }):_*)
       
-      (m.getName, r.asInstanceOf[MatchAction]) 
+      MatchActionDefinition(m.getName, paramCount, typeParamCount, r.asInstanceOf[MatchAction]) 
     }
   }
   /**

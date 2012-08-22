@@ -13,6 +13,13 @@ extends PatternMatchers
 
   import global.definitions._
   
+  def tryAndType(tree: global.Tree) = {
+    try {
+      global.typer.typed { tree }
+    } catch { case _ => }
+    tree
+  }
+  
   /**
    * TODO report missing API : scala.reflect.api.SymbolTable 
    * (scala.reflect.mirror does not extend scala.reflect.internal.SymbolTable publicly !)
@@ -23,8 +30,8 @@ extends PatternMatchers
       
       override def importTree(tree: from.Tree) = tree match {
         case from.Ident(n) =>
-          //val in = importName(n).asInstanceOf[patternUniv.Name]
           bindings.nameBindings.get(n.toString).getOrElse(super.importTree(tree)).asInstanceOf[global.Tree]
+            
         case _ =>
           super.importTree(tree)
       }

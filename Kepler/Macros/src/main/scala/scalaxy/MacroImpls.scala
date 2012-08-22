@@ -11,8 +11,19 @@ object MacroImpls
 {
   
   private def expr[T](c: Context)(x: c.Expr[T]): c.Expr[Expr[T]] = {
-    val tree = x.tree//c.typeCheck(x.tree)
+    val tree = //x.tree//
+      c.typeCheck(x.tree)
     //assert(typeChecked.tpe != null, "Unable to typecheck " + x.tree)
+    
+    //new c.universe.Traverser {
+    //  override def traverse(tree: c.universe.Tree) = {
+    //    if (tree.tpe == null)
+    //      println("NULL tree.tpe: " + tree)
+    //    c.typeCheck(tree)
+    //    super.traverse(tree)
+    //  }
+    //}.traverse(tree)
+    
     c.Expr[Expr[T]](
       c.reifyTree(
         c.runtimeUniverse,

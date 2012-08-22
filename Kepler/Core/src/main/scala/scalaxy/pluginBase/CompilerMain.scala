@@ -68,6 +68,7 @@ object CompilerMain {
   }
   lazy val extraArgs = Array(
     "-optimise",
+    //"-Xprint:scalaxy-rewriter", "-Yshow-trees", //"-Yshow-syms",
     //"-usejavacp",
     "-bootclasspath", bootClassPath
   )

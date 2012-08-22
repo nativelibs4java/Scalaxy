@@ -64,13 +64,15 @@ object Scalaxy extends Build
 
   lazy val compilerPlugin = 
     Project(id = "scalaxy-compiler-plugin", base = file("Compiler"), settings = standardSettings ++ Seq(
-      scalacOptions in console in Compile <+= (packageBin in Compile) map("-Xplugin:" + _)
+      scalacOptions in console in Compile <+= (packageBin in Compile) map("-Xplugin:" + _),
+      libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-reflect" % _)
     )).
     dependsOn(core, macros, compilets)
     
   lazy val core = 
     Project(id = "scalaxy-core", base = file("Core"), settings = standardSettings ++ Seq(
-      libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-compiler" % _)
+      libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-compiler" % _),
+      libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-reflect" % _)
     )).
     dependsOn(macros)
                  
@@ -81,6 +83,7 @@ object Scalaxy extends Build
   lazy val macros = 
     Project(id = "scalaxy-macros", base = file("Macros"), settings = standardSettings ++ Seq(
       libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-compiler" % _),
+      libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-reflect" % _),
       scalacOptions ++= Seq("-language:experimental.macros")
     )) 
 }

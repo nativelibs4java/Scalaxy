@@ -5,6 +5,8 @@ import scala.tools.nsc.ast.TreeDSL
 import scala.tools.nsc.transform.TypingTransformers
 import Function.tupled
 
+import HacksAndWorkarounds._
+
 trait PatternMatchers      
 extends TypingTransformers
 //   with MirrorConversions
@@ -14,9 +16,6 @@ extends TypingTransformers
   import scala.tools.nsc.symtab.Flags._
 
   import scala.reflect._
-  
-  // TODO turn to false once macro type is fixed !
-  val workAroundMissingTypeApply = true 
   
   val patternUniv: api.Universe 
   val candidateUniv: api.Universe with scala.reflect.internal.Importers
@@ -56,8 +55,8 @@ extends TypingTransformers
               super.importTree(tree)
           }
         }//.asInstanceOf[candidateUniv.Tree]//
-        /*
-        override def importType(tpe: from.Type): candidateUniv.Type = {
+        //*
+        override def importType(tpe: from.Type) = convertToExpected {
           if (tpe == null) {
             null
           } else {
@@ -70,7 +69,7 @@ extends TypingTransformers
             getOrElse(super.importType(tpe))
             //.asInstanceOf[candidateUniv.Type]
           }
-        }*/
+        }//*/
       }
       importer.importTree(replacement.asInstanceOf[importer.from.Tree])
     }
@@ -99,12 +98,18 @@ extends TypingTransformers
       Option(tpe).map(normalize(u)(_)).map({
         case u.ThisType(sym) =>
           sym.asTypeSymbol.asType
-        case tt @ u.SingleType(pre, sym) =>
-          val t = sym.asTypeSymbol.asType
-          if (t != null && t != candidateUniv.NoType)
-            t
-          else
+        case tt @ u.SingleType(pre, sym) if !sym.isPackage =>
+          try {
+            val t = sym.asTypeSymbol.asType
+            if (t != null && t != candidateUniv.NoType)
+              t
+            else
+              tt
+          } catch { case ex =>
+            // TODO report to Eugene
+            // ex.printStackTrace
             tt
+          }
         case tt =>
           tt
       }).orNull
@@ -118,6 +123,8 @@ extends TypingTransformers
         matchAndResolveTreeBindings(a, b, depth)
       }).reduceLeft(_ ++ _)
   }
+  
+  // Throws lots of exceptions : NoTreeMatchException and NoTypeMatchException
   def matchAndResolveTypeBindings(reps: List[(patternUniv.Type, candidateUniv.Type)], depth: Int)(implicit internalDefs: InternalDefs): Bindings = 
   {
     if (reps.isEmpty)
@@ -149,7 +156,10 @@ extends TypingTransformers
     }
     
   def clstr(v: AnyRef) = 
-    v.getClass.getName + " <- " + v.getClass.getSuperclass.getName
+    if (v == null)
+      "<null>"
+    else
+      v.getClass.getName + " <- " + v.getClass.getSuperclass.getName
     
   def types(u: api.Universe)(syms: List[u.Symbol]) = 
     syms.map(_.asTypeSymbol.asType)
@@ -171,21 +181,26 @@ extends TypingTransformers
           s.asInstanceOf[PlasticSymbol].isTypeParameter
         } catch { case _ => 
           false // TODO report to Eugene:
-          /*
-            scala.NotImplementedError: an implementation is missing
-            at scala.Predef$.$qmark$qmark$qmark(Predef.scala:235)
-            at scala.reflect_compat$class.mirror(compat.scala:20)
-            at scala.reflect.package$.mirror$lzycompute(package.scala:3)
-            at scala.reflect.package$.mirror(package.scala:3)
-            at scalaxy.components.PatternMatchers$class.isTypeParameter(PatternMatchers.scala:168)
-	      */
+          // scala.NotImplementedError: an implementation is missing
+          // at scala.Predef$.$qmark$qmark$qmark(Predef.scala:235)
+          // at scala.reflect_compat$class.mirror(compat.scala:20)
+          // at scala.reflect.package$.mirror$lzycompute(package.scala:3)
+          // at scala.reflect.package$.mirror(package.scala:3)
+          // at scalaxy.components.PatternMatchers$class.isTypeParameter(PatternMatchers.scala:168)
         }
-      } ||
-      TypeVars.isTypeVar(mirror)(t.asInstanceOf[mirror.Type])
+      } /*||
+      TypeVars.isTypeVar(mirror)(t.asInstanceOf[mirror.Type])*/
     }
   } 
     
-  def matchAndResolveTypeBindings(pattern0: patternUniv.Type, tree0: candidateUniv.Type, depth: Int = 0)(implicit internalDefs: InternalDefs = Set()): Bindings = 
+  def matchAndResolveTypeBindings(
+    pattern0: patternUniv.Type, 
+    tree0: candidateUniv.Type, 
+    depth: Int = 0, 
+    strict: Boolean = false
+  )(
+    implicit internalDefs: InternalDefs = Set()
+  ): Bindings = 
   {
     import candidateUniv._
     
@@ -194,76 +209,94 @@ extends TypingTransformers
     val pattern = resolveType(patternUniv)(pattern0)
     val tree = resolveType(candidateUniv)(tree0)
     
-    //if (pattern.toString.contains(".api")) {
-    //  println("Going down in types (depth " + depth + "):")
-    //  println("\ttype pattern = " + pattern + ": " + clstr(pattern))
-    //  println("\ttype found = " + tree + ": " + clstr(tree))
-    //}
+    //lazy val desc = "(" + pattern + ": " + clstr(pattern) + " vs. " + tree + ": " + clstr(tree) + ")"
     
-    //if (pattern != null && pattern == tree) {
-    //  EmptyBindings
-    //} else 
+    if (workAroundNullPatternTypes &&
+        tree == null && pattern != null) {
+      throw NoTypeMatchException(pattern0, tree0, "Type kind matching failed (" + pattern + " vs. " + tree + ")", depth)
+    } 
+    else
+    if (pattern != null && tree != null && pattern.kind != tree.kind) {
+      throw NoTypeMatchException(pattern0, tree0, "Type kind matching failed (" + pattern.kind + " vs. " + tree.kind + ")", depth)
+    }
+    else
+    if (pattern != null && pattern.typeSymbol != null &&
+        tree != null && tree.typeSymbol != null &&
+        pattern.typeSymbol.kind != tree.typeSymbol.kind) {
+      throw NoTypeMatchException(pattern0, tree0, "Type symbol kind matching failed (" + pattern.typeSymbol.kind + " vs. " + tree.typeSymbol.kind + ")", depth)
+    }
+    else
     {
-      /*
-      if (pattern != null && tree != null)
-        if (pattern.typeSymbol.isPackage != tree.typeSymbol.isPackage)
-          throw new NoTypeMatchException(pattern0, tree0, "Package vs. non-package types", depth)
-      */
-      val patNoType = isNoType(patternUniv)(pattern)
-      val candNoType = isNoType(candidateUniv)(tree)
-      
       val ret = (pattern, tree) match {
         // TODO remove null acceptance once macro typechecker is fixed !
-        case (_, _) if pattern == null || patNoType && candNoType => 
+        case (_, _)
+        if pattern == null && workAroundNullPatternTypes => 
+          //println("TYPE MATCH null expected type")
+          EmptyBindings
+          
+        case (patternUniv.NoType, candidateUniv.NoType) => 
+          //println("TYPE MATCH NoType")
+          EmptyBindings
+          
+        case (patternUniv.NoPrefix, candidateUniv.NoPrefix) => 
+          //println("TYPE MATCH NoPrefix")
+          EmptyBindings
+          
+        case (patternUniv.UnitTpe, candidateUniv.UnitTpe) => 
+          //println("TYPE MATCH UnitTpe")
           EmptyBindings
           
         case (_, _) if isTypeParameter(pattern) =>
+          //println("TYPE MATCH type param")
           Bindings(Map(), Map(pattern -> tree))
           
-        case (_, _) if candNoType && !patNoType =>
-          throw NoTypeMatchException(pattern0, tree0, "Type matching failed", depth)
+        //case (_, _) if candNoType && !patNoType =>
+        //  throw NoTypeMatchException(pattern0, tree0, "Type matching failed", depth)
         
-        case (patternUniv.RefinedType(parents, decls), RefinedType(parents2, decls2)) =>
-          EmptyBindings
+        // TODO support refined types again:
+        //case (patternUniv.RefinedType(parents, decls), RefinedType(parents2, decls2)) =>
+        //  println("TYPE MATCH refined type")
+        //  EmptyBindings
           
         case (patternUniv.TypeBounds(lo, hi), TypeBounds(lo2, hi2)) =>
+          //println("TYPE MATCH type bounds")
           matchAndResolveTypeBindings(List((lo, lo2), (hi, hi2)), depth + 1)
           
         case (patternUniv.MethodType(paramtypes, result), MethodType(paramtypes2, result2)) =>
+          //println("TYPE MATCH method")
           matchAndResolveTypeBindings((result, result2) :: zipTypes(paramtypes, paramtypes2), depth + 1)
           
         case (patternUniv.NullaryMethodType(result), NullaryMethodType(result2)) =>
+          //println("TYPE MATCH nullary method")
           matchAndResolveTypeBindings(result, result2, depth + 1)
           
         case (patternUniv.PolyType(tparams, result), PolyType(tparams2, result2)) =>
+          //println("TYPE MATCH poly")
           matchAndResolveTypeBindings((result, result2):: zipTypes(tparams, tparams2), depth + 1)
           
         case (patternUniv.ExistentialType(tparams, result), ExistentialType(tparams2, result2)) =>
+          //println("TYPE MATCH existential")
           matchAndResolveTypeBindings((result, result2) :: zipTypes(tparams, tparams2), depth + 1)
         
         case (patternUniv.TypeRef(pre, sym, args), TypeRef(pre2, sym2, args2)) 
-        if args.size == args2.size //&&
-           //pattern.kind == tree.kind && 
-           //sym.kind == sym2.kind //&& 
-           //sym.toString == sym2.toString // TODO remove this ugly hack !
+        if args.size == args2.size &&
+           //sym.kind == sym2.kind &&
+           sym != null && sym2 != null &&
+           sym.name.toString == sym2.name.toString //&&
+           //pattern.typeSymbol != null && tree.typeSymbol != null &&
+           //pattern.typeSymbol.kind == tree.typeSymbol.kind 
         =>
-          //if (pattern.kind != tree.kind)
-          //  throw NoTypeMatchException(pattern0, tree0, "Different type kinds : " + pattern.kind + " vs. " + tree.kind, depth)
-          if (pattern.toString.contains(".api")) {
-            println("pattern.sym = " + sym + " (" + sym.kind + "), tree.sym = " + sym2 + " (" + sym2.kind + ")")
-            println("pattern.pre = " + pre + " (" + pre.kind + "), tree.pre = " + pre2 + " (" + pre2.kind + ")")
-          }
-          //matchAndResolveTypeBindings(sym.asType, sym2.asType, depth + 1) ++ 
-          matchAndResolveTypeBindings(pre, pre2, depth + 1) ++
+          //println("TYPE MATCH typeref " + desc)
+          matchAndResolveTypeBindings(pre, pre2, depth + 1) ++ 
           matchAndResolveTypeBindings(args.zip(args2), depth + 1)
         
         case _ =>
           if (Option(pattern).toString == Option(tree).toString) {
-            println("WARNING: Monkey type matching of " + pattern + " vs. " + tree)
+            //println("WARNING: Dumb string type matching of " + pattern + " vs. " + tree)
             EmptyBindings
           } else {
-            if (depth > 0)
-              println("TYPE MISMATCH \n\texpected = " + pattern0 + "\n\t\t" + Option(pattern0).map(_.getClass.getName) + "\n\tfound = " + tree0 + "\n\t\t" + Option(tree0).map(_.getClass.getName))
+            //if (depth > 0)
+            //  println("TYPE MISMATCH \n\texpected = " + pattern0 + "\n\t\t" + Option(pattern0).map(_.getClass.getName) + "\n\tfound = " + tree0 + "\n\t\t" + Option(tree0).map(_.getClass.getName))
             throw NoTypeMatchException(pattern0, tree0, "Type matching failed", depth)
           }
       }
@@ -272,7 +305,12 @@ extends TypingTransformers
       //if (pattern != null && tree != null)
       //  ret.bindType(pattern, tree)
       //else
-        ret
+      if (false) {
+        println("Successfully bound types (depth " + depth + "):")
+        println("\ttype pattern = " + pattern + ": " + clstr(pattern))// + "; kind = " + Option(pattern).map(_.typeSymbol.kind))
+        println("\ttype found = " + tree + ": " + clstr(tree))
+      }
+      ret
     }
   }
   
@@ -283,51 +321,53 @@ extends TypingTransformers
     val patternType = getOrFixType(patternUniv)(pattern)
     val candidateType = getOrFixType(candidateUniv)(tree)
     
-    //if (depth > 0)
-    //
     val typeBindings = try {
       matchAndResolveTypeBindings(patternType, candidateType, depth)
     } catch { 
       case ex: NoTypeMatchException =>
         throw ex.copy(insideExpected = pattern, insideFound = tree)
     }
-    //println("Going down in trees (depth " + depth + "):")
-    //println("\tpattern = " + pattern + ": " + patternType + " (" + pattern.getClass.getName + ", " + clstr(patternType) + ")")
-    //println("\tfound = " + tree + ": " + candidateType + " (" + tree.getClass.getName + ", " + clstr(candidateType) + ")")
-    //println("\ttypeBindings = " + typeBindings)
+    //if (depth > 0) 
+    //{
+    //  println("Going down in trees (depth " + depth + "):")
+    //  println("\tpattern = " + pattern + ": " + patternType + " (" + pattern.getClass.getName + ", " + clstr(patternType) + ")")
+    //  println("\tfound = " + tree + ": " + candidateType + " (" + tree.getClass.getName + ", " + clstr(candidateType) + ")")
+    //  println("\ttypeBindings = " + typeBindings)
+    //}
     
-    typeBindings ++ ( 
-      (pattern, tree) match {
+    //lazy val desc = "(" + pattern + ": " + clstr(pattern) + " vs. " + tree + ": " + clstr(tree) + ")"
+    
+    typeBindings ++ {
+      val ret = (pattern, tree) match {
         case (_, _) if pattern.isEmpty && tree.isEmpty =>
+          //println("MATCH empty")
           EmptyBindings
           
         case (patternUniv.This(_), candidateUniv.This(_)) =>
+          //println("MATCH this")
           EmptyBindings
           
         case (patternUniv.Literal(patternUniv.Constant(a)), candidateUniv.Literal(candidateUniv.Constant(a2))) 
         if a == a2 =>
+          //println("MATCH literals")
           EmptyBindings
           
-        case (_: patternUniv.TypeTree, _: candidateUniv.TypeTree) =>
-          //println("# Type Trees :")
-          //println("# \texpected = " + pattern.tpe + ": " + pattern.tpe.getClass.getName)
-          //println("# \tfound = " + tree.tpe + ": " + tree.tpe.getClass.getName)
-          EmptyBindings // already handled by matchAndResolveTypeBindings
-          //Bindings(Map(), Map(pattern.tpe -> tree.tpe))
-          
         case (patternUniv.Ident(n), _) =>
-          if (internalDefs.contains(n))
+          if (internalDefs.contains(n)) {
+            //println("MATCH internal def")
             EmptyBindings
-          else /*tree match {
+          } else {/*tree match {
             case candidateUniv.Ident(nn) if n.toString == nn.toString =>
               EmptyBindings
             case _ =>*/
               //println("GOT BINDING " + pattern + " -> " + tree + " (tree is " + tree.getClass.getName + ")")
-              Bindings(Map(n.toString -> tree), Map())
-          //}
+            //println("MATCH ident")
+            Bindings(Map(n.toString -> tree), Map())
+          }
             
         case (patternUniv.ValDef(mods, name, tpt, rhs), candidateUniv.ValDef(mods2, name2, tpt2, rhs2))
         if mods.flags == mods2.flags =>
+          //println("MATCH val")
           val r = matchAndResolveTreeBindings(
             List((rhs, rhs2), (tpt, tpt2)), depth + 1
           )(
@@ -340,6 +380,7 @@ extends TypingTransformers
             r.bindName(name, candidateUniv.Ident(name2))
         
         case (patternUniv.Function(vparams, body), candidateUniv.Function(vparams2, body2)) =>
+          //println("MATCH function")
           matchAndResolveTreeBindings(
             (body, body2) :: vparams.zip(vparams2), depth + 1
           )(
@@ -347,23 +388,28 @@ extends TypingTransformers
           )
           
         case (patternUniv.TypeApply(fun, args), candidateUniv.TypeApply(fun2, args2)) =>
+          //println("MATCH type apply")
           matchAndResolveTreeBindings(
             (fun, fun2) :: args.zip(args2), depth + 1
           )
         
         case (patternUniv.Apply(a, b), candidateUniv.Apply(a2, b2)) =>
+          //println("MATCH apply")
           matchAndResolveTreeBindings(
             (a, a2) :: b.zip(b2), depth + 1
           )
           
         case (patternUniv.Block(l, v), candidateUniv.Block(l2, v2)) =>
+          //println("MATCH block")
           matchAndResolveTreeBindings(
             (v, v2) :: l.zip(l2), depth + 1
           )(
             internalDefs ++ getNamesDefinedIn(patternUniv)(l)
           )
           
-        case (patternUniv.Select(a, n), candidateUniv.Select(a2, n2)) if n.toString == n2.toString =>
+        case (patternUniv.Select(a, n), candidateUniv.Select(a2, n2)) 
+        if n.toString == n2.toString =>
+          //println("MATCH select")
           //println("Matched select " + a + " vs. " + a2)
             matchAndResolveTreeBindings(
               a, a2, depth + 1
@@ -373,22 +419,54 @@ extends TypingTransformers
         //case (ClassDef(mods, name, tparams, impl), ClassDef(mods2, name2, tparams2, impl2)) =
         //  matchAndResolveTreeBindings(impl, impl)(internalDefs + name)
         
-        case (_, candidateUniv.TypeApply(target, typeArgs)) if workAroundMissingTypeApply =>
-          println("Workaround for missing TypeApply in pattern... (loosing types " + typeArgs + ")")
-          
+        case (_, candidateUniv.TypeApply(target, typeArgs)) 
+        if workAroundMissingTypeApply =>
+          //println("MATCH type apply + workaround")
+          //println("Workaround for missing TypeApply in pattern... (loosing types " + typeArgs + ")")
           matchAndResolveTreeBindings(pattern, target, depth + 1)
+        
+        case (patternUniv.AppliedTypeTree(tpt, args), candidateUniv.AppliedTypeTree(tpt2, args2)) 
+        if args.size == args2.size =>
+          //println("MATCH applied type trees " + desc)
+          matchAndResolveTreeBindings(tpt, tpt2, depth + 1) ++
+          matchAndResolveTreeBindings(args.zip(args2), depth + 1)
+          
+        case (patternUniv.SelectFromTypeTree(qualifier, name), candidateUniv.SelectFromTypeTree(qualifier2, name2)) 
+        if name.toString == name2.toString =>
+          //println("MATCH select from type trees " + desc)
+          matchAndResolveTreeBindings(qualifier, qualifier2, depth + 1)
+          
+        case (patternUniv.SingletonTypeTree(ref), candidateUniv.SingletonTypeTree(ref2)) =>
+          //println("MATCH singleton type trees " + desc)
+          matchAndResolveTreeBindings(ref, ref2, depth + 1)
+          
+        case (patternUniv.TypeTree(), candidateUniv.TypeTree()) 
+        if pattern.toString == "<type ?>" =>
+          //println("MATCH <type ?> tree " + desc)
+          EmptyBindings
+          
         case _ =>
           if (Option(pattern).toString == Option(tree).toString) {
-            println("WARNING: Monkey matching of " + pattern + " vs. " + tree)
+            //println("WARNING: Monkey matching of " + pattern + " vs. " + tree)
             EmptyBindings
           } else {
-            if (depth > 0)
-                println("TREE MISMATCH \n\texpected = " + pattern + "\n\t\t" + pattern.getClass.getName + "\n\tfound = " + tree + "\n\t\t" + tree.getClass.getName)
+            //if (depth > 0)
+            //    println("TREE MISMATCH \n\texpected = " + toTypedString(pattern) + "\n\t\t" + pattern.getClass.getName + "\n\tfound = " + toTypedString(tree) + "\n\t\t" + tree.getClass.getName)
             throw NoTreeMatchException(pattern, tree, "Different trees", depth)
           }
       }
-    )
+      
+      if (false) {
+        println("Successfully bound trees (depth " + depth + "):")
+        println("\ttree pattern = " + pattern + ": " + clstr(pattern))// + "; kind = " + Option(pattern).map(_.typeSymbol.kind))
+        println("\ttree found = " + tree + ": " + clstr(tree))
+      }
+      ret
+    }
   }
+  private def toTypedString(v: Any) = 
+    v + Option(v).map(_ => ": " + v.getClass.getName + " <- " + v.getClass.getSuperclass.getSimpleName).getOrElse("")
+                
   
   def getOrFixType(u: api.Universe)(tree: u.Tree) = {
     import u._
@@ -407,30 +485,15 @@ extends TypingTransformers
             case _: Boolean => BooleanTpe
             case _: String => StringTpe
             case _: Unit => UnitTpe
+            //case null => UnitTpe // TODO hem...
             case _ =>
               null
           }
         case _ =>
+          //println("Cannot fix type for " + tree + ": " + clstr(tree))
           null
       }
     else
       t
-  }
-  
-  // Throws lots of exceptions : NoTreeMatchException and NoTypeMatchException
-  def matchAndResolveBindings(pattern: patternUniv.Tree, tree: candidateUniv.Tree): Bindings = 
-  {
-    /*val typeBindings = matchAndResolveTypeBindings(
-      getOrFixType(patternUniv)(pattern), getOrFixType(candidateUniv)(tree)
-    )
-      
-    val treeBindings = matchAndResolveTreeBindings(
-      pattern, tree
-    )
-    
-    typeBindings ++ treeBindings*/
-    matchAndResolveTreeBindings(
-      pattern, tree
-    )
   } 
 }
