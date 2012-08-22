@@ -5,8 +5,6 @@ import scala.tools.nsc.ast.TreeDSL
 import scala.tools.nsc.transform.TypingTransformers
 import Function.tupled
 
-import HacksAndWorkarounds._
-
 trait PatternMatchers      
 extends TypingTransformers
 //   with MirrorConversions
@@ -211,7 +209,7 @@ extends TypingTransformers
     
     //lazy val desc = "(" + pattern + ": " + clstr(pattern) + " vs. " + tree + ": " + clstr(tree) + ")"
     
-    if (workAroundNullPatternTypes &&
+    if (HacksAndWorkarounds.workAroundNullPatternTypes &&
         tree == null && pattern != null) {
       throw NoTypeMatchException(pattern0, tree0, "Type kind matching failed (" + pattern + " vs. " + tree + ")", depth)
     } 
@@ -230,7 +228,7 @@ extends TypingTransformers
       val ret = (pattern, tree) match {
         // TODO remove null acceptance once macro typechecker is fixed !
         case (_, _)
-        if pattern == null && workAroundNullPatternTypes => 
+        if pattern == null && HacksAndWorkarounds.workAroundNullPatternTypes => 
           EmptyBindings
           
         case (patternUniv.NoType, candidateUniv.NoType) => 
@@ -387,7 +385,7 @@ extends TypingTransformers
         //  matchAndResolveTreeBindings(impl, impl)(internalDefs + name)
         
         case (_, candidateUniv.TypeApply(target, typeArgs)) 
-        if workAroundMissingTypeApply =>
+        if HacksAndWorkarounds.workAroundMissingTypeApply =>
           //println("Workaround for missing TypeApply in pattern... (loosing types " + typeArgs + ")")
           matchAndResolveTreeBindings(pattern, target, depth + 1)
         
