@@ -1,6 +1,6 @@
 package scalaxy ; package plugin
 //import common._
-import language.existentials
+//import language.existentials
 import scala.tools.reflect.ToolBox
 
 import pluginBase._
