@@ -10,11 +10,11 @@ Key features:
 
 To compile a file test.scala using the compiler plugin, use [paulp's sbt script](https://github.com/paulp/sbt-extras) :
 
-    sbt "run test.scala"
+    sbt "project scalaxy-compiler-plugin" "run Test/test.scala"
 
 To see what's happening, you might want to print the AST before and after the rewrite :
 
-    sbt "run test.scala -Xprint:typer -Xprint:scalaxy-rewriter"
+    sbt "project scalaxy-compiler-plugin" "run Test/test.scala -Xprint:typer -Xprint:scalaxy-rewriter"
     
 The rewrites are defined in `Rewrites` and look like this :
 
