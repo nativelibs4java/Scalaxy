@@ -68,6 +68,20 @@ trait ScalaxyPluginDefLike extends PluginDef {
   override def getCopyrightMessage: String =
     "Scalaxy Plugin\nCopyright Olivier Chafik 2010-2012"
 }
+
+/*
+object Compilets {
+  val compiletsListResourcePath = "scalaxy.compilets"
+  
+  def getCompilets = {
+    val e = getClass.getClassLoader.getResources(compiletsListResourcePath)
+    Iterator continually { e.hasMoreElements } takeWhile(_ == true) map(v => {
+      v readText split("\n").foreach(Class.forName(_))
+    })
+  }
+}
+*/
+
 object ScalaxyPluginDef extends ScalaxyPluginDefLike {
   override def matchActionHolders = Seq(
     //compilets.Example,
