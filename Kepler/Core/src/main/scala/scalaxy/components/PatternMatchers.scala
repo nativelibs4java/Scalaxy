@@ -231,23 +231,18 @@ extends TypingTransformers
         // TODO remove null acceptance once macro typechecker is fixed !
         case (_, _)
         if pattern == null && workAroundNullPatternTypes => 
-          //println("TYPE MATCH null expected type")
           EmptyBindings
           
         case (patternUniv.NoType, candidateUniv.NoType) => 
-          //println("TYPE MATCH NoType")
           EmptyBindings
           
         case (patternUniv.NoPrefix, candidateUniv.NoPrefix) => 
-          //println("TYPE MATCH NoPrefix")
           EmptyBindings
           
         case (patternUniv.UnitTpe, candidateUniv.UnitTpe) => 
-          //println("TYPE MATCH UnitTpe")
           EmptyBindings
           
         case (_, _) if isTypeParameter(pattern) =>
-          //println("TYPE MATCH type param")
           Bindings(Map(), Map(pattern -> tree))
           
         //case (_, _) if candNoType && !patNoType =>
@@ -259,23 +254,18 @@ extends TypingTransformers
         //  EmptyBindings
           
         case (patternUniv.TypeBounds(lo, hi), TypeBounds(lo2, hi2)) =>
-          //println("TYPE MATCH type bounds")
           matchAndResolveTypeBindings(List((lo, lo2), (hi, hi2)), depth + 1)
           
         case (patternUniv.MethodType(paramtypes, result), MethodType(paramtypes2, result2)) =>
-          //println("TYPE MATCH method")
           matchAndResolveTypeBindings((result, result2) :: zipTypes(paramtypes, paramtypes2), depth + 1)
           
         case (patternUniv.NullaryMethodType(result), NullaryMethodType(result2)) =>
-          //println("TYPE MATCH nullary method")
           matchAndResolveTypeBindings(result, result2, depth + 1)
           
         case (patternUniv.PolyType(tparams, result), PolyType(tparams2, result2)) =>
-          //println("TYPE MATCH poly")
           matchAndResolveTypeBindings((result, result2):: zipTypes(tparams, tparams2), depth + 1)
           
         case (patternUniv.ExistentialType(tparams, result), ExistentialType(tparams2, result2)) =>
-          //println("TYPE MATCH existential")
           matchAndResolveTypeBindings((result, result2) :: zipTypes(tparams, tparams2), depth + 1)
         
         case (patternUniv.TypeRef(pre, sym, args), TypeRef(pre2, sym2, args2)) 
@@ -283,10 +273,7 @@ extends TypingTransformers
            //sym.kind == sym2.kind &&
            sym != null && sym2 != null &&
            sym.name.toString == sym2.name.toString //&&
-           //pattern.typeSymbol != null && tree.typeSymbol != null &&
-           //pattern.typeSymbol.kind == tree.typeSymbol.kind 
         =>
-          //println("TYPE MATCH typeref " + desc)
           matchAndResolveTypeBindings(pre, pre2, depth + 1) ++ 
           matchAndResolveTypeBindings(args.zip(args2), depth + 1)
         
@@ -301,10 +288,6 @@ extends TypingTransformers
           }
       }
       
-      //println("Successfully bound " + pattern + " vs. " + tree)
-      //if (pattern != null && tree != null)
-      //  ret.bindType(pattern, tree)
-      //else
       if (false) {
         println("Successfully bound types (depth " + depth + "):")
         println("\ttype pattern = " + pattern + ": " + clstr(pattern))// + "; kind = " + Option(pattern).map(_.typeSymbol.kind))
@@ -340,34 +323,24 @@ extends TypingTransformers
     typeBindings ++ {
       val ret = (pattern, tree) match {
         case (_, _) if pattern.isEmpty && tree.isEmpty =>
-          //println("MATCH empty")
           EmptyBindings
           
         case (patternUniv.This(_), candidateUniv.This(_)) =>
-          //println("MATCH this")
           EmptyBindings
           
         case (patternUniv.Literal(patternUniv.Constant(a)), candidateUniv.Literal(candidateUniv.Constant(a2))) 
         if a == a2 =>
-          //println("MATCH literals")
           EmptyBindings
           
         case (patternUniv.Ident(n), _) =>
           if (internalDefs.contains(n)) {
-            //println("MATCH internal def")
             EmptyBindings
-          } else {/*tree match {
-            case candidateUniv.Ident(nn) if n.toString == nn.toString =>
-              EmptyBindings
-            case _ =>*/
-              //println("GOT BINDING " + pattern + " -> " + tree + " (tree is " + tree.getClass.getName + ")")
-            //println("MATCH ident")
+          } else {
             Bindings(Map(n.toString -> tree), Map())
           }
             
         case (patternUniv.ValDef(mods, name, tpt, rhs), candidateUniv.ValDef(mods2, name2, tpt2, rhs2))
         if mods.flags == mods2.flags =>
-          //println("MATCH val")
           val r = matchAndResolveTreeBindings(
             List((rhs, rhs2), (tpt, tpt2)), depth + 1
           )(
@@ -380,7 +353,6 @@ extends TypingTransformers
             r.bindName(name, candidateUniv.Ident(name2))
         
         case (patternUniv.Function(vparams, body), candidateUniv.Function(vparams2, body2)) =>
-          //println("MATCH function")
           matchAndResolveTreeBindings(
             (body, body2) :: vparams.zip(vparams2), depth + 1
           )(
@@ -388,19 +360,16 @@ extends TypingTransformers
           )
           
         case (patternUniv.TypeApply(fun, args), candidateUniv.TypeApply(fun2, args2)) =>
-          //println("MATCH type apply")
           matchAndResolveTreeBindings(
             (fun, fun2) :: args.zip(args2), depth + 1
           )
         
         case (patternUniv.Apply(a, b), candidateUniv.Apply(a2, b2)) =>
-          //println("MATCH apply")
           matchAndResolveTreeBindings(
             (a, a2) :: b.zip(b2), depth + 1
           )
           
         case (patternUniv.Block(l, v), candidateUniv.Block(l2, v2)) =>
-          //println("MATCH block")
           matchAndResolveTreeBindings(
             (v, v2) :: l.zip(l2), depth + 1
           )(
@@ -409,11 +378,9 @@ extends TypingTransformers
           
         case (patternUniv.Select(a, n), candidateUniv.Select(a2, n2)) 
         if n.toString == n2.toString =>
-          //println("MATCH select")
-          //println("Matched select " + a + " vs. " + a2)
-            matchAndResolveTreeBindings(
-              a, a2, depth + 1
-            )
+          matchAndResolveTreeBindings(
+            a, a2, depth + 1
+          )
         
         // TODO
         //case (ClassDef(mods, name, tparams, impl), ClassDef(mods2, name2, tparams2, impl2)) =
@@ -421,33 +388,28 @@ extends TypingTransformers
         
         case (_, candidateUniv.TypeApply(target, typeArgs)) 
         if workAroundMissingTypeApply =>
-          //println("MATCH type apply + workaround")
           //println("Workaround for missing TypeApply in pattern... (loosing types " + typeArgs + ")")
           matchAndResolveTreeBindings(pattern, target, depth + 1)
         
         case (patternUniv.AppliedTypeTree(tpt, args), candidateUniv.AppliedTypeTree(tpt2, args2)) 
         if args.size == args2.size =>
-          //println("MATCH applied type trees " + desc)
           matchAndResolveTreeBindings(tpt, tpt2, depth + 1) ++
           matchAndResolveTreeBindings(args.zip(args2), depth + 1)
           
         case (patternUniv.SelectFromTypeTree(qualifier, name), candidateUniv.SelectFromTypeTree(qualifier2, name2)) 
         if name.toString == name2.toString =>
-          //println("MATCH select from type trees " + desc)
           matchAndResolveTreeBindings(qualifier, qualifier2, depth + 1)
           
         case (patternUniv.SingletonTypeTree(ref), candidateUniv.SingletonTypeTree(ref2)) =>
-          //println("MATCH singleton type trees " + desc)
           matchAndResolveTreeBindings(ref, ref2, depth + 1)
           
         case (patternUniv.TypeTree(), candidateUniv.TypeTree()) 
         if pattern.toString == "<type ?>" =>
-          //println("MATCH <type ?> tree " + desc)
           EmptyBindings
           
         case _ =>
           if (Option(pattern).toString == Option(tree).toString) {
-            //println("WARNING: Monkey matching of " + pattern + " vs. " + tree)
+            println("WARNING: Monkey matching of " + pattern + " vs. " + tree)
             EmptyBindings
           } else {
             //if (depth > 0)
@@ -485,7 +447,6 @@ extends TypingTransformers
             case _: Boolean => BooleanTpe
             case _: String => StringTpe
             case _: Unit => UnitTpe
-            //case null => UnitTpe // TODO hem...
             case _ =>
               null
           }

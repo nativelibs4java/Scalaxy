@@ -80,7 +80,7 @@ extends PluginComponent
       }
     }
     
-    //if (options.verbose)
+    if (options.verbose)
     for (MatchActionDefinition(n, _, _, m) <- rawMatchActions) {
       println("Registered match action '" + n + "' with pattern : " + m.pattern.tree)
     }

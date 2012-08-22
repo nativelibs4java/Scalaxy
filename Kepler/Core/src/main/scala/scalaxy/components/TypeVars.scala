@@ -6,7 +6,7 @@ import scala.reflect.runtime._
 import scala.reflect.runtime.universe._
 
 object TypeVars {
-  /*
+  ///*
   class T1
   class T2
   class T3
@@ -38,11 +38,11 @@ object TypeVars {
     typeTag[T13],
     typeTag[T14]
   )
-  */
+  //*/
   
   // Using classes that are in the same classloader as the mirror...
   // TODO ditch this ugly hack and use Tx classes above, or (better) free types.
-  ///*
+  /*
   private val typeTags = Seq(
     typeTag[scala.reflect.api.Universe#TreeApi],
     typeTag[scala.reflect.api.Universe#SelectApi],
