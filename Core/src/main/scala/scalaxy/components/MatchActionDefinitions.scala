@@ -21,7 +21,7 @@ object MatchActionDefinitions
     case _ if c == classOf[Double] => java.lang.Double.valueOf(0.0)
     case _ if c == classOf[Float] => java.lang.Float.valueOf(0.0f)
     case _ if c == classOf[Byte] => java.lang.Byte.valueOf(0: Byte)
-    //case _ if classOf[TypeTag[_]].isAssignableFrom(c) => scala.reflect.mirror.ConcreteTypeTag.Any
+    case _ if classOf[scala.reflect.base.Universe#TypeTag[_]].isAssignableFrom(c) =>   universe.typeTag[Int]
     case _ => null
   }
   
@@ -33,11 +33,13 @@ object MatchActionDefinitions
     ) yield 
     {
       val r = m.invoke(holder, m.getParameterTypes.map(c => {
-        if (c == classOf[universe.TypeTag[_]]) {
+        if (classOf[universe.TypeTag[_]].isAssignableFrom(c)) {
           val tt = TypeVars.getNthTypeVarTag(typeParamCount)
           typeParamCount += 1
+          //defaultValue(c)
           tt
-        } else {
+        } else 
+        {
           paramCount += 1
           defaultValue(c)
         }

@@ -5,7 +5,6 @@ object Java {
   import matchers._
   import macros._
   
-  
   def warnAccessibleField(f: java.lang.reflect.Field, b: Boolean) =
     when(f.setAccessible(b))(b) {
       case True() :: Nil =>

@@ -9,4 +9,6 @@ object HacksAndWorkarounds
   
   val fixTypedExpressionsType = true
   val healSymbols = true
+  
+  val useStringBasedTypeEquality = true
 }

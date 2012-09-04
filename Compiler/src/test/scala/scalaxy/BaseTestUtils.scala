@@ -92,7 +92,11 @@ trait BaseTestUtils {
   def commonImports = ""
   
   def getSnippetBytecode(className: String, source: String, subDir: String, compiler: SharedCompiler) = {
-    val src = "class " + className + " { def invoke(): Unit = {\n" + commonImports + "\n" + source + "\n}}"
+    val src = "class " + className + " { " + 
+      commonImports + "\n" + 
+      source + //"def invoke(): Unit = {\n" + source + "\n}\n" +
+      "\n}"
+    //println(src)
     val outDir = new File(baseOutDir, subDir)
     outDir.mkdirs
     val srcFile = new File(outDir, className + ".scala")
@@ -127,6 +131,7 @@ trait BaseTestUtils {
      */
     
     byteCode.
+      //replaceAll(java.util.regex.Pattern.quote(className), "testClass"). 
       replaceAll("scala/reflect/ClassManifest", "scala/reflect/Manifest").
       replaceAll("#\\d+", "")
   }
@@ -143,25 +148,36 @@ trait BaseTestUtils {
     val (_, testMethodName) = testClassInfo
     
     import ExecutionContext.Implicits.global
-    val withPluginFut = future { getSnippetBytecode(testMethodName, source, "withPlugin", SharedCompilerWithPlugins) }
-    val expected = getSnippetBytecode(testMethodName, reference, "expected", SharedCompilerWithoutPlugins)
-    val withoutPlugin = if (allowSameResult) null else getSnippetBytecode(testMethodName, source, "withoutPlugin", SharedCompilerWithoutPlugins)
+    
+    val withPluginFut = future { 
+      getSnippetBytecode(testMethodName, source, "withPlugin", SharedCompilerWithPlugins) 
+    }
+    val expected = 
+      getSnippetBytecode(testMethodName, reference, "expected", SharedCompilerWithoutPlugins)
+      
+    val withoutPlugin = if (allowSameResult) null else
+      getSnippetBytecode(testMethodName, source, "withoutPlugin", SharedCompilerWithoutPlugins)
+      
     val withPlugin = Await.result(withPluginFut, Duration.Inf)
 
-    if (!allowSameResult)
-      assertTrue("Expected result already found without any plugin !!! (was the Scala compiler improved ?)", expected != withoutPlugin)
-      
-    if (expected != withPlugin) {
-      if (printDifferences) {
-        def trans(tit: String, s: String) =
-          println(tit + " :\n\t" + s.replaceAll("\n", "\n\t"))
-  
-        trans("EXPECTED", expected)
-        trans("FOUND", withPlugin)
-      }
+    if (printDifferences && ( 
+        !allowSameResult && expected == withoutPlugin ||
+        expected != withPlugin
+    )) {
+      def trans(tit: String, s: String) =
+        println(tit + " :\n\t" + s.replaceAll("\n", "\n\t"))
+    
+      trans("EXPECTED", expected)
+      trans("FOUND", withPlugin)
+    }
 
+    if (!allowSameResult) {
+      assertTrue("Expected result already found without any plugin !!! (was the Scala compiler improved ?)", expected != withoutPlugin)
+    }
+    if (expected != withPlugin) {
       assertEquals(expected, withPlugin)
     }
+      
   }
   def getClassByteCode(className: String, classpath: String) = {
     val args = Array("-c", "-classpath", classpath, className)

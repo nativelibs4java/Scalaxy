@@ -15,6 +15,10 @@ extends TypingTransformers
 
   import scala.reflect._
   
+  private def ultraLogPattern(txt: => String) {
+    //println(txt)
+  }
+  
   val patternUniv: api.Universe 
   val candidateUniv: api.Universe with scala.reflect.internal.Importers
   
@@ -22,8 +26,28 @@ extends TypingTransformers
     nameBindings: Map[String, candidateUniv.Tree] = Map(), 
     typeBindings: Map[patternUniv.Type, candidateUniv.Type] = Map()
   ) {
-    def getType(t: patternUniv.Type): Option[candidateUniv.Type] =
-      Option(t).flatMap(typeBindings.get(_))
+    lazy val stringIndexedTypeBindings =
+      typeBindings.map { case (k, v) => (k.toString, (k, v)) }
+          
+    def getType(t: patternUniv.Type): Option[candidateUniv.Type] = { 
+      Option(t).
+        flatMap(tt => {
+          var typeBinding = typeBindings.get(tt)
+          if (typeBinding == None &&
+              HacksAndWorkarounds.useStringBasedTypeEquality) 
+          {
+            for ((origKey, value) <- stringIndexedTypeBindings.get(tt.toString))
+            {
+              typeBinding = Some(value) 
+                
+              ultraLogPattern("WARNING: type " + t + " (" + clstr(t) + ") was deemed to be equal to " + origKey + "(" + clstr(origKey) + "), but they're not equal!")
+              
+              ultraLogPattern("t.hashCode = " + t.hashCode + ", origKey.hashCode = " + origKey.hashCode)
+            }
+          }
+          typeBinding
+        })
+    }
     
     def bindName(n: patternUniv.Name, v: candidateUniv.Tree) =
       copy(nameBindings = nameBindings + (n.toString -> v))
@@ -171,23 +195,18 @@ extends TypingTransformers
         def isTypeParameter: Boolean
       }
       
-      val s = t.typeSymbol
-      
+      TypeVars.isTypeVar(runtime.universe)(t.asInstanceOf[runtime.universe.Type]) ||
       {
-        try {
+        val s = t.typeSymbol
+        //try {
           s != null &&
           s.asInstanceOf[PlasticSymbol].isTypeParameter
-        } catch { case _ => 
-          false // TODO report to Eugene:
-          // scala.NotImplementedError: an implementation is missing
-          // at scala.Predef$.$qmark$qmark$qmark(Predef.scala:235)
-          // at scala.reflect_compat$class.mirror(compat.scala:20)
-          // at scala.reflect.package$.mirror$lzycompute(package.scala:3)
-          // at scala.reflect.package$.mirror(package.scala:3)
-          // at scalaxy.components.PatternMatchers$class.isTypeParameter(PatternMatchers.scala:168)
-        }
+        //} catch { case ex => 
+        //  ex.printStackTrace
+        //  false // TODO report to Eugene:
+        //}
       } /*||
-      TypeVars.isTypeVar(mirror)(t.asInstanceOf[mirror.Type])*/
+      */
     }
   } 
     
@@ -213,6 +232,15 @@ extends TypingTransformers
       patternUniv.definitions.UnitClass.asType.toType
     //lazy val desc = "(" + pattern + ": " + clstr(pattern) + " vs. " + tree + ": " + clstr(tree) + ")"
     
+    if (isTypeParameter(pattern)) {
+      Bindings(Map(), Map(pattern -> tree))
+    } 
+    else
+    if (pattern != null && pattern.toString.matches(".*\\.T\\d+")) {
+      ultraLogPattern("TYPE MATCHING KINDA FAILED ON isTypeParameter(" + pattern + ")")
+      Bindings(Map(), Map(pattern -> tree))
+    }
+    else
     if (HacksAndWorkarounds.workAroundNullPatternTypes &&
         tree == null && pattern != null) {
       throw NoTypeMatchException(pattern0, tree0, "Type kind matching failed (" + pattern + " vs. " + tree + ")", depth)
@@ -241,11 +269,8 @@ extends TypingTransformers
         case (patternUniv.NoPrefix, candidateUniv.NoPrefix) => 
           EmptyBindings
           
-        case (patternUnitTpe, candidateUnitTpe) => 
+        case (`patternUnitTpe`, `candidateUnitTpe`) => 
           EmptyBindings
-          
-        case (_, _) if isTypeParameter(pattern) =>
-          Bindings(Map(), Map(pattern -> tree))
           
         //case (_, _) if candNoType && !patNoType =>
         //  throw NoTypeMatchException(pattern0, tree0, "Type matching failed", depth)

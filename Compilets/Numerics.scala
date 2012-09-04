@@ -6,7 +6,6 @@ import macros._
 
 object Numerics {
   import math.Numeric.Implicits._
-  import Ordering.Implicits._
   
   def plus[T : TypeTag : Numeric](a: T, b: T) = replace(
     a + b, // Numeric.Implicits.infixNumericOps[T : TypeTag](a)(implicitly[Numeric[T]]).+(b)
@@ -27,6 +26,8 @@ object Numerics {
     - a,
     implicitly[Numeric[T]].negate(a)
   )
+  
+  import Ordering.Implicits._
   
   def gt[T : TypeTag : Numeric](a: T, b: T) = replace(
     a > b,

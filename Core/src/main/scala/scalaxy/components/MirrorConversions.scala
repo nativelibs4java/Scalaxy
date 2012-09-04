@@ -13,7 +13,11 @@ extends PatternMatchers
 
   import global.definitions._
   
-  def tryAndType(tree: global.Tree) = {
+  private def ultraLogConversions(txt: => String) {
+    //println(txt)
+  }
+  
+  private def tryAndType(tree: global.Tree) = {
     try {
       global.typer.typed { tree }
     } catch { case _ => }
@@ -28,20 +32,47 @@ extends PatternMatchers
     new global.StandardImporter {
       val from = mirror.asInstanceOf[scala.reflect.internal.SymbolTable]
       
-      override def importTree(tree: from.Tree) = tree match {
-        case from.Ident(n) =>
-          bindings.nameBindings.get(n.toString).getOrElse(super.importTree(tree)).asInstanceOf[global.Tree]
-            
-        case _ =>
-          super.importTree(tree)
+      //override def importSymbol(sym: from.Symbol) = {
+      //  println("IMPORT SYMBOL " + sym)
+      //  val imp = if (tpe == null)
+      //    null
+      //  else {
+      //    lazy val it = resolveType(global)(super.importType(tpe))
+      //    bindings.getType(it.asInstanceOf[patternUniv.Type]).getOrElse(it).asInstanceOf[global.Type]
+      //  }
+      //  /*val imp =
+      //  try {
+      //    importType(sym.asType.toType).typeSymbol
+      //  } catch { case _ =>
+      //    super.importSymbol(sym)
+      //  }*/
+      //  println("-> SYMBOL " + imp)
+      //  imp
+      //}
+      
+      override def importTree(tree: from.Tree) = {
+        ultraLogConversions("IMPORT TREE (tpe = " + tree.tpe + ", cls = " + tree.getClass.getName + "): " + tree)
+        val imp = tree match {
+          case from.Ident(n) =>
+            bindings.nameBindings.get(n.toString).getOrElse(super.importTree(tree)).asInstanceOf[global.Tree]
+              
+          case _ =>
+            super.importTree(tree)
+        }
+        ultraLogConversions("-> TREE " + imp)
+        imp
       }
       override def importType(tpe: from.Type): global.Type = {
-        if (tpe == null)
+        ultraLogConversions("IMPORT TYPE " + tpe)
+        val imp = if (tpe == null)
           null
         else {
-          val it = resolveType(global)(super.importType(tpe))
+          val rtpe = resolveType(from)(tpe)
+          val it = resolveType(global)(super.importType(rtpe))
           bindings.getType(it.asInstanceOf[patternUniv.Type]).getOrElse(it).asInstanceOf[global.Type]
         }
+        ultraLogConversions("-> TYPE " + imp)
+        imp
       }
     }
   }
@@ -86,7 +117,7 @@ extends PatternMatchers
     try {
       importer.importTree(m.asInstanceOf[importer.from.Tree])
     } catch { case ex => 
-      println("FAILED importer.importTree(" + m + "):\n\t" + ex)
+      ultraLogConversions("FAILED importer.importTree(" + m + "):\n\t" + ex)
       throw ex
     }
   }

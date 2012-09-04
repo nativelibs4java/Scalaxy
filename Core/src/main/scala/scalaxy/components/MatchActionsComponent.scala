@@ -80,9 +80,10 @@ extends PluginComponent
       }
     }
     
-    if (options.verbose)
-    for (MatchActionDefinition(n, _, _, m) <- rawMatchActions) {
-      println("Registered match action '" + n + "' with pattern : " + m.pattern.tree)
+    if (options.verbose) {
+      for (MatchActionDefinition(n, _, _, m) <- rawMatchActions) {
+        println("Registered match action '" + n + "' with pattern : " + m.pattern.tree)
+      }
     }
     
     //println("Found " + rawMatchActions.size + " match actions in " + filteredHolders.size + " different holders")
@@ -132,8 +133,10 @@ extends PluginComponent
           try {
             val bindings = 
               matchAndResolveTreeBindings(matchAction.pattern.tree.asInstanceOf[patternUniv.Tree], expanded.asInstanceOf[candidateUniv.Tree])
-              
-            //println("Bindings for '" + n + "':\n\t" + (bindings.nameBindings ++ bindings.typeBindings).mkString("\n\t"))
+            
+            if (options.verbose) {
+              println("Bindings for '" + n + "':\n\t" + (bindings.nameBindings ++ bindings.typeBindings).mkString("\n\t"))
+            }
             
             //if (bindings.nameBindings.size < paramCount
             //    /* || TODO check type params
@@ -219,9 +222,11 @@ extends PluginComponent
           
           expanded = typer.typed(expanded, EXPRmode, expectedTpe)
           
-          //println()
-          //println("FINAL EXPANSION = \n" + nodeToString(expanded))
-          //println()
+          if (options.verbose) {
+            println()
+            println("FINAL EXPANSION = \n" + nodeToString(expanded))
+            println()
+          }
           
           if (expanded.tpe == null || expanded.tpe == NoType)
             expanded.tpe = tpe
