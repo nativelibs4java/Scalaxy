@@ -4,7 +4,9 @@ import scala.reflect.runtime._
 import scala.reflect.runtime.universe._
 
 package object macros
-{ 
+{
+  import language.experimental.macros
+  
   def fail(message: String)(pattern: Any): MatchError =
     macro MacroImpls.fail
   

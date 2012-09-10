@@ -69,7 +69,9 @@ extends PatternMatchers
         else {
           val rtpe = resolveType(from)(tpe)
           val it = resolveType(global)(super.importType(rtpe))
-          bindings.getType(it.asInstanceOf[patternUniv.Type]).getOrElse(it).asInstanceOf[global.Type]
+          //TODO? 
+          //bindings.getType(it.asInstanceOf[patternUniv.Type]).getOrElse(it).asInstanceOf[global.Type]
+          bindings.getType(rtpe.asInstanceOf[patternUniv.Type]).getOrElse(it).asInstanceOf[global.Type]
         }
         ultraLogConversions("-> TYPE " + imp)
         imp

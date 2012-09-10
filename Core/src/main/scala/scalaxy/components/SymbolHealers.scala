@@ -109,7 +109,7 @@ extends TypingTransformers
         } catch { case ex =>
           println("ERROR while assigning missing symbols to " + tree + " : " + ex)
           println(ex)
-          //ex.printStackTrace
+          ex.printStackTrace
           throw ex
         }
       }

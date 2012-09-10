@@ -61,12 +61,36 @@ extends PluginComponent
   val matchActions = {
     val filteredHolders = matchActionHolders.filter(_ != null)
     
+    lazy val mirrorToolBox =
+      runtime.universe.rootMirror.mkToolBox()
+    
     val rawMatchActions = filteredHolders.flatMap(holder => {
       val defs = getMatchActionDefinitions(holder)
       if (defs.isEmpty)
         sys.error("ERROR: no definition in holder " + holder)
         
-      defs//.map({case (n, a) => (n, a.typeCheck(tb.typeCheck(_, _))) })
+      if (HacksAndWorkarounds.retypeCheckExpressionTree)
+        defs.map {
+          case d: MatchActionDefinition => 
+          d.copy(matchAction = d.matchAction.typeCheck {
+            case (tree, tpe) =>
+              val res = mirrorToolBox.typeCheck(tree, tpe)
+              res /*
+              new runtime.universe.Transformer {
+                override def transform(tree: runtime.universe.Tree) = {
+                  val tt = super.transform(tree)
+                  try {
+                    mirrorToolBox.typeCheck(tt)
+                  } catch { case ex => 
+                    ex.printStackTrace
+                    tt
+                  }
+                }
+              }.transform(res) //*/
+          }) 
+        }
+      else
+        defs
     })
     
     if (HacksAndWorkarounds.fixTypedExpressionsType) {
@@ -126,7 +150,13 @@ extends PluginComponent
   def newTransformer(unit: CompilationUnit) = new TypingTransformer(unit) {  
     override def transform(tree: Tree): Tree = {
       try {
-        val sup = super.transform(tree)
+        val sup = try {
+          super.transform(tree)
+        } catch { case ex => 
+          ex.printStackTrace
+          //println("Failed to super.transform(" + tree + "): " + ex)
+          tree
+        }
         var expanded = sup
         
         for ((n, MatchActionDefinition(_, paramCount, typeParamCount, matchAction)) <- matchActions) {
@@ -134,7 +164,8 @@ extends PluginComponent
             val bindings = 
               matchAndResolveTreeBindings(matchAction.pattern.tree.asInstanceOf[patternUniv.Tree], expanded.asInstanceOf[candidateUniv.Tree])
             
-            if (options.verbose) {
+            //if (options.verbose) 
+            {
               println("Bindings for '" + n + "':\n\t" + (bindings.nameBindings ++ bindings.typeBindings).mkString("\n\t"))
             }
             
@@ -195,7 +226,7 @@ extends PluginComponent
                 println(")")
               }
             case NoTreeMatchException(expected, found, msg, depth) =>
-              if (false)//depth > 0) 
+              if (false)//depth > 1) 
               {
                 println("TREE ERROR: in replacement '" + n + "' at " + tree.pos + " : " + msg +
                   " (\n\texpected = " + toTypedString(expected) + 
