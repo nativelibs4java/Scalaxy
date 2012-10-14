@@ -132,7 +132,7 @@ extends TypingTransformers
               t
             else
               tt
-          } catch { case ex =>
+          } catch { case ex: Throwable =>
             // TODO report to Eugene
             // ex.printStackTrace
             tt
@@ -505,7 +505,7 @@ extends TypingTransformers
         case _ =>
           val st = try {
             tree.symbol.asType.toType
-          } catch { case ex => null }
+          } catch { case ex: Throwable => null }
           
           println("Cannot fix type for " + tree + ": " + clstr(tree) + " (symbol = " + st + ")")
           st

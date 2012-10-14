@@ -32,7 +32,6 @@ class NumericsTest extends BaseTestUtils {
   def minus = testBinOp("-", "minus")
   @Test
   def times = testBinOp("*", "times")
-  /*
   @Test
   def gt = testBinOp(">", "gt")
   @Test
@@ -41,5 +40,4 @@ class NumericsTest extends BaseTestUtils {
   def gteq = testBinOp(">=", "gteq")
   @Test
   def lteq = testBinOp("<=", "lteq")
-  */
 }

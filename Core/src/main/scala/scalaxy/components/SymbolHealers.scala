@@ -106,7 +106,7 @@ extends TypingTransformers
             case _ =>
               super.transform(tree)
           }
-        } catch { case ex =>
+        } catch { case ex: Throwable =>
           println("ERROR while assigning missing symbols to " + tree + " : " + ex)
           println(ex)
           ex.printStackTrace

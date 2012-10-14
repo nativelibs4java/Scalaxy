@@ -61,10 +61,19 @@ object TypeVars {
   )
   //*/
   
-  private val types = typeTags.map(_.tpe.asInstanceOf[base.Universe#Type]).toSet
+  private val types = typeTags.map(_.tpe.asInstanceOf[base.Universe#Type])
   
-  def isTypeVar(mirror: base.Universe)(tpe: mirror.Type) =
-    types.contains(tpe)
+  def isTypeVar(mirror: base.Universe)(tpe: mirror.Type) = {
+    typeVarIndex(mirror)(tpe) != None
+  }
+  def typeVarIndex(mirror: base.Universe)(tpe: mirror.Type) = {
+    val index = types.indexOf(tpe)
+    
+    if (index < 0)
+      None
+    else
+      Some(index)
+  }
   
   def getNthTypeVarTag(i: Int) =
     try {

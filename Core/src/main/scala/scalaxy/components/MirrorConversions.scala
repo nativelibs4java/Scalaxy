@@ -20,7 +20,7 @@ extends PatternMatchers
   private def tryAndType(tree: global.Tree) = {
     try {
       global.typer.typed { tree }
-    } catch { case _ => }
+    } catch { case _: Throwable => }
     tree
   }
   
@@ -49,8 +49,14 @@ extends PatternMatchers
       //  println("-> SYMBOL " + imp)
       //  imp
       //}
+      var typeParams: List[from.TypeDef] = null
       
       override def importTree(tree: from.Tree) = {
+        tree match {
+          case from.DefDef(mods, name, tparams, vparamss, tpt, rhs) =>
+            typeParams = tparams
+          case _ =>
+        }
         ultraLogConversions("IMPORT TREE (tpe = " + tree.tpe + ", cls = " + tree.getClass.getName + "): " + tree)
         val imp = tree match {
           case from.Ident(n) =>
@@ -60,13 +66,18 @@ extends PatternMatchers
             super.importTree(tree)
         }
         ultraLogConversions("-> TREE " + imp)
+        typeParams = null
+        
         imp
       }
       override def importType(tpe: from.Type): global.Type = {
         ultraLogConversions("IMPORT TYPE " + tpe)
-        val imp = if (tpe == null)
+        val typeParamIndex = TypeVars.typeVarIndex(from)(tpe)
+        val imp = if (tpe == null) {
           null
-        else {
+        } else if (typeParamIndex != None) {
+          super.importType(typeParams(typeParamIndex.get).tpe)
+        } else {
           val rtpe = resolveType(from)(tpe)
           val it = resolveType(global)(super.importType(rtpe))
           //TODO? 
@@ -118,7 +129,7 @@ extends PatternMatchers
     //fixMissingMirrorTypes(m)
     try {
       importer.importTree(m.asInstanceOf[importer.from.Tree])
-    } catch { case ex => 
+    } catch { case ex: Throwable => 
       ultraLogConversions("FAILED importer.importTree(" + m + "):\n\t" + ex)
       throw ex
     }

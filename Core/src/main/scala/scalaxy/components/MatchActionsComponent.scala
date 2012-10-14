@@ -152,7 +152,7 @@ extends PluginComponent
       try {
         val sup = try {
           super.transform(tree)
-        } catch { case ex => 
+        } catch { case ex: Throwable => 
           ex.printStackTrace
           //println("Failed to super.transform(" + tree + "): " + ex)
           tree
@@ -263,7 +263,7 @@ extends PluginComponent
             expanded.tpe = tpe
           expanded
         }
-      } catch { case ex =>
+      } catch { case ex: Throwable =>
         println(ex)
         ex.printStackTrace
         println("Error while trying to replace " + tree + " : " + ex)
