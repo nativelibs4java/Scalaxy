@@ -15,7 +15,7 @@ trait ExprTreeFixer {
         x.tree.asInstanceOf[TreeWithWritableType].tpe = x.staticType
         //println("Fixed pattern tree type for '" + name + "' :\n\t" + x.tree + ": " + x.tree.tpe)
       } else {
-        println("Failed to fix pattern tree typefor '" + name + "' :\n\t" + x.tree)
+        //println("Failed to fix pattern tree typefor '" + name + "' :\n\t" + x.tree)
       }
     }
   }

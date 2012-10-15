@@ -164,7 +164,7 @@ extends PluginComponent
             val bindings = 
               matchAndResolveTreeBindings(matchAction.pattern.tree.asInstanceOf[patternUniv.Tree], expanded.asInstanceOf[candidateUniv.Tree])
             
-            //if (options.verbose) 
+            if (options.verbose) 
             {
               println("Bindings for '" + n + "':\n\t" + (bindings.nameBindings ++ bindings.typeBindings).mkString("\n\t"))
             }
@@ -264,8 +264,9 @@ extends PluginComponent
           expanded
         }
       } catch { case ex: Throwable =>
-        println(ex)
-        ex.printStackTrace
+        //println(ex)
+        if (options.verbose)
+          ex.printStackTrace
         println("Error while trying to replace " + tree + " : " + ex)
         tree
       }
