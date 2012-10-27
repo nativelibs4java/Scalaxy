@@ -17,12 +17,20 @@ class NumericsTest extends BaseTestUtils {
     import Ordering.Implicits._
   """
   
+  //def testBinOp(op: String, name: String) {
+  //  ensurePluginCompilesSnippetsToSameByteCode(
+  //    "def " + name + "[T : Numeric](a: T, b: T) = " +
+  //      "a " + op + " b",
+  //    "def " + name + "[T : Numeric](a: T, b: T) = " +
+  //      "implicitly[Numeric[T]]." + name + "(a, b)"
+  //  )
+  //}
   def testBinOp(op: String, name: String) {
     ensurePluginCompilesSnippetsToSameByteCode(
-      "def " + name + "[T : Numeric](a: T, b: T) = " +
+      "def " + name + "[T](a: T, b: T)(implicit n: Numeric[T]) = " +
         "a " + op + " b",
-      "def " + name + "[T : Numeric](a: T, b: T) = " +
-        "implicitly[Numeric[T]]." + name + "(a, b)"
+      "def " + name + "[T](a: T, b: T)(implicit n: Numeric[T]) = " +
+        "n." + name + "(a, b)"
     )
   }
   

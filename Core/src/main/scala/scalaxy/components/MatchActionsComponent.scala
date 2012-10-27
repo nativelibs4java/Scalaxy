@@ -133,7 +133,7 @@ extends PluginComponent
             val bindings = 
               matchAndResolveTreeBindings(matchAction.pattern.tree.asInstanceOf[patternUniv.Tree], expanded.asInstanceOf[candidateUniv.Tree])
             
-            //if (options.verbose) 
+            if (options.verbose) 
             {
               println("Bindings for '" + n + "':\n\t" + (bindings.nameBindings ++ bindings.typeBindings).mkString("\n\t"))
             }
@@ -146,17 +146,15 @@ extends PluginComponent
             //} else 
             matchAction match  {
               case r @ Replacement(_, _) =>
-                println("MATCH ACTION " + r)
                 val replacement =
                   mirrorToGlobal(runtime.universe)(r.replacement.tree, bindings)
-                println("Replacement '" + n + "':\n\t" + replacement.toString.replaceAll("\n", "\n\t"))
+                //println("Replacement '" + n + "':\n\t" + replacement.toString.replaceAll("\n", "\n\t"))
                 expanded = replacement
               case MatchWarning(_, message) =>
                 unit.warning(tree.pos, message)
               case MatchError(_, message) =>
                 unit.error(tree.pos, message)
               case ca @ ConditionalAction(_, when, thenMatch) =>
-                println("CONDITIONAL ACTION WITH")
                 val treesToTest: List[scala.reflect.runtime.universe.Tree] = 
                   when.toList.map(n => { 
                     globalToMirror(
@@ -228,11 +226,11 @@ extends PluginComponent
             ex.printStackTrace
           }
           
-          //if (options.verbose) 
+          if (options.verbose) 
           {
             println()
-            //println("FINAL EXPANSION = \n" + nodeToString(expanded))
-            println("FINAL EXPANSION = \n" + expanded)
+            println("FINAL EXPANSION = \n" + nodeToString(expanded))
+            //println("FINAL EXPANSION = \n" + expanded)
             println()
           }
           

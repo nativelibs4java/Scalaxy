@@ -34,7 +34,7 @@ extends TypingTransformers
         flatMap(tt => {
           var typeBinding = typeBindings.get(tt)
           if (typeBinding == None &&
-              HacksAndWorkarounds.useStringBasedTypeEquality) 
+              HacksAndWorkarounds.useStringBasedTypeEqualityInBindings) 
           {
             for ((origKey, value) <- stringIndexedTypeBindings.get(tt.toString))
             {
@@ -199,16 +199,11 @@ extends TypingTransformers
   def zipTypes(syms1: List[patternUniv.Symbol], syms2: List[candidateUniv.Symbol]) = 
     types(patternUniv)(syms1).zip(types(candidateUniv)(syms2))
           
-  def isTypeParameter(t: patternUniv.Type) = {
+  def isParameter(t: patternUniv.Type) = {
     t != null && {
-      type PlasticSymbol = {
-        def isTypeParameter: Boolean
-      }
-      
       val s = t.typeSymbol
       s != null &&
-      //s.isTypeParameter
-      s.asInstanceOf[PlasticSymbol].isTypeParameter
+      s.isParameter
     }
   } 
     
@@ -234,12 +229,12 @@ extends TypingTransformers
       patternUniv.definitions.UnitClass.asType.toType
     //lazy val desc = "(" + pattern + ": " + clstr(pattern) + " vs. " + tree + ": " + clstr(tree) + ")"
     
-    if (isTypeParameter(pattern)) {
+    if (isParameter(pattern)) {
       Bindings(Map(), Map(pattern -> tree))
     } 
     else
     if (pattern != null && pattern.toString.matches(".*\\.T\\d+")) {
-      ultraLogPattern("TYPE MATCHING KINDA FAILED ON isTypeParameter(" + pattern + ")")
+      ultraLogPattern("TYPE MATCHING KINDA FAILED ON isParameter(" + pattern + ")")
       Bindings(Map(), Map(pattern -> tree))
     }
     else
@@ -307,14 +302,15 @@ extends TypingTransformers
         if args.size == args2.size &&
            //sym.kind == sym2.kind &&
            sym != null && sym2 != null &&
-           sym.fullName == sym2.fullName //&&
+           sym.fullName == sym2.fullName
         =>
           matchAndResolveTypeBindings(pre, pre2, depth + 1) ++ 
           matchAndResolveTypeBindings(args.zip(args2), depth + 1)
-        
+          
         case _ =>
-          if (Option(pattern).toString == Option(tree).toString) {
-            println("WARNING: Dumb string type matching of " + pattern + " vs. " + tree)
+          if (HacksAndWorkarounds.useStringBasedPatternMatching &&
+              Option(pattern).toString == Option(tree).toString) {
+            println("WARNING: Dumb string type matching of " + pattern + " (" + clstr(pattern) + ") " + " vs. " + tree + " (" + clstr(tree) + ") " )
             EmptyBindings
           } else {
             //if (depth > 0)
@@ -361,7 +357,7 @@ extends TypingTransformers
         case (_, _) if pattern.isEmpty && tree.isEmpty =>
           EmptyBindings
           
-        //case (_, _) if isTypeParameter(patternType) =>
+        //case (_, _) if isParameter(patternType) =>
         //  EmptyBindings
           
         case (patternUniv.This(_), candidateUniv.This(_)) =>
@@ -374,7 +370,7 @@ extends TypingTransformers
         case (patternUniv.Ident(n), _) =>
           if (internalDefs.contains(n) || 
               pattern.symbol.isPackage ||
-              pattern.symbol.isType && !isTypeParameter(pattern.symbol.asType.toType)) 
+              pattern.symbol.isType && !isParameter(pattern.symbol.asType.toType)) 
           {
             EmptyBindings
           } else {

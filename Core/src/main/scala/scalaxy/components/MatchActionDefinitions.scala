@@ -89,10 +89,10 @@ object MatchActionDefinitions
         def st: SyntheticTypeTag[Any] =
           new SyntheticTypeTag[Any](t, _ => st)
         st
-      case _ if t.toString.contains("Numeric") =>
-        new DefaultNumeric[Any]
+      //case _ if t.toString.contains("Numeric") =>
+      //  new DefaultNumeric[Any]
       case s =>
-        println("\t\tWEIRD s = " + t + ": " + t.getClass.getName)
+        //println("\t\tWEIRD s = " + t + ": " + t.getClass.getName)
         null
     }
   }
@@ -102,11 +102,10 @@ object MatchActionDefinitions
     var paramCount = 0
     
     val compiletName = holder.getClass.getName.replaceAll("\\$", "")
-    println("INSPECTING " + compiletName)
+    //println("INSPECTING " + compiletName)
     
     val compiletModule = currentMirror.staticModule(compiletName)
-    //println("hehehehe")
-    println("\t-> " + compiletModule)
+    //println("\t-> " + compiletModule)
     
     val mm = currentMirror.reflectModule(compiletModule)
     val im = currentMirror.reflect(mm.instance)
@@ -129,18 +128,18 @@ object MatchActionDefinitions
       val m = s.asInstanceOf[ru.MethodSymbol] 
       if (m.returnType <:< ru.typeOf[MatchAction]) {
         val mm = im.reflectMethod(m)
-        println("\n" + m.name + ": " + m.paramss)
+        //println("\n" + m.name + ": " + m.paramss)
         
         val args = m.paramss.flatten.map(_.typeSignature).map(defaultValue _)
-        println("\t\targs = " + args.mkString(", "))
+        //println("\t\targs = " + args.mkString(", "))
         try {
           val Some(javaMethod) =
             holder.getClass.getMethods.find(_.getName == m.name.toString)
           
           val checkArgTypes = true//false
           if (checkArgTypes) {
-            println("\t\targs.types = " + args.map(arg => Option(arg).map(_.getClass.getName).orNull))
-            println("\t\tparams.types = " + javaMethod.getParameterTypes.mkString(", "))
+            //println("\t\targs.types = " + args.map(arg => Option(arg).map(_.getClass.getName).orNull))
+            //println("\t\tparams.types = " + javaMethod.getParameterTypes.mkString(", "))
             
             for (((arg, paramClass), paramType) <- args.zip(javaMethod.getParameterTypes).zip(javaMethod.getGenericParameterTypes); if arg != null) {
               if (!paramClass.isPrimitive && !paramClass.isInstance(arg)) {
@@ -157,7 +156,7 @@ object MatchActionDefinitions
           }
           val result = javaMethod.invoke(holder, args.toArray:_*)
           //val result = mm(args:_*)
-          println("\tresult = " + result)
+          //println("\tresult = " + result)
           out += MatchActionDefinition(
             m.name.toString, 
             paramCount, 

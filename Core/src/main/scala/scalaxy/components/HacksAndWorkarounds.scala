@@ -12,5 +12,6 @@ object HacksAndWorkarounds
   val fixTypedExpressionsType = true
   val healSymbols = true
   
-  val useStringBasedTypeEquality = true
+  val useStringBasedTypeEqualityInBindings = true
+  val useStringBasedPatternMatching = false
 }
