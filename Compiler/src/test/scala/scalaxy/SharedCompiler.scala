@@ -25,7 +25,8 @@ class SharedCompiler(enablePlugins: Boolean, pluginDef: PluginDef) {
   }
 
   import scala.concurrent._
-  import scala.concurrent.util.Duration
+  import scala.concurrent.duration.Duration
+  
   //implicit val runner = new scala.concurrent.ThreadRunner
 
   /// A compiler and a compiler future

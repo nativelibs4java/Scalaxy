@@ -30,6 +30,7 @@ object RunMe extends App {
     for (i <- 1 until 10)
       println("i = " + (i + 1) + " // v = " + v) 
   }
+  trans(List(1, 2, 3), 10)
   /*
   {
     import math.Numeric.Implicits._

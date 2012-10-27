@@ -10,8 +10,8 @@ object RuntimeMirrorUtils {
   def expr[T](tree: Tree): Expr[T] = {
     Expr[T](
       currentMirror,//.runtimeMirror, 
-      new reflect.base.TreeCreator { 
-        override def apply[U <: reflect.base.Universe with Singleton](m: reflect.base.MirrorOf[U]) =
+      new reflect.api.TreeCreator { 
+        override def apply[U <: reflect.api.Universe with Singleton](m: reflect.api.Mirror[U]) =
           tree.asInstanceOf[U#Tree]
       }
     )
@@ -26,14 +26,16 @@ trait MatchAction {
 }
 
 case class Replacement(
-  pattern: Expr[Any], replacement: Expr[Any]
+  pattern: Expr[Any], replacement: Expr[Any], typeParams: List[Type]
 ) extends MatchAction {
+  println("CREATED Replacement(typeParams = " + typeParams + ")")
   override def typeCheck(f: (Tree, Type) => Tree) =
     Replacement(
       expr[Any](f(pattern.tree, pattern.staticType)),
-      expr[Any](f(replacement.tree, replacement.staticType))
+      expr[Any](f(replacement.tree, replacement.staticType)),
+      typeParams
     )
-}
+}                                                                        
 
 case class MatchError(
   pattern: Expr[Any], 
@@ -86,11 +88,12 @@ case class Warning[T](
 
 case class ConditionalAction[T](
   pattern: Expr[T], 
-  when: Seq[String], 
-  thenMatch: PartialFunction[List[Tree], Action[T]]
+  when: Seq[String],
+  thenMatch: PartialFunction[List[Tree], Action[T]],
+  typeParams: List[Type]
 ) extends MatchAction {
   def patternTree = pattern.tree
-  
+  println("CREATED ConditionalAction(typeParams = " + typeParams + ")")
   override def typeCheck(f: (Tree, Type) => Tree) =
     ConditionalAction[T](
       expr[T](f(pattern.tree, pattern.staticType)),
@@ -100,7 +103,8 @@ case class ConditionalAction[T](
           thenMatch.isDefinedAt(list)
         override def apply(list: List[Tree]) =
           thenMatch(list).typeCheck(f)
-      }
+      },
+      typeParams
     )
 }
 

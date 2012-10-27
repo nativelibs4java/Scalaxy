@@ -25,7 +25,8 @@ import javax.tools.ToolProvider
 import org.junit.Assert._
 import scala.tools.nsc.Settings
 import scala.concurrent._
-import scala.concurrent.util.Duration
+import scala.concurrent.duration.Duration
+
 import Function.{tupled, untupled}
 
 object Results {
@@ -107,6 +108,7 @@ trait BaseTestUtils {
 
     compiler.compile(
       Array(
+        //"-Xprint:scalaxy-rewriter",
         "-d", 
         outDir.getAbsolutePath, 
         srcFile.getAbsolutePath

@@ -13,3 +13,11 @@ project/target
 .classpath
 *.class
 
+
+Macros/.cache
+
+Compiler/.cache
+
+Core/.cache
+
+.history

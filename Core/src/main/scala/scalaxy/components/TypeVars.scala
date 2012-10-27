@@ -59,14 +59,14 @@ object TypeVars {
     typeTag[scala.reflect.api.Universe#TemplateApi],
     typeTag[scala.reflect.api.Universe#MatchApi]
   )
-  //*/
+  */
   
-  private val types = typeTags.map(_.tpe.asInstanceOf[base.Universe#Type])
+  private val types = typeTags.map(_.tpe.asInstanceOf[api.Universe#Type])
   
-  def isTypeVar(mirror: base.Universe)(tpe: mirror.Type) = {
+  def isTypeVar(mirror: api.Universe)(tpe: mirror.Type) = {
     typeVarIndex(mirror)(tpe) != None
   }
-  def typeVarIndex(mirror: base.Universe)(tpe: mirror.Type) = {
+  def typeVarIndex(mirror: api.Universe)(tpe: mirror.Type) = {
     val index = types.indexOf(tpe)
     
     if (index < 0)

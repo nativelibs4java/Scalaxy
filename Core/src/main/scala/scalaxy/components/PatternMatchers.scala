@@ -205,7 +205,7 @@ extends TypingTransformers
         def isTypeParameter: Boolean
       }
       
-      TypeVars.isTypeVar(runtime.universe)(t.asInstanceOf[runtime.universe.Type]) ||
+      //TypeVars.isTypeVar(runtime.universe)(t.asInstanceOf[runtime.universe.Type]) ||
       {
         val s = t.typeSymbol
         //try {
@@ -256,16 +256,16 @@ extends TypingTransformers
       throw NoTypeMatchException(pattern0, tree0, "Type kind matching failed (" + pattern + " vs. " + tree + ")", depth)
     } 
     else
-    if (pattern != null && tree != null && pattern.kind != tree.kind) {
-      throw NoTypeMatchException(pattern0, tree0, "Type kind matching failed (" + pattern.kind + " vs. " + tree.kind + ")", depth)
-    }
-    else
-    if (pattern != null && pattern.typeSymbol != null &&
-        tree != null && tree.typeSymbol != null &&
-        pattern.typeSymbol.kind != tree.typeSymbol.kind) {
-      throw NoTypeMatchException(pattern0, tree0, "Type symbol kind matching failed (" + pattern.typeSymbol.kind + " vs. " + tree.typeSymbol.kind + ")", depth)
-    }
-    else
+//    if (pattern != null && tree != null && pattern.kind != tree.kind) {
+//      throw NoTypeMatchException(pattern0, tree0, "Type kind matching failed (" + pattern.kind + " vs. " + tree.kind + ")", depth)
+//    }
+//    else
+//    if (pattern != null && pattern.typeSymbol != null &&
+//        tree != null && tree.typeSymbol != null &&
+//        pattern.typeSymbol.kind != tree.typeSymbol.kind) {
+//      throw NoTypeMatchException(pattern0, tree0, "Type symbol kind matching failed (" + pattern.typeSymbol.kind + " vs. " + tree.typeSymbol.kind + ")", depth)
+//    }
+//    else
     {
       val ret = (pattern, tree) match {
         // TODO remove null acceptance once macro typechecker is fixed !
@@ -507,6 +507,7 @@ extends TypingTransformers
             tree.symbol.asType.toType
           } catch { case ex: Throwable => null }
           
+          // TODO
           println("Cannot fix type for " + tree + ": " + clstr(tree) + " (symbol = " + st + ")")
           st
           //null

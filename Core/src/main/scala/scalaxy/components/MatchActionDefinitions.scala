@@ -1,6 +1,7 @@
 package scalaxy; package components
 
 //import scala.reflect.mirror._
+//import scala.reflect.api._
 import scala.reflect.runtime._
 
 case class MatchActionDefinition(
@@ -12,143 +13,163 @@ case class MatchActionDefinition(
 
 object MatchActionDefinitions 
 {
-  private def defaultValue(c: Class[_]): AnyRef = c match {
-    case _ if c == classOf[Int] => java.lang.Integer.valueOf(0)
-    case _ if c == classOf[Long] => java.lang.Long.valueOf(0L)
-    case _ if c == classOf[Short] => java.lang.Short.valueOf(0: Short)
-    case _ if c == classOf[Char] => java.lang.Character.valueOf('\0')
-    case _ if c == classOf[Boolean] => java.lang.Boolean.FALSE
-    case _ if c == classOf[Double] => java.lang.Double.valueOf(0.0)
-    case _ if c == classOf[Float] => java.lang.Float.valueOf(0.0f)
-    case _ if c == classOf[Byte] => java.lang.Byte.valueOf(0: Byte)
-    case _ if classOf[scala.reflect.base.Universe#TypeTag[_]].isAssignableFrom(c) =>   universe.typeTag[Int]
-    case _ => null
+  import scala.reflect.runtime.currentMirror
+  import scala.reflect.runtime.{universe => ru}
+    
+  @deprecated
+  def cast[T](v: Any): T = v.asInstanceOf[T]
+    
+  def WeakTypeTag[T](tpe: ru.Type): ru.TypeTag[T] = {
+    val u = ru.asInstanceOf[ru.type with scala.reflect.internal.StdCreators]
+    val m = currentMirror.asInstanceOf[scala.reflect.api.Mirror[u.type]]
+    
+    //cast(u.WeakTypeTag[T](cast(m), u.FixedMirrorTypeCreator(cast(m), cast(tpe))))
+    
+    val weakTTag = u.WeakTypeTag[T](cast(m), u.FixedMirrorTypeCreator(cast(m), cast(tpe)))
+    
+    val manifest = u.typeTagToManifest[Any](m, cast(weakTTag))
+    cast(u.manifestToTypeTag(m, cast(manifest)))
+  }
+  
+  // TODO pick from compilet module, or auto-generate on the fly with ASM voodoo? 
+  class DefaultNumeric[T] extends scala.math.Numeric[T] {
+    def compare(x: T, y: T): Int = ???
+    def fromInt(x: Int): T       = ???
+    def minus(x: T, y: T): T     = ???
+    def negate(x: T): T          = ???
+    def plus(x: T, y: T): T      = ???
+    def times(x: T, y: T): T     = ???
+    def toDouble(x: T): Double   = ???
+    def toFloat(x: T): Float     = ???
+    def toInt(x: T): Int         = ???
+    def toLong(x: T): Long       = ???
+  }
+  
+  import scala.reflect.api.Universe
+  import scala.reflect.api.Mirror
+  
+  private class SyntheticTypeCreator[T](
+      copyIn: Universe => Universe#TypeTag[T])
+    extends scala.reflect.api.TypeCreator 
+  {
+    def apply[U <: Universe with Singleton](m: scala.reflect.api.Mirror[U]): U # Type = {
+      copyIn(m.universe).asInstanceOf[U # TypeTag[T]].tpe
+    }
+  }
+  
+  private class WeakTypeTagImpl[T](val tpec: SyntheticTypeCreator[T]) extends ru.WeakTypeTag[T] {
+    lazy val tpe: ru.Type = tpec(currentMirror)
+    override val mirror = currentMirror
+    def in[U <: Universe with Singleton](otherMirror: scala.reflect.api.Mirror[U]) = {
+      val otherMirror1 = otherMirror.asInstanceOf[scala.reflect.api.Mirror[otherMirror.universe.type]]
+      otherMirror.universe.TypeTag[T](otherMirror1, tpec)
+    }
+  }
+  
+  private class TypeTagImpl[T](tpec: SyntheticTypeCreator[T]) extends WeakTypeTagImpl[T](tpec) with ru.TypeTag[T]
+
+  private class SyntheticTypeTag[T](_tpe: ru.Type, copyIn: Universe => Universe#TypeTag[T])
+    extends TypeTagImpl[T](new SyntheticTypeCreator[T](copyIn)) {
+    override lazy val tpe: ru.Type = _tpe
+  }
+  
+  private def defaultValue(t: ru.Type): AnyRef = {
+    import ru.definitions._
+    t match {
+      case _ if t <:< IntTpe => java.lang.Integer.valueOf(0)
+      case _ if t <:< LongTpe => java.lang.Long.valueOf(0L)
+      case _ if t <:< ShortTpe => java.lang.Short.valueOf(0: Short)
+      case _ if t <:< CharTpe => java.lang.Character.valueOf('\0')
+      case _ if t <:< BooleanTpe => java.lang.Boolean.FALSE
+      case _ if t <:< DoubleTpe => java.lang.Double.valueOf(0.0)
+      case _ if t <:< FloatTpe => java.lang.Float.valueOf(0.0f)
+      case _ if t <:< ByteTpe => java.lang.Byte.valueOf(0: Byte)
+      case _ if t.toString.contains("TypeTag")/* <:< ru.typeOf[ru.AbsTypeTag[_]]*/ =>
+        //WeakTypeTag(t)
+        def st: SyntheticTypeTag[Any] =
+          new SyntheticTypeTag[Any](t, _ => st)
+        st
+      case _ if t.toString.contains("Numeric") =>
+        new DefaultNumeric[Any]
+      case s =>
+        println("\t\tWEIRD s = " + t + ": " + t.getClass.getName)
+        null
+    }
   }
   
   def getMatchActionDefinitions(holder: AnyRef): Seq[MatchActionDefinition] = {
     var typeParamCount = 0
     var paramCount = 0
-    for (m <- holder.getClass.getMethods; 
-         if classOf[MatchAction].isAssignableFrom(m.getReturnType)
-    ) yield 
-    {
-      val r = m.invoke(holder, m.getParameterTypes.map(c => {
-        if (classOf[universe.TypeTag[_]].isAssignableFrom(c)) {
-          val tt = TypeVars.getNthTypeVarTag(typeParamCount)
-          typeParamCount += 1
-          //defaultValue(c)
-          tt
-        } else 
-        {
-          paramCount += 1
-          defaultValue(c)
-        }
-      }):_*)
-      
-      MatchActionDefinition(m.getName, paramCount, typeParamCount, r.asInstanceOf[MatchAction]) 
-    }
-  }
-  /**
-   * Scala reflection is just way too broken as of 2.10.0-M2 / M3 (with objects, at least)
-   * TODO try again calling compilet methods using Scala reflection in later versions !
-   */
-  /*
-  import scala.reflect.mirror._
-  import definitions._
-  
-  private lazy val MatchActionClass = staticClass("scalaxy.MatchAction")
-  
-  private lazy val defaultValues = Map(
-    IntTpe -> 0,
-    ShortTpe -> (0: Short),
-    LongTpe -> (0: Long),
-    ByteTpe -> (0: Byte),
-    FloatTpe -> 0f,
-    DoubleTpe -> 0.0,
-    BooleanTpe -> false,
-    CharTpe -> '\0'
-  )
-  private def getDefaultValue(tpe: Type): Any = 
-    defaultValues.get(tpe).getOrElse(null)
-  
-  def invokeMethod(target: AnyRef, method: Symbol, params: List[AnyRef]) = {
-    //println("target = " + target)
-    if (true) {
-      val methodName = method.name.toString
-      val javaMethod = target.getClass.getDeclaredMethods.find(_.getName == methodName).getOrElse(
-        throw new RuntimeException("No method '" + methodName + "' found in " + target.getClass.getName + ":\n" + getClass.getDeclaredMethods.mkString("\n"))
-      )
-      javaMethod.invoke(target, params:_*)
-    } else {
-      invoke(target, method)(params)
-    }
-  }
-  
-  @deprecated("Broken code, try again with 2.10.0 final !")
-  private def getMatchActionDefinitionsWithReflection(holder: AnyRef): Seq[(String, MatchAction)] = {
-    //val holder = Example
-    //val holderSym = staticClass("scalaxy.Example")
-    //val holder = companionInstance(holderSym)
-    val holderType = 
-      //classToType(holder.getClass)
-      typeOfInstance(holder)
-      
-    //val holderCls = classOf[Example]
-    //val holderSym = classToSymbol(holderCls)//staticClass("scalaxy.Example")
-    //val holderType = classToType(holderCls)//holderSym.tpe//.deconst.dealias
-    //val holder = holderCls.newInstance.asInstanceOf[AnyRef]
     
-    def dbgStr(t: Type) = {
-      t + " (" + t.getClass.getName + " <- " + t.getClass.getSuperclass.getName + ") = " + t//debugString(t)
-    }
-    object FollowMethodResult {
-      def unapply(t: Type): Option[Type] = t match {
-        case MethodType(_, r) =>
-          unapply(r)
-        case PolyType(_, mt) =>
-          unapply(mt)
-        case _ =>
-          Some(t)
+    val compiletName = holder.getClass.getName.replaceAll("\\$", "")
+    println("INSPECTING " + compiletName)
+    
+    val compiletModule = currentMirror.staticModule(compiletName)
+    //println("hehehehe")
+    println("\t-> " + compiletModule)
+    
+    val mm = currentMirror.reflectModule(compiletModule)
+    val im = currentMirror.reflect(mm.instance)
+    
+    val declarations = compiletModule.typeSignature.declarations.toSeq
+    
+    val out = collection.mutable.ArrayBuilder.make[MatchActionDefinition]()
+    
+    /*
+      Ideally we'd do this:
+        declarations.collect { 
+          case m: ru.MethodSymbol 
+          if m.returnType <:< ru.typeOf[MatchAction] =>
+            ...
+        }
+      But there's an issue with matching of MethodSymbol types: it will fail with a 
+      ClassCastException when we reach a ClassSymbol or another kind of declaration.
+    */
+    for (s <- declarations; if s.isInstanceOf[ru.MethodSymbol]) {
+      val m = s.asInstanceOf[ru.MethodSymbol] 
+      if (m.returnType <:< ru.typeOf[MatchAction]) {
+        val mm = im.reflectMethod(m)
+        println("\n" + m.name + ": " + m.paramss)
+        
+        val args = m.paramss.flatten.map(_.typeSignature).map(defaultValue _)
+        println("\t\targs = " + args.mkString(", "))
+        try {
+          val Some(javaMethod) =
+            holder.getClass.getMethods.find(_.getName == m.name.toString)
+          
+          val checkArgTypes = true//false
+          if (checkArgTypes) {
+            println("\t\targs.types = " + args.map(arg => Option(arg).map(_.getClass.getName).orNull))
+            println("\t\tparams.types = " + javaMethod.getParameterTypes.mkString(", "))
+            
+            for (((arg, paramClass), paramType) <- args.zip(javaMethod.getParameterTypes).zip(javaMethod.getGenericParameterTypes); if arg != null) {
+              if (!paramClass.isInstance(arg)) {
+                println("\t\tERROR: " + arg + " is not an instance of class " + paramClass.getName + ", type " + paramType)
+                var c: Class[_] = arg.getClass
+                println("\t\tIt extends:")
+                while (c != null) {
+                  println("\t\t\t-> " + c.getName)
+                  c = c.getSuperclass
+                }
+                println("\t\tIt implements:\n\t\t\t" + arg.getClass.getGenericInterfaces.mkString(",\n\t\t\t"))
+              }
+            }
+          }
+          val result = javaMethod.invoke(holder, args.toArray:_*)
+          //val result = mm(args:_*)
+          println("\tresult = " + result)
+          out += MatchActionDefinition(
+            m.name.toString, 
+            paramCount, 
+            typeParamCount, 
+            result.asInstanceOf[MatchAction])
+        } catch { case ex: Throwable =>
+          ex.printStackTrace
+          val exx = new RuntimeException("Failed to call " + m.name + " with params (" + args.mkString(", ") + "); Method symbol = " + m + ", paramss.typeSignature = (" + m.paramss.flatten.map(_.typeSignature).mkString(", ") + ")", ex)
+          throw exx
+        }
       }
     }
-    val methods: Seq[(Symbol, Type)] = 
-      holderType.members.filter(_.isMethod).map(m => (m, m.asType)).toSeq
-    //println("Scanning holder " + holder + " : " + methods.size + " methods")
-    //for (m <- methods) println("\t" + m.name)
-      
-    methods.collect({ 
-      //case (m, PolyType(paramsyms, mt @ FollowMethodResult(result)))
-      case (m, mt @ FollowMethodResult(result))
-      =>
-      // TODO
-      //if result.stat_<:<(MatchActionClass.tpe) => // == ReplacementClass.tpe =>
-        def getParamTypes(t: Type): List[Type] = t match {
-          case MethodType(tt, r) =>
-            //println("Found method (" + m.name + ", m.type = " + dbgStr(m.tpe) + ") : type " + dbgStr(t) + " with tt = " + tt + " and r = " + r)
-            tt.map(_.asType) ++ getParamTypes(r)
-          case PolyType(_, mt) =>
-            getParamTypes(mt)
-          case _ =>
-            List()
-        }
-        val actualParamTypes = getParamTypes(mt)
-        val defaultParams = 
-          actualParamTypes.map(getDefaultValue(_).asInstanceOf[AnyRef])
-          
-        try {
-          val r = invokeMethod(holder, m, defaultParams)
-          //println("r = " + r + " : " + r.getClass.getName)
-          if (r.isInstanceOf[MatchAction])
-            Some((holder + "." + m.name, r.asInstanceOf[MatchAction]))
-          else 
-            None
-        } catch { case ex =>
-          None
-        }
-      case (m, t) =>
-        println("Unable to parse method '" + m.name + "' : " + dbgStr(t))
-        None
-    }).flatten
+    out.result.toSeq
   }
-  */
 }

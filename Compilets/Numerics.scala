@@ -7,45 +7,45 @@ import macros._
 object Numerics {
   import math.Numeric.Implicits._
   
-  def plus[T : TypeTag : Numeric](a: T, b: T) = replace(
-    a + b, // Numeric.Implicits.infixNumericOps[T : TypeTag](a)(implicitly[Numeric[T]]).+(b)
-    implicitly[Numeric[T]].plus(a, b)
+  def plus[T](a: T, b: T)(implicit n: Numeric[T]) = replace(
+    a + b, // Numeric.Implicits.infixNumericOps[T : TypeTag](a)(n).+(b)
+    n.plus(a, b)
   )
   
-  def minus[T : TypeTag : Numeric](a: T, b: T) = replace(
+  def minus[T](a: T, b: T)(implicit n: Numeric[T]) = replace(
     a - b,
-    implicitly[Numeric[T]].minus(a, b)
+    n.minus(a, b)
   )
   
-  def times[T : TypeTag : Numeric](a: T, b: T) = replace(
+  def times[T](a: T, b: T)(implicit n: Numeric[T]) = replace(
     a * b,
-    implicitly[Numeric[T]].times(a, b)
+    n.times(a, b)
   )
   
-  def negate[T : TypeTag : Numeric](a: T) = replace(
+  def negate[T](a: T)(implicit n: Numeric[T]) = replace(
     - a,
-    implicitly[Numeric[T]].negate(a)
+    n.negate(a)
   )
   
   import Ordering.Implicits._
   
-  def gt[T : TypeTag : Numeric](a: T, b: T) = replace(
+  def gt[T](a: T, b: T)(implicit n: Numeric[T]) = replace(
     a > b,
-    implicitly[Numeric[T]].gt(a, b)
+    n.gt(a, b)
   )
   
-  def gteq[T : TypeTag : Numeric](a: T, b: T) = replace(
+  def gteq[T](a: T, b: T)(implicit n: Numeric[T]) = replace(
     a >= b,
-    implicitly[Numeric[T]].gteq(a, b)
+    n.gteq(a, b)
   )
   
-  def lt[T : TypeTag : Numeric](a: T, b: T) = replace(
+  def lt[T : WeakTypeTag](a: T, b: T)(implicit n: Numeric[T]) = replace(
     a < b,
-    implicitly[Numeric[T]].lt(a, b)
+    n.lt(a, b)
   )
   
-  def lteq[T : TypeTag : Numeric](a: T, b: T) = replace(
+  def lteq[T : WeakTypeTag](a: T, b: T)(implicit n: Numeric[T]) = replace(
     a <= b,
-    implicitly[Numeric[T]].lteq(a, b)
+    n.lteq(a, b)
   )
 }

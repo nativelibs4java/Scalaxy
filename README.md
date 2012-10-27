@@ -1,6 +1,6 @@
 *Still very experimental, don't rely on this yet!* (if you need fast loops now, [check this out](https://github.com/ochafik/optimized-loops-macros))
 
-This is an experimental rewrite of [ScalaCL / Scalaxy](http://code.google.com/p/scalacl/) using Scala 2.10.0-M7 and its powerful macro system.
+This is an experimental rewrite of [ScalaCL / Scalaxy](http://code.google.com/p/scalacl/) using Scala 2.10.0-RC1 and its powerful macro system.
 
 Key features:
 *   Natural expression of rewrite patterns and replacements that makes it easy to express rewrites
@@ -8,7 +8,27 @@ Key features:
 *   Easy to express AOP-style rewrites (to add or remove logs, runtime checks, etc...)
 *   Will support easy warnings and errors
 
-To compile a file test.scala using the compiler plugin, use [paulp's sbt script](https://github.com/paulp/sbt-extras) :
+= Usage =
+
+To compile your sbt project with Scalaxy's compiler plugin and default compilets, make sure your `build.sbt` file looks like this:
+
+	scalaVersion := "2.10.0-RC1"
+	
+	resolvers += Resolver.sonatypeRepo("snapshots")
+	
+	autoCompilerPlugins := true
+	
+	addCompilerPlugin("com.nativelibs4java" %% "scalaxy" % "0.3-SNAPSHOT")
+
+(please use sbt 0.12.1 or later)
+
+To see what's happening:
+
+	SCALAXY_VERBOSE=1 sbt
+	
+= Hacking =
+
+To build the sources and compile a file test.scala using the compiler plugin, use [paulp's sbt script](https://github.com/paulp/sbt-extras) :
 
     sbt "project scalaxy-compiler-plugin" "run Test/test.scala"
 

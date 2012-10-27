@@ -8,7 +8,7 @@ import matchers._
 
 object ForLoops extends Compilet 
 {
-  def simpleForeachUntil[U : TypeTag](start: Int, end: Int, body: U) = replace(
+  def simpleForeachUntil[U](start: Int, end: Int, body: U) = replace(
     for (i <- start until end) 
       body,
     {
@@ -21,7 +21,7 @@ object ForLoops extends Compilet
     }
   )
   
-  def simpleForeachTo[U : TypeTag](start: Int, end: Int, body: U) = replace(
+  def simpleForeachTo[U](start: Int, end: Int, body: U) = replace(
     for (i <- start to end) 
       body,
     {
@@ -34,7 +34,7 @@ object ForLoops extends Compilet
     }
   )
   
-  def rgForeachUntilBy[U : TypeTag](start: Int, end: Int, step: Int, body: U) = 
+  def rgForeachUntilBy[U](start: Int, end: Int, step: Int, body: U) = 
     when(
       for (i <- start until end by step) 
         body

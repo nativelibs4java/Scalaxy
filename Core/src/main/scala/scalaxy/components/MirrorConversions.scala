@@ -28,7 +28,7 @@ extends PatternMatchers
    * TODO report missing API : scala.reflect.api.SymbolTable 
    * (scala.reflect.mirror does not extend scala.reflect.internal.SymbolTable publicly !)
    */
-  def newMirrorToGlobalImporter(mirror: base.Universe)(bindings: Bindings) = {
+  def newMirrorToGlobalImporter(mirror: api.Universe)(bindings: Bindings, typeParams: Seq[mirror.Type]) = {
     new global.StandardImporter {
       val from = mirror.asInstanceOf[scala.reflect.internal.SymbolTable]
       
@@ -49,14 +49,7 @@ extends PatternMatchers
       //  println("-> SYMBOL " + imp)
       //  imp
       //}
-      var typeParams: List[from.TypeDef] = null
-      
       override def importTree(tree: from.Tree) = {
-        tree match {
-          case from.DefDef(mods, name, tparams, vparamss, tpt, rhs) =>
-            typeParams = tparams
-          case _ =>
-        }
         ultraLogConversions("IMPORT TREE (tpe = " + tree.tpe + ", cls = " + tree.getClass.getName + "): " + tree)
         val imp = tree match {
           case from.Ident(n) =>
@@ -66,18 +59,21 @@ extends PatternMatchers
             super.importTree(tree)
         }
         ultraLogConversions("-> TREE " + imp)
-        typeParams = null
         
         imp
       }
       override def importType(tpe: from.Type): global.Type = {
-        ultraLogConversions("IMPORT TYPE " + tpe)
-        val typeParamIndex = TypeVars.typeVarIndex(from)(tpe)
+        ultraLogConversions("IMPORT TYPE " + tpe + " (typeParams = " + typeParams + ")")
+        //val typeParamIndex: Option[Int] = TypeVars.typeVarIndex(from)(tpe)
+        //val typeParamIndex = typeParams.indexOf(tpe)
         val imp = if (tpe == null) {
           null
-        } else if (typeParamIndex != None) {
-          super.importType(typeParams(typeParamIndex.get).tpe)
-        } else {
+        } /*else if (typeParamIndex >= 0) {//!= None) {
+          //val i = typeParamIndex//.get
+          //if (i >= typeParams.size)
+          //  throw new RuntimeException("typeParams = " + typeParams + ",  i = " + i + ", t = " + tpe)
+          super.importType(typeParams(i).asInstanceOf[from.Type])
+        } */else {
           val rtpe = resolveType(from)(tpe)
           val it = resolveType(global)(super.importType(rtpe))
           //TODO? 
@@ -90,7 +86,7 @@ extends PatternMatchers
     }
   }
   
-  def newGlobalToMirrorImporter(mirror: base.Universe) = {
+  def newGlobalToMirrorImporter(mirror: api.Universe) = {
     val mm = mirror.asInstanceOf[scala.reflect.internal.SymbolTable]
     new mm.StandardImporter {
       val from = global//.asInstanceOf[scala.reflect.internal.SymbolTable]
@@ -123,9 +119,9 @@ extends PatternMatchers
     scala.reflect.mirror
     scala.reflect.runtime.universe
   */
-  def mirrorToGlobal(mirror: base.Universe)(m: mirror.Tree, bindings: Bindings): global.Tree = {
+  def mirrorToGlobal(mirror: api.Universe)(m: mirror.Tree, bindings: Bindings, typeParams: Seq[mirror.Type]): global.Tree = {
     val importer =
-      newMirrorToGlobalImporter(mirror)(bindings)
+      newMirrorToGlobalImporter(mirror)(bindings, typeParams)
     //fixMissingMirrorTypes(m)
     try {
       importer.importTree(m.asInstanceOf[importer.from.Tree])
@@ -135,7 +131,7 @@ extends PatternMatchers
     }
   }
   
-  def globalToMirror(mirror: base.Universe)(t: global.Tree): mirror.Tree = {
+  def globalToMirror(mirror: api.Universe)(t: global.Tree): mirror.Tree = {
     val importer = newGlobalToMirrorImporter(mirror)
     importer.importTree(t.asInstanceOf[importer.from.Tree]).asInstanceOf[mirror.Tree]
   }

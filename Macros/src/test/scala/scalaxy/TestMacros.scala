@@ -8,7 +8,7 @@ import Assert._
 import scalaxy.macros.fail
 
 import scala.reflect.runtime.universe._
-import scala.reflect.{ClassTag, TypeTag}
+import scala.reflect.ClassTag
 
 class TestMacros 
 {
@@ -34,7 +34,8 @@ class TestMacros
     replace(1, 1) match { 
       case Replacement(
         Expr(Literal(Constant(1))),
-        Expr(Literal(Constant(1)))
+        Expr(Literal(Constant(1))),
+        Nil
       ) => 
     }
   }

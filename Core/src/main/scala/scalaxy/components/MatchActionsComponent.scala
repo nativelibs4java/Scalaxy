@@ -86,7 +86,7 @@ extends PluginComponent
                     tt
                   }
                 }
-              }.transform(res) //*/
+              }.transform(res) */
           }) 
         }
       else
@@ -109,37 +109,6 @@ extends PluginComponent
         println("Registered match action '" + n + "' with pattern : " + m.pattern.tree)
       }
     }
-    
-    //println("Found " + rawMatchActions.size + " match actions in " + filteredHolders.size + " different holders")
-    
-    /*
-    lazy val mirrorToolBox = runtime.universe.rootMirror.mkToolBox()
-    //lazy val globalToolBox = global.mkToolBox()
-    
-    // TODO fix bugs that happen when this is true and/or false : 
-    val typeCheckInMirrorSpace = true
-    
-    rawMatchActions.flatMap { 
-      case (n, m) =>
-        try {
-          val converted =
-            if (typeCheckInMirrorSpace) 
-              mirrorToGlobal(mirrorToolBox.typeCheck(m.pattern.tree), EmptyBindings)
-            else 
-              globalToolBox.typeCheck(mirrorToGlobal(m.pattern.tree, EmptyBindings))
-            
-          println("Registered match action '" + n + "' = " + m)
-          println("Converted pattern = " + converted)
-          
-          Some(n -> ConvertedMatchAction(converted, m))
-        } catch { 
-          case ex =>
-            println("Failed to convert match action '" + n + "':\n\t" + ex + "\n\t" + m)
-            ex.printStackTrace
-            None
-        }
-    }
-    */
     
     rawMatchActions.map(d => (d.name, d)).toMap
   }
@@ -164,7 +133,7 @@ extends PluginComponent
             val bindings = 
               matchAndResolveTreeBindings(matchAction.pattern.tree.asInstanceOf[patternUniv.Tree], expanded.asInstanceOf[candidateUniv.Tree])
             
-            if (options.verbose) 
+            //if (options.verbose) 
             {
               println("Bindings for '" + n + "':\n\t" + (bindings.nameBindings ++ bindings.typeBindings).mkString("\n\t"))
             }
@@ -176,16 +145,18 @@ extends PluginComponent
             //  println("NOT ENOUGH BINDINGS (expected " + paramCount + " params and " + typeParamCount + " type params), skipping " + n + " for tree:\n" + tree)
             //} else 
             matchAction match  {
-              case r @ Replacement(_, _) =>
+              case r @ Replacement(_, _, _) =>
+                println("MATCH ACTION " + r + " WITH typeParams = " + r.typeParams)
                 val replacement =
-                  mirrorToGlobal(runtime.universe)(r.replacement.tree, bindings)
-                //println("Replacement '" + n + "':\n\t" + replacement.toString.replaceAll("\n", "\n\t"))
+                  mirrorToGlobal(runtime.universe)(r.replacement.tree, bindings, r.typeParams)
+                println("Replacement '" + n + "':\n\t" + replacement.toString.replaceAll("\n", "\n\t"))
                 expanded = replacement
               case MatchWarning(_, message) =>
                 unit.warning(tree.pos, message)
               case MatchError(_, message) =>
                 unit.error(tree.pos, message)
-              case ConditionalAction(_, when, thenMatch) =>
+              case ca @ ConditionalAction(_, when, thenMatch, _) =>
+                println("CONDITIONAL ACTION WITH typeParams = " + ca.typeParams)
                 val treesToTest: List[scala.reflect.runtime.universe.Tree] = 
                   when.toList.map(n => { 
                     globalToMirror(
@@ -201,7 +172,7 @@ extends PluginComponent
                       val replacement = mirrorToGlobal(
                         scala.reflect.runtime.universe
                       )(
-                        r.replacement.tree, bindings
+                        r.replacement.tree, bindings, ca.typeParams
                       )
                       //println("Replace by '" + n + "':\n\t" + replacement.toString.replaceAll("\n", "\n\t"))
                       expanded = replacement
@@ -251,7 +222,11 @@ extends PluginComponent
               expanded = healSymbols(unit, currentOwner, expanded, expectedTpe)
           }
           
-          expanded = typer.typed(expanded, EXPRmode, expectedTpe)
+          try {
+            expanded = typer.typed(expanded, EXPRmode, expectedTpe)
+          } catch { case ex: Throwable =>
+            ex.printStackTrace
+          }
           
           if (options.verbose) {
             println()
@@ -264,8 +239,8 @@ extends PluginComponent
           expanded
         }
       } catch { case ex: Throwable =>
-        //println(ex)
-        if (options.verbose)
+        println(ex)
+        //if (options.verbose)
           ex.printStackTrace
         println("Error while trying to replace " + tree + " : " + ex)
         tree
