@@ -205,18 +205,10 @@ extends TypingTransformers
         def isTypeParameter: Boolean
       }
       
-      //TypeVars.isTypeVar(runtime.universe)(t.asInstanceOf[runtime.universe.Type]) ||
-      {
-        val s = t.typeSymbol
-        //try {
-          s != null &&
-          s.asInstanceOf[PlasticSymbol].isTypeParameter
-        //} catch { case ex => 
-        //  ex.printStackTrace
-        //  false // TODO report to Eugene:
-        //}
-      } /*||
-      */
+      val s = t.typeSymbol
+      s != null &&
+      //s.isTypeParameter
+      s.asInstanceOf[PlasticSymbol].isTypeParameter
     }
   } 
     
@@ -508,7 +500,7 @@ extends TypingTransformers
           } catch { case ex: Throwable => null }
           
           // TODO
-          println("Cannot fix type for " + tree + ": " + clstr(tree) + " (symbol = " + st + ")")
+          //println("Cannot fix type for " + tree + ": " + clstr(tree) + " (symbol = " + st + ")")
           st
           //null
       }

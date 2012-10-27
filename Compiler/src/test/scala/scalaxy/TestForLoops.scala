@@ -5,7 +5,6 @@ import plugin._
 import org.junit._
 import Assert._
 
-//@Ignore
 class ForLoopsTest extends BaseTestUtils {
 
   override def pluginDef = new ScalaxyPluginDefLike {

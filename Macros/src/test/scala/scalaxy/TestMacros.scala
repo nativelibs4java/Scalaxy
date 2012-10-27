@@ -34,8 +34,7 @@ class TestMacros
     replace(1, 1) match { 
       case Replacement(
         Expr(Literal(Constant(1))),
-        Expr(Literal(Constant(1))),
-        Nil
+        Expr(Literal(Constant(1)))
       ) => 
     }
   }

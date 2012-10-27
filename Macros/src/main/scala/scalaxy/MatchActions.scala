@@ -26,14 +26,12 @@ trait MatchAction {
 }
 
 case class Replacement(
-  pattern: Expr[Any], replacement: Expr[Any], typeParams: List[Type]
-) extends MatchAction {
-  println("CREATED Replacement(typeParams = " + typeParams + ")")
+  pattern: Expr[Any], replacement: Expr[Any])
+extends MatchAction {
   override def typeCheck(f: (Tree, Type) => Tree) =
     Replacement(
       expr[Any](f(pattern.tree, pattern.staticType)),
-      expr[Any](f(replacement.tree, replacement.staticType)),
-      typeParams
+      expr[Any](f(replacement.tree, replacement.staticType))
     )
 }                                                                        
 
@@ -73,15 +71,15 @@ case class ReplaceBy[T](
 }
 
 case class Error[T](
-  message: String
-) extends Action[T] {
+  message: String)
+extends Action[T] {
   override def typeCheck(f: (Tree, Type) => Tree) =
     this
 }
 
 case class Warning[T](
-  message: String
-) extends Action[T] {
+  message: String)
+extends Action[T] {
   override def typeCheck(f: (Tree, Type) => Tree) =
     this
 }
@@ -89,11 +87,9 @@ case class Warning[T](
 case class ConditionalAction[T](
   pattern: Expr[T], 
   when: Seq[String],
-  thenMatch: PartialFunction[List[Tree], Action[T]],
-  typeParams: List[Type]
-) extends MatchAction {
+  thenMatch: PartialFunction[List[Tree], Action[T]])
+extends MatchAction  {
   def patternTree = pattern.tree
-  println("CREATED ConditionalAction(typeParams = " + typeParams + ")")
   override def typeCheck(f: (Tree, Type) => Tree) =
     ConditionalAction[T](
       expr[T](f(pattern.tree, pattern.staticType)),
@@ -103,8 +99,7 @@ case class ConditionalAction[T](
           thenMatch.isDefinedAt(list)
         override def apply(list: List[Tree]) =
           thenMatch(list).typeCheck(f)
-      },
-      typeParams
+      }
     )
 }
 

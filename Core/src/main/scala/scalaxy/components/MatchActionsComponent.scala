@@ -145,18 +145,18 @@ extends PluginComponent
             //  println("NOT ENOUGH BINDINGS (expected " + paramCount + " params and " + typeParamCount + " type params), skipping " + n + " for tree:\n" + tree)
             //} else 
             matchAction match  {
-              case r @ Replacement(_, _, _) =>
-                println("MATCH ACTION " + r + " WITH typeParams = " + r.typeParams)
+              case r @ Replacement(_, _) =>
+                println("MATCH ACTION " + r)
                 val replacement =
-                  mirrorToGlobal(runtime.universe)(r.replacement.tree, bindings, r.typeParams)
+                  mirrorToGlobal(runtime.universe)(r.replacement.tree, bindings)
                 println("Replacement '" + n + "':\n\t" + replacement.toString.replaceAll("\n", "\n\t"))
                 expanded = replacement
               case MatchWarning(_, message) =>
                 unit.warning(tree.pos, message)
               case MatchError(_, message) =>
                 unit.error(tree.pos, message)
-              case ca @ ConditionalAction(_, when, thenMatch, _) =>
-                println("CONDITIONAL ACTION WITH typeParams = " + ca.typeParams)
+              case ca @ ConditionalAction(_, when, thenMatch) =>
+                println("CONDITIONAL ACTION WITH")
                 val treesToTest: List[scala.reflect.runtime.universe.Tree] = 
                   when.toList.map(n => { 
                     globalToMirror(
@@ -172,7 +172,7 @@ extends PluginComponent
                       val replacement = mirrorToGlobal(
                         scala.reflect.runtime.universe
                       )(
-                        r.replacement.tree, bindings, ca.typeParams
+                        r.replacement.tree, bindings
                       )
                       //println("Replace by '" + n + "':\n\t" + replacement.toString.replaceAll("\n", "\n\t"))
                       expanded = replacement
@@ -228,9 +228,11 @@ extends PluginComponent
             ex.printStackTrace
           }
           
-          if (options.verbose) {
+          //if (options.verbose) 
+          {
             println()
-            println("FINAL EXPANSION = \n" + nodeToString(expanded))
+            //println("FINAL EXPANSION = \n" + nodeToString(expanded))
+            println("FINAL EXPANSION = \n" + expanded)
             println()
           }
           

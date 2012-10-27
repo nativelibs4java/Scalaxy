@@ -28,7 +28,7 @@ extends PatternMatchers
    * TODO report missing API : scala.reflect.api.SymbolTable 
    * (scala.reflect.mirror does not extend scala.reflect.internal.SymbolTable publicly !)
    */
-  def newMirrorToGlobalImporter(mirror: api.Universe)(bindings: Bindings, typeParams: Seq[mirror.Type]) = {
+  def newMirrorToGlobalImporter(mirror: api.Universe)(bindings: Bindings) = {
     new global.StandardImporter {
       val from = mirror.asInstanceOf[scala.reflect.internal.SymbolTable]
       
@@ -63,17 +63,10 @@ extends PatternMatchers
         imp
       }
       override def importType(tpe: from.Type): global.Type = {
-        ultraLogConversions("IMPORT TYPE " + tpe + " (typeParams = " + typeParams + ")")
-        //val typeParamIndex: Option[Int] = TypeVars.typeVarIndex(from)(tpe)
-        //val typeParamIndex = typeParams.indexOf(tpe)
+        ultraLogConversions("IMPORT TYPE " + tpe)
         val imp = if (tpe == null) {
           null
-        } /*else if (typeParamIndex >= 0) {//!= None) {
-          //val i = typeParamIndex//.get
-          //if (i >= typeParams.size)
-          //  throw new RuntimeException("typeParams = " + typeParams + ",  i = " + i + ", t = " + tpe)
-          super.importType(typeParams(i).asInstanceOf[from.Type])
-        } */else {
+        } else {
           val rtpe = resolveType(from)(tpe)
           val it = resolveType(global)(super.importType(rtpe))
           //TODO? 
@@ -119,9 +112,9 @@ extends PatternMatchers
     scala.reflect.mirror
     scala.reflect.runtime.universe
   */
-  def mirrorToGlobal(mirror: api.Universe)(m: mirror.Tree, bindings: Bindings, typeParams: Seq[mirror.Type]): global.Tree = {
+  def mirrorToGlobal(mirror: api.Universe)(m: mirror.Tree, bindings: Bindings): global.Tree = {
     val importer =
-      newMirrorToGlobalImporter(mirror)(bindings, typeParams)
+      newMirrorToGlobalImporter(mirror)(bindings)
     //fixMissingMirrorTypes(m)
     try {
       importer.importTree(m.asInstanceOf[importer.from.Tree])

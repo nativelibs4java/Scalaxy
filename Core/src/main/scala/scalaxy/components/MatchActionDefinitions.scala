@@ -143,7 +143,7 @@ object MatchActionDefinitions
             println("\t\tparams.types = " + javaMethod.getParameterTypes.mkString(", "))
             
             for (((arg, paramClass), paramType) <- args.zip(javaMethod.getParameterTypes).zip(javaMethod.getGenericParameterTypes); if arg != null) {
-              if (!paramClass.isInstance(arg)) {
+              if (!paramClass.isPrimitive && !paramClass.isInstance(arg)) {
                 println("\t\tERROR: " + arg + " is not an instance of class " + paramClass.getName + ", type " + paramType)
                 var c: Class[_] = arg.getClass
                 println("\t\tIt extends:")
