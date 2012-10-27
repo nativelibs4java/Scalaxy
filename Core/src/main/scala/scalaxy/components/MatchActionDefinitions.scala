@@ -16,8 +16,7 @@ object MatchActionDefinitions
   import scala.reflect.runtime.currentMirror
   import scala.reflect.runtime.{universe => ru}
 
-  @deprecated
-  def cast[T](v: Any): T = v.asInstanceOf[T]
+  private def cast[T](v: Any): T = v.asInstanceOf[T]
 
   def WeakTypeTag[T](tpe: ru.Type): ru.TypeTag[T] = {
     val u = ru.asInstanceOf[ru.type with scala.reflect.internal.StdCreators]

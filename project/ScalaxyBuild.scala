@@ -44,14 +44,11 @@ object Scalaxy extends Build
   lazy val scalaSettings = Seq(
     scalaVersion := "2.10.0-RC1"
     //crossScalaVersions := Seq("2.10.0-M2"),
-    //scalaVersion := "2.10.0-M7"
     //exportJars := true, // use jars in classpath
   )
   lazy val commonDepsSettings = Seq(
     libraryDependencies += "junit" % "junit" % "4.10" % "test",
     libraryDependencies += "com.novocode" % "junit-interface" % "0.8" % "test"
-    //libraryDependencies <+= scalaVersion(v => "org.scalatest" % ("scalatest_2.9.1"/* + v*/) % "1.7.1" % "test")
-    //libraryDependencies += "org.scala-tools.testing" %% "scalacheck" % "1.9" % "test"
   )
 
   lazy val scalaxy =
@@ -68,7 +65,6 @@ object Scalaxy extends Build
       //  art.copy(`classifier` = Some("assembly"))
       //},
       scalacOptions in console in Compile <+= (packageBin in Compile) map("-Xplugin:" + _)
-      //,libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-reflect" % _)
     )).
     dependsOn(core, macros, compilets)
 
@@ -76,7 +72,6 @@ object Scalaxy extends Build
     Project(id = "scalaxy-core", base = file("Core"), settings = standardSettings ++ Seq(
       libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-compiler" % _),
       libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-reflect" % _)
-      //,libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-reflect" % _)
     )).
     dependsOn(macros)
 
@@ -87,7 +82,6 @@ object Scalaxy extends Build
   lazy val macros =
     Project(id = "scalaxy-macros", base = file("Macros"), settings = standardSettings ++ Seq(
       libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-compiler" % _),
-      libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-reflect" % _),
       //libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-reflect" % _),
       scalacOptions ++= Seq("-language:experimental.macros")
     ))

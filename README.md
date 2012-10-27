@@ -68,3 +68,9 @@ The rewrites are defined in `Rewrites` and look like this :
 		}
 	}
 
+Tests are currently a bit flaky (not as isolated as they used to be), here's how to run them:
+
+    sbt clean
+    sbt test-only scalaxy.test.ForLoopsTest
+    sbt test
+
