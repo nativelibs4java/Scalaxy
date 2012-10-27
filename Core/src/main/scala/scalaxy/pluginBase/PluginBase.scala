@@ -56,28 +56,28 @@ import scala.tools.nsc.reporters.Reporter
 class PluginBase(override val global: Global, pluginDef: PluginDef) extends Plugin {
   override val name = pluginDef.name
   override val description = pluginDef.description
-  
+
   lazy val pluginOptions = try {
     pluginDef.createOptions(global.settings)
   } catch { case ex: NoClassDefFoundError if ex.toString.matches(""".*?\bscala/.+""") =>
     throw new RuntimeException("Bad Scala version for " + name + " !", ex)
   }
-  
-  lazy val enabled = 
+
+  lazy val enabled =
     !pluginOptions.explicitelyDisabled
-  
+
   /*override def processOptions(options: List[String], error: String => Unit) = {
     for (option <- options) {
       println("Found option " + option)
       // WE NEVER PASS HERE, WTF ???
     }
   }*/
-  override val optionsHelp: Option[String] = 
+  override val optionsHelp: Option[String] =
     Some(pluginOptions.envVarHelp)
-  
+
   override val components: List[PluginComponent] = if (enabled)
     pluginDef.createComponents(global, pluginOptions).filter(_ != null)
   else
     Nil
-  
+
 }

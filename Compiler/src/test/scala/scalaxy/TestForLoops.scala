@@ -10,7 +10,7 @@ class ForLoopsTest extends BaseTestUtils {
   override def pluginDef = new ScalaxyPluginDefLike {
     override def matchActionHolders = Seq(compilets.ForLoops)
   }
-  
+
   @Test
   def simpleUntilFilterLoop {
     ensurePluginCompilesSnippetsToSameByteCode(
@@ -18,9 +18,9 @@ class ForLoopsTest extends BaseTestUtils {
           for (i <- 0 until 100)//; if i < 10)
             t += 2 * i
       """,
-      """ 
+      """
           var t = 0;
-          
+
           {
             var ii = 0
             while (ii < 100) {
@@ -32,7 +32,7 @@ class ForLoopsTest extends BaseTestUtils {
       """
     )
   }
-  
+
   @Test
   def simpleUntilByAscFilterLoop {
     ensurePluginCompilesSnippetsToSameByteCode(
@@ -40,7 +40,7 @@ class ForLoopsTest extends BaseTestUtils {
           for (i <- 0 until 100 by 2)
             t += 2 * i
       """,
-      """ 
+      """
           var t = 0;
           {
             var ii = 0
@@ -53,7 +53,7 @@ class ForLoopsTest extends BaseTestUtils {
       """
     )
   }
-  
+
   @Test
   def simpleUntilByDescFilterLoop {
     ensurePluginCompilesSnippetsToSameByteCode(
@@ -61,7 +61,7 @@ class ForLoopsTest extends BaseTestUtils {
           for (i <- 10 until 0 by -2)
             t += 2 * i
       """,
-      """ 
+      """
           var t = 0;
           {
             var ii = 10
@@ -74,5 +74,5 @@ class ForLoopsTest extends BaseTestUtils {
       """
     )
   }
-    
+
 }

@@ -60,7 +60,7 @@ trait PluginDef {
   def createComponents(global: Global, options: PluginOptions): List[PluginComponent]
   def getCopyrightMessage: String
   def envVarPrefix: String
-  
+
   lazy val printCopyrightMessageOnce: Unit =
     println(getCopyrightMessage)
 }

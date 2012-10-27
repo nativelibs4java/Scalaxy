@@ -11,12 +11,12 @@ class NumericsTest extends BaseTestUtils {
   override def pluginDef = new ScalaxyPluginDefLike {
     override def matchActionHolders = Seq(compilets.Numerics)
   }
-  
+
   override def commonImports = """
     import math.Numeric.Implicits._
     import Ordering.Implicits._
   """
-  
+
   //def testBinOp(op: String, name: String) {
   //  ensurePluginCompilesSnippetsToSameByteCode(
   //    "def " + name + "[T : Numeric](a: T, b: T) = " +
@@ -33,7 +33,7 @@ class NumericsTest extends BaseTestUtils {
         "n." + name + "(a, b)"
     )
   }
-  
+
   @Test
   def plus = testBinOp("+", "plus")
   @Test

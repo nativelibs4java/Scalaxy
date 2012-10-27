@@ -2,20 +2,20 @@ import sbt._
 import Keys._
 //import sbtassembly.Plugin._ ; import AssemblyKeys._
 
-object Scalaxy extends Build 
+object Scalaxy extends Build
 {
   override lazy val settings = super.settings ++ Seq(
     shellPrompt := { s => Project.extract(s).currentProject.id + "> " }
   ) ++ scalaSettings
 
   lazy val standardSettings =
-    Defaults.defaultSettings ++ 
+    Defaults.defaultSettings ++
     infoSettings ++
-    compilationSettings ++ 
+    compilationSettings ++
     mavenSettings ++
     scalaSettings ++
     commonDepsSettings
-    
+
   lazy val infoSettings = Seq(
     organization := "com.nativelibs4java",
     version := "0.3-SNAPSHOT",
@@ -24,18 +24,18 @@ object Scalaxy extends Build
   )
   lazy val compilationSettings = Seq(
     scalacOptions ++= Seq("-encoding", "UTF-8", "-deprecation", "-unchecked"),
-    javacOptions ++= Seq("-Xlint:unchecked") 
+    javacOptions ++= Seq("-Xlint:unchecked")
   )
   lazy val mavenSettings = Seq(
     publishMavenStyle := true,
-    
+
     resolvers += Resolver.sonatypeRepo("snapshots"),
     //publishTo := Some(Resolver.file("file",  new File(Path.userHome.absolutePath+"/.m2/repository")))
 
     publishTo <<= version { (v: String) =>
       val nexus = "https://oss.sonatype.org/"
-      if (v.trim.endsWith("-SNAPSHOT")) 
-        Some("snapshots" at nexus + "content/repositories/snapshots") 
+      if (v.trim.endsWith("-SNAPSHOT"))
+        Some("snapshots" at nexus + "content/repositories/snapshots")
       else
         Some("releases"  at nexus + "service/local/staging/deploy/maven2")
     },
@@ -53,15 +53,15 @@ object Scalaxy extends Build
     //libraryDependencies <+= scalaVersion(v => "org.scalatest" % ("scalatest_2.9.1"/* + v*/) % "1.7.1" % "test")
     //libraryDependencies += "org.scala-tools.testing" %% "scalacheck" % "1.9" % "test"
   )
-  
-  lazy val scalaxy = 
+
+  lazy val scalaxy =
     Project(id = "scalaxy", base = file("."), settings = standardSettings ++ Seq(
       scalacOptions in console in Compile <+= (packageBin in compilerPlugin in Compile) map("-Xplugin:" + _)
     )).
     dependsOn(core, macros, compilets, compilerPlugin).
     aggregate(core, macros, compilets, compilerPlugin)
 
-  lazy val compilerPlugin = 
+  lazy val compilerPlugin =
     Project(id = "scalaxy-compiler-plugin", base = file("Compiler"), settings = standardSettings ++ //assemblySettings ++ addArtifact(artifact in (Compile, assembly), assembly) ++
     Seq(
       //artifact in (Compile, assembly) ~= { art =>
@@ -71,24 +71,24 @@ object Scalaxy extends Build
       //,libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-reflect" % _)
     )).
     dependsOn(core, macros, compilets)
-    
-  lazy val core = 
+
+  lazy val core =
     Project(id = "scalaxy-core", base = file("Core"), settings = standardSettings ++ Seq(
       libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-compiler" % _),
       libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-reflect" % _)
       //,libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-reflect" % _)
     )).
     dependsOn(macros)
-                 
-  lazy val compilets = 
+
+  lazy val compilets =
     Project(id = "scalaxy-compilets", base = file("Compilets"), settings = standardSettings).
     dependsOn(macros)
-                 
-  lazy val macros = 
+
+  lazy val macros =
     Project(id = "scalaxy-macros", base = file("Macros"), settings = standardSettings ++ Seq(
       libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-compiler" % _),
       libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-reflect" % _),
       //libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-reflect" % _),
       scalacOptions ++= Seq("-language:experimental.macros")
-    )) 
+    ))
 }

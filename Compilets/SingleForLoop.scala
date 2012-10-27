@@ -8,14 +8,14 @@ import matchers._
 
 object SingleForLoop extends Compilet {
   def simpleForeachUntil[U : TypeTag](start: Int, end: Int, body: U) = replace(
-    for (i <- start until end) 
+    for (i <- start until end)
       body,
     {
       var ii = start
       while (ii < end) {
         val i = ii
         body
-        ii = ii + 1  
+        ii = ii + 1
       }
     }
   )

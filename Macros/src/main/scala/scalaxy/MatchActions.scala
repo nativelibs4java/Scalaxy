@@ -9,8 +9,8 @@ import scala.reflect.runtime.universe._
 object RuntimeMirrorUtils {
   def expr[T](tree: Tree): Expr[T] = {
     Expr[T](
-      currentMirror,//.runtimeMirror, 
-      new reflect.api.TreeCreator { 
+      currentMirror,//.runtimeMirror,
+      new reflect.api.TreeCreator {
         override def apply[U <: reflect.api.Universe with Singleton](m: reflect.api.Mirror[U]) =
           tree.asInstanceOf[U#Tree]
       }
@@ -21,7 +21,7 @@ import RuntimeMirrorUtils._
 
 trait MatchAction {
   def pattern: Expr[_]
-  
+
   def typeCheck(f: (Tree, Type) => Tree): MatchAction
 }
 
@@ -33,10 +33,10 @@ extends MatchAction {
       expr[Any](f(pattern.tree, pattern.staticType)),
       expr[Any](f(replacement.tree, replacement.staticType))
     )
-}                                                                        
+}
 
 case class MatchError(
-  pattern: Expr[Any], 
+  pattern: Expr[Any],
   message: String
 ) extends MatchAction {
   override def typeCheck(f: (Tree, Type) => Tree) =
@@ -47,7 +47,7 @@ case class MatchError(
 }
 
 case class MatchWarning(
-  pattern: Expr[Any], 
+  pattern: Expr[Any],
   message: String
 ) extends MatchAction {
   override def typeCheck(f: (Tree, Type) => Tree) =
@@ -85,7 +85,7 @@ extends Action[T] {
 }
 
 case class ConditionalAction[T](
-  pattern: Expr[T], 
+  pattern: Expr[T],
   when: Seq[String],
   thenMatch: PartialFunction[List[Tree], Action[T]])
 extends MatchAction  {

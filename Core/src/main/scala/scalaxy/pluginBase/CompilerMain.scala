@@ -76,7 +76,7 @@ object CompilerMain {
 trait CompilerMain {
   def pluginDef: PluginDef
   def commandName: String
-  
+
   def main(args: Array[String]) {
     try {
       compilerMain(args, true)
@@ -85,12 +85,12 @@ trait CompilerMain {
       throw ex
     }
   }
-  
+
   def compilerMain(args: Array[String], enablePlugins: Boolean) = {
     pluginDef.printCopyrightMessageOnce
-    
+
     val settings = new Settings
-    
+
     val command = new CompilerCommand((args ++ CompilerMain.extraArgs).toList, settings) {
       override val cmdName = commandName
     }

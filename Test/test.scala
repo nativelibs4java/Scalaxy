@@ -1,7 +1,7 @@
 object RunMe extends App {
 //class RunMe {
   //import scalaxy._//macros._
-  
+
   //println(tree(Seq(1, 2, 3)))
   /*
   {
@@ -9,7 +9,7 @@ object RunMe extends App {
     th.start
     th.stop
   }
-  
+
   {
     class C {
       private val i = 10
@@ -28,14 +28,14 @@ object RunMe extends App {
       }
     }*/
     for (i <- 1 until 10)
-      println("i = " + (i + 1) + " // v = " + v) 
+      println("i = " + (i + 1) + " // v = " + v)
   }
   trans(List(1, 2, 3), 10)
   /*
   {
     import math.Numeric.Implicits._
     import Ordering.Implicits._
-    
+
     def foo[T](a:T, b:T)(implicit ev:Numeric[T]) = {
       val x = a + b
       val y = a - b
@@ -45,28 +45,28 @@ object RunMe extends App {
       d < x
     }
       //new FastNumericOps(a).+(b)
-      
+
     println("FOOO " + foo(1, 2))
   }
-  
+
   {
     val i = 10
     val s = i.toString
     println(s)
   }
-  
+
   def trans(col: Seq[Int]) = {
     col.map(_ + 1).map(_ * 2)
   }
-  
+
   def trans(col: Seq[Int], v: Int) = {
     for (i <- 1 until 10)
-      println("i = " + i + " // v = " + v) 
+      println("i = " + i + " // v = " + v)
   }
   println(trans(Seq(1, 2, 3)))
   println(trans(Seq(2, 3, 4), 10))
   */
-  
+
   /*def transManual(col: Seq[Int]) = {
     col.map(a => {
       val b = ((a:Int) => a + 1)(a)
@@ -77,8 +77,8 @@ object RunMe extends App {
   def run = {
     for (i <- 0 until 100) println(i + "...")
   }
-  
+
   run
-  
+
   */
 }

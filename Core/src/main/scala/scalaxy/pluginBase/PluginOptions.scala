@@ -40,7 +40,7 @@ import scala.util.parsing.input.Position
 
 class PluginOptions(pluginDef: PluginDef, settings: Settings) {
   import pluginDef.envVarPrefix
-  
+
   private def hasEnv(name: String, default: Boolean = false) = {
     val v = System.getenv(name)
     if (default)
@@ -48,43 +48,43 @@ class PluginOptions(pluginDef: PluginDef, settings: Settings) {
     else
       v == "1"
   }
-  
-  var test = 
+
+  var test =
     false
-    
-  var testOutputs = 
+
+  var testOutputs =
     collection.mutable.Map[Any, Any]()
-  
-  var stream = 
+
+  var stream =
     hasEnv(envVarPrefix + "STREAM", true)
-    
+
   var trace =
     settings != null && settings.debug.value ||
     hasEnv(envVarPrefix + "TRACE")
-    
-  var veryVerbose = 
+
+  var veryVerbose =
     hasEnv(envVarPrefix + "VERY_VERBOSE")
-    
-  var debug = 
+
+  var debug =
     hasEnv(envVarPrefix + "DEBUG")
-    
-  var verbose = 
+
+  var verbose =
     settings != null && settings.verbose.value ||
     veryVerbose ||
     hasEnv(envVarPrefix + "VERBOSE")
-    
-  var experimental = 
+
+  var experimental =
     hasEnv(envVarPrefix + "EXPERIMENTAL")
-  
-  var deprecated = 
+
+  var deprecated =
     hasEnv(envVarPrefix + "DEPRECATED")
-    
+
   var skip = System.getenv(envVarPrefix + "SKIP")
-    
+
   lazy val explicitelyDisabled =
     "1".equals(System.getenv(envVarPrefix + "DISABLE"))
 
-  def envVarHelp = 
+  def envVarHelp =
     """
       """ + envVarPrefix + """DISABLE=1                   Set this environment variable to disable the plugin
       """ + envVarPrefix + """SKIP=File1,File2:line2...   Do not optimize any of the listed files (or specific lines).
@@ -134,20 +134,20 @@ class PluginOptions(pluginDef: PluginDef, settings: Settings) {
         }
         if (s.length == 2 && (s(1) ne null)) {
           val skippedLine = s(1).toInt
-          (path: String, line: Int) => { 
+          (path: String, line: Int) => {
             val v = path == null || !(line == skippedLine && !pathFilter(path))
             //println(path + ":" + line + " = " + v)
             v
           }
         } else {
-          (path: String, line: Int) => { 
+          (path: String, line: Int) => {
             val v = path == null || pathFilter(path)
             //println(path + ":" + line + " = " + v)
             v
           }
         }
       }).reduceLeft[FileAndLineOptimizationFilter] {
-        case (f1, f2) => 
+        case (f1, f2) =>
           (path: String, line: Int) => {
             f1(path, line) && f2(path, line)
           }
@@ -160,16 +160,16 @@ class PluginOptions(pluginDef: PluginDef, settings: Settings) {
       v
     else
       null.asInstanceOf[V]
-      
+
 }
 
-trait WithOptions 
+trait WithOptions
 {
   val global: Global
   import global._
-  
+
   val options: PluginOptions
-  
+
   def shouldOptimize(tree: Tree) = {
     val pos = tree.pos
     try {

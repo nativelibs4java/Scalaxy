@@ -6,11 +6,11 @@ import scala.tools.nsc.CompilerCommand
 import scala.tools.nsc.Settings
 import scala.tools.nsc.reporters.ConsoleReporter
 import scala.tools.nsc.reporters.Reporter
-    
+
 
 class SharedCompiler(enablePlugins: Boolean, pluginDef: PluginDef) {
   case class Compiler(
-    extraArgs: Array[String], 
+    extraArgs: Array[String],
     settings: Settings,
     pluginOptions: PluginOptions,
     runner: PluginRunner
@@ -19,14 +19,14 @@ class SharedCompiler(enablePlugins: Boolean, pluginDef: PluginDef) {
     val settings = new Settings
     val pluginOptions = pluginDef.createOptions(settings)
     pluginOptions.test = true
-    
+
     val runner = new PluginRunner(if (enablePlugins) Some(pluginDef) else None, pluginOptions, settings, new ConsoleReporter(settings))
-    Compiler(CompilerMain.extraArgs, settings, pluginOptions, runner) 
+    Compiler(CompilerMain.extraArgs, settings, pluginOptions, runner)
   }
 
   import scala.concurrent._
   import scala.concurrent.duration.Duration
-  
+
   //implicit val runner = new scala.concurrent.ThreadRunner
 
   /// A compiler and a compiler future
@@ -47,14 +47,14 @@ class SharedCompiler(enablePlugins: Boolean, pluginDef: PluginDef) {
       newInstances
     instances._1
   }
-  
+
   lazy val isAtLeastScala29 = {
     try {
       Class.forName("scala.sys.process.Process")
       true
     } catch { case _ => false }
   }
-  
+
   def canReuseCompilers = {
     !isAtLeastScala29 &&
     System.getenv("SCALAXY_DONT_REUSE_COMPILERS") == null

@@ -10,28 +10,28 @@ class TestsTest extends BaseTestUtils {
   override def pluginDef = new ScalaxyPluginDefLike {
     override def matchActionHolders = Seq(compilets.Test)
   }
-  
+
   @Test
   def testDummySame {
     ensurePluginCompilesSnippetsToSameByteCode(
-      """ 
+      """
         println(667)
       """,
-      """ 
+      """
         println(667)
       """,
       allowSameResult = true
     )
   }
-  
+
   @Test
   def testNotSame {
     try {
       ensurePluginCompilesSnippetsToSameByteCode(
-        """ 
+        """
           println(667)
         """,
-        """ 
+        """
           println(668)
         """,
         printDifferences = false
@@ -39,21 +39,21 @@ class TestsTest extends BaseTestUtils {
       assertTrue(false)
     } catch { case _ => }
   }
-  
+
   @Test
   def testReplacedConstant {
     ensurePluginCompilesSnippetsToSameByteCode(
-      """ 
+      """
         println(666)
         //println(888)
       """,
-      """ 
+      """
         println(667)
         //println(999)
       """
     )
   }
-  
+
   /*
   @Test
   def testVarargs {

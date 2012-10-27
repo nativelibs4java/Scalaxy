@@ -52,19 +52,19 @@ trait ScalaxyPluginDefLike extends PluginDef {
   override val name = "Scalaxy"
   override val description =
     "This plugin rewrites some Scala constructs (like for loops) to make them faster."
-    
+
   override def envVarPrefix = "SCALAXY_"
-  
+
   override def createOptions(settings: Settings): PluginOptions =
     new PluginOptions(this, settings)
-  
+
   def matchActionHolders: Seq[AnyRef]
-  
+
   override def createComponents(global: Global, options: PluginOptions): List[PluginComponent] =
     List(
       new MatchActionsComponent(global, options, matchActionHolders:_*)
     )
-      
+
   override def getCopyrightMessage: String =
     "Scalaxy Plugin\nCopyright Olivier Chafik 2010-2012"
 }
@@ -72,7 +72,7 @@ trait ScalaxyPluginDefLike extends PluginDef {
 /*
 object Compilets {
   val compiletsListResourcePath = "scalaxy.compilets"
-  
+
   def getCompilets = {
     val e = getClass.getClassLoader.getResources(compiletsListResourcePath)
     Iterator continually { e.hasMoreElements } takeWhile(_ == true) map(v => {
@@ -86,17 +86,17 @@ object ScalaxyPluginDef extends ScalaxyPluginDefLike {
   override def matchActionHolders = Seq(
     //compilets.Example,
     //compilets.Streams,
-    
+
     //compilets.Java,
     compilets.Numerics,
     compilets.ForLoops
     //compilets.Maps,
-    
+
     //compilets.SingleForLoop
   )
 }
 
-class ScalaxyPlugin(override val global: Global) 
+class ScalaxyPlugin(override val global: Global)
 extends PluginBase(global, ScalaxyPluginDef)
 
 object Compile extends CompilerMain {

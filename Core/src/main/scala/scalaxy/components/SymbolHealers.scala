@@ -26,7 +26,7 @@ extends TypingTransformers
     new Transformer {
       var syms = new collection.mutable.HashMap[Name, Symbol]()
       currentOwner = rootOwner
-      
+
       def subSyms[V](v: => V): V = {
         val oldSyms = syms
         syms = new collection.mutable.HashMap[Name, Symbol]()
@@ -47,39 +47,39 @@ extends TypingTransformers
               else
                 currentOwner.newValue(name)
             ).setFlag(mods.flags)
-            
+
             tree.setSymbol(sym)
-            
+
             syms(name) = sym
-    
+
             atOwner(sym) {
               transform(tpt)
               transform(rhs)
             }
-            
+
             typer.typed(rhs)
-            
+
             var tpe = rhs.tpe
             if (tpe.isInstanceOf[ConstantType])
               tpe = tpe.widen
-              
+
             sym.setInfo(Option(tpe).getOrElse(NoType))
-            
+
             val rep = ValDef(mods, name, TypeTree(tpe), rhs)
             rep.symbol = sym
             rep
           }
-          
+
           tree match {
             case (_: Block) | (_: ClassDef) =>
               subSyms {
                 super.transform(tree)
               }
-              
+
             case Function(vparams, body) =>
               val sym = currentOwner.newAnonymousFunctionValue(NoPosition)
               tree.setSymbol(sym)
-              
+
               atOwner(sym) {
                 subSyms {
                   vparams.foreach(transformValDef _)
@@ -87,22 +87,22 @@ extends TypingTransformers
                 }
               }
               tree
-              
+
             case Ident(n) =>
-              if (tree.symbol == null || 
+              if (tree.symbol == null ||
                   tree.symbol == NoSymbol ||
                   tree.symbol.owner == NoSymbol ||
                   rootOwner != NoSymbol &&
-                  tree.symbol.owner.isNestedIn(rootOwner)) 
+                  tree.symbol.owner.isNestedIn(rootOwner))
               {
                 for (s <- syms.get(n))
                   tree.setSymbol(s)
               }
               tree
-              
+
             case vd: ValDef =>
               transformValDef(vd)
-              
+
             case _ =>
               super.transform(tree)
           }
