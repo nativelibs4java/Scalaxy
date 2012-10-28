@@ -56,26 +56,17 @@ object Scalaxy extends Build
   lazy val scalaxy =
     Project(
       id = "scalaxy",
-      base = file("."),
+      base = file("Compiler"),
       settings =
         standardSettings ++
-        Seq(
-          scalacOptions in console in Compile <+= (packageBin in compilerPlugin in Compile) map("-Xplugin:" + _)
-        )).
-    dependsOn(core, macros, compilets, compilerPlugin).
-    aggregate(core, macros, compilets, compilerPlugin)
-
-  lazy val compilerPlugin =
-    Project(
-      id = "scalaxy-compiler-plugin",
-      base = file("Compiler"),
-      settings = 
-        standardSettings ++ 
         assemblySettings ++ 
         addArtifact(artifact in (Compile, assembly), assembly) ++
         Seq(
+          test in assembly := {},
+          publishArtifact in (Compile, packageBin) := false,
           artifact in (Compile, assembly) ~= { art =>
-            art//.copy(`classifier` = Some("assembly"))
+            //art.copy(`classifier` = Some("assembly"))
+            art.copy(`classifier` = None)
           },
           excludedJars in assembly <<= (fullClasspath in assembly) map { cp => 
             cp filter { _.data.getName.startsWith("scala-") }
@@ -83,6 +74,7 @@ object Scalaxy extends Build
           scalacOptions in console in Compile <+= (packageBin in Compile) map("-Xplugin:" + _)
         )).
     dependsOn(core, macros, compilets)
+    //aggregate(core, macros, compilets)
 
   lazy val core =
     Project(

@@ -19,12 +19,18 @@ To compile your sbt project with Scalaxy's compiler plugin and default compilets
 	autoCompilerPlugins := true
 	
 	addCompilerPlugin("com.nativelibs4java" %% "scalaxy" % "0.3-SNAPSHOT")
+	
+	scalacOptions += "-Xplugin-require:Scalaxy"
 
 (please use sbt 0.12.1 or later)
 
 To see what's happening:
 
 	SCALAXY_VERBOSE=1 sbt
+	
+Or to see the code after it's been rewritten during compilation:
+
+	scalacOptions += "-Xprint:scalaxy-rewriter"
 	
 = Hacking =
 
@@ -70,7 +76,11 @@ The rewrites are defined in `Rewrites` and look like this :
 
 Tests are currently a bit flaky (not as isolated as they used to be), here's how to run them:
 
-    sbt clean
-    sbt test-only scalaxy.test.ForLoopsTest
-    sbt test
+	sbt clean
+	sbt "project scalaxy" "test-only scalaxy.test.ForLoopsTest"
+	sbt test
+	
+To deploy to Sonatype (assuming ~/.sbt/0.12.1/sonatype.sbt contains the correct credentials):
+
+	sbt "project scalaxy" assembly publish
 

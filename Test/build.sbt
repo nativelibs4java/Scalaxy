@@ -4,7 +4,7 @@ resolvers += Resolver.sonatypeRepo("snapshots")
 
 autoCompilerPlugins := true
 
-addCompilerPlugin("com.nativelibs4java" %% "scalaxy-compiler-plugin" % "0.3-SNAPSHOT" classifier "assembly")
+addCompilerPlugin("com.nativelibs4java" %% "scalaxy" % "0.3-SNAPSHOT")
 
 scalacOptions += "-Xplugin-require:Scalaxy"
 
