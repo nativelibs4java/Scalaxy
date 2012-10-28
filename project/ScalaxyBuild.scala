@@ -1,6 +1,7 @@
 import sbt._
 import Keys._
 import sbtassembly.Plugin._ ; import AssemblyKeys._
+import ls.Plugin._
 
 object Scalaxy extends Build
 {
@@ -17,10 +18,14 @@ object Scalaxy extends Build
     mavenSettings ++
     scalaSettings ++
     testSettings ++
+    seq(lsSettings: _*) ++
+    Seq(
+      (LsKeys.tags in LsKeys.lsync) := Seq("sbt", "scalac"),
+      LsKeys.ghUser := Some("yourgithubusername"),
+      LsKeys.ghRepo := Some("yourgituhreponame")) ++
     Seq(
       libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-compiler" % _),
-      libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-reflect" % _)
-    )
+      libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-reflect" % _))
 
   lazy val infoSettings = Seq(
     organization := "com.nativelibs4java",
@@ -42,7 +47,21 @@ object Scalaxy extends Build
       else
         Some("releases"  at nexus + "service/local/staging/deploy/maven2")
     },
-    pomIncludeRepository := { _ => false })
+    homepage := Some(url("https://github.com/ochafik/Scalaxy")),
+    pomIncludeRepository := { _ => false },
+    pomExtra := (
+      <scm>
+        <url>git@github.com:ochafik/Scalaxy.git</url>
+        <connection>scm:git:git@github.com:ochafik/Scalaxy.git</connection>
+      </scm>
+      <developers>
+        <developer>
+          <id>ochafik</id>
+          <name>Olivier Chafik</name>
+          <url>http://ochafik.com/</url>
+        </developer>
+      </developers>
+    ))
 
   lazy val scalaSettings = Seq(
     //crossScalaVersions := Seq("2.10.0-RC2"),
@@ -53,7 +72,7 @@ object Scalaxy extends Build
     libraryDependencies += "junit" % "junit" % "4.10" % "test",
     libraryDependencies += "com.novocode" % "junit-interface" % "0.8" % "test")
 
-  lazy val scalaxy =
+  lazy val ascalaxy =
     Project(
       id = "scalaxy",
       base = file("Compiler"),
@@ -73,8 +92,8 @@ object Scalaxy extends Build
           },
           scalacOptions in console in Compile <+= (packageBin in Compile) map("-Xplugin:" + _)
         )).
-    dependsOn(core, macros, compilets)
-    //aggregate(core, macros, compilets)
+    dependsOn(core, macros, compilets).
+    aggregate(core, macros, compilets)
 
   lazy val core =
     Project(

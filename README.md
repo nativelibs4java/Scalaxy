@@ -80,7 +80,8 @@ Tests are currently a bit flaky (not as isolated as they used to be), here's how
 	sbt "project scalaxy" "test-only scalaxy.test.ForLoopsTest"
 	sbt test
 	
-To deploy to Sonatype (assuming ~/.sbt/0.12.1/sonatype.sbt contains the correct credentials):
+To deploy to Sonatype (assuming ~/.sbt/0.12.1/sonatype.sbt contains the correct credentials), then advertise a release on ls.implicit.ly:
 
 	sbt "project scalaxy" assembly publish
+	sbt "project scalaxy" ls-write-version lsync
 
