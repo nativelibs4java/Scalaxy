@@ -1,11 +1,12 @@
 import sbt._
 import Keys._
-//import sbtassembly.Plugin._ ; import AssemblyKeys._
+import sbtassembly.Plugin._ ; import AssemblyKeys._
 
 object Scalaxy extends Build
 {
   override lazy val settings = 
-    super.settings ++ Seq(
+    super.settings ++
+    Seq(
       shellPrompt := { s => Project.extract(s).currentProject.id + "> " }
     ) ++ scalaSettings
 
@@ -15,7 +16,11 @@ object Scalaxy extends Build
     compilationSettings ++
     mavenSettings ++
     scalaSettings ++
-    testSettings
+    testSettings ++
+    Seq(
+      libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-compiler" % _),
+      libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-reflect" % _)
+    )
 
   lazy val infoSettings = Seq(
     organization := "com.nativelibs4java",
@@ -49,31 +54,41 @@ object Scalaxy extends Build
     libraryDependencies += "com.novocode" % "junit-interface" % "0.8" % "test")
 
   lazy val scalaxy =
-    Project(id = "scalaxy", base = file("."), settings = standardSettings ++ Seq(
-      scalacOptions in console in Compile <+= (packageBin in compilerPlugin in Compile) map("-Xplugin:" + _)
-    )).
+    Project(
+      id = "scalaxy",
+      base = file("."),
+      settings =
+        standardSettings ++
+        Seq(
+          scalacOptions in console in Compile <+= (packageBin in compilerPlugin in Compile) map("-Xplugin:" + _)
+        )).
     dependsOn(core, macros, compilets, compilerPlugin).
     aggregate(core, macros, compilets, compilerPlugin)
 
   lazy val compilerPlugin =
-    Project(id = "scalaxy-compiler-plugin", base = file("Compiler"), settings = standardSettings ++ //assemblySettings ++ addArtifact(artifact in (Compile, assembly), assembly) ++
-    Seq(
-      //artifact in (Compile, assembly) ~= { art =>
-      //  art.copy(`classifier` = Some("assembly"))
-      //},
-      scalacOptions in console in Compile <+= (packageBin in Compile) map("-Xplugin:" + _)
-    )).
+    Project(
+      id = "scalaxy-compiler-plugin",
+      base = file("Compiler"),
+      settings = 
+        standardSettings ++ 
+        assemblySettings ++ 
+        addArtifact(artifact in (Compile, assembly), assembly) ++
+        Seq(
+          artifact in (Compile, assembly) ~= { art =>
+            art//.copy(`classifier` = Some("assembly"))
+          },
+          excludedJars in assembly <<= (fullClasspath in assembly) map { cp => 
+            cp filter { _.data.getName.startsWith("scala-") }
+          },
+          scalacOptions in console in Compile <+= (packageBin in Compile) map("-Xplugin:" + _)
+        )).
     dependsOn(core, macros, compilets)
 
   lazy val core =
     Project(
       id = "scalaxy-core",
       base = file("Core"),
-      settings =
-        standardSettings ++ Seq(
-          libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-compiler" % _),
-          libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-reflect" % _)
-        )).
+      settings = standardSettings).
     dependsOn(macros)
 
   lazy val compilets =
@@ -88,8 +103,8 @@ object Scalaxy extends Build
       id = "scalaxy-macros",
       base = file("Macros"),
       settings =
-        standardSettings ++ Seq(
-          libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-compiler" % _),
+        standardSettings ++ 
+        Seq(
           scalacOptions ++= Seq("-language:experimental.macros")
         ))
 }
