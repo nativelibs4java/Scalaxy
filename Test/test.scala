@@ -30,6 +30,9 @@ object RunMe extends App {
     for (i <- 1 until 10)
       println("i = " + (i + 1) + " // v = " + v)
   }
+  val n = 2
+  for (i <- 0 until 10 by n)
+    println(i)
   trans(List(1, 2, 3), 10)
   /*
   {

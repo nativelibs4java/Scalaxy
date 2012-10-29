@@ -113,8 +113,8 @@ trait BaseTestUtils {
         outDir.getAbsolutePath,
         srcFile.getAbsolutePath
       ) ++
-      getAdditionalClassPath.map(
-        cp => Seq("-cp", cp.mkString(File.pathSeparator))
+      toolClassPath.map(
+        cp => Seq("-toolcp", cp.mkString(File.pathSeparator))
       ).getOrElse(Seq())
     )
 
@@ -243,7 +243,7 @@ trait BaseTestUtils {
   def jarPath(c: Class[_]) =      
     c.getProtectionDomain.getCodeSource.getLocation.getFile
   
-  def getAdditionalClassPath: Option[Set[String]] =
+  def toolClassPath: Option[Set[String]] =
     Some(Set(
       jarPath(classOf[scalaxy.MatchAction]),
       jarPath(scalaxy.compilets.ForLoops.getClass),
@@ -285,8 +285,8 @@ trait BaseTestUtils {
       "-d",
       outputDirectory.getAbsolutePath,
       tmpFile.getAbsolutePath
-    ) ++ getAdditionalClassPath.map(
-      cp => Seq("-cp", cp.mkString(File.pathSeparator))
+    ) ++ toolClassPath.map(
+      cp => Seq("-toolcp", cp.mkString(File.pathSeparator))
     ).getOrElse(Seq())
 
     //println("Compiling '" + tmpFile.getAbsolutePath + "' with args '" + compileArgs.mkString(" ") +"'")
