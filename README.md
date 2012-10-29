@@ -8,7 +8,7 @@ Key features:
 *   Easy to express AOP-style rewrites (to add or remove logs, runtime checks, etc...)
 *   Will support easy warnings and errors
 
-= Usage =
+# Usage
 
 To compile your sbt project with Scalaxy's compiler plugin and default compilets, make sure your `build.sbt` file looks like this:
 
@@ -32,7 +32,7 @@ Or to see the code after it's been rewritten during compilation:
 
 	scalacOptions += "-Xprint:scalaxy-rewriter"
 	
-= Hacking =
+# Hacking
 
 To build the sources and compile a file test.scala using the compiler plugin, use [paulp's sbt script](https://github.com/paulp/sbt-extras) :
 
