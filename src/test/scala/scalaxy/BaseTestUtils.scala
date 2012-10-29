@@ -113,9 +113,7 @@ trait BaseTestUtils {
         outDir.getAbsolutePath,
         srcFile.getAbsolutePath
       ) ++
-      toolClassPath.map(
-        cp => Seq("-toolcp", cp.mkString(File.pathSeparator))
-      ).getOrElse(Seq())
+      classPathArgs
     )
 
     val f = new File(outDir, className + ".class")
@@ -243,13 +241,19 @@ trait BaseTestUtils {
   def jarPath(c: Class[_]) =      
     c.getProtectionDomain.getCodeSource.getLocation.getFile
   
-  def toolClassPath: Option[Set[String]] =
-    Some(Set(
-      jarPath(classOf[scalaxy.MatchAction]),
-      jarPath(scalaxy.compilets.ForLoops.getClass),
-      jarPath(classOf[scalaxy.plugin.ScalaxyPlugin])
-    ))
-    //None
+  def classPath = Set(
+    jarPath(classOf[scalaxy.MatchAction]))
+    
+  def toolClassPath = Set(
+    jarPath(classOf[scalaxy.MatchAction]),
+    jarPath(scalaxy.compilets.ForLoops.getClass),
+    jarPath(classOf[scalaxy.plugin.ScalaxyPlugin]))
+    
+  def classPathArgs = Seq(
+    "-toolcp",
+    toolClassPath.mkString(File.pathSeparator),
+    "-cp",
+    classPath.mkString(File.pathSeparator))
 
   protected def compileCode(withPlugin: Boolean, code: String, constructorArgsDecls: String = "", decls: String = "", methodArgsDecls: String = ""): RunnableCode = {
     val (testClassName, testMethodName) = testClassInfo
@@ -285,9 +289,7 @@ trait BaseTestUtils {
       "-d",
       outputDirectory.getAbsolutePath,
       tmpFile.getAbsolutePath
-    ) ++ toolClassPath.map(
-      cp => Seq("-toolcp", cp.mkString(File.pathSeparator))
-    ).getOrElse(Seq())
+    ) ++ classPathArgs
 
     //println("Compiling '" + tmpFile.getAbsolutePath + "' with args '" + compileArgs.mkString(" ") +"'")
     val pluginOptions = (
