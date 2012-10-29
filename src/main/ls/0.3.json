@@ -3,7 +3,7 @@
   "name" : "scalaxy",
   "version" : "0.3-SNAPSHOT",
   "description" : "scalaxy",
-  "site" : "http://ochafik.com/blog/",
+  "site" : "https://github.com/ochafik/Scalaxy",
   "tags" : [ ],
   "docs" : "",
   "resolvers" : [ "https://oss.sonatype.org/content/repositories/releases" ],
