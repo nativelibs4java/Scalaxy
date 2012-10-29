@@ -77,11 +77,12 @@ The rewrites are defined in `Rewrites` and look like this :
 Tests are currently a bit flaky (not as isolated as they used to be), here's how to run them:
 
 	sbt clean
-	sbt "project scalaxy" "test-only scalaxy.test.ForLoopsTest"
+	sbt "test-only scalaxy.test.ForLoopsTest"
+	sbt "test-only scalaxy.test.NumericsTest"
 	sbt test
 	
 To deploy to Sonatype (assuming ~/.sbt/0.12.1/sonatype.sbt contains the correct credentials), then advertise a release on ls.implicit.ly:
 
-	sbt "project scalaxy" assembly publish
-	sbt "project scalaxy" ls-write-version lsync
+	sbt assembly publish
+	sbt ls-write-version lsync
 
