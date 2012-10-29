@@ -84,5 +84,5 @@ Tests are currently a bit flaky (not as isolated as they used to be), here's how
 To deploy to Sonatype (assuming ~/.sbt/0.12.1/sonatype.sbt contains the correct credentials), then advertise a release on ls.implicit.ly:
 
 	sbt assembly publish
-	sbt ls-write-version lsync
+	sbt "project scalaxy" ls-write-version lsync
 
