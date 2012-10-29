@@ -5,6 +5,10 @@ import ls.Plugin._
 
 object Scalaxy extends Build
 {
+  lazy val scalaSettings = Seq(
+    //exportJars := true, // use jars in classpath
+    scalaVersion := "2.10.0-RC1")
+
   lazy val infoSettings = Seq(
     organization := "com.nativelibs4java",
     version := "0.3-SNAPSHOT",
@@ -29,10 +33,6 @@ object Scalaxy extends Build
        Seq("compiler-plugin", "rewrite", "ast", "transform", "optimization", "optimisation"),
     LsKeys.ghUser := Some("ochafik"),
     LsKeys.ghRepo := Some("Scalaxy"))
-
-  lazy val scalaSettings = Seq(
-    //exportJars := true, // use jars in classpath
-    scalaVersion := "2.10.0-RC1")
 
   lazy val standardSettings =
     Defaults.defaultSettings ++

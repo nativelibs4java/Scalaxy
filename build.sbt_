@@ -1,5 +1,0 @@
-scalaVersion := "2.10.0-SNAPSHOT"
-
-scalacOptions ++= Seq("-Xmacros", "-language:experimental.macros")
-
-resolvers += Resolver.sonatypeRepo("snapshots")
