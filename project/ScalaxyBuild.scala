@@ -31,6 +31,8 @@ object Scalaxy extends Build
     (LsKeys.docsUrl in LsKeys.lsync) <<= homepage,
     (LsKeys.tags in LsKeys.lsync) := 
        Seq("compiler-plugin", "rewrite", "ast", "transform", "optimization", "optimisation"),
+    (description in LsKeys.lsync) :=
+      "A scalac compiler plugin that optimizes the code by rewriting for loops on ranges into while loops, avoiding some implicit object creations when using numerics..."
     LsKeys.ghUser := Some("ochafik"),
     LsKeys.ghRepo := Some("Scalaxy"))
 
