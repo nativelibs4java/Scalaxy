@@ -68,27 +68,6 @@ extends PluginComponent
       val defs = getMatchActionDefinitions(holder)
       if (defs.isEmpty)
         sys.error("ERROR: no definition in holder " + holder)
-
-      if (HacksAndWorkarounds.retypeCheckExpressionTree)
-        defs.map {
-          case d: MatchActionDefinition =>
-          d.copy(matchAction = d.matchAction.typeCheck {
-            case (tree, tpe) =>
-              val res = mirrorToolBox.typeCheck(tree, tpe)
-              res /*
-              new runtime.universe.Transformer {
-                override def transform(tree: runtime.universe.Tree) = {
-                  val tt = super.transform(tree)
-                  try {
-                    mirrorToolBox.typeCheck(tt)
-                  } catch { case ex =>
-                    ex.printStackTrace
-                    tt
-                  }
-                }
-              }.transform(res) */
-          })
-        }
       else
         defs
     })

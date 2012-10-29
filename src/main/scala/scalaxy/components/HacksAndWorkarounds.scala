@@ -7,8 +7,6 @@ object HacksAndWorkarounds
   val workAroundMissingTypeApply = true
   val workAroundNullPatternTypes = true
 
-  val retypeCheckExpressionTree = false//true
-
   val fixTypedExpressionsType = true
   val healSymbols = true
 

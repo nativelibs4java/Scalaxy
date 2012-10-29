@@ -42,7 +42,7 @@ To see what's happening, you might want to print the AST before and after the re
 
     sbt "run Test/test.scala -Xprint:typer -Xprint:scalaxy-rewriter"
     
-The rewrites are defined in `Rewrites` and look like this :
+The rewrites are defined in `Compilets` and look like this :
 
 	import scalaxy.macros._
 	import scalaxy.matchers._

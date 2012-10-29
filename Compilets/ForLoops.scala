@@ -4,9 +4,8 @@ import scala.reflect.runtime.universe._
 
 import macros._
 import matchers._
-//import scala.reflect.mirror._
 
-object ForLoops extends Compilet
+object ForLoops
 {
   def simpleForeachUntil[U](start: Int, end: Int, body: U) = replace(
     for (i <- start until end)

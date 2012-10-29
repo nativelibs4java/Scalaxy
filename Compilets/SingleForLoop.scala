@@ -6,7 +6,7 @@ import macros._
 import matchers._
 //import scala.reflect.mirror._
 
-object SingleForLoop extends Compilet {
+object SingleForLoop {
   def simpleForeachUntil[U : TypeTag](start: Int, end: Int, body: U) = replace(
     for (i <- start until end)
       body,
