@@ -240,20 +240,21 @@ trait BaseTestUtils {
 
   def jarPath(c: Class[_]) =      
     c.getProtectionDomain.getCodeSource.getLocation.getFile
-  
-  def classPath = Set(
-    jarPath(classOf[scalaxy.MatchAction]))
-    
-  def toolClassPath = Set(
+
+  val classPath = Set(
     jarPath(classOf[scalaxy.MatchAction]),
     jarPath(scalaxy.compilets.ForLoops.getClass),
     jarPath(classOf[scalaxy.plugin.ScalaxyPlugin]))
     
-  def classPathArgs = Seq(
-    "-toolcp",
-    toolClassPath.mkString(File.pathSeparator),
-    "-cp",
-    classPath.mkString(File.pathSeparator))
+  def classPathArgs = Seq[String]()
+    //"-usejavacp",
+    //"-toolcp",
+    //classPath.mkString(File.pathSeparator),
+    //"-bootclasspath",
+    //(classPath ++ Set(jarPath(classOf[List[_]]))).
+    //  mkString(File.pathSeparator),
+    //"-cp",
+    //classPath.mkString(File.pathSeparator))
 
   protected def compileCode(withPlugin: Boolean, code: String, constructorArgsDecls: String = "", decls: String = "", methodArgsDecls: String = ""): RunnableCode = {
     val (testClassName, testMethodName) = testClassInfo
