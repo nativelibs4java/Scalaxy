@@ -71,8 +71,10 @@ trait BaseTestUtils {
 
   def pluginDef: PluginDef
 
-  object SharedCompilerWithPlugins extends SharedCompiler(true, pluginDef)
-  object SharedCompilerWithoutPlugins extends SharedCompiler(false, pluginDef)
+  //object SharedCompilerWithPlugins extends SharedCompiler(true, pluginDef)
+  //object SharedCompilerWithoutPlugins extends SharedCompiler(false, pluginDef)
+  def SharedCompilerWithPlugins = new SharedCompiler(true, pluginDef)
+  def SharedCompilerWithoutPlugins = new SharedCompiler(false, pluginDef)
 
   lazy val options: PluginOptions = {
     val o = pluginDef.createOptions(null)
@@ -243,18 +245,18 @@ trait BaseTestUtils {
 
   val classPath = Set(
     jarPath(classOf[scalaxy.MatchAction]),
-    jarPath(scalaxy.compilets.ForLoops.getClass),
+    //jarPath(scalaxy.compilets.ForLoops.getClass),
     jarPath(classOf[scalaxy.plugin.ScalaxyPlugin]))
     
-  def classPathArgs = Seq[String]()
+  def classPathArgs = Seq[String](
     //"-usejavacp",
-    //"-toolcp",
-    //classPath.mkString(File.pathSeparator),
+    "-toolcp",
+    classPath.mkString(File.pathSeparator),
     //"-bootclasspath",
     //(classPath ++ Set(jarPath(classOf[List[_]]))).
     //  mkString(File.pathSeparator),
-    //"-cp",
-    //classPath.mkString(File.pathSeparator))
+    "-cp",
+    classPath.mkString(File.pathSeparator))
 
   protected def compileCode(withPlugin: Boolean, code: String, constructorArgsDecls: String = "", decls: String = "", methodArgsDecls: String = ""): RunnableCode = {
     val (testClassName, testMethodName) = testClassInfo
@@ -332,7 +334,7 @@ trait BaseTestUtils {
         override def apply(args: Any*): Any = {
           try {
             testMethod.invoke(inst, args.map(_.asInstanceOf[AnyRef]):_*)
-          } catch { case ex =>
+          } catch { case ex: Throwable =>
             ex.printStackTrace
             throw ex
           }

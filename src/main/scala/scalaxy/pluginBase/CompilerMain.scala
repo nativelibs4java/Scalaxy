@@ -80,7 +80,7 @@ trait CompilerMain {
   def main(args: Array[String]) {
     try {
       compilerMain(args, true)
-    } catch { case ex =>
+    } catch { case ex: Throwable =>
       ex.printStackTrace
       throw ex
     }

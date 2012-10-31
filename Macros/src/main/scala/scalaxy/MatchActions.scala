@@ -1,7 +1,5 @@
 package scalaxy
-//package macros
 
-import scala.reflect.runtime._
 import scala.reflect.runtime.universe._
 
 trait MatchAction {
@@ -40,7 +38,7 @@ case class ConditionalAction[T](
   pattern: Expr[T],
   when: Seq[String],
   thenMatch: PartialFunction[List[Tree], Action[T]])
-extends MatchAction  {
+extends MatchAction {
   def patternTree = pattern.tree
 }
 

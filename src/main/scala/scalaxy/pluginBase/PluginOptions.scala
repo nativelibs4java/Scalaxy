@@ -175,7 +175,7 @@ trait WithOptions
     try {
       !pos.isDefined || options.fileAndLineOptimizationFilter(pos.source.path, pos.line)
     } catch {
-      case ex =>
+      case ex: Throwable =>
         //ex.printStackTrace
         true
     }

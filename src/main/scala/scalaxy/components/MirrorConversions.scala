@@ -28,13 +28,59 @@ extends PatternMatchers
    * TODO report missing API : scala.reflect.api.SymbolTable
    * (scala.reflect.mirror does not extend scala.reflect.internal.SymbolTable publicly !)
    */
-  def newMirrorToGlobalImporter(mirror: api.Universe)(bindings: Bindings) = {
+  def newMirrorToGlobalImporter(mirror: api.Universe)(bindings: Bindings): global.StandardImporter = {
     new global.StandardImporter {
       val from = mirror.asInstanceOf[scala.reflect.internal.SymbolTable]
-
+      lazy val applyNamePattern = from.newTermName("apply")
+  
       override def importTree(tree: from.Tree) = {
         ultraLogConversions("IMPORT TREE (tpe = " + tree.tpe + ", cls = " + tree.getClass.getName + "): " + tree)
+        
         val imp = tree match {
+          case from.Apply(from.Select(from.Ident(n), `applyNamePattern`), params)
+          if bindings.functionBindings.contains(n.toString) =>
+            val (patternParams, patternTree, candidateTree) = bindings.functionBindings(n.toString)
+            val bodyBindings = 
+              bindings ++ Bindings(
+                bindings.nameBindings ++ 
+                patternParams.zip(params).map({ 
+                  case (pp, p) => 
+                    pp -> p.asInstanceOf[candidateUniv.Tree]
+                })
+              )
+              
+            def cast[T](v: Any): T = v.asInstanceOf[T]
+            
+            val replaceCandidateBy = 
+              patternParams.zip(params).map { case (patternParam, candidateParam) =>
+                val candidateUniv.Ident(n) = bindings.nameBindings(patternParam)
+                n.toString -> candidateParam
+              } toMap
+              
+            val funTransformer = new global.Transformer {
+              override def transform(tree: global.Tree) = tree match {
+                case global.Ident(n)
+                if replaceCandidateBy.contains(n.toString) =>
+                  val r = replaceCandidateBy(n.toString).asInstanceOf[global.Tree]
+                  r.tpe = tree.tpe
+                  r
+                case _ =>
+                  super.transform(tree)
+              }
+            }
+              
+            println("TRANSPOSING tree = " + tree + ", candidateTree = " + candidateTree)
+            //println(patternParams.zip(params).map({case (p, pp) => p + " = " + bindings.nameBindings.get(p) + ", actual = " + bindings.nameBindings.get(pp)}).mkString(", "))
+            println("NEW BINDINGS = " + bodyBindings)
+            
+            val transposed = 
+              funTransformer.transform(candidateTree.asInstanceOf[global.Tree])
+              //newMirrorToGlobalImporter(mirror)(bodyBindings).
+              //importTree(cast(candidateTree))
+            println("TRANSPOSED " + tree + " to " + transposed)
+            println("\t" + global.nodeToString(transposed))
+            transposed
+            
           case from.Ident(n) =>
             bindings.nameBindings.get(n.toString).getOrElse(super.importTree(tree)).asInstanceOf[global.Tree]
 

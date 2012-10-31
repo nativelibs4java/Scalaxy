@@ -22,9 +22,12 @@ extends TypingTransformers
   val patternUniv: api.Universe
   val candidateUniv: api.Universe with scala.reflect.internal.Importers
 
+  lazy val applyNamePattern = patternUniv.newTermName("apply")
+  
   case class Bindings(
     nameBindings: Map[String, candidateUniv.Tree] = Map(),
-    typeBindings: Map[patternUniv.Type, candidateUniv.Type] = Map()
+    typeBindings: Map[patternUniv.Type, candidateUniv.Type] = Map(),
+    functionBindings: Map[String, (List[String], patternUniv.Tree, candidateUniv.Tree)] = Map() 
   ) {
     lazy val stringIndexedTypeBindings =
       typeBindings.map { case (k, v) => (k.toString, (k, v)) }
@@ -57,41 +60,39 @@ extends TypingTransformers
 
     def ++(b: Bindings) =
       Bindings(
-        nameBindings ++ b.nameBindings, typeBindings ++ b.typeBindings
+        nameBindings ++ b.nameBindings,
+        typeBindings ++ b.typeBindings,
+        functionBindings ++ b.functionBindings
       )
 
     def convertToExpected[T](v: Any) = v.asInstanceOf[T]
 
     def apply(replacement: patternUniv.Tree): candidateUniv.Tree =
     {
-      //val toto = candidateUniv.asInstanceOf[scala.reflect.internal.Importers]
       val importer = new candidateUniv.StandardImporter {
         val from = patternUniv.asInstanceOf[scala.reflect.internal.SymbolTable]
+        
         override def importTree(tree: from.Tree) = convertToExpected {//: candidateUniv.Tree = {
+          //println("importTree(" + tree + ")")
+          //for ((n, params) <- functionReplacements.get(tree.asInstanceOf[patternUniv.Tree])) {
+          //  println("FOUND FUNCTION REPLACEMENT with " + n + "(" + params.mkString(", ") + ")") 
+          //}
           tree match {
             case from.Ident(n) =>
               nameBindings.get(n.toString).
               getOrElse(super.importTree(tree))
-              //{ val imp = candidateUniv.Ident(in) ; imp.tpe = importType(tree.tpe) ; imp })
             case _ =>
               super.importTree(tree)
           }
-        }//.asInstanceOf[candidateUniv.Tree]//
-        //*
+        }
         override def importType(tpe: from.Type) = convertToExpected {
           if (tpe == null) {
             null
           } else {
-            //val it = resolveType(candidateUniv)(super.importType(tpe)).asInstanceOf[candidateUniv.Type]
-            //getType(it.asInstanceOf[patternUniv.Type]).getOrElse(it).asInstanceOf[candidateUniv.Type]
-
-            //var it = super.importType(tpe)
-            //it = resolveType(candidateUniv)(it)
             getType(resolveType(patternUniv)(tpe.asInstanceOf[patternUniv.Type])).
             getOrElse(super.importType(tpe))
-            //.asInstanceOf[candidateUniv.Type]
           }
-        }//*/
+        }
       }
       importer.importTree(replacement.asInstanceOf[importer.from.Tree])
     }
@@ -104,7 +105,6 @@ extends TypingTransformers
     def dealias: api.Types#Type
     def deconst: api.Types#Type
     def normalize: api.Types#Type
-    //def widen: WidenableType
   }
 
   def normalize(u: api.Universe)(tpe: u.Type) = {
@@ -243,16 +243,6 @@ extends TypingTransformers
       throw NoTypeMatchException(pattern0, tree0, "Type kind matching failed (" + pattern + " vs. " + tree + ")", depth)
     }
     else
-//    if (pattern != null && tree != null && pattern.kind != tree.kind) {
-//      throw NoTypeMatchException(pattern0, tree0, "Type kind matching failed (" + pattern.kind + " vs. " + tree.kind + ")", depth)
-//    }
-//    else
-//    if (pattern != null && pattern.typeSymbol != null &&
-//        tree != null && tree.typeSymbol != null &&
-//        pattern.typeSymbol.kind != tree.typeSymbol.kind) {
-//      throw NoTypeMatchException(pattern0, tree0, "Type symbol kind matching failed (" + pattern.typeSymbol.kind + " vs. " + tree.typeSymbol.kind + ")", depth)
-//    }
-//    else
     {
       val ret = (pattern, tree) match {
         // TODO remove null acceptance once macro typechecker is fixed !
@@ -268,9 +258,6 @@ extends TypingTransformers
 
         case (`patternUnitTpe`, `candidateUnitTpe`) =>
           EmptyBindings
-
-        //case (_, _) if candNoType && !patNoType =>
-        //  throw NoTypeMatchException(pattern0, tree0, "Type matching failed", depth)
 
         // TODO support refined types again:
         //case (patternUniv.RefinedType(parents, decls), RefinedType(parents2, decls2)) =>
@@ -306,7 +293,7 @@ extends TypingTransformers
         =>
           matchAndResolveTypeBindings(pre, pre2, depth + 1) ++
           matchAndResolveTypeBindings(args.zip(args2), depth + 1)
-
+          
         case _ =>
           if (HacksAndWorkarounds.useStringBasedPatternMatching &&
               Option(pattern).toString == Option(tree).toString) {
@@ -356,6 +343,20 @@ extends TypingTransformers
       val ret = (pattern, tree) match {
         case (_, _) if pattern.isEmpty && tree.isEmpty =>
           EmptyBindings
+
+        case (patternUniv.Apply(patternUniv.Select(i @ patternUniv.Ident(n), `applyNamePattern`), params), _)
+        if i.symbol != null && i.symbol.isParameter 
+        =>
+          println("### Found function param: \n\t" + pattern + "\n\t-> " + tree + "\n\t(i = " + i + ": " + i.getClass.getName + ", tpe = " + i.tpe + ", i.symbol.isParameter = " + i.symbol.isParameter + ")")
+          // TODO: recurse on pattern to bind params to actual values?
+          Bindings(functionBindings = Map(
+            n.toString -> ((
+              params.map({ case patternUniv.Ident(p) => p.toString }),
+              pattern,
+              tree
+            ))
+          ))
+          //EmptyBindings
 
         //case (_, _) if isParameter(patternType) =>
         //  EmptyBindings
@@ -460,7 +461,7 @@ extends TypingTransformers
         println("Successfully bound trees (depth " + depth + "):")
         println("\ttree pattern = " + pattern + ": " + clstr(pattern))// + "; kind = " + Option(pattern).map(_.typeSymbol.kind))
         println("\ttree found = " + tree + ": " + clstr(tree))
-        println("\tbindings:\n\t\t" + (ret.nameBindings ++ ret.typeBindings).mkString("\n\t\t"))
+        println("\tbindings:\n\t\t" + (ret.nameBindings ++ ret.typeBindings ++ ret.functionBindings).mkString("\n\t\t"))
       }
       ret
     }
