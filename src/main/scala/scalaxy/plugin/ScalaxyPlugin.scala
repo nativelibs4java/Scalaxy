@@ -84,15 +84,13 @@ object Compilets {
 
 object ScalaxyPluginDef extends ScalaxyPluginDefLike {
   override def matchActionHolders = Seq(
-    //compilets.Example,
-    //compilets.Streams,
+    //scalaxy.compilets.Example,
+    //scalaxy.compilets.Streams,
 
-    //compilets.Java,
-    compilets.Numerics,
-    compilets.ForLoops
-    //compilets.Maps,
-
-    //compilets.SingleForLoop
+    //scalaxy.compilets.Java,
+    scalaxy.compilets.Numerics,
+    scalaxy.compilets.RangeLoops,
+    scalaxy.compilets.ArrayLoops
   )
 }
 

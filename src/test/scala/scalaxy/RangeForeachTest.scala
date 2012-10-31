@@ -5,10 +5,10 @@ import plugin._
 import org.junit._
 import Assert._
 
-class ForLoopsTest extends BaseTestUtils {
+class RangeForeachTest extends BaseTestUtils {
 
   override def pluginDef = new ScalaxyPluginDefLike {
-    override def matchActionHolders = Seq(compilets.ForLoops)
+    override def matchActionHolders = Seq(compilets.RangeLoops)
   }
 
   @Test

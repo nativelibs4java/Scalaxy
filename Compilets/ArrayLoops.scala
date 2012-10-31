@@ -5,7 +5,7 @@ import scala.reflect.runtime.universe._
 import macros._
 import matchers._
 
-object ArrayForLoops
+object ArrayLoops
 {
   def simpleArrayForeach[A, B](array: Array[A], body: A => B) = replace(
     for (v <- array)

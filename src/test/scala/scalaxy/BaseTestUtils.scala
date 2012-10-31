@@ -71,26 +71,16 @@ trait BaseTestUtils {
 
   def pluginDef: PluginDef
 
-  //object SharedCompilerWithPlugins extends SharedCompiler(true, pluginDef)
-  //object SharedCompilerWithoutPlugins extends SharedCompiler(false, pluginDef)
-  def SharedCompilerWithPlugins = new SharedCompiler(true, pluginDef)
-  def SharedCompilerWithoutPlugins = new SharedCompiler(false, pluginDef)
+  object SharedCompilerWithPlugins extends SharedCompiler(true, pluginDef)
+  object SharedCompilerWithoutPlugins extends SharedCompiler(false, pluginDef)
+  //def SharedCompilerWithPlugins = new SharedCompiler(true, pluginDef)
+  //def SharedCompilerWithoutPlugins = new SharedCompiler(false, pluginDef)
 
   lazy val options: PluginOptions = {
     val o = pluginDef.createOptions(null)
     o.test = true
     o
   }
-  /*def compile(src: String, outDir: String) = {
-    outDir.mkdirs
-
-    val srcFile = File.createTempFile("temp", ".scala")
-    val out = new PrintWriter(srcFile)
-    out.println(src)
-    out.close
-    //srcFile.delete
-
-  }*/
 
   def commonImports = ""
 
@@ -110,7 +100,7 @@ trait BaseTestUtils {
 
     compiler.compile(
       Array(
-        //"-Xprint:scalaxy-rewriter",
+        "-Xprint:scalaxy-rewriter",
         "-d",
         outDir.getAbsolutePath,
         srcFile.getAbsolutePath
