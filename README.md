@@ -49,14 +49,14 @@ The rewrites are defined in `Compilets` and look like this :
 	
 	object SomeExamples {
 	
-	  def simpleForeachUntil[U](start: Int, end: Int, body: U) = Replacement(
+	  def simpleForeachUntil[U](start: Int, end: Int, body: Int => U) = Replacement(
 		for (i <- start until end) 
-			body,
+			body(i),
 		{
 		  var ii = start
 		  while (ii < end) {
 			val i = ii
-			body
+			body(i)
 			ii = ii + 1  
 		  }
 		}
