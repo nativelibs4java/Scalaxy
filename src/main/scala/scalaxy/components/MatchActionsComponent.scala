@@ -114,7 +114,7 @@ extends PluginComponent
 
             if (options.verbose)
             {
-              println("Bindings for '" + n + "':\n\t" + (bindings.nameBindings ++ bindings.typeBindings).mkString("\n\t"))
+              println("Bindings for '" + n + "':\n\t" + (bindings.nameBindings ++ bindings.typeBindings ++ bindings.functionBindings).mkString("\n\t"))
             }
 
             //if (bindings.nameBindings.size < paramCount

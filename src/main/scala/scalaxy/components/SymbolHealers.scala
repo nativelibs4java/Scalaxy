@@ -24,12 +24,12 @@ extends TypingTransformers
 
   def healSymbols(unit: CompilationUnit, rootOwner: Symbol, root: Tree, expectedTpe: Type): Tree = {
     new Transformer {
-      var syms = new collection.mutable.HashMap[Name, Symbol]()
+      var syms = new collection.mutable.HashMap[String, Symbol]()
       currentOwner = rootOwner
 
       def subSyms[V](v: => V): V = {
         val oldSyms = syms
-        syms = new collection.mutable.HashMap[Name, Symbol]()
+        syms = new collection.mutable.HashMap[String, Symbol]()
         syms ++= oldSyms
         try {
           v
@@ -41,6 +41,7 @@ extends TypingTransformers
         try {
           def transformValDef(vd: ValDef) = {
             val ValDef(mods, name, tpt, rhs) = vd
+            //println("Found valdef " + vd)
             val sym = (
               if (mods.hasFlag(MUTABLE))
                 currentOwner.newVariable(name)
@@ -50,11 +51,15 @@ extends TypingTransformers
 
             tree.setSymbol(sym)
 
-            syms(name) = sym
+            syms(name.toString) = sym
 
             atOwner(sym) {
               transform(tpt)
+              
+              //println("syms = " + syms)
+              //println("transforming rhs = " + rhs + " (" + nodeToString(rhs) + ")")
               transform(rhs)
+              //println("\trhs = " + nodeToString(rhs))
             }
 
             typer.typed(rhs)
@@ -72,6 +77,7 @@ extends TypingTransformers
 
           tree match {
             case (_: Block) | (_: ClassDef) =>
+              //println("Found block or class " + tree)
               subSyms {
                 super.transform(tree)
               }
@@ -89,15 +95,9 @@ extends TypingTransformers
               tree
 
             case Ident(n) =>
-              if (tree.symbol == null ||
-                  tree.symbol == NoSymbol ||
-                  tree.symbol.owner == NoSymbol ||
-                  rootOwner != NoSymbol &&
-                  tree.symbol.owner.isNestedIn(rootOwner))
-              {
-                for (s <- syms.get(n))
-                  tree.setSymbol(s)
-              }
+              // if tree.symbol.owner.isNestedIn(rootOwner)
+              for (s <- syms.get(n.toString))
+                tree.setSymbol(s)
               tree
 
             case vd: ValDef =>
@@ -107,8 +107,7 @@ extends TypingTransformers
               super.transform(tree)
           }
         } catch { case ex: Throwable =>
-          println("ERROR while assigning missing symbols to " + tree + " : " + ex)
-          println(ex)
+          println("ERROR while assigning missing symbols to " + tree + ": " + tree.getClass.getName + " : " + ex + "\n\t" + nodeToString(tree))
           ex.printStackTrace
           throw ex
         }

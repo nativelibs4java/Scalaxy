@@ -69,16 +69,16 @@ extends PatternMatchers
               }
             }
               
-            println("TRANSPOSING tree = " + tree + ", candidateTree = " + candidateTree)
-            //println(patternParams.zip(params).map({case (p, pp) => p + " = " + bindings.nameBindings.get(p) + ", actual = " + bindings.nameBindings.get(pp)}).mkString(", "))
-            println("NEW BINDINGS = " + bodyBindings)
+            //println("TRANSPOSING tree = " + tree + ", candidateTree = " + candidateTree)
+            ////println(patternParams.zip(params).map({case (p, pp) => p + " = " + bindings.nameBindings.get(p) + ", actual = " + bindings.nameBindings.get(pp)}).mkString(", "))
+            //println("NEW BINDINGS = " + bodyBindings)
             
             val transposed = 
               funTransformer.transform(candidateTree.asInstanceOf[global.Tree])
               //newMirrorToGlobalImporter(mirror)(bodyBindings).
               //importTree(cast(candidateTree))
-            println("TRANSPOSED " + tree + " to " + transposed)
-            println("\t" + global.nodeToString(transposed))
+            //println("TRANSPOSED " + tree + " to " + transposed)
+            //println("\t" + global.nodeToString(transposed))
             transposed
             
           case from.Ident(n) =>

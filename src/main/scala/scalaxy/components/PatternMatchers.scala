@@ -347,7 +347,7 @@ extends TypingTransformers
         case (patternUniv.Apply(patternUniv.Select(i @ patternUniv.Ident(n), `applyNamePattern`), params), _)
         if i.symbol != null && i.symbol.isParameter 
         =>
-          println("### Found function param: \n\t" + pattern + "\n\t-> " + tree + "\n\t(i = " + i + ": " + i.getClass.getName + ", tpe = " + i.tpe + ", i.symbol.isParameter = " + i.symbol.isParameter + ")")
+          //println("### Found function param: \n\t" + pattern + "\n\t-> " + tree + "\n\t(i = " + i + ": " + i.getClass.getName + ", tpe = " + i.tpe + ", i.symbol.isParameter = " + i.symbol.isParameter + ")")
           // TODO: recurse on pattern to bind params to actual values?
           Bindings(functionBindings = Map(
             n.toString -> ((
