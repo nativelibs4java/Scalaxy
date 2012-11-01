@@ -65,7 +65,8 @@ extends PluginComponent
       runtime.universe.rootMirror.mkToolBox()
 
     val rawMatchActions = filteredHolders.flatMap(holder => {
-      val defs = getMatchActionDefinitions(holder)
+      val compiletName = getCompiletName(holder)
+      val defs = getCompiletDefinitions(compiletName)
       if (defs.isEmpty)
         sys.error("ERROR: no definition in holder " + holder)
       else
@@ -76,7 +77,7 @@ extends PluginComponent
       val treeFixer = new ExprTreeFixer {
         val universe = patternUniv
       }
-      for (MatchActionDefinition(n, _, _, m) <- rawMatchActions) {
+      for (MatchActionDefinition(n, m) <- rawMatchActions) {
         treeFixer.fixTypedExpression(
           n.toString,
           m.pattern.asInstanceOf[treeFixer.universe.Expr[Any]])
@@ -84,7 +85,7 @@ extends PluginComponent
     }
 
     if (options.verbose) {
-      for (MatchActionDefinition(n, _, _, m) <- rawMatchActions) {
+      for (MatchActionDefinition(n, m) <- rawMatchActions) {
         println("Registered match action '" + n + "' with pattern : " + m.pattern.tree)
       }
     }
@@ -107,7 +108,7 @@ extends PluginComponent
         }
         var expanded = sup
 
-        for ((n, MatchActionDefinition(_, paramCount, typeParamCount, matchAction)) <- matchActions) {
+        for ((n, MatchActionDefinition(_, matchAction)) <- matchActions) {
           try {
             val bindings =
               matchAndResolveTreeBindings(matchAction.pattern.tree.asInstanceOf[patternUniv.Tree], expanded.asInstanceOf[candidateUniv.Tree])
@@ -117,12 +118,6 @@ extends PluginComponent
               println("Bindings for '" + n + "':\n\t" + (bindings.nameBindings ++ bindings.typeBindings ++ bindings.functionBindings).mkString("\n\t"))
             }
 
-            //if (bindings.nameBindings.size < paramCount
-            //    /* || TODO check type params
-            //    bindings.typeBindings.size < typeParamCount*/)
-            //{
-            //  println("NOT ENOUGH BINDINGS (expected " + paramCount + " params and " + typeParamCount + " type params), skipping " + n + " for tree:\n" + tree)
-            //} else
             matchAction match  {
               case r @ Replacement(_, _) =>
                 val replacement =
