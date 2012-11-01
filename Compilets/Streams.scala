@@ -1,7 +1,5 @@
 package scalaxy; package compilets
 
-import macros._
-
 object Streams {
   // TODO add conditions macro + isSideEffectFree(f)
   def mapMap[A, B, C](col: Seq[A], f: A => B, g: B => C) = replace(

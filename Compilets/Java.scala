@@ -1,6 +1,5 @@
 package scalaxy; package compilets
 
-import macros._
 import matchers._
 
 object Java {

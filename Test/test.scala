@@ -1,8 +1,4 @@
 object RunMe extends App {
-//class RunMe {
-  //import scalaxy._//macros._
-
-  //println(tree(Seq(1, 2, 3)))
   /*
   {
     val th = new Thread(new Runnable { override def run = println("...") })

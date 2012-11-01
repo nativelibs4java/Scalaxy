@@ -2,8 +2,6 @@ package scalaxy; package compilets
 
 import scala.reflect.runtime.universe._
 
-import macros._
-
 object Numerics {
   import math.Numeric.Implicits._
 

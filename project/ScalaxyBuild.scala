@@ -83,7 +83,7 @@ object Scalaxy extends Build
         assemblySettings ++ 
         addArtifact(artifact in (Compile, assembly), assembly) ++
         Seq(
-          //test in assembly := {},
+          test in assembly := {},
           publishArtifact in (Compile, packageBin) := false,
           artifact in (Compile, assembly) ~= { art =>
             art.copy(`classifier` = None) // Some("assembly"))
@@ -93,13 +93,13 @@ object Scalaxy extends Build
           },
           scalacOptions in console in Compile <+= (packageBin in Compile) map("-Xplugin:" + _)
         )).
-    dependsOn(macros, compilets).
-    aggregate(macros, compilets)
+    dependsOn(api, compilets).
+    aggregate(api, compilets)
 
   lazy val compilets =
     Project(id = "scalaxy-compilets", base = file("Compilets"), settings = standardSettings).
-    dependsOn(macros)
+    dependsOn(api)
 
-  lazy val macros =
-    Project(id = "scalaxy-macros", base = file("Macros"), settings = standardSettings)
+  lazy val api =
+    Project(id = "scalaxy-api", base = file("API"), settings = standardSettings)
 }
