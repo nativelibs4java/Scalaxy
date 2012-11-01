@@ -7,7 +7,12 @@ object Scalaxy extends Build
 {
   lazy val scalaSettings = Seq(
     //exportJars := true, // use jars in classpath
-    scalaVersion := "2.10.0-RC1")
+    scalaVersion := "2.10.0-RC1",
+    //scalaVersion := "2.11.0-SNAPSHOT",
+    crossScalaVersions := Seq(
+      "2.10.0-RC1", 
+      "2.10.0-SNAPSHOT", 
+      "2.11.0-SNAPSHOT"))
 
   lazy val infoSettings = Seq(
     organization := "com.nativelibs4java",
@@ -46,6 +51,7 @@ object Scalaxy extends Build
       javacOptions ++= Seq("-Xlint:unchecked"),
       scalacOptions ++= Seq("-encoding", "UTF-8", "-deprecation", "-unchecked"),
       scalacOptions ++= Seq("-language:experimental.macros"),
+      fork in Test := true,
       libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-compiler" % _),
       libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-reflect" % _),
       libraryDependencies += "junit" % "junit" % "4.10" % "test",
