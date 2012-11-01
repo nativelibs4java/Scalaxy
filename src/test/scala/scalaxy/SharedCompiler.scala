@@ -52,7 +52,7 @@ class SharedCompiler(enablePlugins: Boolean, pluginDef: PluginDef) {
     try {
       Class.forName("scala.sys.process.Process")
       true
-    } catch { case _ => false }
+    } catch { case _: Throwable => false }
   }
 
   def canReuseCompilers = {
@@ -75,7 +75,7 @@ class SharedCompiler(enablePlugins: Boolean, pluginDef: PluginDef) {
     try {
       run
     } catch {
-      case _ =>
+      case _: Throwable =>
         //println("Compilation failed, retrying with a new compiler instance")
         newInstances
         run

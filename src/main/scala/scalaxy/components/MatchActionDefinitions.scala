@@ -42,10 +42,10 @@ object MatchActionDefinitions
     val instanceMirror = currentMirror.reflect(compilet)
 
     compiletModule.typeSignature.declarations.toSeq.collect {
-      case m: u.MethodSymbol
-      if m.isMethod && m.returnType <:< u.typeOf[MatchAction] =>
-        val args =
-          m.paramss.flatten.map(_.typeSignature).map(defaultValue _)
+      case s: u.MethodSymbol
+      if s.isMethod && s.asMethod.returnType <:< u.typeOf[MatchAction] =>
+        val m = s.asMethod
+        val args = m.paramss.flatten.map(_.typeSignature).map(defaultValue _)
         try {
           val methodMirror = instanceMirror.reflectMethod(m)
           val result = methodMirror(args:_*)

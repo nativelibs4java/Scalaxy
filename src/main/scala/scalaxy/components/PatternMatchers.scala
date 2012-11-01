@@ -193,7 +193,7 @@ extends TypingTransformers
       case t =>
         try
           Some(t.asType.toType)
-        catch { case _ => None }
+        catch { case _: Throwable => None }
     }
 
   def zipTypes(syms1: List[patternUniv.Symbol], syms2: List[candidateUniv.Symbol]) =

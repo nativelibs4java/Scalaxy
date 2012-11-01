@@ -33,7 +33,7 @@ class TestsTest extends BaseTestUtils
         printDifferences = false
       )
       assertTrue(false)
-    } catch { case _ => }
+    } catch { case _: Throwable => }
   }
 
   @Test
