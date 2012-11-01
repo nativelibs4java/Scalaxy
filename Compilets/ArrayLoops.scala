@@ -7,7 +7,20 @@ import matchers._
 
 object ArrayLoops
 {
-  def simpleArrayForeach[A, B](array: Array[A], body: A => B) = replace(
+  def genericArrayForeach[A, B](array: Array[A], body: A => B) = replace(
+    for (v <- array)
+      body(v),
+    {
+      var i = 0
+      val n = array.length
+      while (i < n) {
+        val v = array(i)
+        body(v)
+        i += 1
+      }
+    }
+  )
+  def intArrayForeach[B](array: Array[Int], body: Int => B) = replace(
     for (v <- array)
       body(v),
     {

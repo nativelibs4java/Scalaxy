@@ -306,7 +306,8 @@ extends TypingTransformers
           }
       }
 
-      if (false) {
+      if (false) 
+      {
         println("Successfully bound types (depth " + depth + "):")
         println("\ttype pattern = " + pattern + " (" + pattern0 + "): " + clstr(pattern))// + "; kind = " + Option(pattern).map(_.typeSymbol.kind))
         println("\ttype found = " + tree + " (" + tree0 + "): " + clstr(tree))
@@ -336,8 +337,8 @@ extends TypingTransformers
     //  println("\tfound = " + tree + ": " + candidateType + " (" + tree.getClass.getName + ", " + clstr(candidateType) + ")")
     //  println("\ttypeBindings = " + typeBindings)
     //}
-
-    //lazy val desc = "(" + pattern + ": " + clstr(pattern) + " vs. " + tree + ": " + clstr(tree) + ")"
+    
+    lazy val desc = "(" + pattern + ": " + clstr(pattern) + " vs. " + tree + ": " + clstr(tree) + ")"
 
     typeBindings ++ {
       val ret = (pattern, tree) match {
@@ -457,7 +458,8 @@ extends TypingTransformers
           }
       }
 
-      if (false) {
+      if (false) 
+      {
         println("Successfully bound trees (depth " + depth + "):")
         println("\ttree pattern = " + pattern + ": " + clstr(pattern))// + "; kind = " + Option(pattern).map(_.typeSymbol.kind))
         println("\ttree found = " + tree + ": " + clstr(tree))

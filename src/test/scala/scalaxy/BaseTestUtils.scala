@@ -100,7 +100,7 @@ trait BaseTestUtils {
 
     compiler.compile(
       Array(
-        "-Xprint:scalaxy-rewriter",
+        //"-Xprint:scalaxy-rewriter",
         "-d",
         outDir.getAbsolutePath,
         srcFile.getAbsolutePath
