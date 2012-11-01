@@ -1,0 +1,9 @@
+scalaVersion := "2.9.2"
+
+resolvers += Resolver.sonatypeRepo("snapshots")
+
+resolvers += "NativeLibs4Java Repository" at "http://nativelibs4java.sourceforge.net/maven/"
+
+autoCompilerPlugins := true
+
+addCompilerPlugin("com.nativelibs4java" % "scalacl-compiler-plugin" % "0.2")
