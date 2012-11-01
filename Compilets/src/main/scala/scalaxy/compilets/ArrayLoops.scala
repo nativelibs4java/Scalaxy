@@ -4,7 +4,7 @@ import matchers._
 
 import scala.collection.mutable.ArrayBuilder
 
-object ArrayLoops
+object ArrayLoops extends Compilet
 {
   def genericArrayForeach[A, B](array: Array[A], body: A => B) = replace(
     for (v <- array) body(v),

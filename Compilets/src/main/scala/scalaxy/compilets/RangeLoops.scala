@@ -2,7 +2,7 @@ package scalaxy; package compilets
 
 import matchers._
 
-object RangeLoops
+object RangeLoops extends Compilet
 {
   def foreachUntil[U](start: Int, end: Int, body: Int => U) = replace(
     for (i <- start until end) body(i),

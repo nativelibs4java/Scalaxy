@@ -1,24 +1,18 @@
 package scalaxy ; package plugin
-//import common._
-//import language.existentials
-import scala.tools.reflect.ToolBox
 
 import pluginBase._
 import components._
 
-import scala.tools.nsc.Global
+import scala.collection.JavaConversions._
 
+import scala.io.Source
+
+import scala.tools.nsc.Global
 import scala.tools.nsc.plugins.PluginComponent
 import scala.tools.nsc.transform.{Transform, TypingTransformers}
-import scala.tools.nsc.typechecker.Analyzer
-import scala.tools.nsc.typechecker.Contexts
 import scala.tools.nsc.typechecker.Modes
-//import scala.Predef._
-//import scala.reflect._
 
 import scala.reflect._
-
-//import scala.tools.nsc.typechecker.Contexts._
 
 object MatchActionsComponent {
   val runsAfter = List[String](
@@ -30,7 +24,7 @@ object MatchActionsComponent {
   val phaseName = "scalaxy-rewriter"
 }
 
-class MatchActionsComponent(val global: Global, val options: PluginOptions, val matchActionHolders: AnyRef*)
+class MatchActionsComponent(val global: Global, val options: PluginOptions, val compiletsOpt: Option[Seq[Compilet]] = None)
 extends PluginComponent
    with Transform
    with TypingTransformers
@@ -58,19 +52,31 @@ extends PluginComponent
 
   import MatchActionDefinitions._
 
+  val compiletsListPath =
+    "META-INF/scalaxy-compilets"
+    
+  val detectCompilets = true
+  val compiletNames: Set[String] = (compiletsOpt match {
+    case Some(compilets) =>
+      compilets.filter(_ != null).map(getCompiletName _)
+    case None =>
+      val classLoader = classOf[Compilet].getClassLoader
+      for {
+        resource <- classLoader.getResources(compiletsListPath)
+        line <- Source.fromFile(resource.toURI).getLines.map(_.trim)
+        if line.length > 0
+      } yield line
+  }).toSet
+
   val matchActions = {
-    val filteredHolders = matchActionHolders.filter(_ != null)
-
-    lazy val mirrorToolBox =
-      runtime.universe.rootMirror.mkToolBox()
-
-    val rawMatchActions = filteredHolders.flatMap(holder => {
-      val compiletName = getCompiletName(holder)
+    //println("compiletNames = " + compiletNames)
+    val rawMatchActions = compiletNames.flatMap(compiletName => {
       val defs = getCompiletDefinitions(compiletName)
-      if (defs.isEmpty)
-        sys.error("ERROR: no definition in holder " + holder)
+      // TODO: Sort compilets based on runsAfter.
+      if (defs.definitions.isEmpty)
+        sys.error("ERROR: no definition in compilet '" + compiletNames + "'")
       else
-        defs
+        defs.definitions
     })
 
     if (HacksAndWorkarounds.fixTypedExpressionsType) {

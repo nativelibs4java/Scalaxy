@@ -51,10 +51,10 @@ trait BaseTestUtils {
   implicit val baseOutDir = new File("target/testSnippetsClasses")
   baseOutDir.mkdirs
 
-  def compilets: Seq[AnyRef]
+  def compilets: Seq[Compilet]
   
   def pluginDef: PluginDef = new ScalaxyPluginDefLike {
-    override def matchActionHolders = compilets
+    override def compilets = Some(BaseTestUtils.this.compilets)
   }
 
   object SharedCompilerWithPlugins extends SharedCompiler(true, pluginDef)

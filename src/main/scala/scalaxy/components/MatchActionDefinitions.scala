@@ -7,6 +7,10 @@ case class MatchActionDefinition(
   name: String,
   matchAction: MatchAction)
 
+case class CompiletDefinitions(
+  definitions: Seq[MatchActionDefinition],
+  runsAfter: Seq[String])
+
 object MatchActionDefinitions
 {
   private def defaultValue(t: u.Type): AnyRef = {
@@ -32,37 +36,42 @@ object MatchActionDefinitions
     }
   }
 
-  def getCompiletName(compilet: AnyRef) =
+  def getCompiletName(compilet: Compilet) =
     compilet.getClass.getName.replaceAll("\\$", "")
     
-  def getCompiletDefinitions(compiletName: String): Seq[MatchActionDefinition] = {
+  def getCompiletDefinitions(compiletName: String) = {
     val compiletModule = currentMirror.staticModule(compiletName)
     val moduleMirror = currentMirror.reflectModule(compiletModule)
-    val compilet = moduleMirror.instance
+    val compilet = moduleMirror.instance.asInstanceOf[Compilet]
     val instanceMirror = currentMirror.reflect(compilet)
-
-    compiletModule.typeSignature.declarations.toSeq.collect {
-      case s: u.MethodSymbol
-      if s.isMethod && s.asMethod.returnType <:< u.typeOf[MatchAction] =>
-        val m = s.asMethod
-        val args = m.paramss.flatten.map(_.typeSignature).map(defaultValue _)
-        try {
-          val methodMirror = instanceMirror.reflectMethod(m)
-          val result = methodMirror(args:_*)
-          MatchActionDefinition(
-            m.name.toString,
-            result.asInstanceOf[MatchAction])
-        } catch { case ex: Throwable =>
-          throw new RuntimeException(
-            "Failed to call " + m.name + "; " +
-            "Args = " + args.mkString(", ") + "; " +
-            "Method symbol = " + m + "; " +
-            "paramss.typeSignature = " +
-              m.paramss.flatten.map(_.typeSignature).mkString(", ") + 
-            ";",
-            ex)
-        }
-    }
+    
+    val declarations = compiletModule.typeSignature.declarations.toSeq
+    
+    CompiletDefinitions(
+      definitions = declarations.collect {
+        case s
+        if s.isMethod &&
+           s.asMethod.returnType <:< u.typeOf[MatchAction] =>
+          val m = s.asMethod
+          val args = m.paramss.flatten.map(_.typeSignature).map(defaultValue _)
+          try {
+            val methodMirror = instanceMirror.reflectMethod(m)
+            val result = methodMirror(args:_*)
+            MatchActionDefinition(
+              m.name.toString,
+              result.asInstanceOf[MatchAction])
+          } catch { case ex: Throwable =>
+            throw new RuntimeException(
+              "Failed to call " + m.name + "; " +
+              "Args = " + args.mkString(", ") + "; " +
+              "Method symbol = " + m + "; " +
+              "paramss.typeSignature = " +
+                m.paramss.flatten.map(_.typeSignature).mkString(", ") + 
+              ";",
+              ex)
+          }
+      },
+      runsAfter = compilet.runsAfter.map(getCompiletName _))
   }
 }
 // Check param types:

@@ -58,11 +58,11 @@ trait ScalaxyPluginDefLike extends PluginDef {
   override def createOptions(settings: Settings): PluginOptions =
     new PluginOptions(this, settings)
 
-  def matchActionHolders: Seq[AnyRef]
+  def compilets: Option[Seq[Compilet]]
 
   override def createComponents(global: Global, options: PluginOptions): List[PluginComponent] =
     List(
-      new MatchActionsComponent(global, options, matchActionHolders:_*)
+      new MatchActionsComponent(global, options, compilets)
     )
 
   override def getCopyrightMessage: String =
@@ -83,15 +83,13 @@ object Compilets {
 */
 
 object ScalaxyPluginDef extends ScalaxyPluginDefLike {
-  override def matchActionHolders = Seq(
-    //scalaxy.compilets.Example,
-    //scalaxy.compilets.Streams,
-
+  override def compilets = None /*Some(Seq(
     //scalaxy.compilets.Java,
+    //scalaxy.compilets.Streams,
     scalaxy.compilets.Numerics,
     scalaxy.compilets.RangeLoops,
     scalaxy.compilets.ArrayLoops
-  )
+  )*/
 }
 
 class ScalaxyPlugin(override val global: Global)
