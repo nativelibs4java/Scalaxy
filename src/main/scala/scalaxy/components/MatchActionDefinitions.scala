@@ -24,7 +24,9 @@ object MatchActionDefinitions
       case _ if t <:< ByteTpe => java.lang.Byte.valueOf(0: Byte)
       case _ if t.toString.contains("TypeTag")/* <:< u.typeOf[u.AbsTypeTag[_]]*/ =>
         //WeakTypeTag(t)
-        new SyntheticTypeTag[Any](t, _ => st)
+        def st: SyntheticTypeTag[Any] =
+          new SyntheticTypeTag[Any](t, _ => st)
+        st
       case s =>
         //println("\t\tWEIRD s = " + t + ": " + t.getClass.getName)
         null
