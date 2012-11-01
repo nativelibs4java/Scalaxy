@@ -1,9 +1,9 @@
-package scalaxy.rewrites
+package scalaxy; package compilets
+
+import macros._
+import matchers._
 
 object Java {
-  import scalaxy._
-  import matchers._
-  import macros._
 
   def warnAccessibleField(f: java.lang.reflect.Field, b: Boolean) =
     when(f.setAccessible(b))(b) {

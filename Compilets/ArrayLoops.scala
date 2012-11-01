@@ -1,7 +1,5 @@
 package scalaxy; package compilets
 
-import scala.reflect.runtime.universe._
-
 import macros._
 import matchers._
 

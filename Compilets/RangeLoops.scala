@@ -1,15 +1,12 @@
 package scalaxy; package compilets
 
-import scala.reflect.runtime.universe._
-
 import macros._
 import matchers._
 
 object RangeLoops
 {
   def foreachUntil[U](start: Int, end: Int, body: Int => U) = replace(
-    for (i <- start until end)
-      body(i),
+    for (i <- start until end) body(i),
     {
       var ii = start; val e = end
       while (ii < e) {
@@ -21,8 +18,7 @@ object RangeLoops
   )
 
   def foreachTo[U](start: Int, end: Int, body: Int => U) = replace(
-    for (i <- start to end)
-      body(i),
+    for (i <- start to end) body(i),
     {
       var ii = start; val e = end
       while (ii <= e) {
@@ -34,10 +30,7 @@ object RangeLoops
   )
 
   def foreachUntilBy[U](start: Int, end: Int, step: Int, body: Int => U) =
-    when(
-      for (i <- start until end by step)
-        body(i)
-    )(
+    when(for (i <- start until end by step) body(i))(
       step
     ) {
       case PositiveIntConstant(_) :: Nil =>
@@ -63,10 +56,7 @@ object RangeLoops
     }
 
   def foreachToBy[U](start: Int, end: Int, step: Int, body: Int => U) =
-    when(
-      for (i <- start to end by step)
-        body(i)
-    )(
+    when(for (i <- start to end by step) body(i))(
       step
     ) {
       case PositiveIntConstant(_) :: Nil =>

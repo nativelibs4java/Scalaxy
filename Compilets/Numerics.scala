@@ -39,12 +39,12 @@ object Numerics {
     n.gteq(a, b)
   )
 
-  def lt[T : WeakTypeTag](a: T, b: T)(implicit n: Numeric[T]) = replace(
+  def lt[T](a: T, b: T)(implicit n: Numeric[T]) = replace(
     a < b,
     n.lt(a, b)
   )
 
-  def lteq[T : WeakTypeTag](a: T, b: T)(implicit n: Numeric[T]) = replace(
+  def lteq[T](a: T, b: T)(implicit n: Numeric[T]) = replace(
     a <= b,
     n.lteq(a, b)
   )
