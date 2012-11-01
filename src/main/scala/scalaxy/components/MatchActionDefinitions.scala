@@ -3,8 +3,6 @@ package scalaxy; package components
 import scala.reflect.runtime.currentMirror
 import scala.reflect.runtime.{universe => u}
 
-import SyntheticTypeTags._
-
 case class MatchActionDefinition(
   name: String,
   matchAction: MatchAction)
@@ -22,11 +20,12 @@ object MatchActionDefinitions
       case _ if t <:< DoubleTpe => java.lang.Double.valueOf(0.0)
       case _ if t <:< FloatTpe => java.lang.Float.valueOf(0.0f)
       case _ if t <:< ByteTpe => java.lang.Byte.valueOf(0: Byte)
-      case _ if t.toString.contains("TypeTag")/* <:< u.typeOf[u.AbsTypeTag[_]]*/ =>
-        //WeakTypeTag(t)
-        def st: SyntheticTypeTag[Any] =
-          new SyntheticTypeTag[Any](t, _ => st)
-        st
+      //case _ if t.toString.contains("TypeTag")/* <:< u.typeOf[u.AbsTypeTag[_]]*/ =>
+      //  //WeakTypeTag(t)
+      // import SyntheticTypeTags._
+      //  def st: SyntheticTypeTag[Any] =
+      //    new SyntheticTypeTag[Any](t, _ => st)
+      //  st
       case s =>
         //println("\t\tWEIRD s = " + t + ": " + t.getClass.getName)
         null

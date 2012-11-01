@@ -53,8 +53,8 @@ The rewrites are defined in `Compilets` and look like this :
 		for (i <- start until end) 
 			body(i),
 		{
-		  var ii = start
-		  while (ii < end) {
+		  var ii = start; val ee = end
+		  while (ii < ee) {
 			val i = ii
 			body(i)
 			ii = ii + 1  
