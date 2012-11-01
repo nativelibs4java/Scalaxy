@@ -1,15 +1,11 @@
-package scalaxy; package test
-
-import plugin._
+package scalaxy.test
 
 import org.junit._
-import Assert._
 
 class ArrayForeachTest extends BaseTestUtils 
 {
-  override def pluginDef = new ScalaxyPluginDefLike {
-    override def matchActionHolders = Seq(compilets.ArrayLoops)
-  }
+  override def compilets = Seq(scalaxy.compilets.ArrayLoops)
+
   @Test
   def intArrayForeach {
     ensurePluginCompilesSnippetsToSameByteCode(
@@ -23,8 +19,7 @@ class ArrayForeachTest extends BaseTestUtils
           val array = Array(1, 2, 3, 4)
           
           {
-            var i = 0
-            val n = array.length
+            var i = 0; val n = array.length
             while (i < n) {
               val x = array(i)
               t += 2 * x

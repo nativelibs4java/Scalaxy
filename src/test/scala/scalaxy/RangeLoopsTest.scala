@@ -1,15 +1,10 @@
-package scalaxy; package test
-
-import plugin._
+package scalaxy.test
 
 import org.junit._
-import Assert._
 
-class RangeForeachTest extends BaseTestUtils {
-
-  override def pluginDef = new ScalaxyPluginDefLike {
-    override def matchActionHolders = Seq(compilets.RangeLoops)
-  }
+class RangeForeachTest extends BaseTestUtils
+{
+  override def compilets = Seq(scalaxy.compilets.RangeLoops)
 
   @Test
   def simpleUntilFilterLoop {

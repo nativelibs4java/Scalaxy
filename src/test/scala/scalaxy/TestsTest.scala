@@ -1,15 +1,11 @@
-package scalaxy; package test
-
-import plugin._
+package scalaxy.test
 
 import org.junit._
-import Assert._
+import org.junit.Assert._
 
-class TestsTest extends BaseTestUtils {
-
-  override def pluginDef = new ScalaxyPluginDefLike {
-    override def matchActionHolders = Seq(compilets.Test)
-  }
+class TestsTest extends BaseTestUtils
+{
+  override def compilets = Seq(scalaxy.compilets.Test)
 
   @Test
   def testDummySame {

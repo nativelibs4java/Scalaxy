@@ -30,6 +30,8 @@ object RunMe extends App {
     for (i <- 1 until 10)
       println("i = " + (i + 1) + " // v = " + v)
   }
+  def stop = new Thread {}.stop
+  
   val n = 2
   println(for (i <- 0 until 10 by n) yield i.toString)
   trans(List(1, 2, 3), 10)

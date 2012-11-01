@@ -1,16 +1,10 @@
-package scalaxy; package test
-
-import plugin._
+package scalaxy.test
 
 import org.junit._
-import Assert._
 
-//@Ignore
-class NumericsTest extends BaseTestUtils {
-
-  override def pluginDef = new ScalaxyPluginDefLike {
-    override def matchActionHolders = Seq(compilets.Numerics)
-  }
+class NumericsTest extends BaseTestUtils
+{
+  override def compilets = Seq(scalaxy.compilets.Numerics)
 
   override def commonImports = """
     import math.Numeric.Implicits._
