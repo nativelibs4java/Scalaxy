@@ -8,4 +8,6 @@ addCompilerPlugin("com.nativelibs4java" %% "scalaxy" % "0.3-SNAPSHOT")
 
 scalacOptions += "-Xplugin-require:Scalaxy"
 
-//scalacOptions += "-Xprint:scalaxy-rewriter"
+scalacOptions += "-Xprint:scalaxy-rewriter"
+
+//scalacOptions += "-P:Scalaxy:compilets=scalaxy.compilets.RangeLoops"

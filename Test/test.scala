@@ -30,6 +30,11 @@ object RunMe extends App {
   
   val n = 2
   println(for (i <- 0 until 10 by n) yield i.toString)
+  println(for (i <- Array(1, 2, 3)) yield i.toString)
+  
+  
+  for (i <- Array(3, 4, 5)) 
+    println(i)
   trans(List(1, 2, 3), 10)
   /*
   {
