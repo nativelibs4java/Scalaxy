@@ -8,7 +8,7 @@ Key features:
 *   Easy to express AOP-style rewrites (to add or remove logs, runtime checks, etc...)
 *   Add your own warnings and errors to scalac in a few lines!
 
-# Usage
+# Usage with sbt
 
 To compile your sbt project with Scalaxy's compiler plugin and default compilets, make sure your `build.sbt` file looks like this (see `Examples/Usage`):
 
@@ -31,7 +31,9 @@ To see what's happening:
 Or to see the code after it's been rewritten during compilation:
 
 	scalacOptions += "-Xprint:scalaxy-rewriter"
-	
+
+# Usage with Maven
+
 With Maven, please use something like the following (untested):
 
     <properties>
