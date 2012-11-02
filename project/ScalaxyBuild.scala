@@ -52,9 +52,6 @@ object Scalaxy extends Build
       scalacOptions ++= Seq("-language:experimental.macros"),
       //fork in Test := true,
       parallelExecution in Test := false,
-      publishArtifact in (Test, packageBin) := true,
-      publishArtifact in (Test, packageDoc) := true,
-      publishArtifact in (Test, packageSrc) := true,
       libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-compiler" % _),
       libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-reflect" % _),
       libraryDependencies += "junit" % "junit" % "4.10" % "test",
@@ -100,7 +97,8 @@ object Scalaxy extends Build
     aggregate(plugin, compilets, api)
     
   lazy val plugin =
-    Project(id = "scalaxy-plugin", base = file("Plugin"), settings = standardSettings).
+    Project(id = "scalaxy-plugin", base = file("Plugin"), settings = standardSettings ++ Seq(
+      publishArtifact in Test := true)).
     dependsOn(api)
 
   lazy val compilets =
