@@ -52,8 +52,9 @@ extends PluginComponent
 
   import MatchActionDefinitions._
 
+  // SPI / java.util.ServiceLoader-like convention to list compilets in JARs.
   val compiletsListPath =
-    "META-INF/scalaxy-compilets"
+    "META-INF/services/" + classOf[Compilet].getName
     
   val detectCompilets = true
   val compiletNames: Set[String] = (compiletsOpt match {
