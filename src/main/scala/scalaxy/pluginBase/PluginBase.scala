@@ -57,10 +57,23 @@ class PluginBase(override val global: Global, pluginDef: PluginDef) extends Plug
   override val name = pluginDef.name
   override val description = pluginDef.description
 
+  override def processOptions(options: List[String], error: String => Unit) {
+    println("[" + name + "] options = " + options)
+    val compiletsRx = """compilets[=:](.*)""".r
+    options match {
+      case compiletsRx(list) =>
+        pluginOptions.compilets = Some(list.split(",").map(_.trim).toSeq)
+      case opt =>
+        error("Invalid option (expected 'compilet=compilet1,compilet2...'): '" + opt + "'")
+    }
+  }
+  
   lazy val pluginOptions = try {
     pluginDef.createOptions(global.settings)
-  } catch { case ex: NoClassDefFoundError if ex.toString.matches(""".*?\bscala/.+""") =>
-    throw new RuntimeException("Bad Scala version for " + name + " !", ex)
+  } catch { 
+    case ex: NoClassDefFoundError 
+    if ex.toString.matches(""".*?\bscala/.+""") =>
+      throw new RuntimeException("Bad Scala version for " + name + " !", ex)
   }
 
   lazy val enabled =

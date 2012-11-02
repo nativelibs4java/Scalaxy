@@ -24,7 +24,7 @@ object MatchActionsComponent {
   val phaseName = "scalaxy-rewriter"
 }
 
-class MatchActionsComponent(val global: Global, val options: PluginOptions, val compiletsOpt: Option[Seq[Compilet]] = None)
+class MatchActionsComponent(val global: Global, val options: PluginOptions, val compiletNamesOpt: Option[Seq[String]] = None)
 extends PluginComponent
    with Transform
    with TypingTransformers
@@ -57,16 +57,13 @@ extends PluginComponent
     "META-INF/services/" + classOf[Compilet].getName
     
   val detectCompilets = true
-  val compiletNames: Set[String] = (compiletsOpt match {
-    case Some(compilets) =>
-      compilets.filter(_ != null).map(getCompiletName _)
-    case None =>
-      val classLoader = classOf[Compilet].getClassLoader
-      for {
-        resource <- classLoader.getResources(compiletsListPath)
-        line <- Source.fromFile(resource.toURI).getLines.map(_.trim)
-        if line.length > 0
-      } yield line
+  val compiletNames: Set[String] = (compiletNamesOpt.getOrElse {
+    val classLoader = classOf[Compilet].getClassLoader
+    for {
+      resource <- classLoader.getResources(compiletsListPath)
+      line <- Source.fromFile(resource.toURI).getLines.map(_.trim)
+      if line.length > 0
+    } yield line
   }).toSet
 
   val matchActions = {

@@ -62,7 +62,7 @@ trait ScalaxyPluginDefLike extends PluginDef {
 
   override def createComponents(global: Global, options: PluginOptions): List[PluginComponent] =
     List(
-      new MatchActionsComponent(global, options, compilets)
+      new MatchActionsComponent(global, options, options.compilets.orElse(compilets.map(_.map(_.name))))
     )
 
   override def getCopyrightMessage: String =

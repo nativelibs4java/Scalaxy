@@ -36,9 +36,6 @@ object MatchActionDefinitions
     }
   }
 
-  def getCompiletName(compilet: Compilet) =
-    compilet.getClass.getName.replaceAll("\\$", "")
-    
   def getCompiletDefinitions(compiletName: String) = {
     val compiletModule = currentMirror.staticModule(compiletName)
     val moduleMirror = currentMirror.reflectModule(compiletModule)
@@ -71,7 +68,7 @@ object MatchActionDefinitions
               ex)
           }
       },
-      runsAfter = compilet.runsAfter.map(getCompiletName _))
+      runsAfter = compilet.runsAfter.map(_.name))
   }
 }
 // Check param types:

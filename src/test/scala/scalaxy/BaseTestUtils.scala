@@ -87,6 +87,7 @@ trait BaseTestUtils {
     compiler.compile(
       Array(
         //"-Xprint:scalaxy-rewriter",
+        //"-P:Scalaxy:compilets=scalaxy.compilets.RangeLoops",
         "-d",
         outDir.getAbsolutePath,
         srcFile.getAbsolutePath

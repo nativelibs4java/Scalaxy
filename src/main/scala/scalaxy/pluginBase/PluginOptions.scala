@@ -81,6 +81,8 @@ class PluginOptions(pluginDef: PluginDef, settings: Settings) {
 
   var skip = System.getenv(envVarPrefix + "SKIP")
 
+  var compilets: Option[Seq[String]] = None
+  
   lazy val explicitelyDisabled =
     "1".equals(System.getenv(envVarPrefix + "DISABLE"))
 
