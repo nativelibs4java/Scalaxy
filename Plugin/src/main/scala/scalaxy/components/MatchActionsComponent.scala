@@ -69,7 +69,7 @@ extends PluginComponent
       try {
         var line: String = null
         var out = collection.mutable.ArrayBuilder.make[String]()
-        while ({ line = try { in.readLine } catch { case _ => null } ; line != 0 }) {
+        while ({ line = try { in.readLine } catch { case _ => null } ; line != null }) {
           out += line
         }
         out.result()
