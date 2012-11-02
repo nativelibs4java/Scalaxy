@@ -59,12 +59,33 @@ extends PluginComponent
   val detectCompilets = true
   val compiletNames: Set[String] = (compiletNamesOpt.getOrElse {
     val classLoader = classOf[Compilet].getClassLoader
-    for {
-      resource <- classLoader.getResources(compiletsListPath)
-      line <- Source.fromFile(resource.toURI).getLines.map(_.trim)
-      if line.length > 0
-    } yield line
+    (for (resource <- classLoader.getResources(compiletsListPath)) yield {
+      if (options.verbose) {
+        println("Found resource '" + resource + "' for '" + compiletsListPath + "'")
+      }
+      import java.io._
+        
+      val in = new BufferedReader(new InputStreamReader(resource.openStream()))
+      try {
+        var line: String = null
+        var out = collection.mutable.ArrayBuilder.make[String]()
+        while ({ line = try { in.readLine } catch { case _ => null } ; line != 0 }) {
+          out += line
+        }
+        out.result()
+        /*for {
+          line <- Source.fromInputStream(in).getLines.map(_.trim)
+          if line.length > 0
+        } yield line*/
+      } finally {
+        in.close()
+      }
+    }).flatten
   }).toSet
+  
+  if (options.verbose) {
+    println("Compilet names:\n\t" + compiletNames.mkString(",\n\t"))
+  }
 
   val matchActions = {
     //println("compiletNames = " + compiletNames)
