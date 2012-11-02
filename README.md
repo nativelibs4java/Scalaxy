@@ -6,7 +6,7 @@ Key features:
 *   Natural expression of rewrite patterns and replacements that makes it easy to express rewrites
 *   Will eventually support all the rewrites from ScalaCL 0.2, and more
 *   Easy to express AOP-style rewrites (to add or remove logs, runtime checks, etc...)
-*   Will support easy warnings and errors
+*   Add your own warnings and errors to scalac in a few lines!
 
 # Usage
 
