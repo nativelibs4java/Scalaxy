@@ -10,7 +10,7 @@ Key features:
 
 # Usage
 
-To compile your sbt project with Scalaxy's compiler plugin and default compilets, make sure your `build.sbt` file looks like this:
+To compile your sbt project with Scalaxy's compiler plugin and default compilets, make sure your `build.sbt` file looks like this (see `Examples/Usage`):
 
 	scalaVersion := "2.10.0-RC1"
 	
@@ -32,6 +32,10 @@ Or to see the code after it's been rewritten during compilation:
 
 	scalacOptions += "-Xprint:scalaxy-rewriter"
 	
+# Creating your own Compilets
+
+This is not fully tested / supported yet, but if you want to have a go at it please see `Examples/CustomCompilets`.
+
 # Hacking
 
 To build the sources and compile a file test.scala using the compiler plugin, use [paulp's sbt script](https://github.com/paulp/sbt-extras) :
