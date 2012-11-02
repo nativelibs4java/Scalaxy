@@ -4,7 +4,7 @@ import scala.reflect.runtime.universe._
 
 import matchers._
 
-object ReplaceConstants extends Compilet
+object ConstantReplacements extends Compilet
 {
   def removeDevilConstant = replace(666, 667)
 
