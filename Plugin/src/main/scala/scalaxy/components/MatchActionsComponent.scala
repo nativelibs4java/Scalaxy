@@ -70,7 +70,9 @@ extends PluginComponent
         var line: String = null
         var out = collection.mutable.ArrayBuilder.make[String]()
         while ({ line = try { in.readLine } catch { case _ => null } ; line != null }) {
-          out += line
+          line = line.trim
+          if (line.length > 0)
+            out += line
         }
         out.result()
         /*for {
