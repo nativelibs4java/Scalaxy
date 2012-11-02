@@ -1,2 +1,3 @@
-scalaxy.compilets.Test
+scalaxy.compilets.ConstantReplacements
+scalaxy.compilets.JavaDeprecations
 

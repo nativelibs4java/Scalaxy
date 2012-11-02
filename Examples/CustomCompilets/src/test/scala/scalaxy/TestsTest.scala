@@ -3,9 +3,9 @@ package scalaxy.test
 import org.junit._
 import org.junit.Assert._
 
-class TestsTest extends BaseTestUtils
+class ConstantReplacementsTest extends BaseTestUtils
 {
-  override def compilets = Seq(scalaxy.compilets.Test)
+  override def compilets = Seq(scalaxy.compilets.ConstantReplacements)
 
   @Test
   def testDummySame {
