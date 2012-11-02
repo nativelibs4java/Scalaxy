@@ -96,12 +96,16 @@ object Scalaxy extends Build
           },
           scalacOptions in console in Compile <+= (packageBin in Compile) map("-Xplugin:" + _)
         )).
-    dependsOn(api, compilets).
-    aggregate(api, compilets)
+    dependsOn(plugin, compilets, api).
+    aggregate(plugin, compilets, api)
+    
+  lazy val plugin =
+    Project(id = "scalaxy-plugin", base = file("Plugin"), settings = standardSettings).
+    dependsOn(api)
 
   lazy val compilets =
     Project(id = "scalaxy-compilets", base = file("Compilets"), settings = standardSettings).
-    dependsOn(api)
+    dependsOn(api, plugin % "test->test")
 
   lazy val api =
     Project(id = "scalaxy-api", base = file("API"), settings = standardSettings)
