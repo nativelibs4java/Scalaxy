@@ -32,6 +32,30 @@ Or to see the code after it's been rewritten during compilation:
 
 	scalacOptions += "-Xprint:scalaxy-rewriter"
 	
+With Maven, please use something like the following (untested):
+
+    <properties>
+      <scala.version>2.10.0-RC1</scala.version>
+	</properties>
+    	
+    <build>
+      <plugins>
+        <plugin>
+          <groupId>org.scala-tools</groupId>
+          <artifactId>maven-scala-plugin</artifactId>
+          <configuration>
+            <compilerPlugins>
+              <compilerPlugin>
+                <groupId>com.nativelibs4java</groupId>
+                <artifactId>scalaxy_2.10</artifactId>
+                <version>0.3-SNAPSHOT</version>
+              </compilerPlugin>
+            </compilerPlugins>
+          </configuration>
+        </plugin>
+      </plugins>
+    </build>
+    
 # Creating your own Compilets
 
 This is not fully tested / supported yet, but if you want to have a go at it please see `Examples/CustomCompilets`.
