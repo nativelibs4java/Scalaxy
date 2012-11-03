@@ -10,7 +10,7 @@ Key features:
 
 # Usage with sbt
 
-To compile your sbt project with Scalaxy's compiler plugin and default compilets, make sure your `build.sbt` file looks like this (see `Examples/Usage`):
+To compile your sbt-0.12.1+ project with Scalaxy's compiler plugin and default compilets, make sure your `build.sbt` file looks like this (see `Examples/UsageWithoutSbtPlugin`):
 
 	scalaVersion := "2.10.0-RC1"
 	
@@ -22,11 +22,11 @@ To compile your sbt project with Scalaxy's compiler plugin and default compilets
 	
 	scalacOptions += "-Xplugin-require:Scalaxy"
 
-(please use sbt 0.12.1 or later)
+If you want to use other compilets than the default ones, please use [sbt-scalaxy](http://github.com/ochafik/sbt-scalaxy) (see `Examples/UsageWithSbtPlugin`). 
 
 To see what's happening:
 
-	SCALAXY_VERBOSE=1 sbt
+	SCALAXY_VERBOSE=1 sbt clean compile
 	
 Or to see the code after it's been rewritten during compilation:
 
@@ -60,7 +60,9 @@ With Maven, please use something like the following (untested):
     
 # Creating your own Compilets
 
-This is not fully tested / supported yet, but if you want to have a go at it please see `Examples/CustomCompilets`.
+It's very easy to define your own compilets to, say, optimize your shiny DSL's overhead away, or enforce some corporate coding practices (making any call to `Thread.stop` a compilation error, for instance).
+
+This is very easy to do, please have a look at `Examples/CustomCompilets` and see how to use these custom compilets in `Examples/CustomCompilets/Usage`.
 
 # Hacking
 
