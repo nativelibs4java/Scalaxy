@@ -173,9 +173,6 @@ extends PluginComponent
             val bindings =
               matchAndResolveTreeBindings(matchAction.pattern.tree.asInstanceOf[patternUniv.Tree], expanded.asInstanceOf[candidateUniv.Tree])
 
-            if (!tree.getClass.getSimpleName.equals(matchAction.pattern.tree.getClass.getSimpleName)) {
-              global.warning(prefix + "DEBUG: Unexpected, but no biggie yet: tree.class = " + tree.getClass.getSimpleName + ", pattern.class = " + matchAction.pattern.tree.getClass.getSimpleName)
-            }
             if (options.veryVerbose) {
               println(prefix + "Bindings for '" + n + "':\n\t" + (bindings.nameBindings ++ bindings.typeBindings ++ bindings.functionBindings).mkString("\n\t"))
             }

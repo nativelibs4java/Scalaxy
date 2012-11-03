@@ -2,7 +2,7 @@ package scalaxy; package compilets
 
 import matchers._
 
-object Java extends Compilet {
+object JavaDeprecations extends Compilet {
 
   def warnAccessibleField(f: java.lang.reflect.Field, b: Boolean) =
     when(f.setAccessible(b))(b) {

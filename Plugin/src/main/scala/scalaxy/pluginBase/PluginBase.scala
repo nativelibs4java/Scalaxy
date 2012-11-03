@@ -58,13 +58,16 @@ class PluginBase(override val global: Global, pluginDef: PluginDef) extends Plug
   override val description = pluginDef.description
 
   override def processOptions(options: List[String], error: String => Unit) {
-    println("[" + name + "] options = " + options)
-    val compiletsRx = """compilets[=:](.*)""".r
-    options match {
-      case compiletsRx(list) =>
-        pluginOptions.compilets = Some(list.split(",").map(_.trim).toSeq)
-      case opt =>
-        error("Invalid option (expected 'compilet=compilet1,compilet2...'): '" + opt + "'")
+    val compiletsRx = """compilets?[=:](.*)""".r
+    for (option <- options) {
+      //println("[" + name + "] option = " + option)
+      option match {
+        case compiletsRx(list) =>
+          val compilets = list.split("[,:]").map(_.trim).toSeq
+          pluginOptions.compilets = pluginOptions.compilets.map(_ ++ compilets).orElse(Some(compilets))
+        case opt =>
+          error("Invalid option (expected 'compilet=compilet1,compilet2...'): '" + opt + "'")
+      }
     }
   }
   

@@ -49,13 +49,17 @@ object Scalaxy extends Build
     Seq(
       javacOptions ++= Seq("-Xlint:unchecked"),
       scalacOptions ++= Seq("-encoding", "UTF-8", "-deprecation", "-unchecked"),
-      scalacOptions ++= Seq("-language:experimental.macros"),
       //fork in Test := true,
       parallelExecution in Test := false,
-      libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-compiler" % _),
-      libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-reflect" % _),
       libraryDependencies += "junit" % "junit" % "4.10" % "test",
       libraryDependencies += "com.novocode" % "junit-interface" % "0.8" % "test")
+
+  lazy val reflectSettings =
+    standardSettings ++
+    Seq(
+      scalacOptions ++= Seq("-language:experimental.macros"),
+      libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-compiler" % _),
+      libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-reflect" % _))
 
   lazy val sonatypeSettings = Seq(
     publishMavenStyle := true,
@@ -111,17 +115,25 @@ object Scalaxy extends Build
           scalacOptions in console in Compile <+= (packageBin in Compile) map("-Xplugin:" + _)
         )).
     dependsOn(plugin, compilets, api).
-    aggregate(plugin, compilets, api)
+    aggregate(plugin, compilets, api, scalaxySbtPlugin)
     
   lazy val plugin =
-    Project(id = "scalaxy-plugin", base = file("Plugin"), settings = standardSettings ++ Seq(
+    Project(id = "scalaxy-plugin", base = file("Plugin"), settings = reflectSettings ++ Seq(
       publishArtifact in Test := true)).
     dependsOn(api)
 
   lazy val compilets =
-    Project(id = "scalaxy-compilets", base = file("Compilets"), settings = standardSettings).
+    Project(id = "scalaxy-compilets", base = file("Compilets"), settings = reflectSettings).
     dependsOn(api, plugin % "test->test")
 
   lazy val api =
-    Project(id = "scalaxy-api", base = file("API"), settings = standardSettings)
+    Project(id = "scalaxy-api", base = file("API"), settings = reflectSettings)
+    
+  lazy val scalaxySbtPlugin =
+    Project(id = "sbt-scalaxy", base = file("Sbt"), settings = standardSettings ++ Seq(
+      scalaVersion := "2.9.2",
+      //crossSbtVersions := Seq("0.11.3", "0.11.2" ,"0.12" ,"0.12.1"),
+      sbtPlugin := true
+      //CrossBuilding.scriptedSettings, // ?
+    ))
 }

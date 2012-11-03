@@ -1,0 +1,8 @@
+
+/*
+	def compilet(dependency: ModuleID): ModuleID =
+		dependency.copy(configurations = Some("compilet->default(compile)"))
+
+	def addCompilet(dependency: ModuleID): Setting[Seq[ModuleID]] =
+		libraryDependencies += compilet(dependency)
+*/
