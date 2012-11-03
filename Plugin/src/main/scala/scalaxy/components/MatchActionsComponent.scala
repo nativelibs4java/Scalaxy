@@ -12,6 +12,8 @@ import scala.tools.nsc.plugins.PluginComponent
 import scala.tools.nsc.transform.{Transform, TypingTransformers}
 import scala.tools.nsc.typechecker.Modes
 
+import scala.reflect.runtime.{ universe => ru }
+
 import scala.reflect._
 
 object MatchActionsComponent {
@@ -47,7 +49,7 @@ extends PluginComponent
   override val runsBefore = MatchActionsComponent.runsBefore
   override val phaseName = MatchActionsComponent.phaseName
 
-  override val patternUniv = runtime.universe
+  override val patternUniv = ru
   override val candidateUniv = global
 
   import MatchActionDefinitions._
@@ -167,8 +169,7 @@ extends PluginComponent
         }
         var expanded = sup
 
-        for (MatchActionDefinition(n, matchAction) <- getMatchActions(tree))
-        {
+        for (MatchActionDefinition(n, matchAction) <- getMatchActions(tree)) {
           try {
             val bindings =
               matchAndResolveTreeBindings(matchAction.pattern.tree.asInstanceOf[patternUniv.Tree], expanded.asInstanceOf[candidateUniv.Tree])
@@ -179,34 +180,21 @@ extends PluginComponent
 
             matchAction match  {
               case r @ Replacement(_, _) =>
-                val replacement =
-                  mirrorToGlobal(runtime.universe)(r.replacement.tree, bindings)
-                //println("Replacement '" + n + "':\n\t" + replacement.toString.replaceAll("\n", "\n\t"))
-                expanded = replacement
+                expanded = mirrorToGlobal(ru)(r.replacement.tree, bindings)
               case MatchWarning(_, message) =>
                 unit.warning(tree.pos, message)
               case MatchError(_, message) =>
                 unit.error(tree.pos, message)
               case ca @ ConditionalAction(_, when, thenMatch) =>
-                val treesToTest: List[scala.reflect.runtime.universe.Tree] =
+                val treesToTest: List[ru.Tree] =
                   when.toList.map(n => {
-                    globalToMirror(
-                      scala.reflect.runtime.universe
-                    )(
-                      bindings.nameBindings(n.toString).asInstanceOf[global.Tree]
-                    )
+                    globalToMirror(ru)(bindings.nameBindings(n.toString).asInstanceOf[global.Tree])
                   })
 
                 if (thenMatch.isDefinedAt(treesToTest)) {
                   thenMatch.apply(treesToTest) match {
                     case r: ReplaceBy[_] =>
-                      val replacement = mirrorToGlobal(
-                        scala.reflect.runtime.universe
-                      )(
-                        r.replacement.tree, bindings
-                      )
-                      //println("Replace by '" + n + "':\n\t" + replacement.toString.replaceAll("\n", "\n\t"))
-                      expanded = replacement
+                      expanded = mirrorToGlobal(ru)(r.replacement.tree, bindings)
                     case Warning(message) =>
                       unit.warning(tree.pos, message)
                     case Error(message) =>
