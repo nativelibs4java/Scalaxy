@@ -116,7 +116,32 @@ extends PluginComponent
       }
     }
 
-    rawMatchActions.map(d => (d.name, d)).toMap
+    //rawMatchActions.map(d => (d.name, d)).toMap
+    rawMatchActions
+  }
+  
+  val matchActionsByTreeClass: Map[Class[_], Seq[MatchActionDefinition]] = {
+    matchActions.
+      toSeq.
+      map(a => a.matchAction.pattern.tree.getClass -> a).
+      groupBy(_._1).
+      map({ case (c, l) => 
+        c -> l.map(_._2) 
+      }).
+      toMap
+  }
+  
+  // Try and get the match actions that match a tree's class (or any of its super classes)
+  // TODO: add cross-checks to avoid discarding too many trees.
+  def getMatchActions(tree: Tree) = {
+    def actions(c: Class[_]): Seq[MatchActionDefinition] =
+      if (c == null) Seq()
+      else {
+        matchActionsByTreeClass.get(c).getOrElse(Seq()) ++
+        actions(c.getSuperclass)
+      }
+    if (tree == null) Seq()
+    else actions(tree.getClass)
   }
 
   private def toTypedString(v: Any) =
@@ -142,7 +167,8 @@ extends PluginComponent
         }
         var expanded = sup
 
-        for ((n, MatchActionDefinition(_, matchAction)) <- matchActions) {
+        for (MatchActionDefinition(n, matchAction) <- getMatchActions(tree))
+        {
           try {
             val bindings =
               matchAndResolveTreeBindings(matchAction.pattern.tree.asInstanceOf[patternUniv.Tree], expanded.asInstanceOf[candidateUniv.Tree])
