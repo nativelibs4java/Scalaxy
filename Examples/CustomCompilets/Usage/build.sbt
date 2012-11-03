@@ -4,7 +4,7 @@ resolvers += Resolver.sonatypeRepo("snapshots")
 
 autoCompilets := true
 
-addCompilet("com.nativelibs4java" %% "custom-compilets-example" % "1.0-SNAPSHOT")
+addCompilets("com.nativelibs4java" %% "custom-compilets-example" % "1.0-SNAPSHOT")
 
 scalaxySettings
 

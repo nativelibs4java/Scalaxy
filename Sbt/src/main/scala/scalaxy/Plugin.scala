@@ -35,7 +35,7 @@ object Plugin extends sbt.Plugin {
 		}
 	}.flatten
 	
-	def addCompilet(dependency: ModuleID): Setting[Seq[ModuleID]] =
+	def addCompilets(dependency: ModuleID): Setting[Seq[ModuleID]] =
 	  addCompilerPlugin(dependency)
 	  
   def getCompilets(report: UpdateReport, deps: Seq[File], auto: Boolean) =
