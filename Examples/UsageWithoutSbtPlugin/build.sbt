@@ -10,5 +10,3 @@ scalacOptions += "-Xplugin-require:Scalaxy"
 
 scalacOptions += "-Xprint:scalaxy-rewriter"
 
-//scalacOptions += "-P:Scalaxy:compilets=scalaxy.compilets.RangeLoops"
-

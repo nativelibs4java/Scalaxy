@@ -44,7 +44,6 @@ object Scalaxy extends Build
     Defaults.defaultSettings ++
     infoSettings ++
     sonatypeSettings ++
-    scalaSettings ++
     seq(lsSettings: _*) ++
     Seq(
       javacOptions ++= Seq("-Xlint:unchecked"),
@@ -56,6 +55,7 @@ object Scalaxy extends Build
 
   lazy val reflectSettings =
     standardSettings ++
+    scalaSettings ++
     Seq(
       scalacOptions ++= Seq("-language:experimental.macros"),
       libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-compiler" % _),
@@ -78,48 +78,55 @@ object Scalaxy extends Build
       shellPrompt := { s => Project.extract(s).currentProject.id + "> " }
     ) ++ scalaSettings
 
+  lazy val shadeSettings =
+    assemblySettings ++ 
+    addArtifact(artifact in (Compile, assembly), assembly) ++
+    Seq(
+      publishArtifact in (Compile, packageBin) := false,
+      artifact in (Compile, assembly) ~= { _.copy(`classifier` = None) },
+      excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
+        // Exclude scala-library and al.
+        cp filter { _.data.getName.startsWith("scala-") }
+      },
+      pomPostProcess := { (node: scala.xml.Node) =>
+        // Since we publish the assembly (shaded) jar, 
+        // remove lagging scalaxy dependencies from pom ourselves.
+        import scala.xml._; import scala.xml.transform._
+        try {
+          new RuleTransformer(new RewriteRule {
+            override def transform(n: Node): Seq[Node] ={
+              if ((n \ "artifactId" find { _.text.startsWith("scalaxy-") }) != None)
+                Array[Node]()
+              else
+                n
+            }
+          })(node)
+        } catch { case _: Throwable =>
+          node
+        }
+      }
+    )
+  
   lazy val _scalaxy =
     Project(
       id = "scalaxy",
       base = file("."),
       settings =
         standardSettings ++
-        assemblySettings ++ 
-        addArtifact(artifact in (Compile, assembly), assembly) ++
+        shadeSettings ++
         Seq(
           test in assembly := {},
-          publishArtifact in (Compile, packageBin) := false,
-          artifact in (Compile, assembly) ~= { art =>
-            art.copy(`classifier` = None) // Some("assembly"))
-          },
-          excludedJars in assembly <<= (fullClasspath in assembly) map { cp => 
-            cp filter { _.data.getName.startsWith("scala-") }
-          },
-          pomPostProcess := { (node: scala.xml.Node) =>
-            // Since we publish the assembly (shaded) jar, 
-            // remove lagging scalaxy dependencies from pom ourselves.
-            import scala.xml._
-            import scala.xml.transform._
-            val rule = new RewriteRule {
-             override def transform(n: Node): Seq[Node] ={
-               if ((n \ "artifactId" find { _.text.startsWith("scalaxy-") }) != None)
-                 Array[Node]()
-               else
-                 n
-             }
-            }
-            val result = new RuleTransformer(rule)(node)
-            //println(result)
-            result
-          },
           scalacOptions in console in Compile <+= (packageBin in Compile) map("-Xplugin:" + _)
         )).
     dependsOn(plugin, compilets, api).
-    aggregate(plugin, compilets, api, scalaxySbtPlugin)
+    aggregate(plugin, compilets, api)
     
   lazy val plugin =
-    Project(id = "scalaxy-plugin", base = file("Plugin"), settings = reflectSettings ++ Seq(
-      publishArtifact in Test := true)).
+    Project(id = "scalaxy-plugin", base = file("Plugin"), settings = 
+      reflectSettings ++
+      shadeSettings ++
+      Seq(
+        publishArtifact in Test := true)).
     dependsOn(api)
 
   lazy val compilets =
@@ -129,11 +136,11 @@ object Scalaxy extends Build
   lazy val api =
     Project(id = "scalaxy-api", base = file("API"), settings = reflectSettings)
     
-  lazy val scalaxySbtPlugin =
-    Project(id = "sbt-scalaxy", base = file("Sbt"), settings = standardSettings ++ Seq(
-      scalaVersion := "2.9.2",
-      //crossSbtVersions := Seq("0.11.3", "0.11.2" ,"0.12" ,"0.12.1"),
-      sbtPlugin := true
-      //CrossBuilding.scriptedSettings, // ?
-    ))
+  //lazy val scalaxySbtPlugin =
+  //  Project(id = "sbt-scalaxy", base = file("Sbt"), settings = standardSettings ++ Seq(
+  //    scalaVersion := "2.9.2",
+  //    //crossSbtVersions := Seq("0.11.3", "0.11.2" ,"0.12" ,"0.12.1"),
+  //    sbtPlugin := true
+  //    //CrossBuilding.scriptedSettings, // ?
+  //  ))
 }
