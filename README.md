@@ -106,8 +106,7 @@ The rewrites are defined in `Compilets` and look like this :
 
 Here's how to run tests:
 
-	sbt clean
-	sbt test-only
+	sbt clean test
 	
 To deploy to Sonatype (assuming ~/.sbt/0.12.1/sonatype.sbt contains the correct credentials), then advertise a release on ls.implicit.ly:
 
