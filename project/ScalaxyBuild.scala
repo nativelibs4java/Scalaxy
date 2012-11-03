@@ -91,6 +91,23 @@ object Scalaxy extends Build
           excludedJars in assembly <<= (fullClasspath in assembly) map { cp => 
             cp filter { _.data.getName.startsWith("scala-") }
           },
+          pomPostProcess := { (node: scala.xml.Node) =>
+            // Since we publish the assembly (shaded) jar, 
+            // remove lagging scalaxy dependencies from pom ourselves.
+            import scala.xml._
+            import scala.xml.transform._
+            val rule = new RewriteRule {
+             override def transform(n: Node): Seq[Node] ={
+               if ((n \ "artifactId" find { _.text.startsWith("scalaxy-") }) != None)
+                 Array[Node]()
+               else
+                 n
+             }
+            }
+            val result = new RuleTransformer(rule)(node)
+            //println(result)
+            result
+          },
           scalacOptions in console in Compile <+= (packageBin in Compile) map("-Xplugin:" + _)
         )).
     dependsOn(plugin, compilets, api).
