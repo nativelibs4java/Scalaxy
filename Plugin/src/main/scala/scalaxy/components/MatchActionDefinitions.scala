@@ -55,7 +55,7 @@ object MatchActionDefinitions
             val methodMirror = instanceMirror.reflectMethod(m)
             val result = methodMirror(args:_*)
             MatchActionDefinition(
-              m.name.toString,
+              compiletName + "." + m.name.toString,
               result.asInstanceOf[MatchAction])
           } catch { case ex: Throwable =>
             throw new RuntimeException(

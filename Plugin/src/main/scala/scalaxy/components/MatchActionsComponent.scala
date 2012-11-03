@@ -69,7 +69,7 @@ extends PluginComponent
       try {
         var line: String = null
         var out = collection.mutable.ArrayBuilder.make[String]()
-        while ({ line = try { in.readLine } catch { case _ => null } ; line != null }) {
+        while ({ line = try { in.readLine } catch { case _: Throwable => null } ; line != null }) {
           line = line.trim
           if (line.length > 0)
             out += line
@@ -85,12 +85,11 @@ extends PluginComponent
     }).flatten
   }).toSet
   
-  if (options.verbose) {
+  if (options.veryVerbose) {
     println("Compilet names:\n\t" + compiletNames.mkString(",\n\t"))
   }
 
   val matchActions = {
-    //println("compiletNames = " + compiletNames)
     val rawMatchActions = compiletNames.flatMap(compiletName => {
       val defs = getCompiletDefinitions(compiletName)
       // TODO: Sort compilets based on runsAfter.
@@ -111,7 +110,7 @@ extends PluginComponent
       }
     }
 
-    if (options.verbose) {
+    if (options.veryVerbose) {
       for (MatchActionDefinition(n, m) <- rawMatchActions) {
         println("Registered match action '" + n + "' with pattern : " + m.pattern.tree)
       }
@@ -124,7 +123,15 @@ extends PluginComponent
     v + Option(v).map(_ => ": " + v.getClass.getName + " <- " + v.getClass.getSuperclass.getSimpleName).getOrElse("")
 
   def newTransformer(unit: CompilationUnit) = new TypingTransformer(unit) {
-    override def transform(tree: Tree): Tree = {
+    override def transform(tree: Tree): Tree = 
+    if (!shouldOptimize(tree)) 
+      super.transform(tree) 
+    else {
+      lazy val prefix =
+        "[" + phaseName + "] " + 
+        new java.io.File(tree.pos.source.path).getName + ":" +
+        tree.pos.line + " "
+    
       try {
         val sup = try {
           super.transform(tree)
@@ -140,9 +147,11 @@ extends PluginComponent
             val bindings =
               matchAndResolveTreeBindings(matchAction.pattern.tree.asInstanceOf[patternUniv.Tree], expanded.asInstanceOf[candidateUniv.Tree])
 
-            if (options.verbose)
-            {
-              println("Bindings for '" + n + "':\n\t" + (bindings.nameBindings ++ bindings.typeBindings ++ bindings.functionBindings).mkString("\n\t"))
+            if (!tree.getClass.getSimpleName.equals(matchAction.pattern.tree.getClass.getSimpleName)) {
+              global.warning(prefix + "DEBUG: Unexpected, but no biggie yet: tree.class = " + tree.getClass.getSimpleName + ", pattern.class = " + matchAction.pattern.tree.getClass.getSimpleName)
+            }
+            if (options.veryVerbose) {
+              println(prefix + "Bindings for '" + n + "':\n\t" + (bindings.nameBindings ++ bindings.typeBindings ++ bindings.functionBindings).mkString("\n\t"))
             }
 
             matchAction match  {
@@ -183,6 +192,9 @@ extends PluginComponent
                   }
                 }
             }
+            if (options.verbose) {
+              println(prefix + "Applied compilet " + n)
+            }
           } catch {
             case NoTypeMatchException(expected, found, msg, depth, insideExpected, insideFound) =>
               if (false)//depth > 0)
@@ -212,11 +224,8 @@ extends PluginComponent
           sup
         } else {
           val expectedTpe = tree.tpe.dealias.deconst.normalize
-
           val tpe = expanded.tpe
-          //eraseTypes(expanded)
-          //expanded.tpe = null
-
+          
           if (HacksAndWorkarounds.healSymbols) {
               expanded = healSymbols(unit, currentOwner, expanded, expectedTpe)
           }
@@ -227,7 +236,7 @@ extends PluginComponent
             ex.printStackTrace
           }
 
-          if (options.verbose)
+          if (options.debug)
           {
             println()
             println("FINAL EXPANSION = \n" + nodeToString(expanded))
@@ -240,10 +249,13 @@ extends PluginComponent
           expanded
         }
       } catch { case ex: Throwable =>
-        println(ex)
-        //if (options.verbose)
+        if (options.debug)
           ex.printStackTrace
-        println("Error while trying to replace " + tree + " : " + ex)
+
+        val msg = prefix + "Error while trying to replace " + tree + " : " + ex
+        
+        global.warning(msg)
+        println(msg)
         tree
       }
     }
