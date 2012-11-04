@@ -287,7 +287,6 @@ extends TypingTransformers
 
         case (patternUniv.TypeRef(pre, sym, args), TypeRef(pre2, sym2, args2))
         if args.size == args2.size &&
-           //sym.kind == sym2.kind &&
            sym != null && sym2 != null &&
            sym.fullName == sym2.fullName
         =>
@@ -357,8 +356,7 @@ extends TypingTransformers
               tree
             ))
           ))
-          //EmptyBindings
-
+          
         //case (_, _) if isParameter(patternType) =>
         //  EmptyBindings
 

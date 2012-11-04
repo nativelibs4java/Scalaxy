@@ -91,21 +91,26 @@ extends PluginComponent
     println("Compilet names:\n\t" + compiletNames.mkString(",\n\t"))
   }
 
-  val matchActions = {
-    val rawMatchActions = compiletNames.flatMap(compiletName => {
-      val defs = getCompiletDefinitions(compiletName)
+  case class CompiletAction(
+    matchActionDefinition: MatchActionDefinition,
+    compiletName: String,
+    runsAfterCompiletNames: Seq[String])
+    
+  val compiletActions: Seq[CompiletAction] = {
+    val actions = compiletNames.flatMap(compiletName => {
+      val compiletDefinitions = getCompiletDefinitions(compiletName)
       // TODO: Sort compilets based on runsAfter.
-      if (defs.definitions.isEmpty)
+      if (compiletDefinitions.definitions.isEmpty)
         sys.error("ERROR: no definition in compilet '" + compiletNames + "'")
       else
-        defs.definitions
+        compiletDefinitions.definitions.map(d => CompiletAction(d, compiletName, compiletDefinitions.runsAfter))
     })
 
     if (HacksAndWorkarounds.fixTypedExpressionsType) {
       val treeFixer = new ExprTreeFixer {
         val universe = patternUniv
       }
-      for (MatchActionDefinition(n, m) <- rawMatchActions) {
+      for (MatchActionDefinition(n, m) <- actions.map(_.matchActionDefinition)) {
         treeFixer.fixTypedExpression(
           n.toString,
           m.pattern.asInstanceOf[treeFixer.universe.Expr[Any]])
@@ -113,19 +118,18 @@ extends PluginComponent
     }
 
     if (options.veryVerbose) {
-      for (MatchActionDefinition(n, m) <- rawMatchActions) {
+      for (MatchActionDefinition(n, m) <- actions.map(_.matchActionDefinition)) {
         println("Registered match action '" + n + "' with pattern : " + m.pattern.tree)
       }
     }
 
-    //rawMatchActions.map(d => (d.name, d)).toMap
-    rawMatchActions
+    actions.toSeq
   }
   
-  val matchActionsByTreeClass: Map[Class[_], Seq[MatchActionDefinition]] = {
-    matchActions.
+  val matchActionsByTreeClass: Map[Class[_], Seq[CompiletAction]] = {
+    compiletActions.
       toSeq.
-      map(a => a.matchAction.pattern.tree.getClass -> a).
+      map(cd => cd.matchActionDefinition.matchAction.pattern.tree.getClass -> cd).
       groupBy(_._1).
       map({ case (c, l) => 
         c -> l.map(_._2) 
@@ -133,17 +137,41 @@ extends PluginComponent
       toMap
   }
   
+  def order(actions: Seq[CompiletAction]): Seq[CompiletAction] = {
+    if (actions.size <= 1)
+      actions
+    else {
+      val nameToAction = actions.map(a => a.compiletName -> a).toMap
+      
+      import scala.collection.mutable
+      val ordered = mutable.ArrayBuilder.make[CompiletAction]()
+      val set = mutable.HashSet[CompiletAction]()
+      def sub(a: CompiletAction) {
+        if (set.add(a)) {
+          for (d <- a.runsAfterCompiletNames)
+            sub(nameToAction(d))
+          ordered += a
+        }
+      }
+      actions.foreach(sub _)
+      
+      ordered.result()
+    }
+  }
+  
   // Try and get the match actions that match a tree's class (or any of its super classes)
   // TODO: add cross-checks to avoid discarding too many trees.
-  def getMatchActions(tree: Tree) = {
-    def actions(c: Class[_]): Seq[MatchActionDefinition] =
+  def getMatchActions(tree: Tree): Seq[MatchActionDefinition] = {
+    def actions(c: Class[_]): Seq[CompiletAction] =
       if (c == null) Seq()
       else {
         matchActionsByTreeClass.get(c).getOrElse(Seq()) ++
         actions(c.getSuperclass)
       }
-    if (tree == null) Seq()
-    else actions(tree.getClass)
+    order(
+      if (tree == null) Seq()
+      else actions(tree.getClass)
+    ).map(_.matchActionDefinition)
   }
 
   private def toTypedString(v: Any) =
