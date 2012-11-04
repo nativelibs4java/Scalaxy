@@ -1,7 +1,5 @@
 package scalaxy; package compilets
 
-import scala.reflect.runtime.universe._
-
 object Numerics extends Compilet {
   import math.Numeric.Implicits._
 
