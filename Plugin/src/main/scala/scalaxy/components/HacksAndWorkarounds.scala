@@ -3,15 +3,16 @@ package scalaxy; package components
 // This will hopefully not exist anymore when 2.10.0.final is out!
 object HacksAndWorkarounds
 {
-  val onlyTryPatternsWithSameClass = false
+  final val debugFailedMatches = false
+  final val onlyTryPatternsWithSameClass = false
   
   // TODO turn to false once macro type is fixed !
-  val workAroundMissingTypeApply = true
-  val workAroundNullPatternTypes = true
+  final val workAroundMissingTypeApply = true
+  final val workAroundNullPatternTypes = true
 
-  val fixTypedExpressionsType = true
-  val healSymbols = true
+  final val fixTypedExpressionsType = true
+  final val healSymbols = true
 
-  val useStringBasedTypeEqualityInBindings = true
-  val useStringBasedPatternMatching = false
+  final val useStringBasedTypeEqualityInBindings = true
+  final val useStringBasedPatternMatching = false
 }

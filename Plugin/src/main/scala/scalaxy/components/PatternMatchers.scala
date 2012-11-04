@@ -207,6 +207,13 @@ extends TypingTransformers
     }
   }
 
+  lazy val candidateUnitTpe =
+    candidateUniv.definitions.UnitClass.asType.toType
+  lazy val patternUnitTpe =
+    patternUniv.definitions.UnitClass.asType.toType
+  
+  val EmptyBindings = Bindings()
+
   def matchAndResolveTypeBindings(
     pattern0: patternUniv.Type,
     tree0: candidateUniv.Type,
@@ -218,26 +225,20 @@ extends TypingTransformers
   {
     import candidateUniv._
 
-    lazy val EmptyBindings = Bindings()
-
     val pattern = resolveType(patternUniv)(pattern0)
     val tree = resolveType(candidateUniv)(tree0)
 
-    lazy val candidateUnitTpe =
-      candidateUniv.definitions.UnitClass.asType.toType
-    lazy val patternUnitTpe =
-      patternUniv.definitions.UnitClass.asType.toType
     //lazy val desc = "(" + pattern + ": " + clstr(pattern) + " vs. " + tree + ": " + clstr(tree) + ")"
 
     if (isParameter(pattern)) {
-      Bindings(Map(), Map(pattern -> tree))
+      Bindings(typeBindings = Map(pattern -> tree))
     }
     else
-    if (pattern != null && pattern.toString.matches(".*\\.T\\d+")) {
-      ultraLogPattern("TYPE MATCHING KINDA FAILED ON isParameter(" + pattern + ")")
-      Bindings(Map(), Map(pattern -> tree))
-    }
-    else
+    //if (pattern != null && pattern.toString.matches(".*\\.T\\d+")) {
+    //  ultraLogPattern("TYPE MATCHING KINDA FAILED ON isParameter(" + pattern + ")")
+    //  Bindings(Map(), Map(pattern -> tree))
+    //}
+    //else
     if (HacksAndWorkarounds.workAroundNullPatternTypes &&
         tree == null && pattern != null) {
       throw NoTypeMatchException(pattern0, tree0, "Type kind matching failed (" + pattern + " vs. " + tree + ")", depth)
@@ -316,19 +317,22 @@ extends TypingTransformers
     }
   }
 
-  val EmptyBindings = Bindings()
-
   def matchAndResolveTreeBindings(pattern: patternUniv.Tree, tree: candidateUniv.Tree, depth: Int = 0)(implicit internalDefs: InternalDefs = Set()): Bindings =
   {
     val patternType = getOrFixType(patternUniv)(pattern)
     val candidateType = getOrFixType(candidateUniv)(tree)
 
-    val typeBindings = try {
-      matchAndResolveTypeBindings(patternType, candidateType, depth)
-    } catch {
-      case ex: NoTypeMatchException =>
-        throw ex.copy(insideExpected = pattern, insideFound = tree)
-    }
+    val typeBindings = 
+      if (HacksAndWorkarounds.debugFailedMatches)
+        try {
+          matchAndResolveTypeBindings(patternType, candidateType, depth)
+        } catch {
+          case ex: NoTypeMatchException =>
+            throw ex.copy(insideExpected = pattern, insideFound = tree)
+        }
+      else
+        matchAndResolveTypeBindings(patternType, candidateType, depth)
+        
     //if (depth > 0)
     //{
     //  println("Going down in trees (depth " + depth + "):")

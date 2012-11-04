@@ -240,7 +240,7 @@ extends PluginComponent
             }
           } catch {
             case NoTypeMatchException(expected, found, msg, depth, insideExpected, insideFound) =>
-              if (false)//depth > 0)
+              if (HacksAndWorkarounds.debugFailedMatches && depth > 0)
               {
                 println("TYPE ERROR: in replacement '" + n + "' at " + tree.pos + " : " + msg +
                   " (")
@@ -251,7 +251,7 @@ extends PluginComponent
                 println(")")
               }
             case NoTreeMatchException(expected, found, msg, depth) =>
-              if (false)//depth > 1)
+              if (HacksAndWorkarounds.debugFailedMatches && depth > 1)
               {
                 println("TREE ERROR: in replacement '" + n + "' at " + tree.pos + " : " + msg +
                   " (\n\texpected = " + toTypedString(expected) +
