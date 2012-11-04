@@ -8,21 +8,26 @@ Key features:
 *   Easy to express AOP-style rewrites (to add or remove logs, runtime checks, etc...)
 *   Add your own warnings and errors to scalac in a few lines!
 
-# Usage with sbt
+# Usage
 
-To compile your sbt-0.12.1+ project with Scalaxy's compiler plugin and default compilets, make sure your `build.sbt` file looks like this (see `Examples/UsageWithoutSbtPlugin`):
+The preferred way to use Scalaxy is with Sbt 0.12.1 and the [sbt-scalaxy](http://github.com/ochafik/sbt-scalaxy) Sbt plugin, but the `Examples` subfolder demonstrates how to use it [with Maven or with Sbt but without `sbt-scalaxy`](https://github.com/ochafik/Scalaxy/tree/master/Examples/UsageWithMavenOrWithoutSbtPlugin). 
+
+To compile your Sbt project with Scalaxy's compiler plugin and default compilets:
+*   Put the following in `project/plugins.sbt` (or in `~/.sbt/plugins/build.sbt` for global setup):
+
+    resolvers += Resolver.sonatypeRepo("snapshots")
+    
+    addSbtPlugin("com.nativelibs4java" % "sbt-scalaxy" % "0.3-SNAPSHOT")
+    
+*   Make your `build.sbt` look like this:
 
 	scalaVersion := "2.10.0-RC1"
-	
-	resolvers += Resolver.sonatypeRepo("snapshots")
-	
-	autoCompilerPlugins := true
-	
-	addCompilerPlugin("com.nativelibs4java" %% "scalaxy" % "0.3-SNAPSHOT")
-	
-	scalacOptions += "-Xplugin-require:Scalaxy"
 
-If you want to use other compilets than the default ones, please use [sbt-scalaxy](http://github.com/ochafik/sbt-scalaxy) (see `Examples/UsageWithSbtPlugin`). 
+	autoCompilets := true
+	
+	addDefaultCompilets()
+    
+See a full example in [Scalaxy/Examples/UsageWithSbtPlugin](https://github.com/ochafik/Scalaxy/tree/master/Examples/UsageWithSbtPlugin).
 
 To see what's happening:
 
@@ -32,40 +37,6 @@ Or to see the code after it's been rewritten during compilation:
 
 	scalacOptions += "-Xprint:scalaxy-rewriter"
 
-# Usage with Maven
-
-With Maven, please use something like the following (see full example in `Examples/UsageWithMavenOrWithoutSbtPlugin`):
-
-    <properties>
-      <scala.version>2.10.0-RC1</scala.version>
-	</properties>
-    	
-    <build>
-      <plugins>
-        <plugin>
-          <groupId>org.scala-tools</groupId>
-          <artifactId>maven-scala-plugin</artifactId>
-		  <executions>
-			<execution>
-			  <goals>
-			    <goal>compile</goal>
-			    <goal>testCompile</goal>
-			  </goals>
-			</execution>
-		  </executions>
-          <configuration>
-            <compilerPlugins>
-              <compilerPlugin>
-                <groupId>com.nativelibs4java</groupId>
-                <artifactId>scalaxy_2.10</artifactId>
-                <version>0.3-SNAPSHOT</version>
-              </compilerPlugin>
-            </compilerPlugins>
-          </configuration>
-        </plugin>
-      </plugins>
-    </build>
-    
 # Creating your own Compilets
 
 It's very easy to define your own compilets to, say, optimize your shiny DSL's overhead away, or enforce some corporate coding practices (making any call to `Thread.stop` a compilation error, for instance).
