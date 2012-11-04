@@ -123,18 +123,7 @@ extends PluginComponent
       }
     }
 
-    actions.toSeq
-  }
-  
-  val matchActionsByTreeClass: Map[Class[_], Seq[CompiletAction]] = {
-    compiletActions.
-      toSeq.
-      map(cd => cd.matchActionDefinition.matchAction.pattern.tree.getClass -> cd).
-      groupBy(_._1).
-      map({ case (c, l) => 
-        c -> l.map(_._2) 
-      }).
-      toMap
+    order(actions.toSeq)
   }
   
   def order(actions: Seq[CompiletAction]): Seq[CompiletAction] = {
@@ -159,19 +148,34 @@ extends PluginComponent
     }
   }
   
+  val matchActionsByTreeClass: Map[Class[_], Seq[CompiletAction]] = {
+    compiletActions.
+      toSeq.
+      map(cd => cd.matchActionDefinition.matchAction.pattern.tree.getClass -> cd).
+      groupBy(_._1).
+      map({ case (c, l) => 
+        c -> l.map(_._2) 
+      }).
+      toMap
+  }
+  
   // Try and get the match actions that match a tree's class (or any of its super classes)
   // TODO: add cross-checks to avoid discarding too many trees.
   def getMatchActions(tree: Tree): Seq[MatchActionDefinition] = {
-    def actions(c: Class[_]): Seq[CompiletAction] =
-      if (c == null) Seq()
-      else {
-        matchActionsByTreeClass.get(c).getOrElse(Seq()) ++
-        actions(c.getSuperclass)
-      }
-    order(
-      if (tree == null) Seq()
-      else actions(tree.getClass)
-    ).map(_.matchActionDefinition)
+    if (HacksAndWorkarounds.onlyTryPatternsWithSameClass) {
+      def actions(c: Class[_]): Seq[CompiletAction] =
+        if (c == null) Seq()
+        else {
+          matchActionsByTreeClass.get(c).getOrElse(Seq()) ++
+          actions(c.getSuperclass)
+        }
+      order(
+        if (tree == null) Seq()
+        else actions(tree.getClass)
+      ).map(_.matchActionDefinition)
+    } else {
+      compiletActions.map(_.matchActionDefinition)
+    }
   }
 
   private def toTypedString(v: Any) =
