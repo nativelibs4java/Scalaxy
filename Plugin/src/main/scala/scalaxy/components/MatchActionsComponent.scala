@@ -187,9 +187,13 @@ extends PluginComponent
       super.transform(tree) 
     else {
       lazy val prefix =
-        "[" + phaseName + "] " + 
-        new java.io.File(tree.pos.source.path).getName + ":" +
-        tree.pos.line + " "
+        "[" + phaseName + "] " + (
+          if (tree.pos == NoPosition) "<no pos> "
+          else {
+            val pos = tree.pos
+            new java.io.File(pos.source.path).getName + ":" + pos.line + " "
+          }
+        )
     
       try {
         val sup = try {
@@ -202,10 +206,12 @@ extends PluginComponent
         var expanded = sup
 
         for (MatchActionDefinition(n, matchAction) <- getMatchActions(tree)) {
-          try {
-            val bindings =
-              matchAndResolveTreeBindings(matchAction.pattern.tree.asInstanceOf[patternUniv.Tree], expanded.asInstanceOf[candidateUniv.Tree])
-
+          //println(prefix + "matching " + n)
+          val bindings =
+            matchAndResolveTreeBindings(matchAction.pattern.tree.asInstanceOf[patternUniv.Tree], expanded.asInstanceOf[candidateUniv.Tree])
+          //println("\t-> failure = " + bindings.failure)
+          
+          if (bindings.failure == null) {
             if (options.veryVerbose) {
               println(prefix + "Bindings for '" + n + "':\n\t" + (bindings.nameBindings ++ bindings.typeBindings ++ bindings.functionBindings).mkString("\n\t"))
             }
@@ -238,28 +244,30 @@ extends PluginComponent
             if (options.verbose) {
               println(prefix + "Applied compilet " + n)
             }
-          } catch {
-            case NoTypeMatchException(expected, found, msg, depth, insideExpected, insideFound) =>
-              if (HacksAndWorkarounds.debugFailedMatches && depth > 0)
-              {
-                println("TYPE ERROR: in replacement '" + n + "' at " + tree.pos + " : " + msg +
-                  " (")
-                println("\texpected = " + toTypedString(expected))
-                println("\tfound = " + toTypedString(found))
-                println("\tinside expected = " + insideExpected)
-                println("\tinside found = " + insideFound)
-                println(")")
-              }
-            case NoTreeMatchException(expected, found, msg, depth) =>
-              if (HacksAndWorkarounds.debugFailedMatches && depth > 1)
-              {
-                println("TREE ERROR: in replacement '" + n + "' at " + tree.pos + " : " + msg +
-                  " (\n\texpected = " + toTypedString(expected) +
-                  ",\n\tfound = " + toTypedString(found) + "\n)"
-                )
-                println("Tree was " + tree)
-                println("Match action was " + matchAction)
-              }
+          } else {
+            bindings.failure match {
+              case NoTypeMatchFailure(expected, found, msg, depth, insideExpected, insideFound) =>
+                if (HacksAndWorkarounds.debugFailedMatches && depth > 0)
+                {
+                  println("TYPE ERROR: in replacement '" + n + "' at " + tree.pos + " : " + msg +
+                    " (")
+                  println("\texpected = " + toTypedString(expected))
+                  println("\tfound = " + toTypedString(found))
+                  println("\tinside expected = " + insideExpected)
+                  println("\tinside found = " + insideFound)
+                  println(")")
+                }
+              case NoTreeMatchFailure(expected, found, msg, depth) =>
+                if (HacksAndWorkarounds.debugFailedMatches && depth > 1)
+                {
+                  println("TREE ERROR: in replacement '" + n + "' at " + tree.pos + " : " + msg +
+                    " (\n\texpected = " + toTypedString(expected) +
+                    ",\n\tfound = " + toTypedString(found) + "\n)"
+                  )
+                  println("Tree was " + tree)
+                  println("Match action was " + matchAction)
+                }
+            }
           }
         }
 
@@ -270,7 +278,7 @@ extends PluginComponent
           val tpe = expanded.tpe
           
           if (HacksAndWorkarounds.healSymbols) {
-              expanded = healSymbols(unit, currentOwner, expanded, expectedTpe)
+            expanded = healSymbols(unit, currentOwner, expanded, expectedTpe)
           }
 
           try {

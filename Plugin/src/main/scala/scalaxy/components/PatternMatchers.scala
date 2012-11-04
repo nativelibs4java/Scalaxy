@@ -5,6 +5,14 @@ import scala.tools.nsc.ast.TreeDSL
 import scala.tools.nsc.transform.TypingTransformers
 import Function.tupled
 
+sealed trait PatternMatchingFailure
+
+case class NoTreeMatchFailure(expected: Any, found: Any, msg: String, depth: Int)
+extends PatternMatchingFailure
+
+case class NoTypeMatchFailure(expected: Any, found: Any, msg: String, depth: Int, insideExpected: AnyRef = null, insideFound: AnyRef = null)
+extends PatternMatchingFailure
+
 trait PatternMatchers
 extends TypingTransformers
 //   with MirrorConversions
@@ -27,11 +35,18 @@ extends TypingTransformers
   case class Bindings(
     nameBindings: Map[String, candidateUniv.Tree] = Map(),
     typeBindings: Map[patternUniv.Type, candidateUniv.Type] = Map(),
-    functionBindings: Map[String, (List[String], patternUniv.Tree, candidateUniv.Tree)] = Map() 
+    functionBindings: Map[String, (List[String], patternUniv.Tree, candidateUniv.Tree)] = Map(),
+    failure: PatternMatchingFailure = null
   ) {
     lazy val stringIndexedTypeBindings =
       typeBindings.map { case (k, v) => (k.toString, (k, v)) }
 
+    def isEmpty =
+      failure == null &&
+      nameBindings.isEmpty &&
+      typeBindings.isEmpty &&
+      functionBindings.isEmpty
+      
     def getType(t: patternUniv.Type): Option[candidateUniv.Type] = {
       Option(t).
         flatMap(tt => {
@@ -58,12 +73,31 @@ extends TypingTransformers
     def bindType(t: patternUniv.Type, t2: candidateUniv.Type) =
       copy(typeBindings = typeBindings + (t -> t2))
 
-    def ++(b: Bindings) =
-      Bindings(
-        nameBindings ++ b.nameBindings,
-        typeBindings ++ b.typeBindings,
-        functionBindings ++ b.functionBindings
-      )
+    def markFailure(insideExpected: => patternUniv.Tree, insideFound: => candidateUniv.Tree) = {
+      if (failure != null) {
+        failure match {
+          case ex: NoTypeMatchFailure =>
+            copy(failure = ex.copy(insideExpected = insideExpected, insideFound = insideFound))
+          case _ =>
+            this
+        }
+      } else {
+        this
+      }
+    }
+    
+    def ++(b: => Bindings) = {
+      if (failure != null || b.isEmpty)
+        this
+      else if (isEmpty || b.failure != null)
+        b
+      else
+        Bindings(
+          nameBindings ++ b.nameBindings,
+          typeBindings ++ b.typeBindings,
+          functionBindings ++ b.functionBindings
+        )
+    }
 
     def convertToExpected[T](v: Any) = v.asInstanceOf[T]
 
@@ -97,6 +131,9 @@ extends TypingTransformers
       importer.importTree(replacement.asInstanceOf[importer.from.Tree])
     }
   }
+  
+  def bindingFailed(failure: PatternMatchingFailure) =
+    Bindings(nameBindings = null, typeBindings = null, functionBindings = null, failure = failure)
 
   def combine(a: Bindings, b: Bindings) = a ++ b
 
@@ -146,32 +183,27 @@ extends TypingTransformers
     if (reps.isEmpty)
       EmptyBindings
     else
-      reps.map({ case (a, b) =>
-        matchAndResolveTreeBindings(a, b, depth)
-      }).reduceLeft(_ ++ _)
+      reps.foldLeft(EmptyBindings) {
+        case (bindings, (a, b)) =>
+          bindings ++ matchAndResolveTreeBindings(a, b, depth)
+      }
   }
 
-  // Throws lots of exceptions : NoTreeMatchException and NoTypeMatchException
   def matchAndResolveTypeBindings(reps: List[(patternUniv.Type, candidateUniv.Type)], depth: Int)(implicit internalDefs: InternalDefs): Bindings =
   {
     if (reps.isEmpty)
       EmptyBindings
     else
-      reps.map({ case (a, b) =>
-        matchAndResolveTypeBindings(a, b, depth)
-      }).reduceLeft(_ ++ _)
+      reps.foldLeft(EmptyBindings) {
+        case (bindings, (a, b)) =>
+          bindings ++ matchAndResolveTypeBindings(a, b, depth)
+      }
   }
 
   type InternalDefs = Set[patternUniv.Name]
 
   def getNamesDefinedIn(u: api.Universe)(stats: List[u.Tree]): Set[u.Name] =
     stats.collect { case u.ValDef(_, name, _, _) => name: u.Name } toSet
-
-  case class NoTreeMatchException(expected: Any, found: Any, msg: String, depth: Int)
-  extends RuntimeException(msg)
-
-  case class NoTypeMatchException(expected: Any, found: Any, msg: String, depth: Int, insideExpected: AnyRef = null, insideFound: AnyRef = null)
-  extends RuntimeException(msg)
 
   def isNoType(u: api.Universe)(t: u.Type) =
     t == null ||
@@ -193,7 +225,9 @@ extends TypingTransformers
       case t =>
         try
           Some(t.asType.toType)
-        catch { case _: Throwable => None }
+        catch { case _: Throwable =>
+          None 
+        }
     }
 
   def zipTypes(syms1: List[patternUniv.Symbol], syms2: List[candidateUniv.Symbol]) =
@@ -227,7 +261,14 @@ extends TypingTransformers
 
     val pattern = resolveType(patternUniv)(pattern0)
     val tree = resolveType(candidateUniv)(tree0)
-
+        
+    //if (depth > 0)
+    //{
+    //  println("Going down in types (depth " + depth + "):")
+    //  println("\tpattern = " + pattern + " (" + Option(pattern).map(_.getClass.getName).orNull + ")")
+    //  println("\tfound = " + tree + " (" + Option(tree).map(_.getClass.getName).orNull + ")")
+    //}
+    
     //lazy val desc = "(" + pattern + ": " + clstr(pattern) + " vs. " + tree + ": " + clstr(tree) + ")"
 
     if (isParameter(pattern)) {
@@ -241,15 +282,15 @@ extends TypingTransformers
     //else
     if (HacksAndWorkarounds.workAroundNullPatternTypes &&
         tree == null && pattern != null) {
-      throw NoTypeMatchException(pattern0, tree0, "Type kind matching failed (" + pattern + " vs. " + tree + ")", depth)
+      bindingFailed(NoTypeMatchFailure(pattern0, tree0, "Type kind matching failed (" + pattern + " vs. " + tree + ")", depth))
     }
     else
     {
       val ret = (pattern, tree) match {
         // TODO remove null acceptance once macro typechecker is fixed !
-        case (_, _)
-        if pattern == null && HacksAndWorkarounds.workAroundNullPatternTypes =>
-          EmptyBindings
+        //case (_, _)
+        //if pattern == null && HacksAndWorkarounds.workAroundNullPatternTypes =>
+        //  EmptyBindings
 
         case (patternUniv.NoType, candidateUniv.NoType) =>
           EmptyBindings
@@ -269,7 +310,10 @@ extends TypingTransformers
         if sym.fullName == sym2.fullName =>
           val subs = matchAndResolveTypeBindings(List((pre, pre2)), depth + 1)
           //println("Matched single types, skipping bindings: " + subs)
-          EmptyBindings
+          if (subs.failure != null)
+            subs
+          else
+            EmptyBindings
 
         case (patternUniv.TypeBounds(lo, hi), TypeBounds(lo2, hi2)) =>
           matchAndResolveTypeBindings(List((lo, lo2), (hi, hi2)), depth + 1)
@@ -296,13 +340,14 @@ extends TypingTransformers
           
         case _ =>
           if (HacksAndWorkarounds.useStringBasedPatternMatching &&
-              Option(pattern).toString == Option(tree).toString) {
+              Option(pattern).toString == Option(tree).toString)
+          {
             println("WARNING: Dumb string type matching of " + pattern + " (" + clstr(pattern) + ") " + " vs. " + tree + " (" + clstr(tree) + ") " )
             EmptyBindings
           } else {
             //if (depth > 0)
             //  println("TYPE MISMATCH \n\texpected = " + pattern0 + "\n\t\t" + Option(pattern0).map(_.getClass.getName) + "\n\tfound = " + tree0 + "\n\t\t" + Option(tree0).map(_.getClass.getName))
-            throw NoTypeMatchException(pattern0, tree0, "Type matching failed", depth)
+            bindingFailed(NoTypeMatchFailure(pattern0, tree0, "Type matching failed", depth))
           }
       }
 
@@ -322,16 +367,15 @@ extends TypingTransformers
     val patternType = getOrFixType(patternUniv)(pattern)
     val candidateType = getOrFixType(candidateUniv)(tree)
 
-    val typeBindings = 
+    val typeBindings = if (patternType == null && HacksAndWorkarounds.workAroundNullPatternTypes) {
+      EmptyBindings
+    } else {
+      val b = matchAndResolveTypeBindings(patternType, candidateType, depth)
       if (HacksAndWorkarounds.debugFailedMatches)
-        try {
-          matchAndResolveTypeBindings(patternType, candidateType, depth)
-        } catch {
-          case ex: NoTypeMatchException =>
-            throw ex.copy(insideExpected = pattern, insideFound = tree)
-        }
+        b.markFailure(insideExpected = pattern, insideFound = tree)
       else
-        matchAndResolveTypeBindings(patternType, candidateType, depth)
+        b
+    }
         
     //if (depth > 0)
     //{
@@ -341,16 +385,17 @@ extends TypingTransformers
     //  println("\ttypeBindings = " + typeBindings)
     //}
     
-    lazy val desc = "(" + pattern + ": " + clstr(pattern) + " vs. " + tree + ": " + clstr(tree) + ")"
+    if (typeBindings.failure != null) typeBindings
+    else typeBindings ++ {
+      lazy val desc = "(" + pattern + ": " + clstr(pattern) + " vs. " + tree + ": " + clstr(tree) + ")"
 
-    typeBindings ++ {
-      val ret = (pattern, tree) match {
+      val ret = (pattern, tree) match 
+      {
         case (_, _) if pattern.isEmpty && tree.isEmpty =>
           EmptyBindings
 
         case (patternUniv.Apply(patternUniv.Select(i @ patternUniv.Ident(n), `applyNamePattern`), params), _)
-        if i.symbol != null && i.symbol.isParameter 
-        =>
+        if i.symbol != null && i.symbol.isParameter  =>
           //println("### Found function param: \n\t" + pattern + "\n\t-> " + tree + "\n\t(i = " + i + ": " + i.getClass.getName + ", tpe = " + i.tpe + ", i.symbol.isParameter = " + i.symbol.isParameter + ")")
           // TODO: recurse on pattern to bind params to actual values?
           Bindings(functionBindings = Map(
@@ -371,6 +416,10 @@ extends TypingTransformers
         if a == a2 =>
           EmptyBindings
 
+        //case (patternUniv.Ident(n), candidateUniv.Ident(n2))
+        //if n.toString == n2.toString =>
+        //  EmptyBindings
+          
         case (patternUniv.Ident(n), _) =>
           if (internalDefs.contains(n) ||
               pattern.symbol.isPackage ||
@@ -378,7 +427,7 @@ extends TypingTransformers
           {
             EmptyBindings
           } else {
-            Bindings(Map(n.toString -> tree), Map())
+            Bindings(nameBindings = Map(n.toString -> tree))
           }
 
         case (patternUniv.ValDef(mods, name, tpt, rhs), candidateUniv.ValDef(mods2, name2, tpt2, rhs2))
@@ -450,13 +499,15 @@ extends TypingTransformers
           EmptyBindings
 
         case _ =>
-          if (Option(pattern).toString == Option(tree).toString) {
+          if (HacksAndWorkarounds.useStringBasedPatternMatching &&
+              Option(pattern).toString == Option(tree).toString)
+          {
             println("WARNING: Monkey matching of " + pattern + " vs. " + tree)
             EmptyBindings
           } else {
             //if (depth > 0)
             //    println("TREE MISMATCH \n\texpected = " + toTypedString(pattern) + "\n\t\t" + pattern.getClass.getName + "\n\tfound = " + toTypedString(tree) + "\n\t\t" + tree.getClass.getName)
-            throw NoTreeMatchException(pattern, tree, "Different trees", depth)
+            bindingFailed(NoTreeMatchFailure(pattern, tree, "Different trees", depth))
           }
       }
 
