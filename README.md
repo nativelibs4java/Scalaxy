@@ -15,17 +15,17 @@ The preferred way to use Scalaxy is with Sbt 0.12.1 and the [sbt-scalaxy](http:/
 To compile your Sbt project with Scalaxy's compiler plugin and default compilets:
 *   Put the following in `project/plugins.sbt` (or in `~/.sbt/plugins/build.sbt` for global setup):
 
-    resolvers += Resolver.sonatypeRepo("snapshots")
-    
-    addSbtPlugin("com.nativelibs4java" % "sbt-scalaxy" % "0.3-SNAPSHOT")
+        resolvers += Resolver.sonatypeRepo("snapshots")
+        
+        addSbtPlugin("com.nativelibs4java" % "sbt-scalaxy" % "0.3-SNAPSHOT")
     
 *   Make your `build.sbt` look like this:
 
-	scalaVersion := "2.10.0-RC1"
-
-	autoCompilets := true
-	
-	addDefaultCompilets()
+	    scalaVersion := "2.10.0-RC1"
+        
+	    autoCompilets := true
+	    
+	    addDefaultCompilets()
     
 See a full example in [Scalaxy/Examples/UsageWithSbtPlugin](https://github.com/ochafik/Scalaxy/tree/master/Examples/UsageWithSbtPlugin).
 
