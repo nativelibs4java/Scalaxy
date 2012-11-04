@@ -41,7 +41,7 @@ Or to see the code after it's been rewritten during compilation:
 
 It's very easy to define your own compilets to, say, optimize your shiny DSL's overhead away, or enforce some corporate coding practices (making any call to `Thread.stop` a compilation error, for instance).
 
-This is very easy to do, please have a look at `Examples/CustomCompilets` and see how to use these custom compilets in `Examples/CustomCompilets/Usage`.
+This is very easy to do, please have a look at `Examples/CustomCompilets` and `Examples/DSLWithOptimizingCompilets`.
 
 # Hacking
 
