@@ -17,12 +17,8 @@ import scala.reflect.runtime.{ universe => ru }
 import scala.reflect._
 
 object MatchActionsComponent {
-  val runsAfter = List[String](
-    "typer"
-  )
-  val runsBefore = List[String](
-    "patmat"
-  )
+  val runsAfter = List("typer")
+  val runsBefore = List("patmat")
   val phaseName = "scalaxy-rewriter"
 }
 

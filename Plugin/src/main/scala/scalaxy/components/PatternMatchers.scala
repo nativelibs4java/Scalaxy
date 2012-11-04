@@ -137,7 +137,9 @@ extends TypingTransformers
 
   def combine(a: Bindings, b: Bindings) = a ++ b
 
-  implicit def t2pt(tp: api.Types#Type) = tp.asInstanceOf[PlasticType]
+  implicit def t2pt(tp: api.Types#Type) = 
+    tp.asInstanceOf[PlasticType]
+    
   type PlasticType = {
     def dealias: api.Types#Type
     def deconst: api.Types#Type
