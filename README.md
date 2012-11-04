@@ -34,7 +34,7 @@ Or to see the code after it's been rewritten during compilation:
 
 # Usage with Maven
 
-With Maven, please use something like the following (untested):
+With Maven, please use something like the following (see full example in `Examples/UsageWithMavenOrWithoutSbtPlugin`):
 
     <properties>
       <scala.version>2.10.0-RC1</scala.version>
@@ -45,6 +45,14 @@ With Maven, please use something like the following (untested):
         <plugin>
           <groupId>org.scala-tools</groupId>
           <artifactId>maven-scala-plugin</artifactId>
+		  <executions>
+			<execution>
+			  <goals>
+			    <goal>compile</goal>
+			    <goal>testCompile</goal>
+			  </goals>
+			</execution>
+		  </executions>
           <configuration>
             <compilerPlugins>
               <compilerPlugin>
