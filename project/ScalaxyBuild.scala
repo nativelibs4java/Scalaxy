@@ -83,7 +83,6 @@ object Scalaxy extends Build
     addArtifact(artifact in (Compile, assembly), assembly) ++
     Seq(
       publishArtifact in (Compile, packageBin) := false,
-      artifact in (Compile, assembly) ~= { _.copy(`classifier` = None) },
       excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
         // Exclude scala-library and al.
         cp filter { _.data.getName.startsWith("scala-") }
@@ -116,6 +115,7 @@ object Scalaxy extends Build
         shadeSettings ++
         Seq(
           test in assembly := {},
+          artifact in (Compile, assembly) ~= { _.copy(`classifier` = None) },
           scalacOptions in console in Compile <+= (packageBin in Compile) map("-Xplugin:" + _)
         )).
     dependsOn(plugin, compilets, api).
@@ -126,6 +126,7 @@ object Scalaxy extends Build
       reflectSettings ++
       shadeSettings ++
       Seq(
+        artifact in (Compile, assembly) ~= { _.copy(`classifier` = Some("assembly")) },
         publishArtifact in Test := true)).
     dependsOn(api)
 
