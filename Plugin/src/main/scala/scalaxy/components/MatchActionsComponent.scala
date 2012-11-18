@@ -243,20 +243,21 @@ extends PluginComponent
           } else {
             bindings.failure match {
               case NoTypeMatchFailure(expected, found, msg, depth, insideExpected, insideFound) =>
-                if (HacksAndWorkarounds.debugFailedMatches && depth > 0)
+                if (HacksAndWorkarounds.debugFailedMatches && depth > 1)
                 {
-                  println("TYPE ERROR: in replacement '" + n + "' at " + tree.pos + " : " + msg +
+                  println("TYPE ERROR (depth " + depth + "): in replacement '" + n + "' at " + tree.pos + " : " + msg +
                     " (")
                   println("\texpected = " + toTypedString(expected))
                   println("\tfound = " + toTypedString(found))
                   println("\tinside expected = " + insideExpected)
                   println("\tinside found = " + insideFound)
+                  println("\ttree = " + tree)
                   println(")")
                 }
               case NoTreeMatchFailure(expected, found, msg, depth) =>
                 if (HacksAndWorkarounds.debugFailedMatches && depth > 1)
                 {
-                  println("TREE ERROR: in replacement '" + n + "' at " + tree.pos + " : " + msg +
+                  println("TREE ERROR (depth " + depth + "): in replacement '" + n + "' at " + tree.pos + " : " + msg +
                     " (\n\texpected = " + toTypedString(expected) +
                     ",\n\tfound = " + toTypedString(found) + "\n)"
                   )
@@ -272,9 +273,21 @@ extends PluginComponent
         } else {
           val expectedTpe = tree.tpe.dealias.deconst.normalize
           val tpe = expanded.tpe
+
+          if (options.debug)
+          {
+            println()
+            println("EXPANSION BEFORE HEALING = \n" + expanded + "\n" + nodeToString(expanded))
+            //println("FINAL EXPANSION = \n" + expanded)
+            println()
+          }
           
           if (HacksAndWorkarounds.healSymbols) {
-            expanded = healSymbols(unit, currentOwner, expanded, expectedTpe)
+            try {
+              expanded = healSymbols(unit, currentOwner, expanded, expectedTpe)
+            } catch { case ex: Throwable =>
+              ex.printStackTrace
+            }
           }
 
           try {
@@ -286,7 +299,7 @@ extends PluginComponent
           if (options.debug)
           {
             println()
-            println("FINAL EXPANSION = \n" + nodeToString(expanded))
+            println("FINAL EXPANSION = \n" + expanded + "\n" + nodeToString(expanded))
             //println("FINAL EXPANSION = \n" + expanded)
             println()
           }

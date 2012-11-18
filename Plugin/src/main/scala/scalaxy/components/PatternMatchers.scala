@@ -32,6 +32,8 @@ extends TypingTransformers
 
   lazy val applyNamePattern = patternUniv.newTermName("apply")
   
+  var printed = Set[String]()
+  
   case class Bindings(
     nameBindings: Map[String, candidateUniv.Tree] = Map(),
     typeBindings: Map[patternUniv.Type, candidateUniv.Type] = Map(),
@@ -98,6 +100,11 @@ extends TypingTransformers
           functionBindings ++ b.functionBindings
         )
     }
+    
+    override def toString = 
+      "Bindings {\n\t" + (if (failure != null) "failure = " + failure else (
+      Seq[Seq[Any]](nameBindings.toSeq, typeBindings.toSeq, functionBindings.toSeq).flatMap(s => Option(s)).flatten.mkString("\n\t")
+      )) + "\n}\n"
 
     def convertToExpected[T](v: Any) = v.asInstanceOf[T]
 
@@ -147,38 +154,30 @@ extends TypingTransformers
   }
 
   def normalize(u: api.Universe)(tpe: u.Type) = {
-    //tpe.dealias.deconst.normalize
-    tpe.
-    deconst.
-    dealias.
-    normalize.
-    asInstanceOf[u.Type]
+    tpe.deconst.dealias.normalize.asInstanceOf[u.Type]
   }
 
-  def resolveType(u: api.Universe)(tpe: u.Type): u.Type =
-      Option(tpe).map(normalize(u)(_)).map({
-        case u.ThisType(sym) =>
-          if (tpe.toString == "<root>")
-            u.NoPrefix
-          else
-            sym.asType.toType
-          //println("resolved tpe " + tpe + " to " + res)
-          //res
-        case tt @ u.SingleType(pre, sym) if !sym.isPackage =>
-          try {
-            val t = sym.asType.toType
-            if (t != null && t != candidateUniv.NoType)
-              t
-            else
-              tt
-          } catch { case ex: Throwable =>
-            // TODO report to Eugene
-            // ex.printStackTrace
-            tt
-          }
-        case tt =>
+  def resolveType(u: api.Universe)(tpe: u.Type): u.Type = {
+    Option(tpe).map(normalize(u)(_)).map({
+      case tt @ u.ThisType(sym) =>
+        if (tpe.toString == "<root>")
+          u.NoPrefix // Should be fine TODO ask gurus about possible ambiguity here between root and NoPrefix
+        else if (sym.isType)
+          resolveType(u)(sym.asType.toType)
+        else 
           tt
-      }).orNull
+        
+      case tt: u.NullaryMethodTypeApi =>
+      //case tt @ u.NullaryMethodType(restpe) =>
+        resolveType(u)(tt.resultType)
+        
+      case tt: u.SingleTypeApi =>
+      //case tt @ u.SingleType(pre, sym) =>
+        resolveType(u)(tt.sym.typeSignature)
+      case tt =>
+        tt
+    }).orNull
+  }
 
   def matchAndResolveTreeBindings(reps: List[(patternUniv.Tree, candidateUniv.Tree)], depth: Int)(implicit internalDefs: InternalDefs): Bindings =
   {
@@ -264,12 +263,12 @@ extends TypingTransformers
     val pattern = resolveType(patternUniv)(pattern0)
     val tree = resolveType(candidateUniv)(tree0)
         
-    //if (depth > 0)
-    //{
-    //  println("Going down in types (depth " + depth + "):")
-    //  println("\tpattern = " + pattern + " (" + Option(pattern).map(_.getClass.getName).orNull + ")")
-    //  println("\tfound = " + tree + " (" + Option(tree).map(_.getClass.getName).orNull + ")")
-    //}
+    if (false)//if (depth > 0)
+    {
+      println("Going down in types (depth " + depth + "):")
+      println("\tpattern = " + pattern + " (" + Option(pattern).map(_.getClass.getName).orNull + ")")
+      println("\tfound = " + tree + " (" + Option(tree).map(_.getClass.getName).orNull + ")")
+    }
     
     //lazy val desc = "(" + pattern + ": " + clstr(pattern) + " vs. " + tree + ": " + clstr(tree) + ")"
 
@@ -308,6 +307,10 @@ extends TypingTransformers
         //  println("TYPE MATCH refined type")
         //  EmptyBindings
 
+        case (patternUniv.ClassInfoType(_, _, sym), ClassInfoType(_, _, sym2))
+        if sym.fullName == sym2.fullName =>
+          EmptyBindings
+        
         case (patternUniv.SingleType(pre, sym), SingleType(pre2, sym2))
         if sym.fullName == sym2.fullName =>
           val subs = matchAndResolveTypeBindings(List((pre, pre2)), depth + 1)
@@ -339,9 +342,16 @@ extends TypingTransformers
         =>
           matchAndResolveTypeBindings(pre, pre2, depth + 1) ++
           matchAndResolveTypeBindings(args.zip(args2), depth + 1)
+        
+        //case (patternUniv.ClassInfoType(_, _, _), _) 
+        //if tree.typeSymbol.isPackage =>
+        ////if //tree.typeSymbol.isPackage && 
+        ////  Option(pattern0).toString == Option(tree0).toString =>
+        //  EmptyBindings // TODO remove this hack
           
+        
         case _ =>
-          if (HacksAndWorkarounds.useStringBasedPatternMatching &&
+          if (HacksAndWorkarounds.useStringBasedTypePatternMatching &&
               Option(pattern).toString == Option(tree).toString)
           {
             println("WARNING: Dumb string type matching of " + pattern + " (" + clstr(pattern) + ") " + " vs. " + tree + " (" + clstr(tree) + ") " )
@@ -349,16 +359,16 @@ extends TypingTransformers
           } else {
             //if (depth > 0)
             //  println("TYPE MISMATCH \n\texpected = " + pattern0 + "\n\t\t" + Option(pattern0).map(_.getClass.getName) + "\n\tfound = " + tree0 + "\n\t\t" + Option(tree0).map(_.getClass.getName))
-            bindingFailed(NoTypeMatchFailure(pattern0, tree0, "Type matching failed", depth))
+            bindingFailed(NoTypeMatchFailure(pattern0, tree0, "Type matching failed between " + pattern + "(: " + pattern.getClass.getName + " <- " + pattern0.getClass.getName + ") and " + tree + "(: " + tree.getClass.getName + " <- " + tree0.getClass.getName + ")", depth))
           }
       }
 
-      if (false) 
+      if (false)//ret.failure == null)
       {
         println("Successfully bound types (depth " + depth + "):")
         println("\ttype pattern = " + pattern + " (" + pattern0 + "): " + clstr(pattern))// + "; kind = " + Option(pattern).map(_.typeSymbol.kind))
         println("\ttype found = " + tree + " (" + tree0 + "): " + clstr(tree))
-        println("\tbindings:\n\t\t" + (ret.nameBindings ++ ret.typeBindings).mkString("\n\t\t"))
+        println("\tbindings:\n\t\t" + (Option(ret.nameBindings).getOrElse(Seq()) ++ Option(ret.typeBindings).getOrElse(Seq()) ++ Option(ret.functionBindings).getOrElse(Seq())).mkString("\n\t\t"))
       }
       ret
     }
@@ -379,13 +389,13 @@ extends TypingTransformers
         b
     }
         
-    //if (depth > 0)
-    //{
-    //  println("Going down in trees (depth " + depth + "):")
-    //  println("\tpattern = " + pattern + ": " + patternType + " (" + pattern.getClass.getName + ", " + clstr(patternType) + ")")
-    //  println("\tfound = " + tree + ": " + candidateType + " (" + tree.getClass.getName + ", " + clstr(candidateType) + ")")
-    //  println("\ttypeBindings = " + typeBindings)
-    //}
+    if (false)//if (depth > 0)
+    {
+      println("Going down in trees (depth " + depth + "):")
+      println("\tpattern = " + pattern + ": " + patternType + " (" + pattern.getClass.getName + ", " + clstr(patternType) + ")")
+      println("\tfound = " + tree + ": " + candidateType + " (" + tree.getClass.getName + ", " + clstr(candidateType) + ")")
+      println("\ttypeBindings = " + typeBindings)
+    }
     
     if (typeBindings.failure != null) typeBindings
     else typeBindings ++ {
@@ -400,6 +410,7 @@ extends TypingTransformers
         if i.symbol != null && i.symbol.isParameter  =>
           //println("### Found function param: \n\t" + pattern + "\n\t-> " + tree + "\n\t(i = " + i + ": " + i.getClass.getName + ", tpe = " + i.tpe + ", i.symbol.isParameter = " + i.symbol.isParameter + ")")
           // TODO: recurse on pattern to bind params to actual values?
+          //println("FUNCTION MAP RETURN " + patternType + " (sym.typeSignature = " + tree.symbol.typeSignature + ") -> " + candidateType) 
           Bindings(functionBindings = Map(
             n.toString -> ((
               params.map({ case patternUniv.Ident(p) => p.toString }),
@@ -423,6 +434,8 @@ extends TypingTransformers
         //  EmptyBindings
           
         case (patternUniv.Ident(n), _) =>
+          //println("Ident TYPE IS " + patternType + ": " + Option(patternType).map(_.getClass.getName))
+          //println("Ident SYMBOL IS " + pattern.symbol + ": " + pattern.symbol.typeSignature)
           if (internalDefs.contains(n) ||
               pattern.symbol.isPackage ||
               pattern.symbol.isType && !isParameter(pattern.symbol.asType.toType))
@@ -501,7 +514,7 @@ extends TypingTransformers
           EmptyBindings
 
         case _ =>
-          if (HacksAndWorkarounds.useStringBasedPatternMatching &&
+          if (HacksAndWorkarounds.useStringBasedTreePatternMatching &&
               Option(pattern).toString == Option(tree).toString)
           {
             println("WARNING: Monkey matching of " + pattern + " vs. " + tree)
@@ -513,7 +526,7 @@ extends TypingTransformers
           }
       }
 
-      if (false) 
+      if (false)//ret.failure == null) 
       {
         println("Successfully bound trees (depth " + depth + "):")
         println("\ttree pattern = " + pattern + ": " + clstr(pattern))// + "; kind = " + Option(pattern).map(_.typeSymbol.kind))
@@ -530,7 +543,12 @@ extends TypingTransformers
   def getOrFixType(u: api.Universe)(tree: u.Tree): u.Type = {
     import u._
     import u.definitions._
-    val t = tree.tpe
+    var t = tree.tpe
+    val s = tree.symbol
+    
+    if (t == null && s != null && s != u.NoSymbol) 
+      t = if (s.isType) s.asType.toType else s.typeSignature
+    
     if (t == null)
       tree match {
         case Literal(Constant(v)) =>
