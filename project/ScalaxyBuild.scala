@@ -10,7 +10,6 @@ object Scalaxy extends Build
     scalaVersion := "2.10.0-RC2",
     //scalaVersion := "2.11.0-SNAPSHOT",
     crossScalaVersions := Seq(
-      "2.10.0-RC1", 
       "2.11.0-SNAPSHOT"))
 
   lazy val infoSettings = Seq(

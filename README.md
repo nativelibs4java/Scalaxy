@@ -1,6 +1,6 @@
 *Still very experimental, don't rely on this yet!* (if you need fast loops now, [check this out](https://github.com/ochafik/optimized-loops-macros))
 
-This is an experimental rewrite of [ScalaCL / Scalaxy](http://code.google.com/p/scalacl/) using Scala 2.10.0-RC1 and its powerful macro system.
+This is an experimental rewrite of [ScalaCL / Scalaxy](http://code.google.com/p/scalacl/) using Scala 2.10.0-RC2 and its powerful macro system.
 
 Key features:
 *   Natural expression of rewrite patterns and replacements that makes it easy to express rewrites
@@ -21,7 +21,7 @@ To compile your Sbt project with Scalaxy's compiler plugin and default compilets
     
 *   Make your `build.sbt` look like this:
 
-	    scalaVersion := "2.10.0-RC1"
+	    scalaVersion := "2.10.0-RC2"
         
 	    autoCompilets := true
 	    
