@@ -105,6 +105,13 @@ object Scalaxy extends Build
       }
     )
   
+  val deploySettings = 
+    reflectSettings ++
+    shadeSettings ++
+    Seq(
+      artifact in (Compile, assembly) ~= { _.copy(`classifier` = Some("assembly")) },
+      publishArtifact in Test := true)
+
   lazy val _scalaxy =
     Project(
       id = "scalaxy",
@@ -117,21 +124,19 @@ object Scalaxy extends Build
           artifact in (Compile, assembly) ~= { _.copy(`classifier` = None) },
           scalacOptions in console in Compile <+= (packageBin in Compile) map("-Xplugin:" + _)
         )).
-    dependsOn(plugin, compilets, api).
-    aggregate(plugin, compilets, api)
+    dependsOn(plugin, compilets, api, beans).
+    aggregate(plugin, compilets, api, beans)
     
   lazy val plugin =
-    Project(id = "scalaxy-plugin", base = file("Plugin"), settings = 
-      reflectSettings ++
-      shadeSettings ++
-      Seq(
-        artifact in (Compile, assembly) ~= { _.copy(`classifier` = Some("assembly")) },
-        publishArtifact in Test := true)).
+    Project(id = "scalaxy-plugin", base = file("Plugin"), settings = deploySettings).
     dependsOn(api)
 
   lazy val compilets =
     Project(id = "scalaxy-compilets", base = file("Compilets"), settings = reflectSettings).
     dependsOn(api, plugin % "test->test")
+
+  lazy val beans =
+    Project(id = "scalaxy-beans", base = file("Beans"), settings = deploySettings)
 
   lazy val api =
     Project(id = "scalaxy-api", base = file("API"), settings = reflectSettings)

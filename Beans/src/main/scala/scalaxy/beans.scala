@@ -2,6 +2,7 @@ package scalaxy
 
 import scala.language.dynamics
 import scala.reflect.ClassTag
+import scala.reflect.NameTransformer
 import scala.reflect.macros.Context
 
 /**
@@ -9,7 +10,7 @@ import scala.reflect.macros.Context
 
   The following expression:
   
-    factory.create[MyBean](
+    beans.create[MyBean](
       foo = 10, 
       bar = 12
     )
@@ -56,7 +57,7 @@ object beans extends Dynamic
           s.isMethod && (
             s.asMethod.paramss.flatten match {
               case Seq(param) =>
-                if (!(valueTpe <:< param.typeSignature))
+                if (!(valueTpe weak_<:< param.typeSignature))
                   c.error(valuePos, s"Value of type $valueTpe cannot be set with $beanTpe.$name(${param.typeSignature})")
                 true
               case _ =>
@@ -71,7 +72,7 @@ object beans extends Dynamic
           c.error(v.pos, "Please use named parameters.")
         val setterSymbol = 
           getSetter("set" + fieldName.capitalize, value.tpe, v.pos)
-            .orElse(getSetter(fieldName + "_=", value.tpe, v.pos))
+            .orElse(getSetter(NameTransformer.encode(fieldName + "_="), value.tpe, v.pos))
 
         if (setterSymbol == NoSymbol)
           c.error(n.pos, s"Couldn't find a setter for field '$fieldName' in type $beanTpe")
