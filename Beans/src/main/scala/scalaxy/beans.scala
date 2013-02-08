@@ -10,6 +10,8 @@ import scala.reflect.macros.Context
 
   The following expression:
   
+    import scalaxy.beans
+    
     beans.create[MyBean](
       foo = 10, 
       bar = 12
@@ -65,7 +67,8 @@ object beans extends Dynamic
             }
           )
       }
-    }        
+    }
+
     val setterCalls = args.map(_.tree).map { 
       case Apply(_, List(n @ Literal(Constant(fieldName: String)), v @ value)) =>
         if (fieldName == null || fieldName == "")
