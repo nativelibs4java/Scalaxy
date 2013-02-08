@@ -3,7 +3,7 @@ package scalaxy
 import org.junit._
 import org.junit.Assert._
 
-import scalaxy.beans
+import scalaxy.beans._
 
 class BeansTest 
 {
@@ -39,7 +39,7 @@ class BeansTest
 
   @Test
   def simple {
-    val bean = beans.create[Bean](
+    val bean = new Bean().set(
       bar = 12,
       foo = 10
     )
@@ -51,20 +51,20 @@ class BeansTest
   def inheritance {
     val a = new A
     val b = new B
-    assertEquals(a, beans.create[Bean](a = a).getA)
-    assertEquals(b, beans.create[Bean](a = b).getA)
-    assertEquals(b, beans.create[Bean](b = b).getB)
+    assertEquals(a, new Bean().set(a = a).getA)
+    assertEquals(b, new Bean().set(a = b).getA)
+    assertEquals(b, new Bean().set(b = b).getB)
   }
   
   @Test
   def child {
-    val child = beans.create[Bean](bar = 12)
-    assertEquals(child, beans.create[Bean](child = child).getChild)
-    assertEquals(123, beans.create[Bean](child = beans.create[Bean](foo = 123)).getChild.getFoo)
+    val child = new Bean().set(bar = 12)
+    assertEquals(child, new Bean().set(child = child).getChild)
+    assertEquals(123, new Bean().set(child = new Bean().set(foo = 123)).getChild.getFoo)
   }
   
   @Test
   def mutableScala {
-    assertEquals(10, beans.create[Mutable](x = 10).x)
+    assertEquals(10, new Mutable().set(x = 10).x)
   }
 }

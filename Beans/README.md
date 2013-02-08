@@ -4,15 +4,15 @@ The following expression:
   
     import scalaxy.beans
     
-    beans.create[MyBean](
+    new MyBean().set(
       foo = 10, 
       bar = 12
     )
     
-Gets replaced (and type-checked) at compile time by:
+Gets replaced (and fully type-checked) at compile time by:
   
     {
-      val bean = new MyBean
+      val bean = new MyBean()
       bean.setFoo(10)
       bean.setBar(12)
       bean

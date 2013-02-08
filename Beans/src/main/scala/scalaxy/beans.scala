@@ -29,26 +29,45 @@ import scala.reflect.macros.Context
   Doesn't bring any runtime dependency (macro is self-erasing).
   Don't expect code completion from your IDE as of yet.
 */
-object beans extends Dynamic
+package object beans
 {
-  def applyDynamicNamedImpl[R : c.WeakTypeTag]
+  implicit def beansExtensions[T](bean: T) = new {
+    def set = new Dynamic {
+      def applyDynamicNamed(name: String)(args: (String, Any)*): T =
+        macro _beans_internal_.applyDynamicNamedImpl[T]
+    }
+  }
+}
+
+// This needs to be public and statically accessible.
+object _beans_internal_
+{
+  def applyDynamicNamedImpl[T : c.WeakTypeTag]
     (c: Context)
     (name: c.Expr[String])
-    (args: c.Expr[(String, Any)]*) : c.Expr[R] =
+    (args: c.Expr[(String, Any)]*) : c.Expr[T] =
   {
     import c.universe._
 
     // Check that the method name is "create".
     name.tree match {
       case Literal(Constant(n)) =>
-        if (n != "create")
-          c.error(name.tree.pos, s"Expected 'create', got '$n'")
+        if (n != "apply")
+          c.error(name.tree.pos, s"Expected 'apply', got '$n'")
       case _ =>
         c.error(name.tree.pos, "Unexpected name structure error")
     }
 
-    // Get the bean type.
-    val beanTpe = weakTypeTag[R].tpe
+    // Get the bean.
+    val bean = (
+      c.typeCheck(c.prefix.tree) match {
+        case Select(Apply(_, List(bean)), _) =>
+          Some(bean)
+        case _ =>
+          c.error(c.prefix.tree.pos, "Unexpected prefix structure error")
+          None
+      }
+    ).get
 
     // Choose a non-existing name for our bean's val.
     val beanName =
@@ -56,11 +75,11 @@ object beans extends Dynamic
 
     // Create a declaration for our bean's val.
     val beanDef =
-      ValDef(Modifiers(), beanName, TypeTree(beanTpe), New(TypeTree(beanTpe), Nil))
+      ValDef(Modifiers(), beanName, TypeTree(bean.tpe), bean)
 
     // Try to find a setter in the bean type that can take values of the type we've got.
     def getSetter(name: String, valueTpe: Type, valuePos: Position) = {
-      beanTpe.member(newTermName(name)).filter {
+      bean.tpe.member(newTermName(name)).filter {
         case s =>
           s.isMethod && (
             s.asMethod.paramss.flatten match {
@@ -68,7 +87,7 @@ object beans extends Dynamic
                 // Check that the parameter can be assigned a convertible type.
                 // (typeOf[Int] weak_<:< typeOf[Double]) == true.
                 if (!(valueTpe weak_<:< param.typeSignature))
-                  c.error(valuePos, s"Value of type $valueTpe cannot be set with $beanTpe.$name(${param.typeSignature})")
+                  c.error(valuePos, s"Value of type $valueTpe cannot be set with ${bean.tpe}.$name(${param.typeSignature})")
                 true
               case _ =>
                 false
@@ -93,14 +112,13 @@ object beans extends Dynamic
             .orElse(getSetter(NameTransformer.encode(fieldName + "_="), value.tpe, v.pos))
 
         if (setterSymbol == NoSymbol)
-          c.error(n.pos, s"Couldn't find a setter for field '$fieldName' in type $beanTpe")
+          c.error(n.pos, s"Couldn't find a setter for field '$fieldName' in type ${bean.tpe}")
 
         Apply(Select(Ident(beanName), setterSymbol), List(value))
     }
     // Build a block with the bean declaration, the setter calls and return the bean.
-    c.Expr[R](Block(Seq(beanDef) ++ setterCalls :+ Ident(beanName): _*))
+    c.Expr[T](Block(Seq(beanDef) ++ setterCalls :+ Ident(beanName): _*))
   }
 
-  def applyDynamicNamed[R](name: String)(args: (String, Any)*): R =
-    macro applyDynamicNamedImpl[R]
+  
 }
