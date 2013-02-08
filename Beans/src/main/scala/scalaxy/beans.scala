@@ -33,7 +33,8 @@ object beans extends Dynamic
 {
   def applyDynamicNamedImpl[R : c.WeakTypeTag]
     (c: Context)
-    (name: c.Expr[String])(args: c.Expr[(String, Any)]*) : c.Expr[R] = 
+    (name: c.Expr[String])
+    (args: c.Expr[(String, Any)]*) : c.Expr[R] = 
   {
     import c.universe._
     
