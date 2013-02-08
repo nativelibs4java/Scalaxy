@@ -1,13 +1,10 @@
-Syntactic sugar to instantiate Java beans with a very Scala-friendly syntax. 
+Syntactic sugar to set Java beans properties with a very Scala-friendly syntax. 
 
 The following expression:
   
     import scalaxy.beans
     
-    new MyBean().set(
-      foo = 10, 
-      bar = 12
-    )
+    new MyBean().set(foo = 10, bar = 12)
     
 Gets replaced (and fully type-checked) at compile time by:
   
