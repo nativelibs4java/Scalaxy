@@ -2,7 +2,7 @@ Syntactic sugar to set Java beans properties with a very Scala-friendly syntax.
 
 The following expression:
   
-    import scalaxy.beans
+    import scalaxy.beans._
     
     new MyBean().set(foo = 10, bar = 12)
     
