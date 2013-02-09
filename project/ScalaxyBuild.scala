@@ -48,6 +48,7 @@ object Scalaxy extends Build
       javacOptions ++= Seq("-Xlint:unchecked"),
       scalacOptions ++= Seq("-encoding", "UTF-8", "-deprecation", "-unchecked"),
       //fork in Test := true,
+      fork := true,
       parallelExecution in Test := false,
       libraryDependencies += "junit" % "junit" % "4.10" % "test",
       libraryDependencies += "com.novocode" % "junit-interface" % "0.8" % "test")
@@ -137,6 +138,10 @@ object Scalaxy extends Build
 
   lazy val beans =
     Project(id = "scalaxy-beans", base = file("Beans"), settings = deploySettings)
+
+  lazy val fx =
+    Project(id = "scalaxy-fx", base = file("Fx"), settings = deploySettings).
+    dependsOn(beans)
 
   lazy val api =
     Project(id = "scalaxy-api", base = file("API"), settings = reflectSettings)
