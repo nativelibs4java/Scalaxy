@@ -1,4 +1,4 @@
-Minimal set of macros and implicits for maximal JavaFX eye-candy!
+Minimal set of Scala 2.10 macros, dynamics and implicits for maximal JavaFX eye-candy!
 
     import scalaxy.fx._
     
@@ -42,7 +42,7 @@ The syntactic facilities available so far are:
           width = 200
         )
       
-- Simpler syntax for event handlers:
+- Simpler syntax for event handlers, with or without the event parameter:
     
         button1.set(
           text = "Click me!",
@@ -52,7 +52,16 @@ The syntactic facilities available so far are:
         button2.set(
           text = "Click me!",
           onAction = (event: ActionEvent) => {
-            println("clicked")
+            println(s"clicked: $event")
           }
         )
+        
+  Instead of:
+  
+        button3.setText("Click me!")
+        button3.setOnAction(new EventHandler[ActionEvent]() {
+          override def handle(event: ActionEvent) {
+            println(s"clicked: $event")
+          }
+        }
         
