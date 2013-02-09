@@ -65,3 +65,22 @@ The syntactic facilities available so far are:
           }
         }
         
+- More natural bindings:
+
+        {
+            val moo: ObservableDoubleValue = ...
+            val foo = bind {
+              Math.sqrt(moo())
+            }
+        }
+        
+  Instead of:
+  
+        {
+            val moo: ObservableDoubleValue = ...
+            val foo = new DoubleBinding() {
+              super.bind(moo)
+              override def computeValue() = 
+                Math.sqrt(moo.getValue)
+            }
+        }

@@ -22,4 +22,20 @@ class BindingsTest
     b.set(10)
     assertEquals(11, c())
   }
+  /*
+  {
+    val moo: ObservableDoubleValue = ...
+    val foo = bind {
+      Math.sqrt(moo())
+    }
+  }
+  {
+    val moo: ObservableDoubleValue = ...
+    val foo = new DoubleBinding() {
+      super.bind(moo)
+      override def computeValue() = 
+        Math.sqrt(moo.getValue)
+    }
+  }
+  */
 }

@@ -28,6 +28,13 @@ package object fx
   }
   
   implicit object IntWrapper extends JavaWrapper[Int, java.lang.Number]
+  implicit object LongWrapper extends JavaWrapper[Long, java.lang.Number]
+  implicit object FloatWrapper extends JavaWrapper[Float, java.lang.Number]
+  implicit object DoubleWrapper extends JavaWrapper[Double, java.lang.Number]
+  implicit object BooleanWrapper extends JavaWrapper[Boolean, java.lang.Boolean]
+  implicit object StringWrapper extends JavaWrapper[String, java.lang.String]
+  // TODO
+  //implicit def objectWrapper[T] = new JavaWrapper[T, T]() {}
   
   def bind[T, J](expression: T)(implicit ev: JavaWrapper[T, J]): GenericBinding[T, J] =
     macro internal.bindImpl[T, J]
