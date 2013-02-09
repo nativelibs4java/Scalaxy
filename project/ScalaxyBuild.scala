@@ -140,8 +140,7 @@ object Scalaxy extends Build
     Project(id = "scalaxy-beans", base = file("Beans"), settings = deploySettings)
 
   lazy val fx =
-    Project(id = "scalaxy-fx", base = file("Fx"), settings = deploySettings).
-    dependsOn(beans)
+    Project(id = "scalaxy-fx", base = file("Fx"), settings = deploySettings)
 
   lazy val api =
     Project(id = "scalaxy-api", base = file("API"), settings = reflectSettings)
