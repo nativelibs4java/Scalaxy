@@ -54,7 +54,7 @@ class BindingsTest
       minWidth = 10, 
       minHeight = 11,
       maxHeight = bind { b.minHeightProperty },
-      text = bound {
+      text = bind {
         fmt.format(b.minWidthProperty.intValue, b.minHeightProperty.intValue)
       }
     )
