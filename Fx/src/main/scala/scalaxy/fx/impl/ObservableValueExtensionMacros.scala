@@ -27,9 +27,9 @@ import scala.reflect.macros.Context
  *      valueExpr.splice.addListener(
  *        new ChangeListener[T]() {
  *          override def changed(
- *              observable: ObservableValue[_ <: T], 
- *              oldValue: T, 
- *              newValue: T) 
+ *              observable: ObservableValue[_ <: T],
+ *              oldValue: T,
+ *              newValue: T)
  *          {
  *            f.splice(oldValue, newValue)
  *          }
@@ -103,7 +103,7 @@ private[fx] object ObservableValueExtensionMacros
       (block: c.Expr[Unit]): c.Expr[Unit] =
   {
     import c.universe._
-    
+
     val Apply(_, List(value)) = c.typeCheck(c.prefix.tree)
     c.Expr[Unit](
       Apply(

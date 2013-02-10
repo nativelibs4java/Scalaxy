@@ -94,7 +94,7 @@ private[fx] object BindingMacros
       observables.groupBy(_.symbol).map(_._2.head).toList
 
     newBinding[T, B](c)(
-      expression, 
+      expression,
       observableIdents.map(i => c.Expr[Observable](i)): _*
     )
   }

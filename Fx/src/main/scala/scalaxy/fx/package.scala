@@ -4,7 +4,7 @@ package scalaxy
  *  No runtime dependency is needed: all these methods are implemented using macros.
  */
 package object fx
-    extends BeanExtensions
+ extends BeanExtensions
     with Bindings
     with GenericTypes
     with EventHandlers
