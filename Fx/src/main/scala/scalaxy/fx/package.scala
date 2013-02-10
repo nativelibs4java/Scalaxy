@@ -14,7 +14,7 @@ import scala.reflect.macros.Context
 trait JavaWrapper[T, J]
   
 // TODO: rewrite all calls with macros to avoid dependency to this package object?
-package object fx
+package object fx extends GenericTypes
 {
   // This adds `obj.set(property1 = value1, property2 = value2)` to all object types.
   // Properties of type EventHandler[_] benefit from a special type-check to accommodate 
@@ -36,6 +36,12 @@ package object fx
   
   def bind[T, J](expression: T)(implicit ev: JavaWrapper[T, J]): GenericBinding[T, J] =
     macro internal.bindImpl[T, J]
+    
+  def bind2[T, J, B <: Binding[J], P <: Property[J]]
+    (expression: T)
+    (implicit ev: GenericType[T, J, B, P]): B = ???
+    
+  def bound(expression: Any): GenericBinding[Any, Any] = ???
   
   // Implicit conversion from an event handler function to a JavaFX EventHandler[_].
   implicit def handler[E <: Event](f: E => Unit): EventHandler[E] =
@@ -72,6 +78,8 @@ package fx
     {
       import c.universe._
   
+      //println(s"applyDynamicNamedImpl($name)($args)")
+            
       // Check that the method name is "create".
       name.tree match {
         case Literal(Constant(n)) =>
@@ -80,7 +88,7 @@ package fx
       }
   
       // Get the bean.
-      val Select(Apply(_, List(bean)), _) = c.typeCheck(c.prefix.tree)
+      val Select(Apply(_, List(bean)), _) = c.prefix.tree//c.typeCheck(c.prefix.tree)
   
       // Choose a non-existing name for our bean's val.
       val beanName = newTermName(c.fresh("bean"))
@@ -117,31 +125,57 @@ package fx
       {
         case (fieldName, value) =>
         
+          val valueTpe = value.tpe.normalize//.widen
+          
           // Check that all parameters are named.
           if (fieldName == null || fieldName == "")
             c.error(value.pos, "Please use named parameters.")
   
-          // Get beans-style setter or Scala-style var setter.
-          val setterSymbol =
-            getSetter("set" + fieldName.capitalize)
-              .orElse(getSetter(fieldName))
-                .orElse(getSetter(NameTransformer.encode(fieldName + "_=")))
+          //println(s"fieldName = $fieldName, valueTpe.typeSymbol = ${valueTpe.typeSymbol}; value = $value")
+          if (valueTpe <:< typeOf[GenericBinding[Any, Any]]) {//.typeSymbol == typeOf[GenericBinding[_, _]]) {
+            println("FOUND A GENERIC BINDING VALUE")
+            val actualValue = value match {
+              case Apply(Select(_, n), List(v)) if n.toString == "bound" =>
+                v
+            }
+            
+            val propertyName = newTermName(fieldName + "Property")
+            val propertySymbol = 
+              bean.tpe.member(propertyName)
+                .filter(s => s.isMethod && s.asMethod.paramss.flatten.isEmpty)
+                
+            if (propertySymbol == NoSymbol) {
+              c.error(value.pos, s"Couldn't find a property getter $propertyName for property '$fieldName' in type ${bean.tpe}")
+            }
+            
+            Apply(
+              Select(
+                Select(Ident(beanName), propertyName), 
+                "bind"
+              ), 
+              Nil//bindExpr(c)(actualValue) // TODO
+            )
+          } else {
+            // Get beans-style setter or Scala-style var setter.
+            val setterSymbol =
+              getSetter("set" + fieldName.capitalize)
+                .orElse(getSetter(fieldName))
+                  .orElse(getSetter(NameTransformer.encode(fieldName + "_=")))
+    
+            if (setterSymbol == NoSymbol) {
+              c.error(value.pos, s"Couldn't find a setter for property '$fieldName' in type ${bean.tpe}")
+            }
+            val varTpe = getVarTypeFromSetter(setterSymbol)
+            // Implicits will convert functions and blocks to EventHandler.
+            if (!(valueTpe weak_<:< varTpe) && !(varTpe <:< typeOf[EventHandler[_]]))
+              c.error(value.pos, s"Setter ${bean.tpe}.${setterSymbol.name}($varTpe) does not accept values of type ${valueTpe}")
   
-          if (setterSymbol == NoSymbol)
-            c.error(value.pos, s"Couldn't find a setter for property '$fieldName' in type ${bean.tpe}")
-  
-          val varTpe = getVarTypeFromSetter(setterSymbol)
-          // Implicits will convert functions and blocks to EventHandler.
-          if (!(value.tpe weak_<:< varTpe) && !(varTpe <:< typeOf[EventHandler[_]]))
-            c.error(value.pos, s"Setter ${bean.tpe}.${setterSymbol.name}($varTpe) does not accept values of type ${value.tpe}")
-
-          Apply(Select(Ident(beanName), setterSymbol), List(value))
+            Apply(Select(Ident(beanName), setterSymbol), List(value))
+          }
       }
       // Build a block with the bean declaration, the setter calls and return the bean.
       c.Expr[T](Block(Seq(beanDef) ++ setterCalls :+ Ident(beanName): _*))
     }
-    
-    //private def decapitalize(s: String) = s.substring(0, 1).toLowerCase + s.substring(1, s.length)
     
     def bindImpl[T : c.WeakTypeTag, J : c.WeakTypeTag]
       (c: Context)
@@ -156,6 +190,7 @@ package fx
       
       val bindingName = newTermName(c.fresh("binding"))
       
+      val typedExpression = c.typeCheck(expression.tree)
       val bindingDef = 
         ValDef(
           NoMods, 
@@ -179,10 +214,10 @@ package fx
               else
                 TypeApply(Select(factory, "ofObject"), List(TypeTree(bindingTpe)))
             },
-            List(expression.tree)
+            List(typedExpression)
           )
         )
-       
+      
       var observables: List[Tree] = Nil
       (
         new Traverser {
@@ -267,5 +302,6 @@ package fx
     
     def booleanPropertyImpl(c: Context)(p: c.Expr[BooleanProperty]): c.Expr[Boolean] =
       c.universe.reify(p.splice.get)
+      
   }
 }

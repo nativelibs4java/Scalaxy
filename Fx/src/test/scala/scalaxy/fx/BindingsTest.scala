@@ -1,4 +1,4 @@
-package scalaxy
+package scalaxy.fx.test
 
 import org.junit._
 import org.junit.Assert._
@@ -13,6 +13,7 @@ import javafx.scene.control._
 
 class BindingsTest 
 {
+  /*
   @Test
   def simplePropertyBinding {
     val a = new SimpleIntegerProperty
@@ -38,6 +39,30 @@ class BindingsTest
     assertEquals(fmt.format(20, 11), text())
     b.set(minHeight = 21)
     assertEquals(fmt.format(20, 21), text())
+  }
+  */
+
+  @Test
+  def beanPropertyBinding2 {
+    val b2 = bind2 { 10 }
+    val b3: IntegerBinding = b2
+    
+    
+    val b = new Button
+    val fmt = "Size: %d x %d"
+    b.set(
+      minWidth = 10, 
+      minHeight = 11,
+      maxHeight = bind2 { 10 },
+      text = bound {
+        fmt.format(b.minWidthProperty.intValue, b.minHeightProperty.intValue)
+      }
+    )
+    assertEquals(fmt.format(10, 11), b.getText())
+    b.set(minWidth = 20)
+    assertEquals(fmt.format(20, 11), b.getText())
+    b.set(minHeight = 21)
+    assertEquals(fmt.format(20, 21), b.getText())
   }
   /*
   {

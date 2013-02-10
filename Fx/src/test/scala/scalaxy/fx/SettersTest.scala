@@ -1,4 +1,4 @@
-package scalaxy
+package scalaxy.fx.test
 
 import org.junit._
 import org.junit.Assert._
@@ -15,6 +15,7 @@ import javafx.stage.Stage
 
 class SettersTest 
 {
+  /*
   @Test
   def handlerBlock {
     var fired = false
@@ -40,4 +41,5 @@ class SettersTest
     b.fire()
     assertTrue(fired)
   }
+  */
 }
