@@ -1,14 +1,10 @@
 package scalaxy.fx
 package impl
 
+import javafx.event._
+
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
-
-import javafx.beans._
-import javafx.beans.property._
-import javafx.beans.value._
-import javafx.beans.binding._
-import javafx.event._
 
 private[fx] object EventHandlerMacros
 {

@@ -1,17 +1,8 @@
 package scalaxy
 
-import javafx.beans._
-import javafx.beans.value._
-import javafx.beans.property._
-import javafx.beans.binding._
-import javafx.event._
-import javafx.scene._
-
-import scala.language.dynamics
-import scala.language.experimental.macros
-import scala.reflect.NameTransformer
-import scala.reflect.macros.Context
-
+/** Provides methods and implicit conversions that make it easy to use JavaFX from Scala.
+ *  No runtime dependency is needed: all these methods are implemented using macros.
+ */
 package object fx
     extends BeanExtensions
     with Bindings

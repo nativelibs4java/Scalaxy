@@ -1,12 +1,9 @@
 package scalaxy.fx
 
-import scala.language.experimental.macros
-
-import javafx.beans._
 import javafx.beans.property._
-import javafx.beans.value._
 import javafx.beans.binding._
-import javafx.event._
+
+import scala.language.experimental.macros
 
 /** Meant to be imported by (package) objects that want to expose binding macros. */
 private[fx] trait Bindings
