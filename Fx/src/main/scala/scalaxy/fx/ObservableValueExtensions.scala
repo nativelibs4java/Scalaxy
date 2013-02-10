@@ -3,6 +3,7 @@ package scalaxy.fx
 import javafx.beans.value._
 
 import scala.language.experimental.macros
+import scala.reflect.ClassTag
 
 /** Meant to be imported by (package) objects that want to expose change listener macros. */
 private[fx] trait ObservableValueExtensions
@@ -13,21 +14,21 @@ private[fx] trait ObservableValueExtensions
     /** Add change listener to the observable value using a function
      *  that takes the new value.
      */
-    def onChange(f: T => Unit): Unit =
-      macro impl.ObservableValueExtensionMacros.onChangeFunction[T]
+    def onChange[V <: T](f: V => Unit): Unit =
+      macro impl.ObservableValueExtensionMacros.onChangeFunction[V]
 
     /** Add change listener to the observable value using a function
      *  that takes the old value and the new value.
      */
-    def onChange(f: (T, T) => Unit): Unit =
-      macro impl.ObservableValueExtensionMacros.onChangeFunction2[T]
+    def onChange[V <: T](f: (V, V) => Unit): Unit =
+      macro impl.ObservableValueExtensionMacros.onChangeFunction2[V]
 
     /** Add change listener to the observable value using a block (passed `by name`). */
     def onChange(block: Unit): Unit =
-      macro impl.ObservableValueExtensionMacros.onChangeBlock[T]
+      macro impl.ObservableValueExtensionMacros.onChangeBlock[Any]
 
     /** Add invalidation listener using a block (passed `by name`) */
     def onInvalidate(block: Unit): Unit =
-      macro impl.ObservableValueExtensionMacros.onInvalidate[T]
+      macro impl.ObservableValueExtensionMacros.onInvalidate[Any]
   }
 }

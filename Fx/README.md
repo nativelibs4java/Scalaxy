@@ -71,6 +71,10 @@ The syntactic facilities available so far are:
           }
         )
         
+        button2.maxWidthProperty onChange {
+          println("Constraint changed!")
+        }
+        
   Instead of:
   
         button3.setText("Click me!")
@@ -79,23 +83,28 @@ The syntactic facilities available so far are:
             println(s"clicked: $event")
           }
         }
+        button3.maxWidthProperty.addListener(new ChangeListener[Double]() {
+          override def changed(observable: ObservableValue[Double], oldValue: Double, newValue: Double) {
+            println("Something happend
+          }
+        }
         
 - More natural bindings:
 
         {
-            val moo: ObservableDoubleValue = ...
-            val foo = bind {
-              Math.sqrt(moo())
-            }
+          val moo: ObservableDoubleValue = ...
+          val foo = bind {
+            Math.sqrt(moo.getValue)
+          }
         }
         
   Instead of:
   
         {
-            val moo: ObservableDoubleValue = ...
-            val foo = new DoubleBinding() {
-              super.bind(moo)
-              override def computeValue() = 
-                Math.sqrt(moo.getValue)
-            }
+          val moo: ObservableDoubleValue = ...
+          val foo = new DoubleBinding() {
+            super.bind(moo)
+            override def computeValue() = 
+              Math.sqrt(moo.getValue)
+          }
         }
