@@ -1,5 +1,7 @@
 Minimal set of Scala 2.10 macros, dynamics and implicits for maximal JavaFX eye-candy!
 
+Important: there is absolutely no runtime dependency for this "library". All the magic happens during compilation.
+
     import scalaxy.fx._
     
     import javafx._
@@ -34,7 +36,9 @@ Minimal set of Scala 2.10 macros, dynamics and implicits for maximal JavaFX eye-
                   ),
                   center = slider,
                   top = new Label().set(
-                    text = bind(s"Slider is at ${slider.getValue.toInt}")
+                    text = bind {
+                      s"Slider is at ${slider.getValue.toInt}"
+                    }
                   )
                 )
               )
@@ -53,8 +57,8 @@ The syntactic facilities available so far are:
         button.set(
           text = "Say 'Hello World'",
           tooltip = new Tooltip("Hover me"),
-          height = 300,
-          width = 200
+          minHeight = 300,
+          minHidth = 200
         )
       
 - Simpler syntax for event handlers, with or without the event parameter:
