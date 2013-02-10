@@ -12,9 +12,9 @@ import scala.language.experimental.macros
 import scala.reflect.NameTransformer
 import scala.reflect.macros.Context
 
-object BeansMacros 
+private[fx] object BeansMacros 
 {
-  // This needs to be public and statically accessible.
+  /** This needs to be public and statically accessible. */
   def applyDynamicNamedImpl
       [T : c.WeakTypeTag]
       (c: Context)

@@ -9,9 +9,9 @@ import javafx.beans.value._
 import javafx.beans.binding._
 import javafx.event._
 
-object EventHandlerMacros 
+private[fx] object EventHandlerMacros 
 {  
-  def functionHandlerImpl[E <: Event]
+  def functionHandler[E <: Event]
       (c: Context)
       (f: c.Expr[E => Unit])
       (implicit e: c.WeakTypeTag[E]): c.Expr[EventHandler[E]] =
@@ -25,7 +25,7 @@ object EventHandlerMacros
     )
   }
   
-  def blockHandlerImpl[E <: Event]
+  def blockHandler[E <: Event]
       (c: Context)
       (block: c.Expr[Unit])
       (implicit e: c.WeakTypeTag[E]): c.Expr[EventHandler[E]] =

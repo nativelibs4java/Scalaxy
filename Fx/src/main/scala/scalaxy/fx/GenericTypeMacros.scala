@@ -8,8 +8,7 @@ import javafx.beans.property._
 import javafx.beans.value._
 import javafx.beans.binding._
 
-// Implementation of macros from GenericTypes.
-object GenericTypeMacros
+private[fx] object GenericTypeMacros
 {
   def newProperty
       [T : c.WeakTypeTag, P : c.WeakTypeTag]
