@@ -1,4 +1,5 @@
 package scalaxy.fx
+package impl
 
 import javafx.beans._
 import javafx.beans.value._
@@ -12,7 +13,7 @@ import scala.language.experimental.macros
 import scala.reflect.NameTransformer
 import scala.reflect.macros.Context
 
-private[fx] object BeanExtensionMacros 
+private[fx] object BeanExtensionMacros
 {
   /** This needs to be public and statically accessible. */
   def applyDynamicNamedImpl
@@ -24,7 +25,7 @@ private[fx] object BeanExtensionMacros
     import c.universe._
 
     //println(s"applyDynamicNamedImpl($name)($args)")
-          
+
     // Check that the method name is "create".
     name.tree match {
       case Literal(Constant(n)) =>
@@ -64,14 +65,14 @@ private[fx] object BeanExtensionMacros
       for ((_, value) <- dupes.drop(1))
         c.error(value.pos, s"Duplicate value for property '$fieldName'")
     }
-    
+
     // Generate one setter call per argument.
-    val setterCalls = values map 
+    val setterCalls = values map
     {
       case (fieldName, value) =>
-      
+
         val valueTpe = value.tpe.normalize//.widen
-        
+
         // Check that all parameters are named.
         if (fieldName == null || fieldName == "")
           c.error(value.pos, "Please use named parameters.")
@@ -80,19 +81,19 @@ private[fx] object BeanExtensionMacros
         //if (valueTpe weak_<:< g
         if (valueTpe <:< typeOf[ObservableValue[_]]) {
           val propertyName = newTermName(fieldName + "Property")
-          val propertySymbol = 
+          val propertySymbol =
             bean.tpe.member(propertyName)
               .filter(s => s.isMethod && s.asMethod.paramss.flatten.isEmpty)
-              
+
           if (propertySymbol == NoSymbol) {
             c.error(value.pos, s"Couldn't find a property getter $propertyName for property '$fieldName' in type ${bean.tpe}")
           }
-          
+
           Apply(
             Select(
-              Select(Ident(beanName), propertyName), 
+              Select(Ident(beanName), propertyName),
               "bind"
-            ), 
+            ),
             List(value)
           )
         } else {
@@ -101,7 +102,7 @@ private[fx] object BeanExtensionMacros
             getSetter("set" + fieldName.capitalize)
               .orElse(getSetter(fieldName))
                 .orElse(getSetter(NameTransformer.encode(fieldName + "_=")))
-  
+
           if (setterSymbol == NoSymbol) {
             c.error(value.pos, s"Couldn't find a setter for property '$fieldName' in type ${bean.tpe}")
           }

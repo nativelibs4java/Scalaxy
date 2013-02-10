@@ -1,4 +1,5 @@
 package scalaxy.fx
+package impl
 
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
@@ -14,36 +15,36 @@ private[fx] object GenericTypeMacros
       [T : c.WeakTypeTag, P : c.WeakTypeTag]
       (c: Context)
       (value: c.Expr[T])
-      (ev: c.Expr[GenericType[_, _, _, _]]): c.Expr[P] = 
+      (ev: c.Expr[GenericType[_, _, _, _]]): c.Expr[P] =
   {
     import c.universe._
     c.Expr[P](
       New(
-        weakTypeTag[P].tpe, 
+        weakTypeTag[P].tpe,
         value.tree
       )
     )
   }
-  
+
   def newBinding
       [T : c.WeakTypeTag, B : c.WeakTypeTag]
       (c: Context)
       (value: c.Expr[T], observables: c.Expr[Observable]*)
-      (ev: c.Expr[GenericType[_, _, _, _]]): c.Expr[B] = 
+      (ev: c.Expr[GenericType[_, _, _, _]]): c.Expr[B] =
   {
     import c.universe._
-    
+
     val valueTpe = weakTypeTag[T].tpe
     val superBindCall = c.Expr[Unit](
       Apply(
         Select(
-          Super(This(tpnme.EMPTY), tpnme.EMPTY), 
+          Super(This(tpnme.EMPTY), tpnme.EMPTY),
           newTermName("bind")
-        ), 
+        ),
         observables.toList.map(_.tree)
       )
     )
-      
+
     (
       if (valueTpe =:= typeOf[Int])
         reify(new IntegerBinding {
@@ -82,22 +83,22 @@ private[fx] object GenericTypeMacros
         })
     ).asInstanceOf[c.Expr[B]]
   }
-  
+
   def propertyValue
       [T : c.WeakTypeTag, P : c.WeakTypeTag]
       (c: Context)
       (p: c.Expr[P])
-      (ev: c.Expr[GenericType[_, _, _, _]]): c.Expr[T] = 
+      (ev: c.Expr[GenericType[_, _, _, _]]): c.Expr[T] =
   {
     import c.universe._
     c.Expr[T](Select(c.typeCheck(p.tree), "get"))
   }
-    
+
   def bindingValue
       [T : c.WeakTypeTag, B : c.WeakTypeTag]
       (c: Context)
       (b: c.Expr[B])
-      (ev: c.Expr[GenericType[_, _, _, _]]): c.Expr[T] = 
+      (ev: c.Expr[GenericType[_, _, _, _]]): c.Expr[T] =
   {
     import c.universe._
     c.Expr[T](Select(c.typeCheck(b.tree), "get"))

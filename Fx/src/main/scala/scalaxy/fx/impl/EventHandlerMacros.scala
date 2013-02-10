@@ -1,4 +1,5 @@
 package scalaxy.fx
+package impl
 
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
@@ -9,8 +10,8 @@ import javafx.beans.value._
 import javafx.beans.binding._
 import javafx.event._
 
-private[fx] object EventHandlerMacros 
-{  
+private[fx] object EventHandlerMacros
+{
   def functionHandler[E <: Event]
       (c: Context)
       (f: c.Expr[E => Unit])
@@ -24,7 +25,7 @@ private[fx] object EventHandlerMacros
       }
     )
   }
-  
+
   def blockHandler[E <: Event]
       (c: Context)
       (block: c.Expr[Unit])

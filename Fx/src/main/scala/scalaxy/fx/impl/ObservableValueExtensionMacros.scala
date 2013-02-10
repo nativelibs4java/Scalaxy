@@ -1,4 +1,5 @@
 package scalaxy.fx
+package impl
 
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
@@ -9,21 +10,21 @@ import javafx.beans.value._
 import javafx.beans.binding._
 import javafx.event._
 
-/** Macros that create ChangeListener[_] and InvalidationListener instances 
+/** Macros that create ChangeListener[_] and InvalidationListener instances
  *  out of functions and blocks.
  *  Due to the 'Parameter type in structural refinement may not refer to an abstract type defined outside that refinement' restriction, had to do some hacks with AnyRef instead of T.
  */
-private[fx] object ObservableValueExtensionMacros 
+private[fx] object ObservableValueExtensionMacros
 {
   def onChangeFunction[T : c.WeakTypeTag]
       (c: Context)
-      (f: c.Expr[T => Unit]): c.Expr[Unit] = 
+      (f: c.Expr[T => Unit]): c.Expr[Unit] =
   {
     import c.universe._
-    
+
     val Apply(_, List(value)) = c.prefix.tree
     val valueExpr = c.Expr[ObservableValue[T]](value)
-    
+
     reify(
       valueExpr.splice.addListener(
         new ChangeListener[AnyRef]() {
@@ -34,16 +35,16 @@ private[fx] object ObservableValueExtensionMacros
       )
     )
   }
-  
+
   def onChangeFunction2[T : c.WeakTypeTag]
       (c: Context)
-      (f: c.Expr[(T, T) => Unit]): c.Expr[Unit] = 
+      (f: c.Expr[(T, T) => Unit]): c.Expr[Unit] =
   {
     import c.universe._
-    
+
     val Apply(_, List(value)) = c.prefix.tree
     val valueExpr = c.Expr[ObservableValue[T]](value)
-    
+
     reify(
       valueExpr.splice.addListener(
         new ChangeListener[AnyRef]() {
@@ -54,16 +55,16 @@ private[fx] object ObservableValueExtensionMacros
       )
     )
   }
-  
+
   def onChangeBlock[T : c.WeakTypeTag]
       (c: Context)
       (block: c.Expr[Unit]): c.Expr[Unit] =
   {
     import c.universe._
-    
+
     val Apply(_, List(value)) = c.prefix.tree
     val valueExpr = c.Expr[ObservableValue[T]](value)
-    
+
     reify(
       valueExpr.splice.addListener(
         new ChangeListener[AnyRef]() {
@@ -74,16 +75,16 @@ private[fx] object ObservableValueExtensionMacros
       )
     )
   }
-  
+
   def onInvalidate[T : c.WeakTypeTag]
       (c: Context)
       (block: c.Expr[Unit]): c.Expr[Unit] =
   {
     import c.universe._
-    
+
     val Apply(_, List(value)) = c.prefix.tree
     val valueExpr = c.Expr[ObservableValue[T]](value)
-    
+
     reify(
       valueExpr.splice.addListener(
         new InvalidationListener() {

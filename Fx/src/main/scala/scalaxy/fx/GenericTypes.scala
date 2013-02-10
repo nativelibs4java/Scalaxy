@@ -7,6 +7,9 @@ import javafx.beans.property._
 import javafx.beans.value._
 import javafx.beans.binding._
 
+/** This trait is just here to play with the typer: it has no implementation. */
+private[fx] sealed trait GenericType[T, J, B <: Binding[J], P <: Property[J]]
+
 /** Meant to be imported by (package) objects that want to expose binding and property macros. */
 private[fx] trait GenericTypes {
   // Associate types with their corresponding JavaFX Binding and Property subclasses.
@@ -14,36 +17,36 @@ private[fx] trait GenericTypes {
   implicit def GenericIntegerType: GenericType[Int, Number, IntegerBinding, SimpleIntegerProperty] = ???
   implicit def GenericLongType: GenericType[Long, Number, LongBinding, SimpleLongProperty] = ???
   implicit def GenericFloatType: GenericType[Float, Number, FloatBinding, SimpleFloatProperty] = ???
-  implicit def GenericDoubleType: GenericType[Double, Number, DoubleBinding, SimpleDoubleProperty] = ??? 
+  implicit def GenericDoubleType: GenericType[Double, Number, DoubleBinding, SimpleDoubleProperty] = ???
   implicit def GenericBooleanType: GenericType[Boolean, java.lang.Boolean, BooleanBinding, SimpleBooleanProperty] = ???
-  
+
   /** Creates a simple property of type T. */
   def newProperty
       [T, J, B <: Binding[J], P <: Property[J]]
       (value: T)
-      (implicit ev: GenericType[T, J, B, P]): P = 
-    macro GenericTypeMacros.newProperty[T, P]
-  
-  /** Creates a binding with the provided value (passed by value, despite signature), 
+      (implicit ev: GenericType[T, J, B, P]): P =
+    macro impl.GenericTypeMacros.newProperty[T, P]
+
+  /** Creates a binding with the provided value (passed by value, despite signature),
    *  depending on the provided observables.
    */
   def newBinding
       [T, J, B <: Binding[J], P <: Property[J]]
       (value: T, observables: Observable*)
-      (implicit ev: GenericType[T, J, B, P]): B = 
-    macro GenericTypeMacros.newBinding[T, B]
-  
+      (implicit ev: GenericType[T, J, B, P]): B =
+    macro impl.GenericTypeMacros.newBinding[T, B]
+
   /** Implicit conversion from property to value. */
   implicit def propertyValue
       [T, J, B <: Binding[J], P <: Property[J]]
       (p: P)
-      (implicit ev: GenericType[T, J, B, P]): T = 
-    macro GenericTypeMacros.propertyValue[T, P]
-    
+      (implicit ev: GenericType[T, J, B, P]): T =
+    macro impl.GenericTypeMacros.propertyValue[T, P]
+
   /** Implicit conversion from binding to value. */
   implicit def bindingValue
       [T, J, B <: Binding[J], P <: Property[J]]
       (b: B)
-      (implicit ev: GenericType[T, J, B, P]): T =  
-    macro GenericTypeMacros.bindingValue[T, B]
+      (implicit ev: GenericType[T, J, B, P]): T =
+    macro impl.GenericTypeMacros.bindingValue[T, B]
 }

@@ -9,29 +9,29 @@ import javafx.beans.binding._
 import javafx.event._
 
 /** Meant to be imported by (package) objects that want to expose change listener macros. */
-private[fx] trait ObservableValueExtensions 
+private[fx] trait ObservableValueExtensions
 {
   /** Methods on observable values */
-  implicit def observableValuesExtensions[T](value: ObservableValue[T]) = new 
+  implicit def observableValuesExtensions[T](value: ObservableValue[T]) = new
   {
     /** Add change listener to the observable value using a function
      *  that takes the new value.
      */
     def onChange(f: T => Unit): Unit =
-      macro ObservableValueExtensionMacros.onChangeFunction[T]
-    
+      macro impl.ObservableValueExtensionMacros.onChangeFunction[T]
+
     /** Add change listener to the observable value using a function
      *  that takes the old value and the new value.
      */
     def onChange(f: (T, T) => Unit): Unit =
-      macro ObservableValueExtensionMacros.onChangeFunction2[T]
-    
+      macro impl.ObservableValueExtensionMacros.onChangeFunction2[T]
+
     /** Add change listener to the observable value using a block (passed `by name`). */
     def onChange(block: Unit): Unit =
-      macro ObservableValueExtensionMacros.onChangeBlock[T]
-    
+      macro impl.ObservableValueExtensionMacros.onChangeBlock[T]
+
     /** Add invalidation listener using a block (passed `by name`) */
     def onInvalidate(block: Unit): Unit =
-      macro ObservableValueExtensionMacros.onInvalidate[T]
-  } 
+      macro impl.ObservableValueExtensionMacros.onInvalidate[T]
+  }
 }

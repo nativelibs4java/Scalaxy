@@ -12,7 +12,7 @@ import scala.language.experimental.macros
 import scala.reflect.NameTransformer
 import scala.reflect.macros.Context
 
-package object fx 
+package object fx
     extends BeanExtensions
     with Bindings
     with GenericTypes
