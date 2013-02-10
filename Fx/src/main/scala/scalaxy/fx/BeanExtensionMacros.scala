@@ -12,7 +12,7 @@ import scala.language.experimental.macros
 import scala.reflect.NameTransformer
 import scala.reflect.macros.Context
 
-private[fx] object BeansMacros 
+private[fx] object BeanExtensionMacros 
 {
   /** This needs to be public and statically accessible. */
   def applyDynamicNamedImpl

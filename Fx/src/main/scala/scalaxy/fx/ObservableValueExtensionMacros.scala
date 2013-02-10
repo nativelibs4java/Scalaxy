@@ -13,7 +13,7 @@ import javafx.event._
  *  out of functions and blocks.
  *  Due to the 'Parameter type in structural refinement may not refer to an abstract type defined outside that refinement' restriction, had to do some hacks with AnyRef instead of T.
  */
-private[fx] object ChangeListenerMacros 
+private[fx] object ObservableValueExtensionMacros 
 {
   def onChangeFunction[T : c.WeakTypeTag]
       (c: Context)

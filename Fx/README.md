@@ -11,16 +11,31 @@ Minimal set of Scala 2.10 macros, dynamics and implicits for maximal JavaFX eye-
     
     class HelloWorld extends Application {
       override def start(primaryStage: Stage) {
+        val slider = new Slider().set(
+          min = 0,
+          max = 100,
+          blockIncrement = 1,
+          value = 50
+        )
+        slider.valueProperty onChange {
+          println("Slider changed")
+        }
         primaryStage.set(
           title = "Hello World!",
           scene = new Scene(
             new StackPane() {
               getChildren.add(
-                new Button().set(
-                  text = "Say 'Hello World'",
-                  onAction = {
-                    println("Hello World!")
-                  }
+                new BorderPane().set(
+                  bottom = new Button().set(
+                    text = "Say 'Hello World'",
+                    onAction = {
+                      println("Hello World!")
+                    }
+                  ),
+                  center = slider,
+                  top = new Label().set(
+                    text = bind(s"Slider is at ${slider.getValue.toInt}")
+                  )
                 )
               )
             }, 
