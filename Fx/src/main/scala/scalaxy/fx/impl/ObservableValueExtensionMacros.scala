@@ -1,8 +1,6 @@
 package scalaxy.fx
 package impl
 
-import java.lang.reflect.{ InvocationHandler, Method, Proxy }
-
 import javafx.beans._
 import javafx.beans.binding._
 import javafx.beans.property._
@@ -12,10 +10,12 @@ import javafx.event._
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
 
+import scalaxy.fx.runtime.ScalaChangeListener
+
 /** Macros that create ChangeListener[_] and InvalidationListener instances
  *  out of functions and blocks.
  *
- *  Note that we use weird casts to implement ChangeListener[T] due to a bug in Scala macros:
+ *  Note that we need a single runtime class to implement ChangeListener[T] due to a bug in Scala macros:
  *  <code>
  *    'Error: unexpected: bound type that doesn't have a tpe'
  *  </code>
@@ -64,11 +64,11 @@ private[fx] object ObservableValueExtensionMacros
         Select(value, getAddListenerMethod(c)(value.tpe)),
         List(
           reify(
-            new ChangeListener[Any] {
-              override def changed(observable: ObservableValue[Any], oldValue: Any, newValue: Any) {
-                f.splice(newValue.asInstanceOf[T])
+            new ScalaChangeListener[T] {
+              override def changed(/*observable: ObservableValue[_ <: T], */oldValue: T, newValue: T) {
+                f.splice(newValue)
               }
-            }.asInstanceOf[ChangeListener[T]]
+            }
           ).tree
         )
       )
@@ -87,11 +87,11 @@ private[fx] object ObservableValueExtensionMacros
         Select(value, getAddListenerMethod(c)(value.tpe)),
         List(
           reify(
-            new ChangeListener[Any] {
-              override def changed(observable: ObservableValue[Any], oldValue: Any, newValue: Any) {
-                f.splice(oldValue.asInstanceOf[T], newValue.asInstanceOf[T])
+            new ScalaChangeListener[T] {
+              override def changed(/*observable: ObservableValue[_ <: T], */oldValue: T, newValue: T) {
+                f.splice(oldValue, newValue)
               }
-            }.asInstanceOf[ChangeListener[T]]
+            }
           ).tree
         )
       )
@@ -104,17 +104,19 @@ private[fx] object ObservableValueExtensionMacros
   {
     import c.universe._
 
-    val Apply(_, List(value)) = c.typeCheck(c.prefix.tree)
+    val Apply(_, List(value)) = c.prefix.tree
+    //val TypeRef(_, _, List(valueTpe)) = value.tpe
+    println(s"value.tpe ${value.tpe}, T ${weakTypeTag[T].tpe}")
     c.Expr[Unit](
       Apply(
         Select(value, getAddListenerMethod(c)(value.tpe)),
         List(
           reify(
-            new ChangeListener[Any] {
-              override def changed(observable: ObservableValue[Any], oldValue: Any, newValue: Any) {
+            new ScalaChangeListener[T] {
+              override def changed(/*observable: ObservableValue[_ <: T], */oldValue: T, newValue: T) {
                 block.splice
               }
-            }.asInstanceOf[ChangeListener[T]]
+            }
           ).tree
         )
       )
