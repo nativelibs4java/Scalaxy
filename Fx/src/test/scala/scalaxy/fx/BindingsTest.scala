@@ -44,7 +44,7 @@ class BindingsTest
 
   @Test
   def beanPropertyBinding2 {
-    val b2 = bind2 { 10 }
+    val b2 = bind { 10 }
     val b3: IntegerBinding = b2
     
     
@@ -53,7 +53,7 @@ class BindingsTest
     b.set(
       minWidth = 10, 
       minHeight = 11,
-      maxHeight = bind2 { 10 },
+      maxHeight = bind { b.minHeightProperty },
       text = bound {
         fmt.format(b.minWidthProperty.intValue, b.minHeightProperty.intValue)
       }

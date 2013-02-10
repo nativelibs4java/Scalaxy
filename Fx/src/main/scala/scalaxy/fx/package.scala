@@ -11,8 +11,6 @@ import scala.language.dynamics
 import scala.reflect.NameTransformer
 import scala.reflect.macros.Context
 
-trait JavaWrapper[T, J]
-  
 // TODO: rewrite all calls with macros to avoid dependency to this package object?
 package object fx extends GenericTypes
 {
@@ -26,20 +24,11 @@ package object fx extends GenericTypes
     }
   }
   
-  implicit object IntWrapper extends JavaWrapper[Int, java.lang.Number]
-  implicit object LongWrapper extends JavaWrapper[Long, java.lang.Number]
-  implicit object FloatWrapper extends JavaWrapper[Float, java.lang.Number]
-  implicit object DoubleWrapper extends JavaWrapper[Double, java.lang.Number]
-  implicit object BooleanWrapper extends JavaWrapper[Boolean, java.lang.Boolean]
-  implicit object StringWrapper extends JavaWrapper[String, java.lang.String]
-  implicit def objectWrapper[T <: AnyRef] = new JavaWrapper[T, T]() {}
-  
-  def bind[T, J](expression: T)(implicit ev: JavaWrapper[T, J]): GenericBinding[T, J] =
-    macro internal.bindImpl[T, J]
-    
-  def bind2[T, J, B <: Binding[J], P <: Property[J]]
-    (expression: T)
-    (implicit ev: GenericType[T, J, B, P]): B = ???
+  def bind
+      [T, J, B <: Binding[J], P <: Property[J]]
+      (expression: T)
+      (implicit ev: GenericType[T, J, B, P]): B =
+    macro internal.bindImpl[T, B]
     
   def bound(expression: Any): GenericBinding[Any, Any] = ???
   
@@ -177,46 +166,18 @@ package fx
       c.Expr[T](Block(Seq(beanDef) ++ setterCalls :+ Ident(beanName): _*))
     }
     
-    def bindImpl[T : c.WeakTypeTag, J : c.WeakTypeTag]
-      (c: Context)
-      (expression: c.Expr[T])
-      (ev: c.Expr[JavaWrapper[T, J]]): c.Expr[GenericBinding[T, J]] = 
+    def bindImpl
+        [T : c.WeakTypeTag, B : c.WeakTypeTag]
+        (c: Context)
+        (expression: c.Expr[T])
+        (ev: c.Expr[GenericType[_, _, _, _]]): c.Expr[B] = 
     {
       import c.universe._
       
       val tpe = weakTypeTag[T].tpe
-      val wrapperTpe = weakTypeTag[J].tpe
-      val bindingTpe = typeRef(NoType, typeOf[GenericBinding[_, _]].typeSymbol, List(tpe, wrapperTpe))
+      val bindingTpe = weakTypeTag[B].tpe
       
       val bindingName = newTermName(c.fresh("binding"))
-      
-      val typedExpression = c.typeCheck(expression.tree)
-      val bindingDef = 
-        ValDef(
-          NoMods, 
-          bindingName, 
-          TypeTree(bindingTpe),
-          Apply(
-            {
-              val factory = reify(GenericBinding).tree
-              if (tpe <:< typeOf[Int])
-                Select(factory, "ofInt")
-              else if (tpe <:< typeOf[Long]) 
-                Select(factory, "ofLong")
-              else if (tpe <:< typeOf[Double]) 
-                Select(factory, "ofDouble")
-              else if (tpe <:< typeOf[Float]) 
-                Select(factory, "ofFloat")
-              else if (tpe <:< typeOf[Boolean]) 
-                Select(factory, "ofBoolean")
-              else if (tpe <:< typeOf[String]) 
-                Select(factory, "ofString")
-              else
-                TypeApply(Select(factory, "ofObject"), List(TypeTree(bindingTpe)))
-            },
-            List(typedExpression)
-          )
-        )
       
       var observables: List[Tree] = Nil
       (
@@ -279,11 +240,10 @@ package fx
       val observableIdents: List[Tree] = 
         observables.groupBy(_.symbol).map(_._2.head).toList
       
-      c.Expr[GenericBinding[T, J]](
-        Block(
-          bindingDef,
-          Apply(Select(Ident(bindingName), newTermName("bindObservables")), observableIdents), 
-          Ident(bindingName)
+      c.Expr[B](
+        Apply(
+          Select(ev.tree, "newBinding"),
+          reify(() => expression.splice).tree :: observableIdents
         )
       )
     }
