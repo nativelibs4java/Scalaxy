@@ -47,6 +47,7 @@ object Scalaxy extends Build
     Seq(
       javacOptions ++= Seq("-Xlint:unchecked"),
       scalacOptions ++= Seq("-encoding", "UTF-8", "-deprecation", "-unchecked"),
+      //scalacOptions in Test ++= Seq("-Xprint:typer"),
       //fork in Test := true,
       fork := true,
       parallelExecution in Test := false,
@@ -57,7 +58,7 @@ object Scalaxy extends Build
     standardSettings ++
     scalaSettings ++
     Seq(
-      scalacOptions ++= Seq("-language:experimental.macros"),
+      //scalacOptions ++= Seq("-language:experimental.macros"),
       libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-compiler" % _),
       libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-reflect" % _))
 
@@ -85,7 +86,10 @@ object Scalaxy extends Build
       publishArtifact in (Compile, packageBin) := false,
       excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
         // Exclude scala-library and al.
-        cp filter { _.data.getName.startsWith("scala-") }
+        cp filter { j => {
+          val n = j.data.getName
+          n.startsWith("scala-") || n.equals("jfxrt.jar")
+        } }
       },
       pomPostProcess := { (node: scala.xml.Node) =>
         // Since we publish the assembly (shaded) jar, 
@@ -139,8 +143,23 @@ object Scalaxy extends Build
   lazy val beans =
     Project(id = "scalaxy-beans", base = file("Beans"), settings = deploySettings)
 
+  lazy val fxSettings = reflectSettings ++ Seq(
+    unmanagedJars in Compile ++= Seq(
+      new File(System.getProperty("java.home")) / "lib" / "jfxrt.jar"
+    )
+  )
+  
+  lazy val fxBase =
+    Project(id = "scalaxy-fx-base", base = file("Fx"), settings = fxSettings ++ Seq(publish := { })).
+    dependsOn(fx, fxRuntime).
+    aggregate(fx, fxRuntime)
+
   lazy val fx =
-    Project(id = "scalaxy-fx", base = file("Fx"), settings = deploySettings)
+    Project(id = "scalaxy-fx", base = file("Fx/Macros"), settings = fxSettings).
+    dependsOn(fxRuntime)
+
+  lazy val fxRuntime =
+    Project(id = "scalaxy-fx-runtime", base = file("Fx/Runtime"), settings = fxSettings)
 
   lazy val api =
     Project(id = "scalaxy-api", base = file("API"), settings = reflectSettings)

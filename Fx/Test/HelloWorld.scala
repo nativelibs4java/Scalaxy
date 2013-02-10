@@ -1,8 +1,5 @@
 package helloworld
 
-import org.junit._
-import org.junit.Assert._
-
 import scalaxy.fx._
 
 import javafx.application.Application
