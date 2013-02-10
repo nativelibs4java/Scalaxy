@@ -1,6 +1,7 @@
 Minimal set of Scala 2.10 macros, dynamics and implicits for maximal JavaFX eye-candy!
 
-Important: there is absolutely no runtime dependency for this "library" (exception = ScalaChangeListener for onChange).
+*Important*: there is _no runtime dependency_ for this "library" (exception: `scalaxy.fx.runtime.ScalaChangeListener` for `onChange`).
+
 All the magic happens during compilation.
 
     import scalaxy.fx._
