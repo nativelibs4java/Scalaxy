@@ -124,7 +124,8 @@ package fx
           // Get beans-style setter or Scala-style var setter.
           val setterSymbol =
             getSetter("set" + fieldName.capitalize)
-              .orElse(getSetter(NameTransformer.encode(fieldName + "_=")))
+              .orElse(getSetter(fieldName))
+                .orElse(getSetter(NameTransformer.encode(fieldName + "_=")))
   
           if (setterSymbol == NoSymbol)
             c.error(value.pos, s"Couldn't find a setter for property '$fieldName' in type ${bean.tpe}")
@@ -139,6 +140,8 @@ package fx
       // Build a block with the bean declaration, the setter calls and return the bean.
       c.Expr[T](Block(Seq(beanDef) ++ setterCalls :+ Ident(beanName): _*))
     }
+    
+    //private def decapitalize(s: String) = s.substring(0, 1).toLowerCase + s.substring(1, s.length)
     
     def bindImpl[T : c.WeakTypeTag, J : c.WeakTypeTag]
       (c: Context)
@@ -184,22 +187,62 @@ package fx
       (
         new Traverser {
           override def traverse(tree: Tree) = {
-            if (tree.tpe <:< typeOf[Observable]) {
-              tree match {
-                case Ident(n) =>
-                  observables = tree :: observables
-                case _ =>
-                  c.error(tree.pos, "Unsupported observable type")
+            def isObservable(tpe: Type): Boolean =
+              tpe <:< typeOf[Observable]
+              
+            def isStable(sym: Symbol): Boolean = {
+              sym.isTerm && sym.asTerm.isStable || 
+              sym.isMethod && sym.asMethod.isStable
+            }
+            
+            def handleSelect(sel: Select) {
+              def isGetterName(n: String): Boolean =
+                n.matches("""(get|is)[\W][\w]*""")
+                
+              def looksStable(n: String): Boolean = {
+                isGetterName(n) ||
+                n.matches(".+?Property")
               }
+              
+              if (isStable(sel.qualifier.symbol)) {
+                val n = sel.symbol.name.toString
+                if (isObservable(tree.tpe) && (isStable(sel.symbol) || looksStable(n)))
+                  observables = tree :: observables
+                else {
+                  if (isGetterName(n)) {
+                    val propertyGetterName = newTermName(n + "Property")
+                    val s = 
+                      sel.qualifier.tpe.member(propertyGetterName)
+                        .filter(s => s.isMethod && s.asMethod.paramss.flatten.isEmpty)
+                    if (s != NoSymbol && isObservable(s.typeSignature))
+                      observables = Select(sel.qualifier, propertyGetterName) :: observables
+                  }
+                }
+              }
+            }
+            
+            tree match {
+              case Ident(_) 
+              if isObservable(tree.tpe) && isStable(tree.symbol) =>
+                observables = tree :: observables
+              case sel @ Select(_, _) =>
+                handleSelect(sel)
+              case Apply(sel @ Select(_, _), Nil) =>
+                handleSelect(sel)
+              case _ =>
+                if (isObservable(tree.tpe))
+                  c.error(tree.pos, "Unsupported observable type (" + tree + ": " + tree.getClass.getName + ")")
             }
             super.traverse(tree)
           }
         }
       ).traverse(c.typeCheck(expression.tree))
       
+      if (observables.isEmpty)
+        c.error(expression.tree.pos, "This expression does not contain any observable property, this is not bindable.")
+
       val observableIdents: List[Tree] = 
         observables.groupBy(_.symbol).map(_._2.head).toList
-      println(s"Found the following observables: $observableIdents")
       
       c.Expr[GenericBinding[T, J]](
         Block(
