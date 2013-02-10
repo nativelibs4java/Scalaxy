@@ -9,4 +9,5 @@ package object fx
     with GenericTypes
     with EventHandlers
     with ObservableValueExtensions
+    with Properties
 

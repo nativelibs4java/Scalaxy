@@ -8,7 +8,7 @@ import javafx.beans.value._
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
 
-private[fx] object GenericTypeMacros
+private[fx] object PropertyMacros
 {
   def newProperty
       [T : c.WeakTypeTag, P : c.WeakTypeTag]

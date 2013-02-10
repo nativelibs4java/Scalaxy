@@ -1,16 +1,19 @@
 package scalaxy.fx
 
-import javafx.beans._
-import javafx.beans.property._
-import javafx.beans.value._
 import javafx.beans.binding._
+import javafx.beans.property._
 
 import scala.language.experimental.macros
 
-/** This trait is just here to play with the typer: it has no implementation. */
+/** This trait is just here to let the typer associate value types T with: 
+ *  - Their Binding[T] subclass (IntegerBinding...), 
+ *  - Their Property[T] subclass (SimpleIntegerProperty...)
+ *  It cannot be instantiated and may not be used at runtime (all references
+ *  to it are meant to be removed by macros at compilation-time). 
+ */
 private[fx] sealed trait GenericType[T, J, B <: Binding[J], P <: Property[J]]
 
-/** Meant to be imported by (package) objects that want to expose binding and property macros. */
+/** Type associations. */
 private[fx] trait GenericTypes {
   // Associate types with their corresponding JavaFX Binding and Property subclasses.
   implicit def GenericObjectType[T <: AnyRef]: 
@@ -30,25 +33,4 @@ private[fx] trait GenericTypes {
       
   implicit def GenericBooleanType: 
       GenericType[Boolean, java.lang.Boolean, BooleanBinding, SimpleBooleanProperty] = ???
-
-  /** Creates a simple property of type T. */
-  def property
-      [T, J, B <: Binding[J], P <: Property[J]]
-      (value: T)
-      (implicit ev: GenericType[T, J, B, P]): P =
-    macro impl.GenericTypeMacros.newProperty[T, P]
-
-  /** Implicit conversion from property to value. */
-  implicit def propertyValue
-      [T, J, B <: Binding[J], P <: Property[J]]
-      (p: P)
-      (implicit ev: GenericType[T, J, B, P]): T =
-    macro impl.GenericTypeMacros.propertyValue[T, P]
-
-  /** Implicit conversion from binding to value. */
-  implicit def bindingValue
-      [T, J, B <: Binding[J], P <: Property[J]]
-      (b: B)
-      (implicit ev: GenericType[T, J, B, P]): T =
-    macro impl.GenericTypeMacros.bindingValue[T, B]
 }

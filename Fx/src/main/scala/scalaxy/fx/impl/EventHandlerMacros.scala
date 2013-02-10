@@ -1,7 +1,7 @@
 package scalaxy.fx
 package impl
 
-import javafx.event._
+import javafx.event.{ Event, EventHandler }
 
 import scala.language.experimental.macros
 import scala.reflect.macros.Context

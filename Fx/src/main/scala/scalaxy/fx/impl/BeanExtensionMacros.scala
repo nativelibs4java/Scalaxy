@@ -1,8 +1,8 @@
 package scalaxy.fx
 package impl
 
-import javafx.beans.value._
-import javafx.event._
+import javafx.beans.value.ObservableValue
+import javafx.event.EventHandler
 
 import scala.language.dynamics
 import scala.language.experimental.macros
@@ -19,8 +19,6 @@ private[fx] object BeanExtensionMacros
       (args: c.Expr[(String, Any)]*) : c.Expr[T] =
   {
     import c.universe._
-
-    //println(s"applyDynamicNamedImpl($name)($args)")
 
     // Check that the method name is "create".
     name.tree match {

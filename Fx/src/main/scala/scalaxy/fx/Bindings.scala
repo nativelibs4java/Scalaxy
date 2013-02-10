@@ -1,7 +1,7 @@
 package scalaxy.fx
 
-import javafx.beans.property._
-import javafx.beans.binding._
+import javafx.beans.binding.Binding
+import javafx.beans.property.Property
 
 import scala.language.experimental.macros
 
