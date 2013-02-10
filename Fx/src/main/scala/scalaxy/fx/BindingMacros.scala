@@ -11,6 +11,9 @@ import javafx.beans.binding._
 // Implementation of macros from GenericTypes.
 object BindingMacros
 {
+  private lazy val getterRx = """(?:get|is)([\w]+)""".r
+  private def decapitalize(s: String) = s.substring(0, 1).toLowerCase + s.substring(1)
+  
   def bindExpressionImpl
       [T : c.WeakTypeTag, J : c.WeakTypeTag, B : c.WeakTypeTag, P : c.WeakTypeTag]
       (c: Context)
@@ -37,8 +40,10 @@ object BindingMacros
           }
           
           def handleSelect(sel: Select) {
-            def isGetterName(n: String): Boolean =
-              n.matches("""(get|is)[\W][\w]*""")
+            def isGetterName(n: String): Boolean = n match {
+              case getterRx(_) => true
+              case _ => false
+            }
               
             def looksStable(n: String): Boolean = {
               isGetterName(n) ||
@@ -50,13 +55,15 @@ object BindingMacros
               if (isObservable(tree.tpe) && (isStable(sel.symbol) || looksStable(n)))
                 observables = tree :: observables
               else {
-                if (isGetterName(n)) {
-                  val propertyGetterName = newTermName(n + "Property")
-                  val s = 
-                    sel.qualifier.tpe.member(propertyGetterName)
-                      .filter(s => s.isMethod && s.asMethod.paramss.flatten.isEmpty)
-                  if (s != NoSymbol && isObservable(s.typeSignature))
-                    observables = Select(sel.qualifier, propertyGetterName) :: observables
+                n match {
+                  case getterRx(capitalizedFieldName) =>
+                    val propertyGetterName = newTermName(decapitalize(capitalizedFieldName) + "Property")
+                    val s = 
+                      sel.qualifier.tpe.member(propertyGetterName)
+                        .filter(s => s.isMethod && s.asMethod.paramss.flatten.isEmpty)
+                    if (s != NoSymbol && isObservable(s.asMethod.returnType))
+                      observables = Select(sel.qualifier, propertyGetterName) :: observables
+                  case _ =>
                 }
               }
             }
