@@ -31,12 +31,6 @@ package object fx extends GenericTypes
       (implicit ev: GenericType[T, J, B, P]): B =
     macro BindingMacros.bindExpressionImpl[T, J, B, P]
   
-  // Pass a property through (identity macro)
-  def bind[T, J, B <: Binding[J], P <: Property[J]]
-      (property: P)
-      (implicit ev: GenericType[T, J, B, P]): P =
-    macro BindingMacros.bindPropertyImpl[P]
-    
   // Implicit conversion from an event handler function to a JavaFX EventHandler[_].
   implicit def functionHandler[E <: Event](f: E => Unit): EventHandler[E] =
     macro EventHandlerMacros.functionHandlerImpl[E]

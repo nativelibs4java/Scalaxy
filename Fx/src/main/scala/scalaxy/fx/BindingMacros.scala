@@ -11,13 +11,6 @@ import javafx.beans.binding._
 // Implementation of macros from GenericTypes.
 object BindingMacros
 {
-  def bindPropertyImpl
-      [P : c.WeakTypeTag]
-      (c: Context)
-      (property: c.Expr[P])
-      (ev: c.Expr[GenericType[_, _, _, _]]): c.Expr[P] =
-    property
-  
   def bindExpressionImpl
       [T : c.WeakTypeTag, J : c.WeakTypeTag, B : c.WeakTypeTag, P : c.WeakTypeTag]
       (c: Context)
@@ -38,7 +31,7 @@ object BindingMacros
           def isObservable(tpe: Type): Boolean =
             tpe <:< typeOf[Observable]
             
-          def isStable(sym: Symbol): Boolean = {
+          def isStable(sym: Symbol): Boolean = sym != null && {
             sym.isTerm && sym.asTerm.isStable || 
             sym.isMethod && sym.asMethod.isStable
           }
@@ -97,12 +90,14 @@ object BindingMacros
         Apply(
           TypeApply(
             Select(Ident(rootMirror.staticPackage("scalaxy.fx")), "newBinding"),
-            List(weakTypeTag[T], weakTypeTag[J], weakTypeTag[B], weakTypeTag[P]).map(tt => TypeTree(tt.tpe))
+            List(
+              TypeTree(weakTypeTag[T].tpe),
+              TypeTree(weakTypeTag[J].tpe),
+              TypeTree(weakTypeTag[B].tpe),
+              TypeTree(weakTypeTag[P].tpe)
+            )
           ),
-          (
-            expression.tree ::
-            observableIdents
-          )
+          expression.tree :: observableIdents
         ),
         List(ev.tree)
       )

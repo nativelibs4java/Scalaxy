@@ -18,17 +18,18 @@ trait GenericTypes {
   implicit def GenericBooleanType: GenericType[Boolean, java.lang.Boolean, BooleanBinding, SimpleBooleanProperty] = ???
   
   // Creates a simple property of type T.
-  implicit def newProperty
+  def newProperty
       [T, J, B <: Binding[J], P <: Property[J]]
+      (value: T)
       (implicit ev: GenericType[T, J, B, P]): P = 
     macro GenericTypeMacros.newProperty[T, P]
   
   // Creates a binding with the provided value (passed by value, despite signature), 
   // depending on the provided observables.
-  implicit def newBinding
+  def newBinding
       [T, J, B <: Binding[J], P <: Property[J]]
       (value: T, observables: Observable*)
-      (implicit ev: GenericType[T, J, B, P]): P = 
+      (implicit ev: GenericType[T, J, B, P]): B = 
     macro GenericTypeMacros.newBinding[T, B]
   
   // Implicit conversion from property to value.

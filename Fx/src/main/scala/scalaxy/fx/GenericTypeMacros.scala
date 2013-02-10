@@ -14,10 +14,16 @@ object GenericTypeMacros
   def newProperty
       [T : c.WeakTypeTag, P : c.WeakTypeTag]
       (c: Context)
+      (value: c.Expr[T])
       (ev: c.Expr[GenericType[_, _, _, _]]): c.Expr[P] = 
   {
     import c.universe._
-    c.Expr[P](New(TypeTree(weakTypeTag[P].tpe), Nil))
+    c.Expr[P](
+      New(
+        weakTypeTag[P].tpe, 
+        value.tree
+      )
+    )
   }
   
   def newBinding
@@ -45,15 +51,36 @@ object GenericTypeMacros
            superBindCall.splice
            override def computeValue = value.asInstanceOf[c.Expr[Int]].splice
         })
+      else if (valueTpe =:= typeOf[Long])
+        reify(new LongBinding {
+           superBindCall.splice
+           override def computeValue = value.asInstanceOf[c.Expr[Long]].splice
+        })
+      else if (valueTpe =:= typeOf[Float])
+        reify(new FloatBinding {
+           superBindCall.splice
+           override def computeValue = value.asInstanceOf[c.Expr[Float]].splice
+        })
       else if (valueTpe =:= typeOf[Double])
         reify(new DoubleBinding {
            superBindCall.splice
            override def computeValue = value.asInstanceOf[c.Expr[Double]].splice
         })
-      else {
-        println(s"c.prefix = ${c.prefix}")
-        sys.error(s"Not implemented for type $valueTpe")
-      }
+      else if (valueTpe =:= typeOf[String])
+        reify(new StringBinding {
+           superBindCall.splice
+           override def computeValue = value.asInstanceOf[c.Expr[String]].splice
+        })
+      else if (valueTpe =:= typeOf[Boolean])
+        reify(new BooleanBinding {
+           superBindCall.splice
+           override def computeValue = value.asInstanceOf[c.Expr[Boolean]].splice
+        })
+      else
+        reify(new ObjectBinding[T] {
+           superBindCall.splice
+           override def computeValue = value.splice
+        })
     ).asInstanceOf[c.Expr[B]]
   }
   

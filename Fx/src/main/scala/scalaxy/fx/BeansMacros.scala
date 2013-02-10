@@ -114,10 +114,8 @@ object BeansMacros
         }
     }
     // Build a block with the bean declaration, the setter calls and return the bean.
-    val res = c.Expr[T](
+    c.Expr[T](
       Block(Seq(beanDef) ++ setterCalls :+ Ident(beanName): _*)
     )
-    println(s"res = $res")
-    res
   }
 }
