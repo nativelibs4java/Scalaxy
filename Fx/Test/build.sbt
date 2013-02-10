@@ -13,3 +13,5 @@ libraryDependencies += "com.nativelibs4java" %% "scalaxy-fx-runtime" % "0.3-SNAP
 
 // JavaFX doesn't cleanup everything well, need to fork tests / runs.
 fork := true
+
+resolvers += Resolver.sonatypeRepo("snapshots")
