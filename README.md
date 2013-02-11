@@ -5,21 +5,22 @@ Collection of Scala Macro goodies:
     - Easy to express AOP-style rewrites (to add or remove logs, runtime checks, etc...)
     - Add your own warnings and errors to scalac in a few lines!
 - *[Beans](https://github.com/ochafik/Scalaxy/tree/master/Beans)* are a nifty combination of Dynamics and macros that provide a type-safe eye-candy syntax to set fields of regular Java Beans in a Scala way (without any runtime dependency at all!):  
+```scala
+import scalaxy.beans._
 
-        import scalaxy.beans._
-        
-        new MyBean().set(foo = 10, bar = 12)
-
+new MyBean().set(foo = 10, bar = 12)
+```
 - *[Fx](https://github.com/ochafik/Scalaxy/tree/master/Fx)* contains an experimental JavaFX DSL (with virtually no runtime dependency) that makes it easy to build objects and define event handlers:
-
-        new Button().set(
-          text = bind {
-            s"Hello, ${textField.getText}"
-          },
-          onAction = {
-            println("Hello World!")
-          }
-        )
+```scala
+new Button().set(
+  text = bind {
+    s"Hello, ${textField.getText}"
+  },
+  onAction = {
+    println("Hello World!")
+  }
+)
+```
 
 # Compilets Usage
 
@@ -27,18 +28,19 @@ The preferred way to use Scalaxy is with Sbt 0.12.1 and the [sbt-scalaxy](http:/
 
 To compile your Sbt project with Scalaxy's compiler plugin and default compilets:
 *   Put the following in `project/plugins.sbt` (or in `~/.sbt/plugins/build.sbt` for global setup):
+```scala
+resolvers += Resolver.sonatypeRepo("snapshots")
 
-        resolvers += Resolver.sonatypeRepo("snapshots")
-        
-        addSbtPlugin("com.nativelibs4java" % "sbt-scalaxy" % "0.3-SNAPSHOT")
-    
+addSbtPlugin("com.nativelibs4java" % "sbt-scalaxy" % "0.3-SNAPSHOT")
+```    
 *   Make your `build.sbt` look like this:
+```scala
+scalaVersion := "2.10.0-RC2"
 
-	    scalaVersion := "2.10.0-RC2"
-        
-	    autoCompilets := true
-	    
-	    addDefaultCompilets()
+autoCompilets := true
+
+addDefaultCompilets()
+```
     
 See a full example in [Scalaxy/Examples/UsageWithSbtPlugin](https://github.com/ochafik/Scalaxy/tree/master/Examples/UsageWithSbtPlugin).
 
@@ -67,36 +69,37 @@ To see what's happening, you might want to print the AST before and after the re
     sbt "run Test/test.scala -Xprint:typer -Xprint:scalaxy-rewriter"
     
 The rewrites are defined in `Compilets` and look like this :
+```scala
+import scalaxy.compilets._
+import scalaxy.compilets.matchers._
 
-	import scalaxy.compilets._
-	import scalaxy.compilets.matchers._
-	
-	object SomeExamples {
-	
-	  def simpleForeachUntil[U](start: Int, end: Int, body: Int => U) = Replacement(
-		for (i <- start until end) 
-			body(i),
-		{
-		  var ii = start; val ee = end
-		  while (ii < ee) {
-			val i = ii
-			body(i)
-			ii = ii + 1  
-		  }
-		}
-	  )
-		
-	  def forbidThreadStop(t: Thread) = 
-		fail("You must NOT call Thread.stop() !") {
-		  t.stop
-		}
-	  
-	  def warnAccessibleField(f: java.lang.reflect.Field, b: Boolean) =
-		when(f.setAccessible(b))(b) {
-		  case True() :: Nil =>
-			warning("You shouldn't do that")
-		}
-	}
+object SomeExamples {
+
+  def simpleForeachUntil[U](start: Int, end: Int, body: Int => U) = Replacement(
+    for (i <- start until end) 
+        body(i),
+    {
+      var ii = start; val ee = end
+      while (ii < ee) {
+        val i = ii
+        body(i)
+        ii = ii + 1  
+      }
+    }
+  )
+    
+  def forbidThreadStop(t: Thread) = 
+    fail("You must NOT call Thread.stop() !") {
+      t.stop
+    }
+  
+  def warnAccessibleField(f: java.lang.reflect.Field, b: Boolean) =
+    when(f.setAccessible(b))(b) {
+      case True() :: Nil =>
+        warning("You shouldn't do that")
+    }
+}
+```
 
 Here's how to run tests:
 
