@@ -172,7 +172,7 @@ The syntactic facilities available so far are:
     }
     button3.maxWidthProperty.addListener(new ChangeListener[Double]() {
       override def changed(observable: ObservableValue[Double], oldValue: Double, newValue: Double) {
-        println("Something happend
+        println("Constraint changed!")
       }
     }
     ```
