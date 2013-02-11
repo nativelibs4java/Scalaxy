@@ -23,7 +23,7 @@ class BeansTest
     def setA(a: A) { _a = a }
     
     private var _b: B = _
-    def getB = _b
+    def getB() = _b
     def setB(b: B) { _b = b }
     
     private var _child: Bean = _

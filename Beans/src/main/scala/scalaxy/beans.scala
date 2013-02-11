@@ -33,7 +33,7 @@ import scala.reflect.macros.Context
 */
 package object beans
 {
-  implicit def beansExtensions[T](bean: T) = new {
+  implicit def beansExtensions[T <: AnyRef](bean: T) = new {
     def set = new Dynamic {
       def applyDynamicNamed(name: String)(args: (String, Any)*): T =
         macro internal.applyDynamicNamedImpl[T]
