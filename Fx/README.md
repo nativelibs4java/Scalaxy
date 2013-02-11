@@ -216,7 +216,9 @@ If you want to build / test / hack this project:
 - Install Oracle's JDK + JavaFX and make sure the `java` command in the path points to that version
 - Use the following commands to checkout the sources and build the tests continuously: 
 
+    ```
     git clone git://github.com/ochafik/Scalaxy.git
     cd Scalaxy
     sbt "project scalaxy-fx" ~test
+    ```
 
