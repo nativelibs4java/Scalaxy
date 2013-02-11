@@ -76,67 +76,71 @@ To use with `sbt`, please have a look at the `HelloWorld` example:
 The syntactic facilities available so far are:
 - JavaFX Script-like syntax for setters (without any runtime penalty or loss of type-safetiness): 
 
-```scala
-button.set(
-  text = "Say 'Hello World'",
-  tooltip = new Tooltip("Hover me"),
-  minHeight = 300,
-  minHidth = 200
-)
-```
+    ```scala
+    button.set(
+      text = "Say 'Hello World'",
+      tooltip = new Tooltip("Hover me"),
+      minHeight = 300,
+      minHidth = 200
+    )
+    ```
       
 - Simpler syntax for event handlers, with or without the event parameter:
-```scala
-button1.set(
-  text = "Click me!",
-  onAction = println("clicked")
-)
 
-button2.set(
-  text = "Click me!",
-  onAction = (event: ActionEvent) => {
-    println(s"clicked: $event")
-  }
-)
-
-button2.maxWidthProperty onChange {
-  println("Constraint changed!")
-}
-```
+    ```scala
+    button1.set(
+      text = "Click me!",
+      onAction = println("clicked")
+    )
+    
+    button2.set(
+      text = "Click me!",
+      onAction = (event: ActionEvent) => {
+        println(s"clicked: $event")
+      }
+    )
+    
+    button2.maxWidthProperty onChange {
+      println("Constraint changed!")
+    }
+    ```
         
   Instead of:
-```scala
-button3.setText("Click me!")
-button3.setOnAction(new EventHandler[ActionEvent]() {
-  override def handle(event: ActionEvent) {
-    println(s"clicked: $event")
-  }
-}
-button3.maxWidthProperty.addListener(new ChangeListener[Double]() {
-  override def changed(observable: ObservableValue[Double], oldValue: Double, newValue: Double) {
-    println("Something happend
-  }
-}
-```
+  
+    ```scala
+    button3.setText("Click me!")
+    button3.setOnAction(new EventHandler[ActionEvent]() {
+      override def handle(event: ActionEvent) {
+        println(s"clicked: $event")
+      }
+    }
+    button3.maxWidthProperty.addListener(new ChangeListener[Double]() {
+      override def changed(observable: ObservableValue[Double], oldValue: Double, newValue: Double) {
+        println("Something happend
+      }
+    }
+    ```
         
 - More natural bindings:
-```scala
-{
-  val moo: ObservableDoubleValue = ...
-  val foo = bind {
-    Math.sqrt(moo.getValue)
-  }
-}
-```
+
+    ```scala
+    {
+      val moo: ObservableDoubleValue = ...
+      val foo = bind {
+        Math.sqrt(moo.getValue)
+      }
+    }
+    ```
         
   Instead of:
-```scala
-{
-  val moo: ObservableDoubleValue = ...
-  val foo = new DoubleBinding() {
-    super.bind(moo)
-    override def computeValue() = 
-      Math.sqrt(moo.getValue)
-  }
-}
-```
+  
+    ```scala
+    {
+      val moo: ObservableDoubleValue = ...
+      val foo = new DoubleBinding() {
+        super.bind(moo)
+        override def computeValue() = 
+          Math.sqrt(moo.getValue)
+      }
+    }
+    ```
