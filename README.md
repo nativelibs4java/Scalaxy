@@ -1,14 +1,27 @@
-*Still very experimental, don't rely on this yet!* (if you need fast loops now, [check this out](https://github.com/ochafik/optimized-loops-macros))
+Collection of Scala Macro goodies:
+- *Compilets* are a rewrite of [ScalaCL / Scalaxy](http://code.google.com/p/scalacl/) using Scala 2.10.0-RC2 and its powerful macro system that provide:
+    - Natural expression of rewrite patterns and replacements that makes it easy to express rewrites
+    - Will eventually support all the rewrites from ScalaCL 0.2, and more
+    - Easy to express AOP-style rewrites (to add or remove logs, runtime checks, etc...)
+    - Add your own warnings and errors to scalac in a few lines!
+- *[Beans](https://github.com/ochafik/Scalaxy/tree/master/Beans)* are a nifty combination of Dynamics and macros that provide a type-safe eye-candy syntax to set fields of regular Java Beans in a Scala way (without any runtime dependency at all!):  
 
-This is an experimental rewrite of [ScalaCL / Scalaxy](http://code.google.com/p/scalacl/) using Scala 2.10.0-RC2 and its powerful macro system.
+    import scalaxy.beans._
+    
+    new MyBean().set(foo = 10, bar = 12)
 
-Key features:
-*   Natural expression of rewrite patterns and replacements that makes it easy to express rewrites
-*   Will eventually support all the rewrites from ScalaCL 0.2, and more
-*   Easy to express AOP-style rewrites (to add or remove logs, runtime checks, etc...)
-*   Add your own warnings and errors to scalac in a few lines!
+- *[Fx](https://github.com/ochafik/Scalaxy/tree/master/Fx)* contains an experimental JavaFX DSL (with virtually no runtime dependency) that makes it easy to build objects and define event handlers:
 
-# Usage
+    new Button().set(
+      text = bind {
+        s"Hello, ${textField.getText}"
+      },
+      onAction = {
+        println("Hello World!")
+      }
+    )
+
+# Compilets Usage
 
 The preferred way to use Scalaxy is with Sbt 0.12.1 and the [sbt-scalaxy](http://github.com/ochafik/sbt-scalaxy) Sbt plugin, but the `Examples` subfolder demonstrates how to use it [with Maven or with Sbt but without `sbt-scalaxy`](https://github.com/ochafik/Scalaxy/tree/master/Examples/UsageWithMavenOrWithoutSbtPlugin). 
 

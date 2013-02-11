@@ -1,6 +1,8 @@
 package scalaxy
 
 import scala.language.dynamics
+import scala.language.experimental.macros
+
 import scala.reflect.ClassTag
 import scala.reflect.NameTransformer
 import scala.reflect.macros.Context

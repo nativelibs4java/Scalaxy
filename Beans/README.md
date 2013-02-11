@@ -17,3 +17,17 @@ Gets replaced (and fully type-checked) at compile time by:
     
 Doesn't bring any runtime dependency (macro is self-erasing).
 Don't expect code completion from your IDE as of yet.
+
+# Usage
+
+If you're using sbt, just put the following lines in `build.sbt`:
+
+    // Only works with 2.10.0+
+    scalaVersion := "2.10.0"
+    
+    // Dependency at compilation-time only (not at runtime).
+    libraryDependencies += "com.nativelibs4java" %% "scalaxy-beans" % "0.3-SNAPSHOT" % "provided"
+    
+    // Scalaxy snapshots are published on the Sonatype repository.
+    resolvers += Resolver.sonatypeRepo("snapshots")
+

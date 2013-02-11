@@ -141,7 +141,7 @@ object Scalaxy extends Build
     dependsOn(api, plugin % "test->test")
 
   lazy val beans =
-    Project(id = "scalaxy-beans", base = file("Beans"), settings = deploySettings)
+    Project(id = "scalaxy-beans", base = file("Beans"), settings = reflectSettings)
 
   lazy val fxSettings = reflectSettings ++ Seq(
     unmanagedJars in Compile ++= Seq(
