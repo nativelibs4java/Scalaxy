@@ -111,7 +111,7 @@ The syntactic facilities available so far are:
     ```scala
     val moo = newProperty(10)
     val foo = bind {
-      Math.sqrt(moo.getValue)
+      Math.sqrt(moo.get)
     }
     val button = new Button().set(
       text = bind {
@@ -128,7 +128,7 @@ The syntactic facilities available so far are:
     val foo = new DoubleBinding() {
       super.bind(moo)
       override def computeValue() = 
-        Math.sqrt(moo.getValue)
+        Math.sqrt(moo.get)
     }
     val button = new Button()
     button.textProperty.bind(
