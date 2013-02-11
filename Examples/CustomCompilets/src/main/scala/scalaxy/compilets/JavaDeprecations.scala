@@ -1,4 +1,4 @@
-package scalaxy; package compilets
+package scalaxy.compilets
 
 import matchers._
 

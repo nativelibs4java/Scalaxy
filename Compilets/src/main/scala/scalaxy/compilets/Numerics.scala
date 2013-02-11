@@ -1,4 +1,4 @@
-package scalaxy; package compilets
+package scalaxy.compilets
 
 object Numerics extends Compilet {
   import math.Numeric.Implicits._

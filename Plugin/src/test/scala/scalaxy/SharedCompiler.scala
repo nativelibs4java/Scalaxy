@@ -1,4 +1,5 @@
-package scalaxy ; package test
+package scalaxy.compilets
+package test
 
 import pluginBase._
 

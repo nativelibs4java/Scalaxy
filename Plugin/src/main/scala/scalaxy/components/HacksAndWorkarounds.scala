@@ -1,4 +1,5 @@
-package scalaxy; package components
+package scalaxy.compilets
+package components
 
 // This will hopefully not exist anymore when 2.10.0.final is out!
 object HacksAndWorkarounds

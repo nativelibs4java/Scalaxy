@@ -1,4 +1,4 @@
-package scalaxy; package compilets
+package scalaxy.compilets
 
 object Streams extends Compilet {
   // TODO add conditions macro + isSideEffectFree(f)

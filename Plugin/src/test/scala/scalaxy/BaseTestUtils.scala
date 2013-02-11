@@ -1,4 +1,6 @@
-package scalaxy ; package test
+package scalaxy.compilets
+package test
+
 import plugin._
 import pluginBase._
 
@@ -221,9 +223,9 @@ trait BaseTestUtils {
     c.getProtectionDomain.getCodeSource.getLocation.getFile
 
   val classPath = Set(
-    jarPath(classOf[scalaxy.MatchAction]),
+    jarPath(classOf[MatchAction]),
     //jarPath(scalaxy.compilets.ForLoops.getClass),
-    jarPath(classOf[scalaxy.plugin.ScalaxyPlugin]))
+    jarPath(classOf[plugin.ScalaxyPlugin]))
     
   def classPathArgs = Seq[String](
     //"-usejavacp",

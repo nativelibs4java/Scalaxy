@@ -1,19 +1,21 @@
-import language.experimental.macros
+package scalaxy
+
+import scala.language.experimental.macros
 import scala.reflect.runtime.universe._
 
-package object scalaxy
+package object compilets
 {
   def fail(message: String)(pattern: Any): MatchError =
-    macro scalaxy.macros.fail
+    macro impl.fail
 
   def warn(message: String)(pattern: Any): MatchWarning =
-    macro scalaxy.macros.warn
+    macro impl.warn
 
   def replace[T](pattern: T, replacement: T): Replacement =
-    macro scalaxy.macros.replace[T]
+    macro impl.replace[T]
 
   def when[T](pattern: T)(idents: Any*)(thenMatch: PartialFunction[List[Tree], Action[T]]) : ConditionalAction[T] =
-    macro scalaxy.macros.when[T]
+    macro impl.when[T]
 
   def error[T](message: String): Action[T] =
     Error[T](message)
@@ -22,5 +24,5 @@ package object scalaxy
     Warning[T](message)
 
   def replacement[T](replacement: T): ReplaceBy[T] =
-    macro scalaxy.macros.replacement[T]
+    macro impl.replacement[T]
 }

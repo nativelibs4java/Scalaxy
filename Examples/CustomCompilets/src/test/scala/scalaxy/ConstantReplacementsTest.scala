@@ -1,4 +1,4 @@
-package scalaxy.test
+package scalaxy.compilets.test
 
 import org.junit._
 import org.junit.Assert._

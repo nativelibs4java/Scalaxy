@@ -68,8 +68,8 @@ To see what's happening, you might want to print the AST before and after the re
     
 The rewrites are defined in `Compilets` and look like this :
 
-	import scalaxy._
-	import scalaxy.matchers._
+	import scalaxy.compilets._
+	import scalaxy.compilets.matchers._
 	
 	object SomeExamples {
 	

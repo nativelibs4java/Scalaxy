@@ -1,4 +1,5 @@
-package scalaxy; package components
+package scalaxy.compilets
+package components
 
 import scala.reflect.runtime.currentMirror
 import scala.reflect.runtime.{universe => u}

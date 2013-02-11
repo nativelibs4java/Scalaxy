@@ -1,5 +1,5 @@
-package scalaxy ; package plugin
-//import common._
+package scalaxy.compilets
+package plugin
 import pluginBase._
 import components._
 

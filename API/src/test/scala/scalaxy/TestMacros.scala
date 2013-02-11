@@ -1,8 +1,8 @@
-package scalaxy; package test
+package scalaxy.compilets; package test
 
 import org.junit._
 import Assert._
-import scalaxy.fail
+import scalaxy.compilets.fail
 
 import scala.reflect.runtime.universe._
 import scala.reflect.ClassTag

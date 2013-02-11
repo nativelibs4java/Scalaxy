@@ -1,4 +1,4 @@
-package scalaxy
+package scalaxy.compilets
 
 import scala.reflect.runtime.universe._
 

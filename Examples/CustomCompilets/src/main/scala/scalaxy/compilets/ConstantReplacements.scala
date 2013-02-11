@@ -1,6 +1,4 @@
-package scalaxy; package compilets
-
-//import scala.reflect.api.Universe._
+package scalaxy.compilets
 
 import matchers._
 

@@ -1,4 +1,4 @@
-package scalaxy.matchers
+package scalaxy.compilets.matchers
 
 import scala.reflect.runtime._
 import scala.reflect.runtime.universe._

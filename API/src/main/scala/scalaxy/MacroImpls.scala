@@ -1,12 +1,11 @@
-package scalaxy
+package scalaxy.compilets
 
-import language.experimental.macros
-
+import scala.language.experimental.macros
 import scala.reflect.macros.Context
 
 import scala.reflect.runtime.{ universe => ru }
 
-object macros
+object impl
 {
   def newListTree[T: ru.TypeTag](c: Context)(
       values: List[c.universe.Tree]): c.Expr[List[T]] =
@@ -92,7 +91,7 @@ object macros
 
     c.Expr[ConditionalAction[T]](
       New(
-        Select(Ident(newTermName("scalaxy")), newTypeName("ConditionalAction")),
+        Select(Ident(rootMirror.staticPackage("scalaxy.compilets")), newTypeName("ConditionalAction")),
         List(List(
           tree(c)(pattern),
           Apply(

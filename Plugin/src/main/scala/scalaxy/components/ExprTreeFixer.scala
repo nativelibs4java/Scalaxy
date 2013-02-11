@@ -1,4 +1,5 @@
-package scalaxy ; package plugin
+package scalaxy.compilets
+package plugin
 import language.existentials
 
 trait ExprTreeFixer {

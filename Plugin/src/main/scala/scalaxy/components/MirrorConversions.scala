@@ -1,4 +1,5 @@
-package scalaxy; package components
+package scalaxy.compilets
+package components
 
 import scala.tools.nsc.plugins.PluginComponent
 import scala.tools.nsc.symtab.Flags._

@@ -1,4 +1,5 @@
-package scalaxy; package examples
+package scalaxy.compilets
+package examples
 
 object DSLCompilet extends Compilet
 {

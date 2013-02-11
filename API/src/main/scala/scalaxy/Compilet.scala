@@ -1,4 +1,4 @@
-package scalaxy
+package scalaxy.compilets
 
 trait Compilet {
   def runsAfter: Seq[Compilet] = Seq()
