@@ -10,7 +10,7 @@ As a result, you may say think of `Scalaxy/Fx` as a compiler plugin rather than 
 
 # Disclaimer
 
-This library is a _very partial proof of concept_ (should work well, though).
+This library is a _very partial proof of concept without proper tests_ (should work well, though).
 
 If you're looking for a complete and supported JavaFX experience in Scala, please use [ScalaFX](http://code.google.com/p/scalafx/) (great mature library, although it doesn't use macros as of yet: its binding syntax may look a bit weird at times).
 
