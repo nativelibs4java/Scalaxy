@@ -1,3 +1,9 @@
+organization := "com.nativelibs4java"
+
+name := "scalaxy-fx-example"
+
+version := "1.0-SNAPSHOT"
+
 // Only works with 2.10.0+
 scalaVersion := "2.10.0"
 
