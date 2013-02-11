@@ -1,5 +1,8 @@
 # Scalaxy/Fx: JavaFX eye-candy experiment for Scala 2.10
 
+<a href="https://twitter.com/share" class="twitter-share-button" data-via="ochafik" data-size="large" data-hashtags="Scalaxy">Tweet</a>
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+
 Minimal set of Scala 2.10 macros, dynamics and implicits for maximal JavaFX eye-candy!
 (does not depend on the rest of Scalaxy)
 
