@@ -49,3 +49,6 @@ If you want to build / test / hack on this project:
     sbt "project scalaxy-beans" "; clean ; ~test"
     ```
 
+# References
+
+See [my original post](http://ochafik.com/blog/?p=786).
