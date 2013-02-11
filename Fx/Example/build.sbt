@@ -4,7 +4,7 @@ scalaVersion := "2.10.0"
 // Add JavaFX Runtime as an unmanaged dependency, hoping to find it in the JRE's library folder.
 unmanagedJars in Compile ++= Seq(new File(System.getProperty("java.home")) / "lib" / "jfxrt.jar")
 
-// This is the bulk of Scalaxy-FX, needed only during compilation (no runtime dependency here).
+// This is the bulk of Scalaxy/Fx, needed only during compilation (no runtime dependency here).
 libraryDependencies += "com.nativelibs4java" %% "scalaxy-fx" % "0.3-SNAPSHOT" % "provided"
 
 // This runtime library contains only one class needed for the `onChange { ... }` syntax.
