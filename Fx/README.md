@@ -211,7 +211,7 @@ The syntactic facilities available so far are:
     
 # Hacking
 
-If you want to build / test / hack this project:
+If you want to build / test / hack on this project:
 - Make sure to use [paulp's sbt script](https://github.com/paulp/sbt-extras) with `sbt` 0.12.2+
 - Install Oracle's JDK + JavaFX and make sure the `java` command in the path points to that version
 - Use the following commands to checkout the sources and build the tests continuously: 
@@ -219,6 +219,6 @@ If you want to build / test / hack this project:
     ```
     git clone git://github.com/ochafik/Scalaxy.git
     cd Scalaxy
-    sbt "project scalaxy-fx" ~test
+    sbt "project scalaxy-fx" "; clean ; ~test"
     ```
 

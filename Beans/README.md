@@ -36,3 +36,16 @@ libraryDependencies += "com.nativelibs4java" %% "scalaxy-beans" % "0.3-SNAPSHOT"
 // Scalaxy/Beans snapshots are published on the Sonatype repository.
 resolvers += Resolver.sonatypeRepo("snapshots")
 ```
+    
+# Hacking
+
+If you want to build / test / hack on this project:
+- Make sure to use [paulp's sbt script](https://github.com/paulp/sbt-extras) with `sbt` 0.12.2+
+- Use the following commands to checkout the sources and build the tests continuously: 
+
+    ```
+    git clone git://github.com/ochafik/Scalaxy.git
+    cd Scalaxy
+    sbt "project scalaxy-beans" "; clean ; ~test"
+    ```
+
