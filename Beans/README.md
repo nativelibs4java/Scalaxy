@@ -24,12 +24,12 @@ Only downside: code completion won't work in IDE (unless someone adds a special 
 
 If you're using `sbt` 0.12.2+, just put the following lines in `build.sbt`:
 ```scala
-    // Only works with 2.10.0+
-    scalaVersion := "2.10.0"
-    
-    // Dependency at compilation-time only (not at runtime).
-    libraryDependencies += "com.nativelibs4java" %% "scalaxy-beans" % "0.3-SNAPSHOT" % "provided"
-    
-    // Scalaxy/Beans snapshots are published on the Sonatype repository.
-    resolvers += Resolver.sonatypeRepo("snapshots")
+// Only works with 2.10.0+
+scalaVersion := "2.10.0"
+
+// Dependency at compilation-time only (not at runtime).
+libraryDependencies += "com.nativelibs4java" %% "scalaxy-beans" % "0.3-SNAPSHOT" % "provided"
+
+// Scalaxy/Beans snapshots are published on the Sonatype repository.
+resolvers += Resolver.sonatypeRepo("snapshots")
 ```
