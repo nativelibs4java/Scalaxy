@@ -4,23 +4,26 @@ Collection of Scala Macro goodies:
     - Will eventually support all the rewrites from ScalaCL 0.2, and more
     - Easy to express AOP-style rewrites (to add or remove logs, runtime checks, etc...)
     - Add your own warnings and errors to scalac in a few lines!
-- *[Beans](https://github.com/ochafik/Scalaxy/tree/master/Beans)* are a nifty combination of Dynamics and macros that provide a type-safe eye-candy syntax to set fields of regular Java Beans in a Scala way (without any runtime dependency at all!):  
-```scala
-import scalaxy.beans._
+- *[Beans](https://github.com/ochafik/Scalaxy/tree/master/Beans)* are a nifty combination of Dynamics and macros that provide a type-safe eye-candy syntax to set fields of regular Java Beans in a Scala way (without any runtime dependency at all!):
 
-new MyBean().set(foo = 10, bar = 12)
-```
+    ```scala
+    import scalaxy.beans._
+    
+    new MyBean().set(foo = 10, bar = 12)
+    ```
+
 - *[Fx](https://github.com/ochafik/Scalaxy/tree/master/Fx)* contains an experimental JavaFX DSL (with virtually no runtime dependency) that makes it easy to build objects and define event handlers:
-```scala
-new Button().set(
-  text = bind {
-    s"Hello, ${textField.getText}"
-  },
-  onAction = {
-    println("Hello World!")
-  }
-)
-```
+
+    ```scala
+    new Button().set(
+      text = bind {
+        s"Hello, ${textField.getText}"
+      },
+      onAction = {
+        println("Hello World!")
+      }
+    )
+    ```
 
 # Compilets Usage
 
@@ -28,20 +31,23 @@ The preferred way to use Scalaxy is with Sbt 0.12.2 and the [sbt-scalaxy](http:/
 
 To compile your Sbt project with Scalaxy's compiler plugin and default compilets:
 *   Put the following in `project/plugins.sbt` (or in `~/.sbt/plugins/build.sbt` for global setup):
-```scala
-resolvers += Resolver.sonatypeRepo("snapshots")
 
-addSbtPlugin("com.nativelibs4java" % "sbt-scalaxy" % "0.3-SNAPSHOT")
-```    
-*   Make your `build.sbt` look like this:
-```scala
-scalaVersion := "2.10.0"
-
-autoCompilets := true
-
-addDefaultCompilets()
-```
+    ```scala
+    resolvers += Resolver.sonatypeRepo("snapshots")
     
+    addSbtPlugin("com.nativelibs4java" % "sbt-scalaxy" % "0.3-SNAPSHOT")
+    ```
+
+*   Make your `build.sbt` look like this:
+
+    ```scala
+    scalaVersion := "2.10.0"
+    
+    autoCompilets := true
+    
+    addDefaultCompilets()
+    ```
+
 See a full example in [Scalaxy/Examples/UsageWithSbtPlugin](https://github.com/ochafik/Scalaxy/tree/master/Examples/UsageWithSbtPlugin).
 
 To see what's happening:
@@ -69,6 +75,7 @@ To see what's happening, you might want to print the AST before and after the re
     sbt "run Test/test.scala -Xprint:typer -Xprint:scalaxy-rewriter"
     
 The rewrites are defined in `Compilets` and look like this :
+
 ```scala
 import scalaxy.compilets._
 import scalaxy.compilets.matchers._
