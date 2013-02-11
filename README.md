@@ -1,25 +1,25 @@
 Collection of Scala Macro goodies:
-- *Compilets* are a rewrite of [ScalaCL / Scalaxy](http://code.google.com/p/scalacl/) using Scala 2.10.0-RC2 and its powerful macro system that provide:
+- *Compilets* are a rewrite of [ScalaCL / Scalaxy](http://code.google.com/p/scalacl/) using Scala 2.10.0 and its powerful macro system that provide:
     - Natural expression of rewrite patterns and replacements that makes it easy to express rewrites
     - Will eventually support all the rewrites from ScalaCL 0.2, and more
     - Easy to express AOP-style rewrites (to add or remove logs, runtime checks, etc...)
     - Add your own warnings and errors to scalac in a few lines!
 - *[Beans](https://github.com/ochafik/Scalaxy/tree/master/Beans)* are a nifty combination of Dynamics and macros that provide a type-safe eye-candy syntax to set fields of regular Java Beans in a Scala way (without any runtime dependency at all!):  
 
-    import scalaxy.beans._
-    
-    new MyBean().set(foo = 10, bar = 12)
+        import scalaxy.beans._
+        
+        new MyBean().set(foo = 10, bar = 12)
 
 - *[Fx](https://github.com/ochafik/Scalaxy/tree/master/Fx)* contains an experimental JavaFX DSL (with virtually no runtime dependency) that makes it easy to build objects and define event handlers:
 
-    new Button().set(
-      text = bind {
-        s"Hello, ${textField.getText}"
-      },
-      onAction = {
-        println("Hello World!")
-      }
-    )
+        new Button().set(
+          text = bind {
+            s"Hello, ${textField.getText}"
+          },
+          onAction = {
+            println("Hello World!")
+          }
+        )
 
 # Compilets Usage
 
