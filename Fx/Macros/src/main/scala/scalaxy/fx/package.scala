@@ -6,8 +6,8 @@ package scalaxy
 package object fx
  extends BeanExtensions
     with Bindings
-    with GenericTypes
     with EventHandlers
+    with GenericTypes
     with ObservableValueExtensions
     with Properties
 
