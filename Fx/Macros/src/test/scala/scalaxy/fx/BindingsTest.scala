@@ -64,20 +64,4 @@ class BindingsTest
     b.set(minHeight = 21)
     assertEquals(fmt.format(20, 21), b.getText)
   }
-  /*
-  {
-    val moo: ObservableDoubleValue = ...
-    val foo = bind {
-      Math.sqrt(moo())
-    }
-  }
-  {
-    val moo: ObservableDoubleValue = ...
-    val foo = new DoubleBinding() {
-      super.bind(moo)
-      override def computeValue() = 
-        Math.sqrt(moo.getValue)
-    }
-  }
-  */
 }

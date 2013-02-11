@@ -1,4 +1,7 @@
-Syntactic sugar to set Java beans properties with a very Scala-friendly syntax. 
+# Scalaxy/Beans
+
+Syntactic sugar to set Java beans properties with a very Scala-friendly syntax.
+(does not depend on the rest of Scalaxy)
 
 The following expression:
 ```scala
