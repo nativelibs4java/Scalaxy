@@ -28,6 +28,6 @@ If you're using sbt, just put the following lines in `build.sbt`:
     // Dependency at compilation-time only (not at runtime).
     libraryDependencies += "com.nativelibs4java" %% "scalaxy-beans" % "0.3-SNAPSHOT" % "provided"
     
-    // Scalaxy snapshots are published on the Sonatype repository.
+    // Scalaxy/Beans snapshots are published on the Sonatype repository.
     resolvers += Resolver.sonatypeRepo("snapshots")
 

@@ -4,6 +4,8 @@ Minimal set of Scala 2.10 macros, dynamics and implicits for maximal JavaFX eye-
 
 All the magic happens during compilation.
 
+# Example
+
     import scalaxy.fx._
     
     import javafx._
@@ -53,6 +55,14 @@ All the magic happens during compilation.
       }
     }
     
+# Usage
+
+To use with `sbt`, please have a look at the `HelloWorld` example:
+- [build.sbt](https://github.com/ochafik/Scalaxy/blob/master/Fx/Test/build.sbt)
+- [HelloWorld.scala](https://github.com/ochafik/Scalaxy/blob/master/Fx/Test/HelloWorld.scala)
+    
+# Features
+
 The syntactic facilities available so far are:
 - JavaFX Script-like syntax for setters (without any runtime penalty or loss of type-safetiness): 
 
