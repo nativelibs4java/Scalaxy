@@ -8,7 +8,7 @@ import scala.language.experimental.macros
 private[fx] trait Properties
 {
   /** Creates a simple property of type T. */
-  def property
+  def newProperty
       [T, J, B <: Binding[J], P <: Property[J]]
       (value: T)
       (implicit ev: GenericType[T, J, B, P]): P =

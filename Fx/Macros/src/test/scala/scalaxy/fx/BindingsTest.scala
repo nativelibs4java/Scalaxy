@@ -5,7 +5,7 @@ import org.junit.Assert._
 
 import scalaxy.fx._
 
-import javafx.beans._
+import javafx.beans.Observable
 import javafx.beans.value._
 import javafx.beans.property._
 import javafx.beans.binding._
@@ -15,11 +15,12 @@ class BindingsTest
 {
   @Test
   def simplePropertyBinding {
-    val a = new SimpleIntegerProperty
-    val b = new SimpleIntegerProperty
+    val a: SimpleIntegerProperty = newProperty(2)
+    val b = newProperty(3)
+    val bb: SimpleIntegerProperty = b
     val c = bind(a.get + b.get)
     
-    assertEquals(0, c.get)
+    assertEquals(5, c.get)
     a.set(1)
     b.set(10)
     assertEquals(11, c.get)
@@ -42,7 +43,7 @@ class BindingsTest
 
   @Test
   def beanPropertyBinding2 {
-    val b1 = new SimpleIntegerProperty
+    val b1 = newProperty(10)
     val b2 = bind { 10 + b1.get }
     val b3: IntegerBinding = b2
     

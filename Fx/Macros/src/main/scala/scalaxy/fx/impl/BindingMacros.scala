@@ -80,7 +80,7 @@ private[fx] object BindingMacros
             handleSelect(sel)
           case _ =>
             if (isObservable(tree.tpe))
-              c.error(tree.pos, "Unsupported observable type (" + tree + ": " + tree.getClass.getName + ")")
+              c.error(tree.pos, s"Unsupported observable type (is it a val or a stable path from a val?)\n\ttree = $tree, tpe = ${tree.tpe}, sym = ${tree.symbol}, class = ${tree.getClass.getName}")
         }
         super.traverse(tree)
       }

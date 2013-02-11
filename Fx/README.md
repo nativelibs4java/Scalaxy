@@ -12,7 +12,7 @@ As a result, you may say think of `Scalaxy/Fx` as a compiler plugin rather than 
 
 This library is a _very partial proof of concept without proper tests_ (should work well, though).
 
-If you're looking for a complete and supported JavaFX experience in Scala, please use [ScalaFX](http://code.google.com/p/scalafx/) (great mature library, although it doesn't use macros as of yet: its binding syntax may look a bit weird at times).
+If you're looking for a complete and supported JavaFX experience in Scala, please use [ScalaFX](http://code.google.com/p/scalafx/) (great mature library written by [Stephen Chin](https://twitter.com/steveonjava/) and other committers, although it doesn't use macros as of yet and hence has some more exotic syntax for bindings).
 
 # Example
 
@@ -109,7 +109,7 @@ The syntactic facilities available so far are:
 - More natural bindings:
 
     ```scala
-    val moo: ObservableDoubleValue = ...
+    val moo = newProperty(10)
     val foo = bind {
       Math.sqrt(moo.getValue)
     }
@@ -124,7 +124,7 @@ The syntactic facilities available so far are:
   Instead of:
   
     ```scala
-    val moo: ObservableDoubleValue = ...
+    val moo = new SimpleIntegerProperty(10)
     val foo = new DoubleBinding() {
       super.bind(moo)
       override def computeValue() = 
@@ -176,3 +176,50 @@ The syntactic facilities available so far are:
       }
     }
     ```
+    
+# Internals
+
+`Scalaxy/Fx` uses some interesting techniques:
+- Combination of `Dynamic` and macros for a type-safe setters syntax for Java beans, that uses named parameters.
+  (see [Scalaxy/Beans](https://github.com/ochafik/Scalaxy/tree/master/Beans) and [my blog post](http://ochafik.com/blog/?p=803) on the matter for more details on this technique)
+- [CanBuildFrom-style implicits](https://github.com/ochafik/Scalaxy/blob/master/Fx/Macros/src/main/scala/scalaxy/fx/GenericTypes.scala) to associate value types `T` to their `Binding[T]` or `Property[T]` subclasses.
+  What's interesting here is that there is no implementation of these evidence objects, which only serve to the typer and are thrown away by the macros.
+  
+  As a result, the following property and binding are correctly typed to their concrete implementation:
+  
+    ```scala
+    import scalaxy.fx._
+    
+    val p: SimpleIntegerProperty = newProperty(10)
+    val b: IntegerBinding = bind { p.get + 10 }
+    ```
+  
+- Despite it not being officially supported, creates anonymous handler classes from inside macros.
+  (see [EventHandlerMacros.scala](https://github.com/ochafik/Scalaxy/blob/master/Fx/Macros/src/main/scala/scalaxy/fx/impl/EventHandlerMacros.scala))
+- Macros all over, for virtually no runtime dependency.
+  The only exception is that it's not currently possible to have unbound types in macros due to [a bug in reifiers](https://issues.scala-lang.org/browse/SI-6386), so the following will crash compilation because of the `[_ <: T]` part:
+  
+    ```scala
+    val valueExpr = c.Expr[ObservableValue[T]](value)
+    reify(
+      valueExpr.splice.addListener(
+        new ChangeListener[T]() {
+          override def changed(observable: ObservableValue[_ <: T], oldValue: T, newValue: T) {
+            f.splice(oldValue, newValue)
+          }
+        }
+      )
+    )
+    ```
+    
+# Hacking
+
+If you want to build / test / hack this project:
+- Make sure to use [paulp's sbt script](https://github.com/paulp/sbt-extras) with `sbt` 0.12.2+
+- Install Oracle's JDK + JavaFX and make sure the `java` command in the path points to that version
+- Use the following commands to checkout the sources and build the tests continuously: 
+
+    git clone git://github.com/ochafik/Scalaxy.git
+    cd Scalaxy
+    sbt "project scalaxy-fx" ~test
+
