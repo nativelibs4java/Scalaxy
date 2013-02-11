@@ -111,13 +111,9 @@ The syntactic facilities available so far are:
 
     ```scala
     val moo = newProperty(10)
-    val foo = bind {
-      Math.sqrt(moo.get)
-    }
+    val foo = bind { Math.sqrt(moo.get) }
     val button = new Button().set(
-      text = bind {
-        s"Foo is ${foo.get}"
-      },
+      text = bind { s"Foo is ${foo.get}" },
       cancelButton = true
     )
     ```
