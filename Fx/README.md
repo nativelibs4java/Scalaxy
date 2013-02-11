@@ -105,6 +105,41 @@ The syntactic facilities available so far are:
       minHidth = 200
     )
     ```
+        
+- More natural bindings:
+
+    ```scala
+    val moo: ObservableDoubleValue = ...
+    val foo = bind {
+      Math.sqrt(moo.getValue)
+    }
+    val button = new Button().set(
+      text = bind {
+        s"Foo is ${foo.get}"
+      },
+      cancelButton = true
+    )
+    ```
+        
+  Instead of:
+  
+    ```scala
+    val moo: ObservableDoubleValue = ...
+    val foo = new DoubleBinding() {
+      super.bind(moo)
+      override def computeValue() = 
+        Math.sqrt(moo.getValue)
+    }
+    val button = new Button()
+    button.textProperty.bind(
+      new StringBinding() {
+        super.bind(foo)
+        override def computeValue() = 
+          s"Foo is ${foo.get}"
+      }
+    ),
+    button.setCancelButton(true)
+    ```
       
 - Simpler syntax for event handlers, with or without the event parameter:
 
@@ -138,30 +173,6 @@ The syntactic facilities available so far are:
     button3.maxWidthProperty.addListener(new ChangeListener[Double]() {
       override def changed(observable: ObservableValue[Double], oldValue: Double, newValue: Double) {
         println("Something happend
-      }
-    }
-    ```
-        
-- More natural bindings:
-
-    ```scala
-    {
-      val moo: ObservableDoubleValue = ...
-      val foo = bind {
-        Math.sqrt(moo.getValue)
-      }
-    }
-    ```
-        
-  Instead of:
-  
-    ```scala
-    {
-      val moo: ObservableDoubleValue = ...
-      val foo = new DoubleBinding() {
-        super.bind(moo)
-        override def computeValue() = 
-          Math.sqrt(moo.getValue)
       }
     }
     ```
