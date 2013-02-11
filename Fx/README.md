@@ -1,8 +1,16 @@
+# JavaFX eye-candy experiment for Scala 2.10
+
 Minimal set of Scala 2.10 macros, dynamics and implicits for maximal JavaFX eye-candy!
 
 *Important*: there is _no runtime dependency_ for this "library" (exception: `scalaxy.fx.runtime.ScalaChangeListener` for `onChange`).
 
 All the magic happens during compilation.
+
+# Disclaimer
+
+This library is a _very partial proof of concept_ (should work well, though).
+
+If you're looking for a complete JavaFX experience in Scala, please use [ScalaFX](http://code.google.com/p/scalafx/) (great mature library, although it doesn't use macros yet so its syntax may look a bit old-fashioned when it comes to bindings).
 
 # Example
 
