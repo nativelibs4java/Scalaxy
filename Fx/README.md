@@ -7,7 +7,7 @@ _Important_: this "library" was designed as a DSL with no runtime dependency (wi
 
 This means that all the methods defined in the `scalaxy.fx` package are macros that rewrite the code to something pure-JavaFX, with no reference to any additional class. If you want to learn how to write non-trivial macros, [have a look at the code](https://github.com/ochafik/Scalaxy/tree/master/Fx/Macros/src/main/scala/scalaxy/fx)!
 
-As a result, you may say think of `Scalaxy/Fx` as a compiler plugin rather than a library (but technically, it *is* just a library).
+As a result, you may say think of `Scalaxy/Fx` as a compiler plugin rather than a library (but technically, it *is* just a library of macros).
 
 # Disclaimer
 
