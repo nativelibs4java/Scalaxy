@@ -16,7 +16,7 @@ Gets replaced (and fully type-checked) at compile time by:
 }
 ```
     
-Works with all Java Beans and doesn't bring any runtime dependency (macro is self-erasing).
+Works with all Java beans and doesn't bring any runtime dependency.
 
 Only downside: code completion won't work in IDE (unless someone adds a special case for `Scalaxy/Beans` :-)).
 
