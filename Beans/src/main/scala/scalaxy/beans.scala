@@ -36,14 +36,14 @@ package object beans
   implicit def beansExtensions[T <: AnyRef](bean: T) = new {
     def set = new Dynamic {
       def applyDynamicNamed(name: String)(args: (String, Any)*): T =
-        macro internal.applyDynamicNamedImpl[T]
+        macro impl.applyDynamicNamedImpl[T]
     }
   }
 }
 
 package beans 
 {
-  package object internal
+  package object impl
   {
     // This needs to be public and statically accessible.
     def applyDynamicNamedImpl[T : c.WeakTypeTag]

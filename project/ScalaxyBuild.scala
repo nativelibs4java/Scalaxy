@@ -172,6 +172,9 @@ object Scalaxy extends Build
   lazy val beans =
     Project(id = "scalaxy-beans", base = file("Beans"), settings = reflectSettings)
 
+  lazy val ranges =
+    Project(id = "scalaxy-ranges", base = file("Ranges"), settings = reflectSettings)
+
   lazy val fxSettings = reflectSettings ++ Seq(
     unmanagedJars in Compile ++= Seq(
       new File(System.getProperty("java.home")) / "lib" / "jfxrt.jar"
