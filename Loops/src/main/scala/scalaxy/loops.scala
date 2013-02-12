@@ -149,6 +149,7 @@ package loops
                   val conditionExpr = c.Expr[Boolean](condition)
                   // Body still refers to old function param symbol (which has same name as iVal).
                   // We must wipe it out (alas, it's not local, so we must reset all symbols).
+                  // TODO: be less extreme, replacing only the param symbol (see branch replaceParamSymbols).
                   val bodyExpr = c.Expr[Unit](c.resetAllAttrs(body))
 
                   val incrExpr = c.Expr[Unit](
