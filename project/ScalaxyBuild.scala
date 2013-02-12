@@ -32,7 +32,7 @@ object Scalaxy extends Build
       </developers>
     ),
     (LsKeys.docsUrl in LsKeys.lsync) <<= homepage,
-    (LsKeys.tags in LsKeys.lsync) := 
+    (LsKeys.tags in LsKeys.lsync) :=
        Seq("compiler-plugin", "rewrite", "ast", "transform", "optimization", "optimisation"),
     (description in LsKeys.lsync) :=
       "A scalac compiler plugin that optimizes the code by rewriting for loops on ranges into while loops, avoiding some implicit object creations when using numerics...",
@@ -73,14 +73,14 @@ object Scalaxy extends Build
         Some("releases"  at nexus + "service/local/staging/deploy/maven2")
     })
 
-  override lazy val settings = 
+  override lazy val settings =
     super.settings ++
     Seq(
       shellPrompt := { s => Project.extract(s).currentProject.id + "> " }
     ) ++ scalaSettings
 
   lazy val shadeSettings =
-    assemblySettings ++ 
+    assemblySettings ++
     addArtifact(artifact in (Compile, assembly), assembly) ++
     Seq(
       publishArtifact in (Compile, packageBin) := false,
@@ -92,7 +92,7 @@ object Scalaxy extends Build
         } }
       },
       pomPostProcess := { (node: scala.xml.Node) =>
-        // Since we publish the assembly (shaded) jar, 
+        // Since we publish the assembly (shaded) jar,
         // remove lagging scalaxy dependencies from pom ourselves.
         import scala.xml._; import scala.xml.transform._
         try {
@@ -109,12 +109,14 @@ object Scalaxy extends Build
         }
       }
     )
-  
-  val deploySettings = 
+
+  val deploySettings =
     reflectSettings ++
     shadeSettings ++
     Seq(
-      artifact in (Compile, assembly) ~= { _.copy(`classifier` = Some("assembly")) },
+      artifact in (Compile, assembly) ~= {
+        _.copy(`classifier` = Some("assembly"))
+      },
       publishArtifact in Test := true)
 
   lazy val _scalaxy =
@@ -123,22 +125,49 @@ object Scalaxy extends Build
       base = file("."),
       settings =
         standardSettings ++
+        Seq(publish := { }))
+    .dependsOn(compilets, fx, beans)
+    .aggregate(compilets, fx, beans)
+
+  lazy val compilets =
+    Project(
+      id = "scalaxy-compilets",
+      base = file("Compilets"),
+      settings =
+        standardSettings ++
         shadeSettings ++
         Seq(
           test in assembly := {},
           artifact in (Compile, assembly) ~= { _.copy(`classifier` = None) },
           scalacOptions in console in Compile <+= (packageBin in Compile) map("-Xplugin:" + _)
-        )).
-    dependsOn(plugin, compilets, api, beans).
-    aggregate(plugin, compilets, api, beans)
-    
-  lazy val plugin =
-    Project(id = "scalaxy-plugin", base = file("Plugin"), settings = deploySettings).
-    dependsOn(api)
+        )
+    )
+    .dependsOn(compiletsPlugin, compiletsApi, defaultCompilets)
+    .aggregate(compiletsPlugin, compiletsApi, defaultCompilets)
 
-  lazy val compilets =
-    Project(id = "scalaxy-compilets", base = file("Compilets"), settings = reflectSettings).
-    dependsOn(api, plugin % "test->test")
+  lazy val compiletsApi =
+    Project(
+      id = "scalaxy-compilets-api",
+      base = file("Compilets/API"),
+      settings = reflectSettings ++ Seq(
+        scalacOptions ++= Seq(
+          "-language:experimental.macros"
+        )
+      ))
+
+  lazy val compiletsPlugin =
+    Project(
+      id = "scalaxy-compilets-plugin",
+      base = file("Compilets/Plugin"),
+      settings = deploySettings)
+    .dependsOn(compiletsApi)
+
+  lazy val defaultCompilets =
+    Project(
+      id = "scalaxy-default-compilets",
+      base = file("Compilets/DefaultCompilets"),
+      settings = reflectSettings)
+    .dependsOn(compiletsApi, compiletsPlugin % "test->test")
 
   lazy val beans =
     Project(id = "scalaxy-beans", base = file("Beans"), settings = reflectSettings)
@@ -148,27 +177,18 @@ object Scalaxy extends Build
       new File(System.getProperty("java.home")) / "lib" / "jfxrt.jar"
     )
   )
-  
-  lazy val fxBase =
-    Project(id = "scalaxy-fx-base", base = file("Fx"), settings = fxSettings ++ Seq(publish := { })).
-    dependsOn(fx, fxRuntime).
-    aggregate(fx, fxRuntime)
 
   lazy val fx =
-    Project(id = "scalaxy-fx", base = file("Fx/Macros"), settings = fxSettings).
-    dependsOn(fxRuntime)
+    Project(
+      id = "scalaxy-fx",
+      base = file("Fx/Macros"),
+      settings = fxSettings)
+    .dependsOn(fxRuntime)
+    .aggregate(fxRuntime)
 
   lazy val fxRuntime =
-    Project(id = "scalaxy-fx-runtime", base = file("Fx/Runtime"), settings = fxSettings)
-
-  lazy val api =
-    Project(id = "scalaxy-api", base = file("API"), settings = reflectSettings)
-    
-  //lazy val scalaxySbtPlugin =
-  //  Project(id = "sbt-scalaxy", base = file("Sbt"), settings = standardSettings ++ Seq(
-  //    scalaVersion := "2.9.2",
-  //    //crossSbtVersions := Seq("0.11.3", "0.11.2" ,"0.12" ,"0.12.1"),
-  //    sbtPlugin := true
-  //    //CrossBuilding.scriptedSettings, // ?
-  //  ))
+    Project(
+      id = "scalaxy-fx-runtime",
+      base = file("Fx/Runtime"),
+      settings = fxSettings)
 }

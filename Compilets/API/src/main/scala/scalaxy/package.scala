@@ -1,7 +1,7 @@
 package scalaxy
 
-import scala.language.experimental.macros
 import scala.reflect.runtime.universe._
+import scala.language.experimental.macros
 
 package object compilets
 {
