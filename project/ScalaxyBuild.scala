@@ -126,8 +126,7 @@ object Scalaxy extends Build
       settings =
         standardSettings ++
         Seq(publish := { }))
-    .dependsOn(compilets, fx, beans)
-    .aggregate(compilets, fx, beans)
+    .aggregate(compilets, fx, beans, components)
 
   lazy val compilets =
     Project(
@@ -154,6 +153,9 @@ object Scalaxy extends Build
           "-language:experimental.macros"
         )
       ))
+
+  lazy val components =
+    Project(id = "scalaxy-components", base = file("Components"), settings = reflectSettings)
 
   lazy val compiletsPlugin =
     Project(
