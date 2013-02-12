@@ -37,6 +37,9 @@ libraryDependencies += "com.nativelibs4java" %% "scalaxy-loops" % "0.3-SNAPSHOT"
 
 // Scalaxy/Loops snapshots are published on the Sonatype repository.
 resolvers += Resolver.sonatypeRepo("snapshots")
+
+// This one usually doesn't hurt, but it may slow compilation down:
+// scalacOptions += "-optimise"
 ```
     
 # Hacking
