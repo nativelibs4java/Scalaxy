@@ -1,6 +1,6 @@
 # Scalaxy/Loops
 
-Optimized foreach loops (using a macro to rewrite them to an equivalent while loop), currently limited to Range loops.
+Optimized foreach loops for Scala 2.10 (using a macro to rewrite them to an equivalent while loop), currently limited to Range loops.
 
 The following expression:
 ```scala
