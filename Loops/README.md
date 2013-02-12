@@ -58,10 +58,10 @@ However, if there is a particular loop optimization that's very important to you
 - [@ochafik on Twitter](http://twitter.com/ochafik)
 - [NativeLibs4Java mailing-list](groups.google.com/group/nativelibs4java)
 
-(you can also [file bugs and enhancement requests here](https://github.com/ochafik/Scalaxy/issues/new))
+You can also [file bugs and enhancement requests here](https://github.com/ochafik/Scalaxy/issues/new).
 
 Anyway, current plans are to support the following loop rewrites:
-- Range.{ foreach, map }
-- Array.{ foreach, map }
+- Range.{ foreach, map } with filters
+- Array.{ foreach, map } with filters
 
 Any help (testing, patches, bug reports) will be greatly appreciated!
