@@ -111,7 +111,7 @@ package ranges
                   0
               }
               c.typeCheck(f.tree) match {
-                case Function(List(param)), body) =>
+                case Function(List(param), body) =>
 
                   def newIntVal(name: TermName, rhs: Tree) =
                     ValDef(NoMods, name, TypeTree(IntTpe), rhs)
