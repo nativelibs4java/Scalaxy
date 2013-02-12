@@ -25,6 +25,8 @@ Gets replaced at compile time by:
     
 This is a rejuvenation of some code initially written for [ScalaCL](http://scalacl.googlecode.com/) then for [optimized-loops-macros](https://github.com/ochafik/optimized-loops-macros).
 
+(see [this blog post](http://ochafik.com/blog/?p=806) for a recap on the ScalaCL project rationale / story)
+
 # Usage
 
 If you're using `sbt` 0.12.2+, just put the following lines in `build.sbt`:
