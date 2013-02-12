@@ -1,4 +1,4 @@
-scalaVersion := "2.10.0-RC1"
+scalaVersion := "2.10.0"
 
 // If any library dependency includes a compilet, it will be automatically detected and used.
 // If this is not set, compilets must be added explicitly with:
