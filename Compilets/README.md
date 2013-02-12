@@ -4,6 +4,8 @@
 - Easy to express AOP-style rewrites (to add or remove logs, runtime checks, etc...)
 - Add your own warnings and errors to scalac in a few lines!
 
+([BSD-licensed](https://github.com/ochafik/Scalaxy/blob/master/LICENSE))
+
 # Usage
 
 The preferred way to use Scalaxy/Compilets is with Sbt 0.12.2 and the [sbt-scalaxy](http://github.com/ochafik/sbt-scalaxy) Sbt plugin, but the `Examples` subfolder demonstrates how to use it [with Maven or with Sbt but without `sbt-scalaxy`](https://github.com/ochafik/Scalaxy/tree/master/Examples/UsageWithMavenOrWithoutSbtPlugin). 

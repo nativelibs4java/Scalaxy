@@ -1,4 +1,4 @@
-Collection of Scala Macro goodies:
+Collection of Scala Macro goodies ([BSD-licensed](https://github.com/ochafik/Scalaxy/blob/master/LICENSE))
 - *[Compilets](https://github.com/ochafik/Scalaxy/tree/master/Compilets)* provide an easy way to express AST rewrites, backed by a compiler and sbt plugins.
 - *[Loops](https://github.com/ochafik/Scalaxy/tree/master/Loops)* provide a macro that optimizes simple foreach loops by rewriting them to an equivalent while loop:
 
@@ -29,3 +29,12 @@ Collection of Scala Macro goodies:
     )
     ```
 
+# Discuss
+
+If you have suggestions / questions:
+- [@ochafik on Twitter](http://twitter.com/ochafik)
+- [NativeLibs4Java mailing-list](groups.google.com/group/nativelibs4java)
+
+You can also [file bugs and enhancement requests here](https://github.com/ochafik/Scalaxy/issues/new).
+
+Any help (testing, patches, bug reports) will be greatly appreciated!

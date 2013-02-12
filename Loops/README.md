@@ -1,6 +1,7 @@
 # Scalaxy/Loops
 
 Optimized foreach loops for Scala 2.10 (using a macro to rewrite them to an equivalent while loop), currently limited to Range loops.
+([BSD-licensed](https://github.com/ochafik/Scalaxy/blob/master/LICENSE))
 
 The following expression:
 ```scala
