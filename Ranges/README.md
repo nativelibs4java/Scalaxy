@@ -1,7 +1,6 @@
-# Scalaxy/Beans
+# Scalaxy/Ranges
 
-Syntactic sugar to set Java beans properties with a very Scala-friendly syntax.
-(does not depend on the rest of Scalaxy)
+Optimized Range foreach loops (using a macro to rewrite them to an equivalent while loop).
 
 The following expression:
 ```scala
