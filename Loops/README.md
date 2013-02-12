@@ -50,3 +50,18 @@ If you want to build / test / hack on this project:
     sbt "project scalaxy-loops" "; clean ; ~test"
     ```
 
+# What's next?
+
+There's lots of work to reach the level of [ScalaCL 0.2](https://code.google.com/p/scalacl/wiki/ScalaCLPlugin), and that may never happen.
+
+However, if there is a particular loop optimization that's very important to you, please let me know:
+- [@ochafik on Twitter](http://twitter.com/ochafik)
+- [NativeLibs4Java mailing-list](groups.google.com/group/nativelibs4java)
+
+(you can also [file bugs and enhancement requests here](https://github.com/ochafik/Scalaxy/issues/new))
+
+Anyway, current plans are to support the following loop rewrites:
+- Range.{ foreach, map }
+- Array.{ foreach, map }
+
+Any help (testing, patches, bug reports) will be greatly appreciated!
