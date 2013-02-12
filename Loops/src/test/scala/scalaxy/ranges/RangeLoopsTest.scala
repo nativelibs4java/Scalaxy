@@ -17,6 +17,27 @@ class LoopsTest
   }
   
   @Test
+  def nestedRanges {
+    val n = 10
+    val m = 3
+    val o = 5
+    val p = 2
+    assertEquals(
+      withBuf(res =>
+        for (i <- 0 until n)
+          for (j <- 0 until m)
+            for (k <- 0 until o)
+              for (l <- 0 until p)
+                res += (i * 1 + j * 10 + k * 100 + l * 1000) / 10),
+      withBuf(res =>
+        for (i <- 0 until n optimized)
+          for (j <- 0 until m optimized)
+            for (k <- 0 until o optimized)
+              for (l <- 0 until p optimized)
+                res += (i * 1 + j * 10 + k * 100 + l * 1000) / 10))
+  }
+  
+  @Test
   def simpleRangeUntil {
     assertEquals(
       withBuf(res => 
