@@ -5,23 +5,25 @@ Syntactic sugar to set Java beans properties with a very Scala-friendly syntax.
 
 The following expression:
 ```scala
-import scalaxy.beans._
-
-new MyBean().set(foo = 10, bar = 12)
+import scalaxy.ranges._
+    
+for (i <- 0 until 100000000 optimized) { ... }
 ```
-Gets replaced (and fully type-checked) at compile time by:
+Gets replaced at compile time by:
 ```scala
 {
-  val bean = new MyBean()
-  bean.setFoo(10)
-  bean.setBar(12)
-  bean
+  var ii = 0
+  val end = 100000000
+  val step = 1
+  while (ii < end) {
+    val i = ii
+    ...
+    ii += step
+  }
 }
 ```
     
-Works with all Java beans and doesn't bring any runtime dependency.
-
-Only downside: code completion won't work in IDE (unless someone adds a special case for `Scalaxy/Beans` :-)).
+This is a rejuvenation of some code initially written for [ScalaCL](http://scalacl.googlecode.com/) then for [optimized-loops-macros](https://github.com/ochafik/optimized-loops-macros).
 
 # Usage
 
@@ -31,7 +33,7 @@ If you're using `sbt` 0.12.2+, just put the following lines in `build.sbt`:
 scalaVersion := "2.10.0"
 
 // Dependency at compilation-time only (not at runtime).
-libraryDependencies += "com.nativelibs4java" %% "scalaxy-beans" % "0.3-SNAPSHOT" % "provided"
+libraryDependencies += "com.nativelibs4java" %% "scalaxy-ranges" % "0.3-SNAPSHOT" % "provided"
 
 // Scalaxy/Beans snapshots are published on the Sonatype repository.
 resolvers += Resolver.sonatypeRepo("snapshots")
@@ -46,9 +48,6 @@ If you want to build / test / hack on this project:
     ```
     git clone git://github.com/ochafik/Scalaxy.git
     cd Scalaxy
-    sbt "project scalaxy-beans" "; clean ; ~test"
+    sbt "project scalaxy-ranges" "; clean ; ~test"
     ```
 
-# References
-
-See [my original post](http://ochafik.com/blog/?p=786).
