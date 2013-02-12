@@ -10,7 +10,10 @@ scalaVersion := "2.10.0"
 // Dependency at compilation-time only (not at runtime).
 libraryDependencies += "com.nativelibs4java" %% "scalaxy-loops" % "0.3-SNAPSHOT" % "provided"
 
+// Run benchmarks in cold VMs.
 fork := true
 
 // Scalaxy snapshots are published on the Sonatype repository.
 resolvers += Resolver.sonatypeRepo("snapshots")
+
+scalacOptions += "-optimise"
