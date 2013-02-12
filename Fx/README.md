@@ -1,7 +1,7 @@
 # Scalaxy/Fx: JavaFX eye-candy experiment for Scala 2.10
 
-Minimal set of Scala 2.10 macros, dynamics and implicits for maximal JavaFX eye-candy!
-([BSD-licensed](https://github.com/ochafik/Scalaxy/blob/master/LICENSE), does not depend on the rest of Scalaxy, )
+Minimal set of Scala 2.10 macros, dynamics and implicits for maximal JavaFX eye-candy ([BSD-licensed](https://github.com/ochafik/Scalaxy/blob/master/LICENSE))!
+(does not depend on the rest of Scalaxy)
 
 _Important_: this "library" was designed as a DSL with no runtime dependency (with the exception of [one class](https://github.com/ochafik/Scalaxy/blob/master/Fx/Runtime/src/main/scala/scalaxy/fx/runtime/ScalaChangeListener.scala) I couldn't get rid of yet, because of a [bug / limitation of Scala macros](https://issues.scala-lang.org/browse/SI-6386)).
 
