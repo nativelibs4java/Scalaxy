@@ -5,7 +5,8 @@ import scala.language.experimental.macros
 import scala.reflect.macros.Context
 import scala.reflect.NameTransformer.encode
 
-/** Range loop compilation optimizations
+/** Scala loops compilation optimizations.
+ *  Currently limited to Range foreach loops (no support for yield / map yet).
  *  Requires "inline" ranges (so the macro can extract start, end and optional step),
  *  and step must be a constant.
  *
@@ -14,13 +15,13 @@ import scala.reflect.NameTransformer.encode
  *
  *  Examples:
  *  <pre><code>
- *    import scalaxy.ranges._
+ *    import scalaxy.loops._
  *    val n = 1000000
  *    for (i <- 0 until n optimized) { ... }
  *    for (i <- n to 10 by -3 optimized) { ... }
  *  </code></pre>
  */
-package object ranges
+package object loops
 {
   implicit def rangeExtensions(range: Range) = new
   {
@@ -33,7 +34,7 @@ package object ranges
        *  Only works if `range` is an inline Range with a constant step.
        */
       def foreach[U](f: Int => U): Unit =
-        macro impl.foreachImpl[U]
+        macro impl.rangeForeachImpl[U]
 
       /** This must not be executed at runtime
        *  (should be rewritten away by the foreach macro during compilation).
@@ -43,12 +44,12 @@ package object ranges
   }
 }
 
-package ranges
+package loops
 {
   package object impl
   {
     // This needs to be public and statically accessible.
-    def foreachImpl[U : c.WeakTypeTag]
+    def rangeForeachImpl[U : c.WeakTypeTag]
         (c: Context)
         (f: c.Expr[Int => U]): c.Expr[Unit] =
     {

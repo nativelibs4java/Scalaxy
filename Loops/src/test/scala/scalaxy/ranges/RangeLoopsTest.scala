@@ -1,12 +1,12 @@
-package scalaxy.ranges.test
+package scalaxy.loops.test
 
 import org.junit._
 import org.junit.Assert._
 
 import scala.collection.mutable.ArrayBuffer
-import scalaxy.ranges._
+import scalaxy.loops._
 
-class RangesTest 
+class LoopsTest 
 {
   private val end = 10
   private val start = 3
@@ -17,7 +17,7 @@ class RangesTest
   }
   
   @Test
-  def simpleUntil {
+  def simpleRangeUntil {
     assertEquals(
       withBuf(res => 
         for (i <- start until end) 
@@ -28,7 +28,7 @@ class RangesTest
   }
   
   @Test
-  def simpleTo {
+  def simpleRangeTo {
     assertEquals(
       withBuf(res => 
         for (i <- start to end) 
@@ -39,7 +39,7 @@ class RangesTest
   }
   
   @Test
-  def simpleUntilBy {
+  def simpleRangeUntilBy {
     assertEquals(
       withBuf(res => 
         for (i <- start until end by 2) 
@@ -63,7 +63,7 @@ class RangesTest
   }
   
   @Test
-  def simpleToBy {
+  def simpleRangeToBy {
     assertEquals(
       withBuf(res => 
         for (i <- start to end by 2) 

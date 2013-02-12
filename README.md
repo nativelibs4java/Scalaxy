@@ -1,9 +1,9 @@
 Collection of Scala Macro goodies:
 - *[Compilets](https://github.com/ochafik/Scalaxy/tree/master/Compilets)* provide an easy way to express AST rewrites, backed by a compiler and sbt plugins.
-- *[Ranges](https://github.com/ochafik/Scalaxy/tree/master/Ranges)* provide a macro that optimizes simple Range foreach loops by rewriting them to an equivalent while loop:
+- *[Loops](https://github.com/ochafik/Scalaxy/tree/master/Loops)* provide a macro that optimizes simple foreach loops by rewriting them to an equivalent while loop:
 
     ```scala
-    import scalaxy.ranges._
+    import scalaxy.loops._
     
     for (i <- 0 until 100000000 optimized) { ... }
     ```

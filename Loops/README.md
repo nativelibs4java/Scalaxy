@@ -1,10 +1,10 @@
-# Scalaxy/Ranges
+# Scalaxy/Loops
 
-Optimized Range foreach loops (using a macro to rewrite them to an equivalent while loop).
+Optimized foreach loops (using a macro to rewrite them to an equivalent while loop), currently limited to Range loops.
 
 The following expression:
 ```scala
-import scalaxy.ranges._
+import scalaxy.loops._
     
 for (i <- 0 until 100000000 optimized) { ... }
 ```
@@ -32,9 +32,9 @@ If you're using `sbt` 0.12.2+, just put the following lines in `build.sbt`:
 scalaVersion := "2.10.0"
 
 // Dependency at compilation-time only (not at runtime).
-libraryDependencies += "com.nativelibs4java" %% "scalaxy-ranges" % "0.3-SNAPSHOT" % "provided"
+libraryDependencies += "com.nativelibs4java" %% "scalaxy-loops" % "0.3-SNAPSHOT" % "provided"
 
-// Scalaxy/Beans snapshots are published on the Sonatype repository.
+// Scalaxy/Loops snapshots are published on the Sonatype repository.
 resolvers += Resolver.sonatypeRepo("snapshots")
 ```
     
@@ -47,6 +47,6 @@ If you want to build / test / hack on this project:
     ```
     git clone git://github.com/ochafik/Scalaxy.git
     cd Scalaxy
-    sbt "project scalaxy-ranges" "; clean ; ~test"
+    sbt "project scalaxy-loops" "; clean ; ~test"
     ```
 
