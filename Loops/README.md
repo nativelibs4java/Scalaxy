@@ -11,7 +11,7 @@ for (i <- 0 until 100000000 optimized) {
   ...
 }
 ```
-Gets rewritten at compilation time by:
+Gets rewritten at compilation time into:
 ```scala
 {
   var ii = 0
