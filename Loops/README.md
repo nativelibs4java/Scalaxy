@@ -7,9 +7,11 @@ The following expression:
 ```scala
 import scalaxy.loops._
     
-for (i <- 0 until 100000000 optimized) { ... }
+for (i <- 0 until 100000000 optimized) {
+  ...
+}
 ```
-Gets replaced at compile time by:
+Gets rewritten at compilation time by:
 ```scala
 {
   var ii = 0
