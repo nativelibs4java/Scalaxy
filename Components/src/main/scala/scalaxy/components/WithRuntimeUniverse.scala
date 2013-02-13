@@ -50,16 +50,20 @@ trait WithRuntimeUniverse {
   def setPos(tree: Tree, pos: Position): Tree = tree
   
   lazy val toolbox = cm.mkToolBox()
-  def typeCheck(x: Expr[_]): Tree = typeCheck(x.tree)
-  def typeCheck(tree: Tree, pt: Type = NoType): Tree = {
+  def typeCheck(x: Expr[_]): Tree = 
+    typeCheck(x.tree)
+  def typeCheck(tree: Tree, pt: Type = WildcardType): Tree = {
     val ttree = tree.asInstanceOf[toolbox.u.Tree]
-    (
-      if (pt == NoType)
-        toolbox.typeCheck(ttree)
-      else
+    if (ttree.tpe != null && ttree.tpe != NoType)
+      tree
+    else {
+      try {
         toolbox.typeCheck(
           ttree, 
           pt.asInstanceOf[toolbox.u.Type])
-    ).asInstanceOf[Tree]
+      } catch { case ex: Throwable =>
+        throw new RuntimeException(s"Failed to typeCheck($tree, $pt): $ex", ex)
+      }
+    }.asInstanceOf[Tree]
   }
 }

@@ -560,12 +560,17 @@ extends MiscMatchers
     symbolOwner: Symbol,
     pos: Position,
     mutable: Boolean,
-    initialValue: Tree
+    initialValue: Tree,
+    ttpe: Type = NoType
   ): VarDef = {
-    typed { initialValue }
-    var tpe = initialValue.tpe
+    val tpe = normalize {
+      if (ttpe != NoType)
+        ttpe
+      else 
+        (typed { initialValue }).tpe
+    }
+    //var tpe = initialValue.tpe
     //if (ConstantType.unapply(tpe))//.isInstanceOf[ConstantType])
-      tpe = normalize(tpe)
     val name = fresh(prefix)
     val sym = 
       symbolOwner.newTermSymbol(name, pos, (if (mutable) Flag.MUTABLE else NoFlags) | Flag.LOCAL)

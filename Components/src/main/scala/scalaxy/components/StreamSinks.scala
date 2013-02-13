@@ -291,8 +291,8 @@ trait StreamSinks extends Streams {
           import loop.{ currentOwner }
           val pos = loop.pos
     
-          val out = newVariable("out", currentOwner, pos, mutable = true, newNull(value.tpe))
-          val presence = newVariable("hasOut", currentOwner, pos, mutable = true, newBool(false))
+          val out = newVariable("out", currentOwner, pos, true, newNull(value.tpe))
+          val presence = newVariable("hasOut", currentOwner, pos, true, newBool(false))
           loop.preOuter += out.definition
           loop.preOuter += presence.definition
           loop.inner += newAssign(out, value.value())

@@ -123,23 +123,27 @@ extends MiscMatchers
       tree.tpe
     }
   }
-  def applyFiberPath(rootGen: TreeGen, path: List[Int]): Tree = {
-    def sub(invertedPath: List[Int]): Tree = invertedPath match {
-      case Nil => 
-        typed { rootGen() }
+  def applyFiberPath(rootGen: TreeGen, path: List[Int]): (Tree, Type) = {
+    def sub(invertedPath: List[Int]): (Tree, Type) = invertedPath match {
+      case Nil =>
+        val root = typed { rootGen() }
+        (root, root.tpe)
       case i :: rest =>
-        val inner = applyFiberPath(rootGen, rest)
+        val (inner, innerTpe) = applyFiberPath(rootGen, rest)
         val name = N("_" + (i + 1))
         
         //println("Getting member " + i + " of (" + inner + ": " + inner.tpe + ") ; invertedPath = " + invertedPath)
-        val innerTpe = getType(inner)
+        //val innerTpe = getType(inner)
         assert(innerTpe != NoType, "Cannot apply tuple path on untyped tree")
         val info = getTupleInfo(innerTpe)
         assert(i < info.components.size, "bad path : i = " + i + ", type = " + innerTpe + ", path = " + path + ", root = " + rootGen())
-        val sym = innerTpe member name
+        //val sym = innerTpe member name
         //println(s"innerTpe($innerTpe).member(name($name)) = sym($sym: ${sym.typeSignature})")
-        typeCheck(
-          Select(inner, sym),
+        // TODO typeCheck?
+        //typeCheck
+        
+        (
+          Select(inner, name),
           info.components(i).tpe
         )
         
@@ -176,7 +180,7 @@ extends MiscMatchers
       val flatPaths = info.flattenPaths
       assert(sliceOffset < flatPaths.size, "slice offset = " + sliceOffset + ", flat paths = " + flatPaths)
       //println(s"baseSymbol = $baseSymbol, ${baseSymbol.typeSignature}, ${root().symbol.typeSignature}")
-      var res = applyFiberPath(root, flatPaths(sliceOffset))
+      var (res, resTpe) = applyFiberPath(root, flatPaths(sliceOffset))
       //analyzer.setSlice(res, this)
       //res = replace(res)
       analyzer.setSlice(res, this)
