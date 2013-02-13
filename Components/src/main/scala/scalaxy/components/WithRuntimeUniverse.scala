@@ -30,48 +30,36 @@
  */
 package scalaxy.components
 
-import org.junit._
-import Assert._
-import org.hamcrest.CoreMatchers._
+import scala.reflect.runtime.{ universe => ru }
+import scala.reflect.runtime.{ currentMirror => cm }
+import scala.tools.reflect.ToolBox
 
-class TuploidsTest 
-    extends Tuploids 
-    with WithRuntimeUniverse
-    with WithTestFresh
-{
+trait WithRuntimeUniverse {
+  lazy val global = ru
   import global._
+
+  def verbose = false
   
-  class EmptyClass()
-  case class EmptyCaseClass()
-  class ImmutableClass(a: Int, b: Int)
-  class MutableClass(var a: Int, b: Int)
-  case class ImmutableCaseClass(a: Int, b: Int)
-  case class MutableCaseClass(a: Int, b: Int) {
-    var v = 0
-  }
-    
-  @Test
-  def testTuples {
-    assertFalse(isTupleType(typeOf[(Int)]))
-    assertFalse(isTupleType(typeOf[Int]))
-    assertFalse(isTupleType(typeOf[ImmutableCaseClass]))
-    assertFalse(isTupleType(typeOf[ImmutableClass]))
-    assertFalse(isTupleType(typeOf[MutableCaseClass]))
-    assertFalse(isTupleType(typeOf[MutableClass]))
-    assertFalse(isTupleType(typeOf[{ val x: Int }]))
-    assertTrue(isTupleType(typeOf[(Int, Int)]))
-    assertTrue(isTupleType(typeOf[(Int, Int, Float, (Double, Int))]))
-  }
+  def withSymbol[T <: Tree](sym: Symbol, tpe: Type = NoType)(tree: T): T = tree
+  def typed[T <: Tree](tree: T): T = tree
+  def inferImplicitValue(pt: Type): Tree =
+    toolbox.inferImplicitValue(pt.asInstanceOf[toolbox.u.Type]).asInstanceOf[global.Tree]
+  def setInfo(sym: Symbol, tpe: Type): Symbol = sym
+  def setType(sym: Symbol, tpe: Type): Symbol = sym
+  def setType(tree: Tree, tpe: Type): Tree = tree
+  def setPos(tree: Tree, pos: Position): Tree = tree
   
-  @Test
-  def testTuploids {
-    assertTrue(isTuploidType(typeOf[Int]))
-    assertTrue(isTuploidType(typeOf[(Int, Int)]))
-    
-    assertTrue(isTuploidType(typeOf[ImmutableCaseClass]))
-    assertTrue(isTuploidType(typeOf[ImmutableClass]))
-                        
-    assertFalse(isTuploidType(typeOf[MutableCaseClass]))
-    assertFalse(isTuploidType(typeOf[MutableClass]))
+  lazy val toolbox = cm.mkToolBox()
+  def typeCheck(x: Expr[_]): Tree = typeCheck(x.tree)
+  def typeCheck(tree: Tree, pt: Type = NoType): Tree = {
+    val ttree = tree.asInstanceOf[toolbox.u.Tree]
+    (
+      if (pt == NoType)
+        toolbox.typeCheck(ttree)
+      else
+        toolbox.typeCheck(
+          ttree, 
+          pt.asInstanceOf[toolbox.u.Type])
+    ).asInstanceOf[Tree]
   }
 }

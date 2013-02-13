@@ -30,44 +30,12 @@
  */
 package scalaxy.components
 
-import scala.reflect.runtime.{ universe => ru }
-import scala.reflect.runtime.{ currentMirror => cm }
-import scala.tools.reflect.ToolBox
-
-trait WithRuntimeUniverse {
+trait WithTestFresh {
   private var nextId = 0L
-  lazy val global = ru
-  import global._
-
-  def verbose = true
-  
-  
-  def withSymbol[T <: Tree](sym: Symbol, tpe: Type = NoType)(tree: T): T = tree
-  def typed[T <: Tree](tree: T): T = tree
-  def inferImplicitValue(pt: Type): Tree =
-    toolbox.inferImplicitValue(pt.asInstanceOf[toolbox.u.Type]).asInstanceOf[global.Tree]
-  def setInfo(sym: Symbol, tpe: Type): Symbol = sym
-  def setType(sym: Symbol, tpe: Type): Symbol = sym
-  def setType(tree: Tree, tpe: Type): Tree = tree
-  def setPos(tree: Tree, pos: Position): Tree = tree
   
   def fresh(s: String) = synchronized {
     val v = nextId
     nextId += 1
     s + v
-  }
-  
-  lazy val toolbox = cm.mkToolBox()
-  def typeCheck(x: Expr[_]): Tree = typeCheck(x.tree)
-  def typeCheck(tree: Tree, pt: Type = NoType): Tree = {
-    val ttree = tree.asInstanceOf[toolbox.u.Tree]
-    (
-      if (pt == NoType)
-        toolbox.typeCheck(ttree)
-      else
-        toolbox.typeCheck(
-          ttree, 
-          pt.asInstanceOf[toolbox.u.Type])
-    ).asInstanceOf[Tree]
   }
 }

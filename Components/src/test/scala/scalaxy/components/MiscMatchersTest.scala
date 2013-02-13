@@ -34,7 +34,11 @@ import org.junit._
 import Assert._
 import org.hamcrest.CoreMatchers._
 
-class MiscMatchersTest extends MiscMatchers with WithRuntimeUniverse {
+class MiscMatchersTest 
+    extends MiscMatchers 
+    with WithRuntimeUniverse
+    with WithTestFresh
+{
   import global._
     
   def extractTupleComponentTypes(x: Expr[_]) =
