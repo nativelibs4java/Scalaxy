@@ -6,7 +6,7 @@ OPTIM_FLAGS="-optimise -Yclosure-elim -Yinline"
 NORMAL_ARGS="TestIntRangeLoops.scala TestUtils.scala"
 SCALAXY_ARGS="TestIntRangeLoopsOptimized.scala TestUtils.scala -feature -cp $HOME/.ivy2/cache/com.nativelibs4java/scalaxy-loops_2.10/jars/scalaxy-loops_2.10-0.3-SNAPSHOT.jar"
 
-N=1
+N=10
 
 function normalBuild {
     for ((i = 0; i < $N; i += 1)); do
@@ -34,6 +34,10 @@ function announce {
 # $@
 #"
 }
+
+# Have sbt fetch scalaxy-loops and put it in Ivy cache. 
+cd $(dirname $0)
+sbt update || exit 1
 
 announce "Scalaxy build"
 time -p scalaxyBuild || exit 1

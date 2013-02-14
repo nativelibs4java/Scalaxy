@@ -1,3 +1,4 @@
+import scala.language.postfixOps
 import scalaxy.loops._
 
 object TestIntRangeLoopsOptimized {
