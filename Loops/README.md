@@ -6,6 +6,7 @@ Optimized loops for Scala 2.10 (using a macro to rewrite them to an equivalent w
 The following expression:
 ```scala
 import scalaxy.loops._
+import scala.language.postfixOps // Optional.
     
 for (i <- 0 until 100000000 optimized) {
   ...
@@ -45,7 +46,7 @@ resolvers += Resolver.sonatypeRepo("snapshots")
 // This one usually doesn't hurt, but it may slow compilation down:
 // scalacOptions += "-optimise"
 ```
-    
+
 # Hacking
 
 If you want to build / test / hack on this project:

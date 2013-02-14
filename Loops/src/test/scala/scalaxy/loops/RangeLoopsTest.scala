@@ -3,6 +3,7 @@ package scalaxy.loops.test
 import org.junit._
 import org.junit.Assert._
 
+import scala.language.postfixOps
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 

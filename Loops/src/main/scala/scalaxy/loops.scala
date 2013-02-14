@@ -1,6 +1,7 @@
 package scalaxy
 
 import scala.language.experimental.macros
+import scala.language.implicitConversions
 
 import scala.reflect.macros.Context
 import scala.reflect.NameTransformer.encode
@@ -23,24 +24,29 @@ import scala.reflect.NameTransformer.encode
  */
 package object loops
 {
-  implicit def rangeExtensions(range: Range) = new
+  implicit def rangeExtensions(range: Range) =
+    new RangeExtensions(range)
+  
+  private[loops] class RangeExtensions(range: Range)
   {
     /** Ensures a Range's foreach loop is compiled as an optimized while loop.
      *  Failure to optimize the loop will result in a compilation error.
      */
-    def optimized = new
-    {
-      /** Optimized foreach method.
-       *  Only works if `range` is an inline Range with a constant step.
-       */
-      def foreach[U](f: Int => U): Unit =
-        macro impl.rangeForeachImpl[U]
+    def optimized: OptimizedRange = ???
+  }
+  
+  private[loops] class OptimizedRange
+  {
+    /** Optimized foreach method.
+     *  Only works if `range` is an inline Range with a constant step.
+     */
+    def foreach[U](f: Int => U): Unit =
+      macro impl.rangeForeachImpl[U]
 
-      /** This must not be executed at runtime
-       *  (should be rewritten away by the foreach macro during compilation).
-       */
-      ???
-    }
+    /** This must not be executed at runtime
+     *  (should be rewritten away by the foreach macro during compilation).
+     */
+    ???
   }
 }
 

@@ -46,7 +46,13 @@ object Scalaxy extends Build
     seq(lsSettings: _*) ++
     Seq(
       javacOptions ++= Seq("-Xlint:unchecked"),
-      scalacOptions ++= Seq("-encoding", "UTF-8", "-deprecation", "-unchecked"),
+      scalacOptions ++= Seq(
+        "-encoding", "UTF-8", 
+        "-deprecation",
+        "-feature",
+        "-unchecked",
+        "-optimise"
+      ),
       //scalacOptions in Test ++= Seq("-Xprint:typer"),
       //fork in Test := true,
       fork := true,
