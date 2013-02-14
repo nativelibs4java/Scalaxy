@@ -16,4 +16,4 @@ fork := true
 // Scalaxy snapshots are published on the Sonatype repository.
 resolvers += Resolver.sonatypeRepo("snapshots")
 
-scalacOptions += "-optimise"
+scalacOptions ++= Seq("-optimise", "-Yinline")
