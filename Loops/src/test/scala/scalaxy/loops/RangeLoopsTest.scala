@@ -121,6 +121,36 @@ class LoopsTest
   }
   
   @Test
+  def classInsideLoop {
+    assertEquals(
+      withBuf[Int](res => 
+        for (i <- start to end by 2) {
+          class C { def f = i * 2 }
+          res += new C().f
+        }),
+      withBuf[Int](res => 
+        for (i <- start to end by 2 optimized) {
+          class C { def f = i * 2 }
+          res += new C().f
+        }))
+  }
+  
+  @Test
+  def sideEffectFullParameters {
+    assertEquals(
+      withBuf[Int](res => {
+        var v = 0
+        for (i <- { v += 1; v } until { v *= 2; 100 - v }) 
+          res += (i * 2)
+      }),
+      withBuf[Int](res => {
+        var v = 0
+        for (i <- { v += 1; v } until { v *= 2; 100 - v } optimized) 
+          res += (i * 2)
+      }))
+  }
+  
+  @Test
   def nameCollisions {
     val n = 10
     val m = 3
