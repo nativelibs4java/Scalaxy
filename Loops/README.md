@@ -47,6 +47,19 @@ resolvers += Resolver.sonatypeRepo("snapshots")
 // scalacOptions += "-optimise"
 ```
 
+And append `optimized` to all the ranges you want to optimize:
+```scala
+for (i <- 0 until n optimized; j <- i until n optimized) {
+  ...
+}
+```
+
+You can always disable loop optimizations without removing the `optimized` postfix operator from your code: just recompile with the environment variable `SCALAXY_LOOPS_OPTIMIZED=0` or the System property `scalaxy.loops.optimized=false` set:
+```
+SCALAXY_LOOPS_OPTIMIZED=0 sbt clean compile ...
+scalac -J-Dscalaxy.loops.optimized=false ...
+```
+
 # Hacking
 
 If you want to build / test / hack on this project:

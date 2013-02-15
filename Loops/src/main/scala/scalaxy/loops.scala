@@ -24,6 +24,11 @@ import scala.reflect.NameTransformer.encode
  */
 package object loops
 {
+  // TODO: optimize Range.map.
+  // TODO: optimize Array.foreach, Array.map.
+  // TODO: optimize Array.tabulate.
+  // TODO: optimize ArrayBuffer.foreach, ArrayBuffer.map.
+  // TODO: optimize (List/Seq).apply(...).foreach (replace with Array.apply + while loop)
   implicit def rangeExtensions(range: Range) =
     new RangeExtensions(range)
   
