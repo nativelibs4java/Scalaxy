@@ -30,7 +30,7 @@ This is a rejuvenation of some code initially written for [ScalaCL](http://scala
 
 (see [this blog post](http://ochafik.com/blog/?p=806) for a recap on the ScalaCL project rationale / story)
 
-# Usage
+# Usage with Sbt
 
 If you're using `sbt` 0.12.2+, just put the following lines in `build.sbt`:
 ```scala
@@ -61,6 +61,28 @@ SCALAXY_LOOPS_OPTIMIZED=0 sbt clean compile ...
 Or if you're not using sbt:
 ```
 scalac -J-Dscalaxy.loops.optimized=false ...
+```
+
+# Usage with Maven
+
+With Maven, you'll need this in your `pom.xml` file:
+```xml
+<dependencies>
+  ...
+  <dependency>
+    <groupId>com.nativelibs4java</groupId>
+    <artifactId>scalaxy-loops_2.10</artifactId>
+    <version>0.3-SNAPSHOT</version>
+  </dependency>
+</dependencies>
+
+<repositories>
+  ...
+  <repository>
+    <id>sonatype-oss-public</id>
+    <url>https://oss.sonatype.org/content/groups/public/</url>
+  </repository>
+</repositories>
 ```
 
 # Hacking
