@@ -54,6 +54,10 @@ package loops
 {
   package object impl
   {
+    lazy val disabled =
+      System.getenv("SCALAXY_LOOPS_OPTIMIZED") == "0" ||
+      System.getProperty("scalaxy.loops.optimized") == "false"
+
     // This needs to be public and statically accessible.
     def rangeForeachImpl[U : c.WeakTypeTag]
         (c: Context)
@@ -106,90 +110,96 @@ package loops
       c.typeCheck(c.prefix.tree) match {
         case Select(Apply(_, List(range)), optimizedName)
         if optimizedName.toString == "optimized" =>
-          range match {
-            case InlineRangeTree(start, end, stepOpt, isInclusive) =>
-              val step: Int = stepOpt match {
-                case Some(Literal(Constant(step: Int))) =>
-                  step
-                case None =>
-                  1
-                case Some(step) =>
-                  c.error(step.pos, "Range step must be a non-null constant!")
-                  0
-              }
-              c.typeCheck(f.tree) match {
-                case Function(List(param), body) =>
-
-                  def newIntVal(name: TermName, rhs: Tree) =
-                    ValDef(NoMods, name, TypeTree(IntTpe), rhs)
-
-                  def newIntVar(name: TermName, rhs: Tree) =
-                    ValDef(Modifiers(MUTABLE), name, TypeTree(IntTpe), rhs)
-
-                  // Body expects a local constant: create a var outside the loop + a val inside it.
-                  val iVar = newIntVar(c.fresh("i"), start)
-                  val iVal = newIntVal(param.name, Ident(iVar.name))
-                  val stepVal = newIntVal(c.fresh("step"), Literal(Constant(step)))
-                  val endVal = newIntVal(c.fresh("end"), end)
-                  val condition =
-                    Apply(
-                      Select(
-                        Ident(iVar.name),
-                        newTermName(
-                          encode(
-                            if (step > 0) {
-                              if (isInclusive) "<=" else "<"
-                            } else {
-                              if (isInclusive) ">=" else ">"
-                            }
-                          )
-                        )
-                      ),
-                      List(Ident(endVal.name))
-                    )
-
-                  val iVarExpr = c.Expr[Unit](iVar)
-                  val iValExpr = c.Expr[Unit](iVal)
-                  val endValExpr = c.Expr[Unit](endVal)
-                  val stepValExpr = c.Expr[Unit](stepVal)
-                  val conditionExpr = c.Expr[Boolean](condition)
-                  // Body still refers to old function param symbol (which has same name as iVal).
-                  // We must wipe it out (alas, it's not local, so we must reset all symbols).
-                  // TODO: be less extreme, replacing only the param symbol (see branch replaceParamSymbols).
-                  val bodyExpr = c.Expr[Unit](c.resetAllAttrs(body))
-
-                  val incrExpr = c.Expr[Unit](
-                    Assign(
-                      Ident(iVar.name),
+          if (disabled) {
+            val rangeExpr = c.Expr[Range](range)
+            c.info(c.macroApplication.pos, "Loop optimizations are disabled.", true) 
+            reify(rangeExpr.splice.foreach(f.splice))
+          } else {          
+            range match {
+              case InlineRangeTree(start, end, stepOpt, isInclusive) =>
+                val step: Int = stepOpt match {
+                  case Some(Literal(Constant(step: Int))) =>
+                    step
+                  case None =>
+                    1
+                  case Some(step) =>
+                    c.error(step.pos, "Range step must be a non-null constant!")
+                    0
+                }
+                c.typeCheck(f.tree) match {
+                  case Function(List(param), body) =>
+  
+                    def newIntVal(name: TermName, rhs: Tree) =
+                      ValDef(NoMods, name, TypeTree(IntTpe), rhs)
+  
+                    def newIntVar(name: TermName, rhs: Tree) =
+                      ValDef(Modifiers(MUTABLE), name, TypeTree(IntTpe), rhs)
+  
+                    // Body expects a local constant: create a var outside the loop + a val inside it.
+                    val iVar = newIntVar(c.fresh("i"), start)
+                    val iVal = newIntVal(param.name, Ident(iVar.name))
+                    val stepVal = newIntVal(c.fresh("step"), Literal(Constant(step)))
+                    val endVal = newIntVal(c.fresh("end"), end)
+                    val condition =
                       Apply(
                         Select(
                           Ident(iVar.name),
-                          encode("+")
+                          newTermName(
+                            encode(
+                              if (step > 0) {
+                                if (isInclusive) "<=" else "<"
+                              } else {
+                                if (isInclusive) ">=" else ">"
+                              }
+                            )
+                          )
                         ),
-                        List(Ident(stepVal.name))
+                        List(Ident(endVal.name))
+                      )
+  
+                    val iVarExpr = c.Expr[Unit](iVar)
+                    val iValExpr = c.Expr[Unit](iVal)
+                    val endValExpr = c.Expr[Unit](endVal)
+                    val stepValExpr = c.Expr[Unit](stepVal)
+                    val conditionExpr = c.Expr[Boolean](condition)
+                    // Body still refers to old function param symbol (which has same name as iVal).
+                    // We must wipe it out (alas, it's not local, so we must reset all symbols).
+                    // TODO: be less extreme, replacing only the param symbol (see branch replaceParamSymbols).
+                    val bodyExpr = c.Expr[Unit](c.resetAllAttrs(body))
+  
+                    val incrExpr = c.Expr[Unit](
+                      Assign(
+                        Ident(iVar.name),
+                        Apply(
+                          Select(
+                            Ident(iVar.name),
+                            encode("+")
+                          ),
+                          List(Ident(stepVal.name))
+                        )
                       )
                     )
-                  )
-                  val iVarRef = c.Expr[Int](Ident(iVar.name))
-                  val stepValRef = c.Expr[Int](Ident(stepVal.name))
-
-                  reify {
-                    iVarExpr.splice
-                    endValExpr.splice
-                    stepValExpr.splice
-                    while (conditionExpr.splice) {
-                      iValExpr.splice
-                      bodyExpr.splice
-                      incrExpr.splice
+                    val iVarRef = c.Expr[Int](Ident(iVar.name))
+                    val stepValRef = c.Expr[Int](Ident(stepVal.name))
+  
+                    reify {
+                      iVarExpr.splice
+                      endValExpr.splice
+                      stepValExpr.splice
+                      while (conditionExpr.splice) {
+                        iValExpr.splice
+                        bodyExpr.splice
+                        incrExpr.splice
+                      }
                     }
-                  }
-                case _ =>
-                  c.error(f.tree.pos, s"Unsupported function: $f")
-                  null
-              }
-            case _ =>
-              c.error(range.pos, s"Unsupported range: $range")
-              null
+                  case _ =>
+                    c.error(f.tree.pos, s"Unsupported function: $f")
+                    null
+                }
+              case _ =>
+                c.error(range.pos, s"Unsupported range: $range")
+                null
+            }
           }
         case _ =>
           c.error(c.prefix.tree.pos, s"Expression not recognized by the ranges macro: ${c.prefix.tree}")
