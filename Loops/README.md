@@ -68,7 +68,6 @@ scalac -J-Dscalaxy.loops.optimized=false ...
 With Maven, you'll need this in your `pom.xml` file:
 ```xml
 <dependencies>
-  ...
   <dependency>
     <groupId>com.nativelibs4java</groupId>
     <artifactId>scalaxy-loops_2.10</artifactId>
@@ -77,7 +76,6 @@ With Maven, you'll need this in your `pom.xml` file:
 </dependencies>
 
 <repositories>
-  ...
   <repository>
     <id>sonatype-oss-public</id>
     <url>https://oss.sonatype.org/content/groups/public/</url>
