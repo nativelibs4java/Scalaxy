@@ -58,7 +58,7 @@ You can always disable loop optimizations without removing the `optimized` postf
 ```
 SCALAXY_LOOPS_OPTIMIZED=0 sbt clean compile ...
 ```
-Or:
+Or if you're not using sbt:
 ```
 scalac -J-Dscalaxy.loops.optimized=false ...
 ```
