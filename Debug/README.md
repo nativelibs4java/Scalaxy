@@ -2,7 +2,7 @@
 
 Useful debug macros.
 
-Package `scalaxy.debug` provides macro alternatives to `Predef.{assert, assume, require}` that automatically add a sensible message:
+Package `scalaxy.debug` provides macro alternatives to `Predef.{assert, assume, require}` that automatically add a sensible message, making them more similar to [C asserts](http://en.wikipedia.org/wiki/Assert.h):
 ```scala
 import scalaxy.debug._
 
@@ -33,6 +33,10 @@ Is expanded to:
 ```
 
 These macros don't bring any runtime dependency: you can just kiss most `assert`, `assume` and `require` messages goodbye (and still have informative failure messages).
+
+If you knew about `assert` but unsure what `assume` and `require` are, please read this post:
+
+    [Assert, Require and Assume](http://daily-scala.blogspot.co.uk/2010/03/assert-require-assume.html) (on [Daily Scala](http://daily-scala.blogspot.co.uk/))
 
 # Usage
 
