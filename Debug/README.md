@@ -34,9 +34,7 @@ Is expanded to:
 
 These macros don't bring any runtime dependency: you can just kiss most `assert`, `assume` and `require` messages goodbye (and still have informative failure messages).
 
-If you knew about `assert` but unsure what `assume` and `require` are, please read this post:
-
-    [Assert, Require and Assume](http://daily-scala.blogspot.co.uk/2010/03/assert-require-assume.html) (on [Daily Scala](http://daily-scala.blogspot.co.uk/))
+If you knew about `assert` but unsure what `assume` and `require` are, please [Assert, Require and Assume](http://daily-scala.blogspot.co.uk/2010/03/assert-require-assume.html) (on [Daily Scala](http://daily-scala.blogspot.co.uk/))
 
 # Usage
 
