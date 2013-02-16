@@ -7,19 +7,66 @@ import scala.reflect.ClassTag
 import scala.reflect.NameTransformer.encode
 import scala.reflect.macros.Context
 
-package object debug {
+package object debug
+{
   def assert(condition: Boolean): Unit =
     macro impl.assertImpl
+
+  def require(condition: Boolean): Unit =
+    macro impl.requireImpl
+
+  def assume(condition: Boolean): Unit =
+    macro impl.assumeImpl
 }
 
-package debug {
-  object impl {
+package debug 
+{
+  object impl 
+  {
     def assertImpl(c: Context)(condition: c.Expr[Boolean]): c.Expr[Unit] = 
     {
       import c.universe._
       
-      def newValDef(name: String, rhs: Tree, tpe: Type = null) =
-        ValDef(NoMods, newTermName(c.fresh(name)), TypeTree(Option(tpe).getOrElse(rhs.tpe.normalize)), rhs)
+      assertLikeImpl(c)(condition, (condExpr, messageExpr) => {
+        reify(Predef.assert(condExpr.splice, messageExpr.splice))
+      })
+    }
+    
+    def requireImpl(c: Context)(condition: c.Expr[Boolean]): c.Expr[Unit] = 
+    {
+      import c.universe._
+      
+      assertLikeImpl(c)(condition, (condExpr, messageExpr) => {
+        reify(Predef.require(condExpr.splice, messageExpr.splice))
+      })
+    }
+    
+    def assumeImpl(c: Context)(condition: c.Expr[Boolean]): c.Expr[Unit] = 
+    {
+      import c.universe._
+      
+      assertLikeImpl(c)(condition, (condExpr, messageExpr) => {
+        reify(Predef.assume(condExpr.splice, messageExpr.splice))
+      })
+    }
+    
+    def assertLikeImpl
+        (c: Context)
+        (
+          condition: c.Expr[Boolean], 
+          callBuilder: (c.Expr[Boolean], c.Expr[String]) => c.Expr[Unit]
+        ): c.Expr[Unit] = 
+    {
+      import c.universe._
+      
+      def newValDef(name: String, rhs: Tree, tpe: Type = null) = {
+        ValDef(
+          NoMods, 
+          newTermName(c.fresh(name)), 
+          TypeTree(Option(tpe).getOrElse(rhs.tpe.normalize)), 
+          rhs
+        )
+      }
 
       object EqualityOpName {
         def unapply(name: Name): Option[Boolean] = {
@@ -29,6 +76,7 @@ package debug {
           else None
         }
       }
+      
       def isConstant(tree: Tree) = tree match {
         case Literal(Constant(_)) => true
         case _ => false
@@ -55,20 +103,14 @@ package debug {
               leftDef,
               rightDef,
               if (isEqual)
-                reify(
-                  Predef.assert(
-                    condExpr.splice, 
-                    s"${str.splice} (${leftExpr.splice} ${actualRelExpr.splice} ${rightExpr.splice})"
-                  )
+                callBuilder(
+                  condExpr, 
+                  reify(s"${str.splice} (${leftExpr.splice} ${actualRelExpr.splice} ${rightExpr.splice})")
                 ).tree
               else if (isConstant(left) || isConstant(right))
-                reify(
-                  Predef.assert(condExpr.splice, str.splice)
-                ).tree
+                callBuilder(condExpr, str).tree
               else
-                reify(
-                  Predef.assert(condExpr.splice, s"${str.splice} (== ${leftExpr.splice})")
-                ).tree
+                callBuilder(condExpr, reify(s"${str.splice} (== ${leftExpr.splice})")).tree
             )
           case _ =>
             val condDef = newValDef("cond", typedCondition)
@@ -80,12 +122,7 @@ package debug {
                 c.literal(typedCondition + " == false")
             Block(
               condDef,
-              reify(
-                Predef.assert(
-                  condExpr.splice,
-                  str.splice
-                )
-              ).tree
+              callBuilder(condExpr, str).tree
             )
         }
       )

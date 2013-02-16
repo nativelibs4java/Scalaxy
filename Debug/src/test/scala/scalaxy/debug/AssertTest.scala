@@ -3,58 +3,62 @@ package scalaxy.debug.test
 import org.junit._
 import org.junit.Assert._
 
-import scalaxy.debug.assert
+import scalaxy.debug._
 
 class AssertTest {
-  def assertAssertFails(v: => Unit, msg: => String) {
+  def assertFails(kind: String, v: => Unit, msg: => String) {
     try {
       v
       assertTrue("Expected AssertError!", false)
     } catch {
-      case e: AssertionError =>
-        assertEquals(s"assertion failed: $msg", e.getMessage)
+      case e @ (_: AssertionError | _: IllegalArgumentException) =>
+        assertEquals(s"$kind failed: $msg", e.getMessage)
     }
   }
   
   @Test
   def testConstants = {
     assert(true)
-    assertAssertFails(
-      assert(false),
-      "Always false!")
+    assume(true)
+    require(true)
+    assertFails("assertion", assert(false), "Always false!")
+    assertFails("assumption", assume(false), "Always false!")
+    assertFails("requirement", require(false), "Always false!")
       
     val no = false
-    assertAssertFails(
-      assert(no),
-      "no == false")
+    assertFails("assertion",    assert(no), "no == false")
+    assertFails("assumption",   assume(no), "no == false")
+    assertFails("requirement", require(no), "no == false")
       
     val niet = false
-    assertAssertFails(
-      assert(no || niet),
-      "no.||(niet) == false")
+    assertFails("assertion",    assert(no || niet), "no.||(niet) == false")
+    assertFails("assumption",   assume(no || niet), "no.||(niet) == false")
+    assertFails("requirement", require(no || niet), "no.||(niet) == false")
   }
   
   @Test
   def testEqualValues {
     val a = 10
     val b = 12
-    assertAssertFails(
-      assert(a == b),
-      "a != b (10 != 12)")
+    assertFails("assertion",    assert(a == b), "a != b (10 != 12)")
+    assertFails("assumption",   assume(a == b), "a != b (10 != 12)")
+    assertFails("requirement", require(a == b), "a != b (10 != 12)")
   }
   
   @Test
   def testDifferentValues {
     val a = 10
     val aa = 10
-    assertAssertFails(
-      assert(a != aa),
-      "a == aa (== 10)")
-    assertAssertFails(
-      assert(a != 10),
-      "a == 10")
-    assertAssertFails(
-      assert(10 != a),
-      "10 == a")
+    assertFails("assertion",    assert(a != aa), "a == aa (== 10)")
+    assertFails("assumption",   assume(a != aa), "a == aa (== 10)")
+    assertFails("requirement", require(a != aa), "a == aa (== 10)")
+    
+    assertFails("assertion",    assert(a != 10), "a == 10")
+    assertFails("assumption",   assume(a != 10), "a == 10")
+    assertFails("requirement", require(a != 10), "a == 10")
+    
+    assertFails("assertion",    assert(10 != a), "10 == a")
+    assertFails("assumption",   assume(10 != a), "10 == a")
+    assertFails("requirement", require(10 != a), "10 == a")
   }
 }

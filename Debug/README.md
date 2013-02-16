@@ -2,7 +2,7 @@
 
 Useful debug macros.
 
-`scalaxy.debug.assert(condition)` adds a sensible message to asserts:
+Package `scalaxy.debug` provides macro alternatives to `Predef.{assert, assume, require}` that automatically add a sensible message:
 ```scala
 import scalaxy.debug._
 
@@ -32,7 +32,7 @@ Is expanded to:
 }
 ```
 
-These macros don't bring any runtime dependency: you can just kiss most `assert` messages goodbye (and still have informative assertion failure messages).
+These macros don't bring any runtime dependency: you can just kiss most `assert`, `assume` and `require` messages goodbye (and still have informative failure messages).
 
 # Usage
 
