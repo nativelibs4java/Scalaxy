@@ -2,7 +2,7 @@
 
 Useful debug macros.
 
-Package `scalaxy.debug` provides macro alternatives to `Predef.{assert, assume, require}` that automatically add a sensible message, making them more similar to [C asserts](http://en.wikipedia.org/wiki/Assert.h):
+Package `scalaxy.debug` provides macro alternatives to `Predef.{assert, assume, require}` that automatically add a sensible failure message, making them more similar to [C asserts](http://en.wikipedia.org/wiki/Assert.h):
 ```scala
 import scalaxy.debug._
 
@@ -12,23 +12,23 @@ val b = 12
 val condition = a == b
 
 // Asserts and their corresponding message:
-assert(a == b)    // "a != b (10 != 12)"
-assert(a != aa)   // "a == aa (== 10)" 
-assert(a != 12)   // "a == 12"
-assert(condition) // "condition == false"
+assert(a == b)    // "a == b (10 != 12)"
+assert(a != aa)   // "a != aa (a == aa == 10)" 
+assert(a != 12)   // "a != 12"
+assert(condition) // "condition"
 ```
 
 All of this is done during macro-expansion, so there's no runtime overhead.
 For instance, the the following:
 ```scala
-assert(a == b)    // "a != b (10 != 12)"
+assert(a == b)    // "a == b (10 != 12)"
 ```
 Is expanded to:
 ```scala
 { 
   val left = a
   val right = b
-  assert(left == right, s"a != b ($left != $right)")
+  assert(left == right, s"a == b ($left != $right)")
 }
 ```
 

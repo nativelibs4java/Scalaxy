@@ -93,9 +93,10 @@ package debug
             val leftExpr = c.Expr[Any](Ident(leftDef.name))
             val rightExpr = c.Expr[Any](Ident(rightDef.name))
             
-            val actualRel = if (isEqual) "!=" else "=="
+            val rels = ("==", "!=")
+            val (expectedRel, actualRel) = if (isEqual) rels else rels.swap
             val actualRelExpr = c.literal(actualRel)
-            val str = c.literal(s"$left $actualRel $right")
+            val str = c.literal(s"$left $expectedRel $right")
             val condExpr = c.Expr[Boolean](
               Apply(Select(Ident(leftDef.name), op), List(Ident(rightDef.name)))
             )
@@ -119,7 +120,7 @@ package debug
               if (isConstant(typedCondition))
                 c.literal("Always false!")
               else
-                c.literal(typedCondition + " == false")
+                c.literal(typedCondition.toString)
             Block(
               condDef,
               callBuilder(condExpr, str).tree
