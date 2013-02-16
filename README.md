@@ -6,7 +6,7 @@ Collection of Scala Macro goodies ([BSD-licensed](https://github.com/ochafik/Sca
     
     for (i <- 0 until 100000000 optimized) { ... }
     ```
-
+- *[Debug](https://github.com/ochafik/Scalaxy/tree/master/Debug)* provides `assert`, `require` and `assume` macros that automatically add a useful message to the regular [Predef](http://www.scala-lang.org/api/current/index.html#scala.Predef$) calls.
 - *[Compilets](https://github.com/ochafik/Scalaxy/tree/master/Compilets)* provide an easy way to express AST rewrites, backed by a compiler plugin and an sbt plugin.
 - *[Beans](https://github.com/ochafik/Scalaxy/tree/master/Beans)* are a nifty combination of Dynamics and macros that provide a type-safe eye-candy syntax to set fields of regular Java Beans in a Scala way (without any runtime dependency at all!):
 
