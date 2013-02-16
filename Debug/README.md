@@ -19,7 +19,7 @@ assert(condition) // "condition"
 ```
 
 All of this is done during macro-expansion, so there's no runtime overhead.
-For instance, the the following:
+For instance, the following:
 ```scala
 assert(a == b)    // "a == b (10 != 12)"
 ```
