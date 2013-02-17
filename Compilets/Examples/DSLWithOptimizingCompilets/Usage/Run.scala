@@ -1,5 +1,5 @@
 object Run extends App {
-  import scalaxy.examples.DSL._
+  import scalaxy.compilets.examples.DSL._
   
   println("ochafik.com/?q=test".quotePattern)
 }
