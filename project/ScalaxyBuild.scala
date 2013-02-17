@@ -116,15 +116,6 @@ object Scalaxy extends Build
       }
     )
 
-  val deploySettings =
-    reflectSettings ++
-    shadeSettings ++
-    Seq(
-      artifact in (Compile, assembly) ~= {
-        _.copy(`classifier` = Some("assembly"))
-      },
-      publishArtifact in Test := true)
-
   lazy val _scalaxy =
     Project(
       id = "scalaxy",
@@ -142,6 +133,8 @@ object Scalaxy extends Build
         standardSettings ++
         shadeSettings ++
         Seq(
+          // Assembly artifact is just here to accommodate console mode, it's not to be published.
+          publish := { },
           test in assembly := {},
           artifact in (Compile, assembly) ~= { _.copy(`classifier` = None) },
           scalacOptions in console in Compile <+= (packageBin in Compile) map("-Xplugin:" + _)
@@ -167,7 +160,14 @@ object Scalaxy extends Build
     Project(
       id = "scalaxy-compilets-plugin",
       base = file("Compilets/Plugin"),
-      settings = deploySettings)
+      settings = 
+        reflectSettings ++
+        shadeSettings ++
+        Seq(
+          artifact in (Compile, assembly) ~= {
+            _.copy(`classifier` = None)//Some("assembly"))
+          },
+          publishArtifact in Test := true))
     .dependsOn(compiletsApi)
 
   lazy val defaultCompilets =

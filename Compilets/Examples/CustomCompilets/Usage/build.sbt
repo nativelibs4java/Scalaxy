@@ -1,4 +1,4 @@
-scalaVersion := "2.10.0-RC1"
+scalaVersion := "2.10.0"
 
 autoCompilets := true
 
@@ -8,3 +8,6 @@ addDefaultCompilets()
 
 addCompilets("com.nativelibs4java" %% "custom-compilets-example" % "1.0-SNAPSHOT")
 
+scalacOptions += "-Xplugin-require:Scalaxy"
+
+scalacOptions += "-Xprint:scalaxy-rewriter"

@@ -1,4 +1,5 @@
 package scalaxy.compilets
+package examples
 
 import matchers._
 

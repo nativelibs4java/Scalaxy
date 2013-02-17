@@ -58,7 +58,10 @@ extends PluginComponent
   val detectCompilets = true
   val compiletNames: Set[String] = (compiletNamesOpt.getOrElse {
     val classLoader = classOf[Compilet].getClassLoader
-    (for (resource <- classLoader.getResources(compiletsListPath)) yield {
+    val resources = classLoader.getResources(compiletsListPath).toSeq
+    if (options.veryVerbose)
+      println("Compilet resources (" + compiletsListPath + "):\n\t" + resources.mkString("\n\t"))
+    (for (resource <- resources) yield {
       if (options.verbose) {
         println("Found resource '" + resource + "' for '" + compiletsListPath + "'")
       }
