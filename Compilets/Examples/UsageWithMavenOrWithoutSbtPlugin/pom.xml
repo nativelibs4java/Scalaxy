@@ -35,7 +35,12 @@
   		<compilerPlugins>
   		  <compilerPlugin>
   			<groupId>com.nativelibs4java</groupId>
-  			<artifactId>scalaxy_2.10</artifactId>
+  			<artifactId>scalaxy-compilets-plugin_2.10</artifactId>
+  			<version>0.3-SNAPSHOT</version>
+  		  </compilerPlugin>
+  		  <compilerPlugin>
+  			<groupId>com.nativelibs4java</groupId>
+  			<artifactId>scalaxy-default-compilets_2.10</artifactId>
   			<version>0.3-SNAPSHOT</version>
   		  </compilerPlugin>
   		</compilerPlugins>
