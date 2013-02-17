@@ -63,7 +63,7 @@ import scalaxy.compilets.matchers._
 
 object SomeExamples {
 
-  def simpleForeachUntil[U](start: Int, end: Int, body: Int => U) = Replacement(
+  def simpleForeachUntil[U](start: Int, end: Int, body: Int => U) = replace(
     for (i <- start until end) 
         body(i),
     {
