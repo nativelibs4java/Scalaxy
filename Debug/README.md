@@ -12,16 +12,16 @@ val b = 12
 val condition = a == b
 
 // Asserts and their corresponding message:
-assert(a == b)    // "a == b (10 != 12)"
-assert(a != aa)   // "a != aa (a == aa == 10)" 
-assert(a != 12)   // "a != 12"
-assert(condition) // "condition"
+assert(a == b)    // "assertion failed: a == b (10 != 12)"
+assert(a != aa)   // "assertion failed: a != aa (a == aa == 10)" 
+assert(a != 12)   // "assertion failed: a != 12"
+assert(condition) // "assertion failed: condition"
 ```
 
 All of this is done during macro-expansion, so there's no runtime overhead.
 For instance, the following:
 ```scala
-assert(a == b)    // "a == b (10 != 12)"
+assert(a == b)    // "assertion failed: a == b (10 != 12)"
 ```
 Is expanded to:
 ```scala
