@@ -231,7 +231,28 @@ class MacroExtensionsComponent(val global: Global)
                               List(tpt)),
                             List(
                               Ident(selfTreeName: TermName)))),
-                        rhs // TODO
+                        {
+                          if ((flags & Flag.MACRO) != 0) {
+                            // Extension body is already expressed as a macro, like `macro
+                            rhs  
+                          } else {
+                            val expressionNames = (vparamss.flatten.map(_.name.toString) :+ selfName.toString).toSet
+                            val splicer = new Transformer { 
+                              override def transform(tree: Tree) = tree match {
+                                case Ident(n) if n.isTermName && expressionNames.contains(n.toString) =>
+                                  Select(tree, "splice": TermName)
+                                case _ =>
+                                  super.transform(tree)
+                              }
+                            }
+                            Apply(
+                              Ident("reify": TermName),
+                              List(
+                                splicer.transform(rhs)
+                              )
+                            )
+                          }
+                        }
                       )
                     )
                   )

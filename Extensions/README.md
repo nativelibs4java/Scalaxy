@@ -1,20 +1,41 @@
 Compiler plugin that transforms the following:
 ```scala
-@extend(Int) def str: String = macro reify(self.splice.toString)
+@extend(Int) def str1: String = self.toString
+@extend(Int) def str2: String = macro {
+  println("Extension macro is executing!") 
+  reify(self.splice.toString)
+}
 ```
 Into:
 ```scala
 import scala.language.experimental.macros
-implicit class str(self: Int) {
-  def str(v: Int) = macro str$.str
+implicit class scalaxy$extensions$str1$1(self: Int) {
+  def str1(v: Int) = macro scalaxy$extensions$str1$1.str
 }
-object str$ {
-  def str(c: scala.reflect.macros.Context)
-         (v: c.Expr[Int]): c.Expr[String] = {
+object scalaxy$extensions$str1$1 {
+  def str1(c: scala.reflect.macros.Context)
+          (v: c.Expr[Int]): c.Expr[String] = {
     import c.universe._
     val Apply(_, List(selfTree)) = c.prefix.tree
     val self = c.Expr[String](selfTree)
     reify(self.splice.toString)
+  }
+}
+
+import scala.language.experimental.macros
+implicit class scalaxy$extensions$str2$1(self: Int) {
+  def str2(v: Int) = macro scalaxy$extensions$str2$1.str
+}
+object scalaxy$extensions$str$1 {
+  def str2(c: scala.reflect.macros.Context)
+          (v: c.Expr[Int]): c.Expr[String] = {
+    import c.universe._
+    val Apply(_, List(selfTree)) = c.prefix.tree
+    val self = c.Expr[String](selfTree)
+    {
+      println("Extension macro is executing!") 
+      reify(self.splice.toString)
+    }
   }
 }
 ```
