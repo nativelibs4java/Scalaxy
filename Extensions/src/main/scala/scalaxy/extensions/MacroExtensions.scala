@@ -121,6 +121,9 @@ class MacroExtensionsComponent(val global: Global)
             case List(Apply(Select(New(Ident(annotationName)), initName), List(Ident(typeName)))) 
                 if annotationName.toString == "extend" && 
                    initName == nme.CONSTRUCTOR =>
+              if (tpt.isEmpty)
+                unit.error(tree.pos, "Macro extensions require explicit return type annotation")
+
               val extensionName = newExtensionName(name)
               val targetTpt = Ident(typeName.toString: TypeName)
               val selfTreeName: TermName = unit.fresh.newName("selfTree")
