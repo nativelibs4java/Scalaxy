@@ -123,7 +123,7 @@ object Scalaxy extends Build
       settings =
         standardSettings ++
         Seq(publish := { }))
-    .aggregate(compilets, fx, beans, components, debug)
+    .aggregate(compilets, fx, beans, components, debug, extensions)
 
   lazy val compilets =
     Project(
@@ -176,6 +176,9 @@ object Scalaxy extends Build
       base = file("Compilets/DefaultCompilets"),
       settings = reflectSettings)
     .dependsOn(compiletsApi, compiletsPlugin % "test->test")
+
+  lazy val extensions =
+    Project(id = "scalaxy-extensions", base = file("Extensions"), settings = reflectSettings)
 
   lazy val beans =
     Project(id = "scalaxy-beans", base = file("Beans"), settings = reflectSettings)
