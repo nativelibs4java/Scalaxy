@@ -24,6 +24,23 @@ trait Extensions
     Select(termPath(components.dropRight(1).toList), components.last: TypeName)
   }
   
+  def newImportAll(tpt: Tree, pos: Position): Import = {
+    Import(
+      tpt,
+      List(
+        ImportSelector("_": TermName, pos.point, null, -1)))
+  }
+  
+  def newImportMacros(pos: Position): Import = {
+    val macrosName: TermName = "macros"
+    Import(
+      termPath("scala.language.experimental"),
+      List(
+        ImportSelector(macrosName, pos.point, macrosName, -1)
+      )
+    )
+  }
+  
   def newEmptyTpt() = TypeTree(null)
   
   def genParamAccessorsAndConstructor(namesAndTypeTrees: List[(String, Tree)]): List[Tree] = {

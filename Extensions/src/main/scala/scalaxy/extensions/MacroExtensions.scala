@@ -104,6 +104,8 @@ class MacroExtensionsComponent(val global: Global)
   override val runsAfter = runsRightAfter.toList
   override val runsBefore = List[String]("namer")
 
+  private final val selfName = "self"
+  
   def newPhase(prev: Phase): StdPhase = new StdPhase(prev) {
     def apply(unit: CompilationUnit) {
       val onTransformer = new Transformer 
@@ -120,16 +122,12 @@ class MacroExtensionsComponent(val global: Global)
               val targetTpt = Ident(typeName.toString: TypeName)
               val moduleName: TermName = unit.fresh.newName(name.toString + "$")
               val selfTreeName: TermName = unit.fresh.newName("selfTree")
+              val contextName: TermName = unit.fresh.newName("c")
               assert(tparams == Nil)
               
               //val vparams2 = vparamss.flatten :+ ValDef(NoMods, "self", targetTpt, EmptyTree)
               List(
-                Import(
-                  termPath("scala.language.experimental"),
-                  List(
-                    ImportSelector("macros": TermName, tree.pos.point, "macros": TermName, -1)
-                  )
-                ),
+                newImportMacros(tree.pos),
                 ClassDef(
                   Modifiers((flags | Flag.IMPLICIT) -- Flag.MACRO, privateWithin, Nil),
                   name.toString: TypeName,
@@ -138,7 +136,7 @@ class MacroExtensionsComponent(val global: Global)
                     List(parentTypeTreeForImplicitWrapper(typeName)),
                     newSelfValDef(),
                     genParamAccessorsAndConstructor(
-                      List("self" -> targetTpt)
+                      List(selfName -> targetTpt)
                     ) :+
                     // Copying the original def over, without its annotation.
                     DefDef(
@@ -164,7 +162,7 @@ class MacroExtensionsComponent(val global: Global)
                       tparams, // TODO map T => T : c.WeakTypeTag
                       List(
                         List(
-                          ValDef(Modifiers(Flag.PARAM), "c", typePath("scala.reflect.macros.Context"), EmptyTree)
+                          ValDef(Modifiers(Flag.PARAM), contextName, typePath("scala.reflect.macros.Context"), EmptyTree)
                         )
                       ) ++
                       (
@@ -178,21 +176,18 @@ class MacroExtensionsComponent(val global: Global)
                                   pmods | Flag.PARAM,
                                   pname,
                                   AppliedTypeTree(
-                                    typePath("c.Expr"),
+                                    typePath(contextName + ".Expr"),
                                     List(ptpt)),
                                   prhs)
                             }
                           )
                       ),
                       AppliedTypeTree(
-                        typePath("c.Expr"),
+                        typePath(contextName + ".Expr"),
                         List(tpt)
                       ),
                       Block(
-                        Import(
-                          termPath("c.universe"),
-                          List(
-                            ImportSelector("_": TermName, tree.pos.point, null, -1))),
+                        newImportAll(termPath(contextName + ".universe"), tree.pos),
                         ValDef(
                           NoMods,
                           selfTreeName,
@@ -207,7 +202,7 @@ class MacroExtensionsComponent(val global: Global)
                                   nme.CONSTRUCTOR
                                 ),
                                 Nil),
-                              termPath("c.prefix.tree")),
+                              termPath(contextName + ".prefix.tree")),
                             List(
                               CaseDef(
                                 Apply(
@@ -226,11 +221,11 @@ class MacroExtensionsComponent(val global: Global)
                         ),
                         ValDef(
                           NoMods,
-                          "self",
+                          selfName,
                           newEmptyTpt(),
                           Apply(
                             TypeApply(
-                              termPath("c.Expr"),
+                              termPath(contextName + ".Expr"),
                               List(tpt)),
                             List(
                               Ident(selfTreeName: TermName)))),
@@ -261,7 +256,7 @@ class MacroExtensionsComponent(val global: Global)
                   List(parentTypeTreeForImplicitWrapper(typeName)),
                   newSelfValDef(),
                   genParamAccessorsAndConstructor(
-                    List("self" -> targetTpt)
+                    List(selfName -> targetTpt)
                   ) :+
                   // Copying the original def over, without its annotation.
                   DefDef(Modifiers(flags -- Flag.MACRO, privateWithin, Nil), name, tparams, vparamss, tpt, rhs)
