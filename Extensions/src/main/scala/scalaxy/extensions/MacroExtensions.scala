@@ -110,6 +110,9 @@ class MacroExtensionsComponent(val global: Global)
     def apply(unit: CompilationUnit) {
       val onTransformer = new Transformer 
       {
+        def newExtensionName(name: Name) =
+          unit.fresh.newName("scalaxy$extensions$" + name + "$")
+          
         def transformMacroExtension(tree: DefDef): List[Tree] = 
         {
           val DefDef(Modifiers(flags, privateWithin, annotations), name, tparams, vparamss, tpt, rhs) = tree
@@ -118,9 +121,8 @@ class MacroExtensionsComponent(val global: Global)
             case List(Apply(Select(New(Ident(annotationName)), initName), List(Ident(typeName)))) 
                 if annotationName.toString == "extend" && 
                    initName == nme.CONSTRUCTOR =>
-              println("Transforming macro extension")
+              val extensionName = newExtensionName(name)
               val targetTpt = Ident(typeName.toString: TypeName)
-              val moduleName: TermName = unit.fresh.newName(name.toString + "$")
               val selfTreeName: TermName = unit.fresh.newName("selfTree")
               val contextName: TermName = unit.fresh.newName("c")
               assert(tparams == Nil)
@@ -130,7 +132,7 @@ class MacroExtensionsComponent(val global: Global)
                 newImportMacros(tree.pos),
                 ClassDef(
                   Modifiers((flags | Flag.IMPLICIT) -- Flag.MACRO, privateWithin, Nil),
-                  name.toString: TypeName,
+                  extensionName: TypeName,
                   tparams,
                   Template(
                     List(parentTypeTreeForImplicitWrapper(typeName)),
@@ -145,13 +147,13 @@ class MacroExtensionsComponent(val global: Global)
                       tparams, 
                       vparamss, 
                       tpt, 
-                      termPath(moduleName + "." + name)
+                      termPath(extensionName + "." + name)
                     )
                   )
                 ), 
                 ModuleDef(
                   NoMods,
-                  moduleName,
+                  extensionName,
                   Template(
                     List(typePath("scala.AnyRef")),
                     newSelfValDef(),
@@ -246,11 +248,12 @@ class MacroExtensionsComponent(val global: Global)
                 if annotationName.toString == "extend" && 
                    initName == nme.CONSTRUCTOR 
             =>
-              println("Transforming runtime extension")
+              unit.warning(tree.pos, "This extension will create a runtime dependency. To use macro extensions, move this up to a publicly accessible module / object")
+              val extensionName = newExtensionName(name)
               val targetTpt = Ident(typeName.toString: TypeName)
               ClassDef(
                 Modifiers((flags | Flag.IMPLICIT) -- Flag.MACRO, privateWithin, Nil),
-                name.toString: TypeName,
+                extensionName: TypeName,
                 tparams,
                 Template(
                   List(parentTypeTreeForImplicitWrapper(typeName)),
