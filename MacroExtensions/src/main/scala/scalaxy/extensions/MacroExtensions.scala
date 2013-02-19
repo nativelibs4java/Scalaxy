@@ -69,7 +69,7 @@ object MacroExtensionsCompiler {
 /**
  *  To use this, just write the following in `src/main/resources/scalac-plugin.xml`:
  *  <plugin>
- *    <name>scalaxy-extensions</name>
+ *    <name>scalaxy-macro-extensions</name>
  *    <classname>scalaxy.extensions.MacroExtensionsPlugin</classname>
  *  </plugin>
  */

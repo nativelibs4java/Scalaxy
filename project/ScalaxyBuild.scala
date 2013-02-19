@@ -178,7 +178,7 @@ object Scalaxy extends Build
     .dependsOn(compiletsApi, compiletsPlugin % "test->test")
 
   lazy val extensions =
-    Project(id = "scalaxy-extensions", base = file("Extensions"), settings = reflectSettings)
+    Project(id = "scalaxy-macro-extensions", base = file("MacroExtensions"), settings = reflectSettings)
 
   lazy val beans =
     Project(id = "scalaxy-beans", base = file("Beans"), settings = reflectSettings)

@@ -1,5 +1,8 @@
 object TestExtensions 
 {  
+  @extend(Int) def str0 { println(self.toString) }
+  //@extend(Int) def str00 = self.toString 
+  
   @extend(Int) def str1: String = self.toString
   
   @extend(Int) def str2: String = macro {
