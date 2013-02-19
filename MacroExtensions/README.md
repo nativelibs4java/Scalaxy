@@ -1,10 +1,8 @@
-# Scalaxy/Extensions
+# Scalaxy/MacroExtensions
 
+New trivial syntax to define class enrichments as macros ([BSD-licensed](https://github.com/ochafik/Scalaxy/blob/master/LICENSE).
 
-Syntactic sugar to set Java beans properties with a very Scala-friendly syntax ([BSD-licensed](https://github.com/ochafik/Scalaxy/blob/master/LICENSE), does not depend on the rest of Scalaxy).
-
-
-Scalaxy/Extensions's compiler plugin supports the following syntax:
+Scalaxy/MacroExtensions's compiler plugin supports the following syntax:
 ```scala
 @extend(Int) def str1: String = self.toString
 @extend(Int) def str2: String = macro {
