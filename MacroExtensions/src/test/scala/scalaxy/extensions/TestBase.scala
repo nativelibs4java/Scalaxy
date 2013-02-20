@@ -9,13 +9,10 @@ import scalaxy.debug._
 import java.io._
 
 import scala.collection.mutable
-import scala.tools.nsc.CompilerCommand
-import scala.tools.nsc.Global
-import scala.tools.nsc.Phase
-import scala.tools.nsc.plugins.Plugin
-import scala.tools.nsc.plugins.PluginComponent
-import scala.tools.nsc.Settings
-import scala.tools.nsc.reporters.ConsoleReporter
+import scala.reflect.internal.util._
+import scala.tools.nsc._
+import scala.tools.nsc.plugins._
+import scala.tools.nsc.reporters._
 
 trait TestBase {
   import MacroExtensionsCompiler.jarOf
@@ -44,8 +41,8 @@ trait TestBase {
   }
   
   //def normalize(s: String) = s.trim.replaceAll("^\\s*|\\s*?$", "")
-  def transformCode(code: String, name: String, macroExtensions: Boolean, runtimeExtensions: Boolean): (String, String) = {
-    val settings = new Settings
+  def transformCode(code: String, name: String, macroExtensions: Boolean, runtimeExtensions: Boolean): (String, String, Seq[(AbstractReporter#Severity, String)]) = {
+    val settings0 = new Settings
     val file = {
       val file = File.createTempFile(name, ".scala")
       file.deleteOnExit()
@@ -59,12 +56,20 @@ trait TestBase {
       val args = Array(file.toString)
       val command = 
         new CompilerCommand(
-          List("-bootclasspath", jars.mkString(File.pathSeparator)) ++ args, settings)
+          List("-bootclasspath", jars.mkString(File.pathSeparator)) ++ args, settings0)
   
       require(command.ok)
       
+      val report = mutable.ArrayBuffer[(AbstractReporter#Severity, String)]()
       var transformed: (String, String) = null
-      val global = new Global(settings, new ConsoleReporter(settings)) {
+      val reporter = new AbstractReporter {
+        override val settings = settings0
+        override def displayPrompt() {}
+        override def display(pos: Position, msg: String, severity: Severity) {
+          report += severity -> msg
+        }
+      }
+      val global = new Global(settings0, reporter) {
         override protected def computeInternalPhases() {
           super.computeInternalPhases
           val comp = new MacroExtensionsComponent(this, macroExtensions = macroExtensions, runtimeExtensions = runtimeExtensions)
@@ -76,7 +81,7 @@ trait TestBase {
         }
       }
       new global.Run().compile(command.files)
-      transformed
+      (transformed._1, transformed._2, report.toSeq)
     } finally {
       file.delete()
     }
