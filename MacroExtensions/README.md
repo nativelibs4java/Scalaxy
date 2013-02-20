@@ -20,13 +20,13 @@ println(2.str2("'"))
 println(3.str3)
 ```
 This is done by rewriting the `@scalaxy.extend` declarations above during compilation of the extensions.
-In the case of `str2`, this yields the following:
+In the case of `str2`, this gives the following:
 ```scala
 import scala.language.experimental.macros
 implicit class scalaxy$extensions$str2$1(self: Any) {
   def str2(quote: String) = macro scalaxy$extensions$str2$1.str
 }
-object scalaxy$extensions$str$1 {
+object scalaxy$extensions$str2$1 {
   def str2(c: scala.reflect.macros.Context)
           (quote: c.Expr[String]): c.Expr[String] = {
     import c.universe._
