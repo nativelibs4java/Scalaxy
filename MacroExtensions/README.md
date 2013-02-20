@@ -1,6 +1,6 @@
 # Scalaxy/MacroExtensions
 
-New trivial syntax to define class enrichments as macros ([BSD-licensed](https://github.com/ochafik/Scalaxy/blob/master/LICENSE).
+New *experimental* syntax to define class enrichments as macros ([BSD-licensed](https://github.com/ochafik/Scalaxy/blob/master/LICENSE).
 
 Scalaxy/MacroExtensions's compiler plugin supports the following syntax:
 ```scala
