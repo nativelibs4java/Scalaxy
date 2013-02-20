@@ -41,7 +41,7 @@ object scalaxy$extensions$str$1 {
 
 # Known Issues
 
-- Annotation is resolved by name: if you redefine an `@extend` annotation, this will break compilation.
+- Annotation is resolved by name: if you redefine an `@extend` annotation, this will break compilation (latest HEAD code uses `@scalaxy.extend` instead, will be published to Maven repo soon).
 - Default parameter values are not supported (due to macros not supporting them?)
 - Implicit values may not be passed appropriately (maybe another limitation of macros?)
 - Doesn't check macro extensions are defined in publicly available static objects (but compiler does)
