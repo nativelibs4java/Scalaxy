@@ -133,7 +133,7 @@ class MacroExtensionsTest extends TestBase
       """
         object O {
           import scala.language.experimental.macros;
-          implicit class scalaxy$extensions$foo$1[A, B](val self: Array[A]) extends scala.AnyRef {
+          implicit class scalaxy$extensions$foo$1[A](val self: Array[A]) extends scala.AnyRef {
             def foo[B](b: B): (Array[A], B) = macro scalaxy$extensions$foo$1.foo[A, B]
           }
           object scalaxy$extensions$foo$1 {
