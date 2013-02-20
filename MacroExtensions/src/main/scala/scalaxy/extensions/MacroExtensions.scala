@@ -149,7 +149,8 @@ class MacroExtensionsComponent(val global: Global)
               val extensionName = newExtensionName(name)
               val targetTpt = typify(targetValueTpt)
               val selfTreeName: TermName = unit.fresh.newName("selfTree")
-              val contextName: TermName = unit.fresh.newName("c")
+              // Don't rename the context, otherwise explicit macros are hard to write.
+              val contextName: TermName = "c" //unit.fresh.newName("c")
               List(
                 newImportMacros(tree.pos),
                 ClassDef(
@@ -166,7 +167,7 @@ class MacroExtensionsComponent(val global: Global)
                     DefDef(
                       Modifiers(flags | Flag.MACRO, privateWithin, annotations.filter(_ ne extendAnnotation)),
                       name, 
-                      tparams, 
+                      Nil, 
                       vparamss, 
                       tpt,
                       {
@@ -240,6 +241,7 @@ class MacroExtensionsComponent(val global: Global)
                         List(tpt)
                       ),
                       Block(
+                        //newImportAll(termPath(contextName: T), tree.pos),
                         newImportAll(termPath(contextName + ".universe"), tree.pos),
                         ValDef(
                           NoMods,

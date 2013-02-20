@@ -58,8 +58,20 @@ General macro rules regarding compilation apply: you cannot use macros from the 
 
 Test with:
 ```
-sbt "project scalaxy-extensions" "run examples/extension.scala -Xprint:scalaxy-extensions"
-sbt "project scalaxy-extensions" "run examples/run.scala"
+git clone git://github.com/ochafik/Scalaxy.git
+cd Scalaxy
+sbt "project scalaxy-extensions" "run examples/TestExtensions.scala -Xprint:scalaxy-extensions"
+sbt "project scalaxy-extensions" "run examples/Test.scala"
+```
+
+You can also use plain `scalac` directly, once Scalaxy/Extensions's JAR is cached by sbt / Ivy:
+```
+git clone git://github.com/ochafik/Scalaxy.git
+cd Scalaxy
+sbt update
+cd Extensions
+scalac -Xplugin:$HOME/.ivy2/local/com.nativelibs4java/scalaxy-macro-extensions_2.10/0.3-SNAPSHOT/jars/scalaxy-macro-extensions_2.10.jar examples/TestExtensions.scala -Xprint:scalaxy-extensions
+scalac examples/Test.scala
 ```
 
 # Known Issues
