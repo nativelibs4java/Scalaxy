@@ -40,7 +40,7 @@ import scala.tools.nsc.transform.TypingTransformers
  *  To see the AST before and after the rewrite, run the compiler with -Xprint:parser -Xprint:scalaxy-extensions.
  */
 object MacroExtensionsCompiler {
-  private val scalaLibraryJar =
+  private[extensions] val scalaLibraryJar =
     Option(classOf[List[_]].getProtectionDomain.getCodeSource).map(_.getLocation.getFile)
 
   def main(args: Array[String]) {

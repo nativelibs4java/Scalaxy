@@ -45,7 +45,7 @@ object scalaxy$extensions$str$1 {
 - Default parameter values are not supported (due to macros not supporting them?)
 - Implicit values may not be passed appropriately (maybe another limitation of macros?)
 - Doesn't check macro extensions are defined in publicly available static objects (but compiler does)
-- No automated test cases yet: this is just an experiment! (see `examples` directory for some constructs to test manually)
+- Small test coverage: this is just an experiment! (see `examples` directory for some constructs to test manually)
 
 # Usage
 
