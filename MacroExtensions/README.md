@@ -46,9 +46,19 @@ scalaVersion := "2.10.0"
 
 autoCompilerPlugins := true
 
+// Scalaxy/MacroExtensions plugin
 addCompilerPlugin("com.nativelibs4java" %% "scalaxy-macro-extensions" % "0.3-SNAPSHOT")
 
-// Scalaxy/Extensions snapshots are published on the Sonatype repository.
+// Ensure Scalaxy/MacroExtensions's plugin is used.
+scalacOptions += "-Xplugin-require:scalaxy-extensions"
+
+// Uncomment this to see what's happening:
+//scalacOptions += "-Xprint:scalaxy-extensions"
+
+// We're compiling macros, reflection library is needed.
+libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-reflect" %)
+
+// Scalaxy/MacroExtensions snapshots are published on the Sonatype repository.
 resolvers += Resolver.sonatypeRepo("snapshots")
 ```
 
@@ -64,7 +74,7 @@ sbt "project scalaxy-extensions" "run examples/TestExtensions.scala -Xprint:scal
 sbt "project scalaxy-extensions" "run examples/Test.scala"
 ```
 
-You can also use plain `scalac` directly, once Scalaxy/Extensions's JAR is cached by sbt / Ivy:
+You can also use plain `scalac` directly, once Scalaxy/MacroExtensions's JAR is cached by sbt / Ivy:
 ```
 git clone git://github.com/ochafik/Scalaxy.git
 cd Scalaxy
