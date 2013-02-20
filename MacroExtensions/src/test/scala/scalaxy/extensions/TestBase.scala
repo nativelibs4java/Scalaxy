@@ -1,8 +1,11 @@
 package scalaxy.extensions
 package test
 
+import scalaxy.debug._
+
 import java.io._
 
+import scala.collection.mutable
 import scala.tools.nsc.CompilerCommand
 import scala.tools.nsc.Global
 import scala.tools.nsc.Phase
@@ -12,35 +15,50 @@ import scala.tools.nsc.Settings
 import scala.tools.nsc.reporters.ConsoleReporter
 
 trait TestBase {
-
-  def transform(code: String): (String, String) = {
+  import MacroExtensionsCompiler.jarOf
+  val jars = 
+    jarOf(classOf[List[_]]).toSeq ++
+    jarOf(classOf[scala.reflect.macros.Context]) ++
+    jarOf(classOf[Global])
+  
+  //def normalize(s: String) = s.trim.replaceAll("^\\s*|\\s*?$", "")
+  def transform(codes: List[String], name: String = "test"): List[(String, String)] = {
     val settings = new Settings
-    val file = File.createTempFile("test", ".scala")
-    file.deleteOnExit()
-    try {
+    val files = codes.map(code => {
+      val file = File.createTempFile(name, ".scala")
+      file.deleteOnExit()
       val out = new PrintWriter(file)
       out.print(code)
       out.close()
       
-      val args = Array(file.toString)
+      file
+    })
+    try {
+      val args = files.map(_.toString).toArray
       val command = 
-        new CompilerCommand(MacroExtensionsCompiler.scalaLibraryJar.map(jar => List("-bootclasspath", jar)).getOrElse(Nil) ++ args, settings)
+        new CompilerCommand(
+          List("-bootclasspath", jars.mkString(File.pathSeparator)) ++ args, settings)
   
       require(command.ok)
       
-      var transformed: (String, String) = null
+      var transformed = mutable.ListBuffer[(String, String)]()
       val global = new Global(settings, new ConsoleReporter(settings)) {
         override protected def computeInternalPhases() {
           super.computeInternalPhases
           val comp = new MacroExtensionsComponent(this)
           phasesSet += comp
-          phasesSet += new TestComponent(this, comp, (s, n) => transformed = (s, n))
+          // Get node string right after macro extensions component.
+          phasesSet += new TestComponent(this, comp, (s, n) => transformed += s -> n)
+          // Stop compilation after typer and refchecks, to see if there are errors.
+          phasesSet += new StopComponent(this)
         }
       }
       new global.Run().compile(command.files)
-      transformed
+      assert(codes.size == transformed.size)
+      assert(transformed.forall { case (s, n) => s != null && n != null && s.trim.length != 0 && n.trim.length != 0 })
+      transformed.result()
     } finally {
-      file.delete()
+      files.foreach(_.delete())
     }
   }
   
@@ -54,11 +72,27 @@ trait TestBase {
     override val phaseName = "after-" + after.phaseName
     override val runsRightAfter = Some(after.phaseName)
     override val runsAfter = runsRightAfter.toList
-    override val runsBefore = after.runsBefore
+    override val runsBefore = List("patmat")
   
     def newPhase(prev: Phase): StdPhase = new StdPhase(prev) {
       def apply(unit: CompilationUnit) {
         out(unit.body.toString, nodeToString(unit.body))
+        unit.body = EmptyTree
+      }
+    }
+  }
+  
+  class StopComponent(val global: Global) extends PluginComponent
+  {
+    import global._
+  
+    override val phaseName = "stop"
+    override val runsRightAfter = Some("refchecks")
+    override val runsAfter = runsRightAfter.toList
+    override val runsBefore = Nil
+  
+    def newPhase(prev: Phase): StdPhase = new StdPhase(prev) {
+      def apply(unit: CompilationUnit) {
         unit.body = EmptyTree
       }
     }

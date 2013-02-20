@@ -181,6 +181,7 @@ object Scalaxy extends Build
     Project(id = "scalaxy-macro-extensions", base = file("MacroExtensions"), settings = reflectSettings ++ Seq(
       watchSources <+= baseDirectory map { _ / "examples" }
     ))
+    .dependsOn(debug)
 
   lazy val beans =
     Project(id = "scalaxy-beans", base = file("Beans"), settings = reflectSettings)

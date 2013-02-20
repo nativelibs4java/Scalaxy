@@ -3,6 +3,7 @@
 package scalaxy.extensions
 
 import scala.reflect.internal._
+import scala.reflect.ClassTag
 import scala.tools.nsc.CompilerCommand
 import scala.tools.nsc.Global
 import scala.tools.nsc.Phase
@@ -40,8 +41,9 @@ import scala.tools.nsc.transform.TypingTransformers
  *  To see the AST before and after the rewrite, run the compiler with -Xprint:parser -Xprint:scalaxy-extensions.
  */
 object MacroExtensionsCompiler {
-  private[extensions] val scalaLibraryJar =
-    Option(classOf[List[_]].getProtectionDomain.getCodeSource).map(_.getLocation.getFile)
+  def jarOf(c: Class[_]) = 
+    Option(c.getProtectionDomain.getCodeSource).map(_.getLocation.getFile)
+  private[extensions] val scalaLibraryJar = jarOf(classOf[List[_]])
 
   def main(args: Array[String]) {
     try {
