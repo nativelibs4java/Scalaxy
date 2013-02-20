@@ -6,16 +6,21 @@ object TestExtensions
     else (self.max + self.min)
     */
     
-  @extend(Array[T]) def notNulls[T <: AnyRef]: Int =
+  @scalaxy.extend(Any) def faulty {
+    val self3 = 10
+    println(self3)
+  }
+    
+  @scalaxy.extend(Array[T]) def notNulls[T <: AnyRef]: Int =
     self.count(_ ne null)
     
-  @extend(Int) def str0 { println(self.toString) }
+  @scalaxy.extend(Int) def str0 { println(self.toString) }
   
-  @extend(Any) def quoted(quote: String): String = quote + self + quote
+  @scalaxy.extend(Any) def quoted(quote: String): String = quote + self + quote
   
-  @extend(Int) def str1: String = self.toString
+  @scalaxy.extend(Int) def str1: String = self.toString
   
-  @extend(Int) def str2: String = macro {
+  @scalaxy.extend(Int) def str2: String = macro {
     println("EXECUTING EXTENSION MACRO!")
     reify(self.splice.toString)
   }

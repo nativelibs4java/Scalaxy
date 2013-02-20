@@ -107,19 +107,45 @@ class MacroExtensionsComponent(val global: Global)
 
   private final val selfName = "self"
   
-  object ExtendAnnotation {
-    def unapply(tree: Tree) = Option(tree) collect {
-      case Apply(Select(New(Ident(annotationName)), initName), List(targetValueTpt)) 
-        if annotationName.toString == "extend" && 
-           initName == nme.CONSTRUCTOR =>
-        targetValueTpt
-    }
-  }
   
   def newPhase(prev: Phase): StdPhase = new StdPhase(prev) {
     def apply(unit: CompilationUnit) {
       val onTransformer = new Transformer 
       {
+        object ExtendAnnotation {
+          object ExtendAnnotationName {
+            def unapply(tpt: Tree) = Option(tpt.toString) collect {
+              case "extend" =>
+                true
+              case "scalaxy.extend" =>
+                false
+            }
+          }
+          def unapply(tree: Tree) = Option(tree) collect {
+            case Apply(Select(New(ExtendAnnotationName(deprecated)), initName), List(targetValueTpt)) 
+            if initName == nme.CONSTRUCTOR =>
+              if (deprecated)
+                unit.warning(tree.pos, "@extend is deprecated. Please use @scalaxy.extend instead")
+              targetValueTpt
+            case _ =>
+              println(nodeToString(tree))
+              null
+          }
+        }
+        def banVariableNames(names: Set[String], root: Tree) {
+          val banTraverser = new Traverser {
+            override def traverse(tree: Tree) = {
+              tree match {
+                case d: DefTree if names.contains(Option(d.name).map(_.toString).getOrElse("")) =>
+                  unit.error(tree.pos, s"Cannot redefine name ${d.name}")
+                case _ =>
+              }
+              super.traverse(tree)
+            }
+          }
+          banTraverser.traverse(root)
+        }
+        
         def newExtensionName(name: Name) =
           unit.fresh.newName("scalaxy$extensions$" + name + "$")
           
@@ -152,6 +178,9 @@ class MacroExtensionsComponent(val global: Global)
               val selfTreeName: TermName = unit.fresh.newName("selfTree")
               // Don't rename the context, otherwise explicit macros are hard to write.
               val contextName: TermName = "c" //unit.fresh.newName("c")
+              
+              val expressionNames = (vparamss.flatten.map(_.name.toString) :+ selfName.toString).toSet
+              banVariableNames(expressionNames, rhs)
               List(
                 newImportMacros(tree.pos),
                 ClassDef(
@@ -290,7 +319,6 @@ class MacroExtensionsComponent(val global: Global)
                             // Extension body is already expressed as a macro, like `macro
                             rhs  
                           } else {
-                            val expressionNames = (vparamss.flatten.map(_.name.toString) :+ selfName.toString).toSet
                             val splicer = new Transformer {
                               override def transform(tree: Tree) = tree match {
                                 case Ident(n) if n.isTermName && expressionNames.contains(n.toString) =>
@@ -326,6 +354,8 @@ class MacroExtensionsComponent(val global: Global)
               unit.warning(tree.pos, "This extension will create a runtime dependency. To use macro extensions, move this up to a publicly accessible module / object")
               val extensionName = newExtensionName(name)
               val targetTpt = typify(targetValueTpt)
+              val expressionNames = (vparamss.flatten.map(_.name.toString) :+ selfName.toString).toSet
+              banVariableNames(expressionNames, rhs)
               ClassDef(
                 Modifiers((flags | Flag.IMPLICIT) -- Flag.MACRO, privateWithin, Nil),
                 extensionName: TypeName,
