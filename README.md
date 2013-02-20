@@ -7,7 +7,7 @@ Collection of Scala Macro goodies ([BSD-licensed](https://github.com/ochafik/Sca
     for (i <- 0 until 100000000 optimized) { ... }
     ```
 - *[Debug](https://github.com/ochafik/Scalaxy/tree/master/Debug)* provides `assert`, `require` and `assume` macros that automatically add a useful message to the regular [Predef](http://www.scala-lang.org/api/current/index.html#scala.Predef$) calls.
-- *[MacroExtensions](https://github.com/ochafik/Scalaxy/tree/master/MacroExtensions)* provides an extremely simple syntax to define extensions methods as macros:
+- *[MacroExtensions](https://github.com/ochafik/Scalaxy/tree/master/MacroExtensions)* provides an extremely simple (and *experimental*) syntax to define extensions methods as macros:
 
     ```scala
     @extend(Int) def str1: String = self.toString
