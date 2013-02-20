@@ -2,6 +2,7 @@
 // Feel free to modify and reuse this for any purpose ("public domain / I don't care").
 package scalaxy.extensions
 
+import scala.collection.mutable
 import scala.reflect.internal._
 import scala.reflect.ClassTag
 import scala.tools.nsc.CompilerCommand
@@ -15,13 +16,13 @@ import scala.tools.nsc.transform.TypingTransformers
 
 /**
  *  This compiler plugin demonstrates how to do "useful" stuff before the typer phase.
- *  
+ *
  *  It defines a toy syntax that uses annotations to define implicit classes:
- *  
+ *
  *    @scalaxy.extend(Any) def quoted(quote: String): String = quote + self + quote
- *    
+ *
  *  Which gets desugared to:
- *  
+ *
  *    import scala.language.experimental.macros
  *    implicit class scalaxy$extensions$quoted$1(self: Any) {
  *      def quoted(quote: String) = macro scalaxy$extensions$quoted$1.quoted
@@ -41,14 +42,14 @@ import scala.tools.nsc.transform.TypingTransformers
  *  To see the AST before and after the rewrite, run the compiler with -Xprint:parser -Xprint:scalaxy-extensions.
  */
 object MacroExtensionsCompiler {
-  def jarOf(c: Class[_]) = 
+  def jarOf(c: Class[_]) =
     Option(c.getProtectionDomain.getCodeSource).map(_.getLocation.getFile)
   private[extensions] val scalaLibraryJar = jarOf(classOf[List[_]])
 
   def main(args: Array[String]) {
     try {
       val settings = new Settings
-      val command = 
+      val command =
         new CompilerCommand(scalaLibraryJar.map(jar => List("-bootclasspath", jar)).getOrElse(Nil) ++ args, settings)
 
       if (!command.ok)
@@ -61,7 +62,7 @@ object MacroExtensionsCompiler {
         }
       }
       new global.Run().compile(command.files)
-    } catch { 
+    } catch {
       case ex: Throwable =>
         ex.printStackTrace
         System.exit(2)
@@ -85,14 +86,14 @@ class MacroExtensionsPlugin(override val global: Global) extends Plugin {
 
 /**
  *  To understand / reproduce this, you should use paulp's :power mode in the scala console:
- *  
+ *
  *  scala
  *  > :power
  *  > :phase parser // will show us ASTs just after parsing
  *  > val Some(List(ast)) = intp.parse("@scalaxy.extend(Int) def str = self.toString")
  *  > nodeToString(ast)
  *  > val DefDef(mods, name, tparams, vparamss, tpt, rhs) = ast // play with extractors to explore the tree and its properties.
- */ 
+ */
 class MacroExtensionsComponent(val global: Global, macroExtensions: Boolean = true, runtimeExtensions: Boolean = false)
     extends PluginComponent
     with TypingTransformers
@@ -108,11 +109,11 @@ class MacroExtensionsComponent(val global: Global, macroExtensions: Boolean = tr
   override val runsBefore = List[String]("namer")
 
   private final val selfName = "self"
-  
-  
+
+
   def newPhase(prev: Phase): StdPhase = new StdPhase(prev) {
     def apply(unit: CompilationUnit) {
-      val onTransformer = new Transformer 
+      val onTransformer = new Transformer
       {
         object ExtendAnnotation {
           object ExtendAnnotationName {
@@ -124,7 +125,7 @@ class MacroExtensionsComponent(val global: Global, macroExtensions: Boolean = tr
             }
           }
           def unapply(tree: Tree) = Option(tree) collect {
-            case Apply(Select(New(ExtendAnnotationName(deprecated)), initName), List(targetValueTpt)) 
+            case Apply(Select(New(ExtendAnnotationName(deprecated)), initName), List(targetValueTpt))
             if initName == nme.CONSTRUCTOR =>
               if (deprecated)
                 unit.warning(tree.pos, "@extend is deprecated. Please use @scalaxy.extend instead")
@@ -147,10 +148,10 @@ class MacroExtensionsComponent(val global: Global, macroExtensions: Boolean = tr
           }
           banTraverser.traverse(root)
         }
-        
+
         def newExtensionName(name: Name) =
           unit.fresh.newName("scalaxy$extensions$" + name + "$")
-          
+
         // Tranforms a value tree (as found in annotation values) to a type tree.
         def typify(valueTpt: Tree): Tree = valueTpt match {
           case Ident(n) =>
@@ -159,17 +160,26 @@ class MacroExtensionsComponent(val global: Global, macroExtensions: Boolean = tr
             AppliedTypeTree(
               typify(target),
               args.map(typify(_))
-            ) 
+            )
           case _ =>
             unit.error(valueTpt.pos, "Type not handled yet: " + nodeToString(valueTpt) + ": " + valueTpt.getClass.getName)
             null
         }
-        
-        def transformMacroExtension(tree: DefDef): List[Tree] = 
+
+        def getTypeNames(tpt: Tree): Seq[TypeName] = {
+          val res = mutable.ArrayBuffer[TypeName]()
+          new Traverser { override def traverse(tree: Tree) = tree match {
+            case Ident(n: TypeName) => res += n
+            case _ => super.traverse(tree)
+          }}.traverse(tpt)
+          res.result()
+        }
+
+        def transformMacroExtension(tree: DefDef): List[Tree] =
         {
           val DefDef(Modifiers(flags, privateWithin, annotations), name, tparams, vparamss, tpt, rhs) = tree
           val extendAnnotationOpt = annotations.find(ExtendAnnotation.unapply(_) != None)
-          extendAnnotationOpt match 
+          extendAnnotationOpt match
           {
             case Some(extendAnnotation @ ExtendAnnotation(targetValueTpt)) =>
               if (tpt.isEmpty)
@@ -177,10 +187,13 @@ class MacroExtensionsComponent(val global: Global, macroExtensions: Boolean = tr
 
               val extensionName = newExtensionName(name)
               val targetTpt = typify(targetValueTpt)
+              val typeNamesInTarget = getTypeNames(targetTpt).toSet
+              val (outerTParams, innerTParams) =
+                tparams.partition({ case tparam @ TypeDef(_, tname, _, _) => typeNamesInTarget.contains(tname) })
               val selfTreeName: TermName = unit.fresh.newName("selfTree")
               // Don't rename the context, otherwise explicit macros are hard to write.
               val contextName: TermName = "c" //unit.fresh.newName("c")
-              
+
               val expressionNames = (vparamss.flatten.map(_.name.toString) :+ selfName.toString).toSet
               banVariableNames(expressionNames, rhs)
               List(
@@ -188,7 +201,7 @@ class MacroExtensionsComponent(val global: Global, macroExtensions: Boolean = tr
                 ClassDef(
                   Modifiers((flags | Flag.IMPLICIT) -- Flag.MACRO, privateWithin, Nil),
                   extensionName: TypeName,
-                  Nil,
+                  outerTParams,
                   Template(
                     List(parentTypeTreeForImplicitWrapper(targetTpt.toString: TypeName)),
                     newSelfValDef(),
@@ -198,9 +211,9 @@ class MacroExtensionsComponent(val global: Global, macroExtensions: Boolean = tr
                     // Copying the original def over, without its @scalaxy.extend annotation.
                     DefDef(
                       Modifiers(flags | Flag.MACRO, privateWithin, annotations.filter(_ ne extendAnnotation)),
-                      name, 
-                      tparams, 
-                      vparamss, 
+                      name,
+                      innerTParams,
+                      vparamss,
                       tpt,
                       {
                         val macroPath = termPath(extensionName + "." + name)
@@ -209,7 +222,7 @@ class MacroExtensionsComponent(val global: Global, macroExtensions: Boolean = tr
                         else
                           TypeApply(
                             macroPath,
-                            tparams.map { 
+                            tparams.map {
                               case tparam @ TypeDef(_, tname, _, _) =>
                                 Ident(tname)
                             }
@@ -217,7 +230,7 @@ class MacroExtensionsComponent(val global: Global, macroExtensions: Boolean = tr
                       }
                     )
                   )
-                ), 
+                ),
                 ModuleDef(
                   NoMods,
                   extensionName,
@@ -235,11 +248,11 @@ class MacroExtensionsComponent(val global: Global, macroExtensions: Boolean = tr
                         )
                       ) ++
                       (
-                        if (vparamss.flatten.isEmpty) 
+                        if (vparamss.flatten.isEmpty)
                           Nil
                         else
                           List(
-                            vparamss.flatten.map { 
+                            vparamss.flatten.map {
                               case ValDef(pmods, pname, ptpt, prhs) =>
                                 ValDef(
                                   pmods | Flag.PARAM,
@@ -256,7 +269,7 @@ class MacroExtensionsComponent(val global: Global, macroExtensions: Boolean = tr
                           Nil
                         else
                           List(
-                            tparams.map { 
+                            tparams.map {
                               case tparam @ TypeDef(_, tname, _, _) =>
                                 ValDef(
                                   Modifiers(Flag.IMPLICIT | Flag.PARAM),
@@ -319,7 +332,7 @@ class MacroExtensionsComponent(val global: Global, macroExtensions: Boolean = tr
                         {
                           if ((flags & Flag.MACRO) != 0) {
                             // Extension body is already expressed as a macro, like `macro
-                            rhs  
+                            rhs
                           } else {
                             val splicer = new Transformer {
                               override def transform(tree: Tree) = tree match {
@@ -349,12 +362,15 @@ class MacroExtensionsComponent(val global: Global, macroExtensions: Boolean = tr
         def transformRuntimeExtension(tree: DefDef): Tree = {
           val DefDef(Modifiers(flags, privateWithin, annotations), name, tparams, vparamss, tpt, rhs) = tree
           val extendAnnotationOpt = annotations.find(ExtendAnnotation.unapply(_) != None)
-          extendAnnotationOpt match 
+          extendAnnotationOpt match
           {
             case Some(extendAnnotation @ ExtendAnnotation(targetValueTpt)) =>
               unit.warning(tree.pos, "This extension will create a runtime dependency. To use macro extensions, move this up to a publicly accessible module / object")
               val extensionName = newExtensionName(name)
               val targetTpt = typify(targetValueTpt)
+              val typeNamesInTarget = getTypeNames(targetTpt).toSet
+              val (outerTParams, innerTParams) =
+                tparams.partition({ case tparam @ TypeDef(_, tname, _, _) => typeNamesInTarget.contains(tname) })
               val expressionNames = (vparamss.flatten.map(_.name.toString) :+ selfName.toString).toSet
               banVariableNames(expressionNames, rhs)
               ClassDef(

@@ -4,7 +4,7 @@ package test
 import org.junit._
 import Assert._
 
-class MacroExtensionsTest extends TestBase 
+class MacroExtensionsTest extends TestBase
 {
   override def transform(s: String, name: String = "test") =
     transformCode(s, name, macroExtensions = true, runtimeExtensions = false)._1
@@ -13,28 +13,28 @@ class MacroExtensionsTest extends TestBase
   def trivial {
     transform("object O { @scalaxy.extend(Int) def foo: Int = 10 }")
   }
-  
+
   @Test
   def noReturnType {
     expectException("return type is missing") {
       transform("object O { @scalaxy.extend(Int) def foo = 10 }")
     }
   }
-  
+
   @Test
   def notHygienic {
     expectException("self is redefined locally") {
       transform("object O { @scalaxy.extend(Int) def foo = { val self = 10; self } }")
     }
   }
-  
+
   @Test
   def notInModule {
     expectException("not defined in module") {
       transform("class O { @scalaxy.extend(Int) def foo: Int = 10 }")
     }
   }
-  
+
   @Test
   def noArg {
     assertSameTransform(
@@ -61,7 +61,7 @@ class MacroExtensionsTest extends TestBase
       """
     )
   }
-  
+
   @Test
   def oneArg {
     assertSameTransform(
@@ -88,7 +88,7 @@ class MacroExtensionsTest extends TestBase
       """
     )
   }
-  
+
   @Test
   def typeParam {
     assertSameTransform(
@@ -115,6 +115,33 @@ class MacroExtensionsTest extends TestBase
                 println(s"${self.splice}.foo(${a.splice})")
                 a.splice
               })
+            }
+          }
+        }
+      """
+    )
+  }
+
+  @Test
+  def innerOuterTypeParams {
+    assertSameTransform(
+      """
+        object O {
+          @scalaxy.extend(Array[A]) def foo[A, B](b: B): (Array[A], B) = (self, b)
+        }
+      """,
+      """
+        object O {
+          import scala.language.experimental.macros;
+          implicit class scalaxy$extensions$foo$1[A, B](val self: Array[A]) extends scala.AnyRef {
+            def foo[B](b: B): (Array[A], B) = macro scalaxy$extensions$foo$1.foo[A, B]
+          }
+          object scalaxy$extensions$foo$1 {
+            def foo[A : c.WeakTypeTag, B : c.WeakTypeTag](c: scala.reflect.macros.Context)(b: c.Expr[B]): c.Expr[(Array[A], B)] = {
+              import c.universe._
+              val Apply(_, List(selfTree1)) = c.prefix.tree
+              val self = c.Expr[Array[A]](selfTree1)
+              reify((self.splice, b.splice))
             }
           }
         }

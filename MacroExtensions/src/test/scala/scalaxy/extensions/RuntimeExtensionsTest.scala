@@ -4,7 +4,7 @@ package test
 import org.junit._
 import Assert._
 
-class RuntimeExtensionsTest extends TestBase 
+class RuntimeExtensionsTest extends TestBase
 {
   override def transform(s: String, name: String = "test") =
     transformCode(s, name, macroExtensions = false, runtimeExtensions = true)._1
@@ -13,21 +13,21 @@ class RuntimeExtensionsTest extends TestBase
   def trivial {
     transform("class C { @scalaxy.extend(Int) def foo: Int = 10 }")
   }
-  
+
   @Test
   def noReturnType {
     expectException("return type is missing") {
       transform("class C { @scalaxy.extend(Int) def foo = 10 }")
     }
   }
-  
+
   @Test
   def notHygienic {
     expectException("self is redefined locally") {
       transform("class C { @scalaxy.extend(Int) def foo = { val self = 10; self } }")
     }
   }
-  
+
   @Test
   def noArg {
     assertSameTransform(
@@ -45,7 +45,7 @@ class RuntimeExtensionsTest extends TestBase
       """
     )
   }
-  
+
   @Test
   def noArgVal {
     assertSameTransform(
@@ -63,7 +63,7 @@ class RuntimeExtensionsTest extends TestBase
       """
     )
   }
-  
+
   @Test
   def oneArg {
     assertSameTransform(

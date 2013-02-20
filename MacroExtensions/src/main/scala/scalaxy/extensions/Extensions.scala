@@ -18,19 +18,19 @@ trait Extensions
   def termPath(components: List[String]): Tree = {
     components.tail.foldLeft(Ident(components.head: TermName): Tree)((p, n) => Select(p, n: TermName))
   }
-  
+
   def typePath(path: String): Tree = {
     val components = path.split("\\.")
     Select(termPath(components.dropRight(1).toList), components.last: TypeName)
   }
-  
+
   def newImportAll(tpt: Tree, pos: Position): Import = {
     Import(
       tpt,
       List(
         ImportSelector("_": TermName, pos.point, null, -1)))
   }
-  
+
   def newImportMacros(pos: Position): Import = {
     val macrosName: TermName = "macros"
     Import(
@@ -40,12 +40,12 @@ trait Extensions
       )
     )
   }
-  
+
   def newEmptyTpt() = TypeTree(null)
-  
+
   def genParamAccessorsAndConstructor(namesAndTypeTrees: List[(String, Tree)]): List[Tree] = {
     (
-      namesAndTypeTrees.map { 
+      namesAndTypeTrees.map {
         case (name, tpt) =>
           ValDef(Modifiers(Flags.PARAMACCESSOR), name, tpt, EmptyTree)
       }
@@ -63,11 +63,11 @@ trait Extensions
       newSuperInitConstructorBody()
     )
   }
-  
+
   def newSelfValDef(): ValDef = {
     ValDef(Modifiers(Flag.PRIVATE), "_": TermName, newEmptyTpt(), EmptyTree)
   }
-  
+
   def newSuperInitConstructorBody(): Tree = {
     Block(
       // super.<init>()
@@ -75,20 +75,20 @@ trait Extensions
       Literal(Constant(()))
     )
   }
-  
+
   lazy val anyValTypeNames =
     Set("Int", "Long", "Short", "Byte", "Double", "Float", "Char", "Boolean", "AnyVal")
-    
+
   def parentTypeTreeForImplicitWrapper(typeName: Name): Tree = {
     // If the type being extended is an AnyVal, make the implicit class a value class :-)
     typePath(
       if (anyValTypeNames.contains(typeName.toString))
-        "scala.AnyVal" 
-      else 
+        "scala.AnyVal"
+      else
         "scala.AnyRef"
     )
   }
-  
+
   // TODO: request some -- official API in scala.reflect.api.FlagSets#FlagOps
   implicit class FlagOps2(flags: FlagSet) {
     def --(others: FlagSet) = {
