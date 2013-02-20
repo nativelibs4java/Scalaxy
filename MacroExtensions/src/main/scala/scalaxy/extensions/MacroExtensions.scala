@@ -345,6 +345,7 @@ class MacroExtensionsComponent(val global: Global)
           }
         }
         override def transform(tree: Tree): Tree = tree match {
+          // TODO check that this module is statically and publicly accessible.
           case ModuleDef(mods, name, Template(parents, self, body)) =>
             val newBody = body.flatMap {
               case dd @ DefDef(_, _, _, _, _, _) =>
