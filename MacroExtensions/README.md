@@ -15,9 +15,9 @@ Scalaxy/MacroExtensions's compiler plugin supports the following syntax:
 ```
 Which allows calls such as:
 ```scala
-println(1.str1)
-println(2.str2("'"))
-println(3.str3)
+println(1.str1) // macro-expanded to `1.toString`
+println(2.str2("'")) // macro-expanded to `"'" + 2 + "'"`
+println(3.str3) // macro-expanded to `3.toString`  (but prints a message during compilation)
 ```
 This is done by rewriting the `@scalaxy.extend` declarations above during compilation of the extensions.
 In the case of `str2`, this gives the following:
