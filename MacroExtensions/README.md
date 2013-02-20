@@ -39,6 +39,14 @@ object scalaxy$extensions$str$1 {
 }
 ```
 
+# Known Issues
+
+- Annotation is resolved by name: if you redefine an `@extend` annotation, this will break compilation.
+- Default parameter values are not supported (due to macros not supporting them?)
+- Implicit values may not be passed appropriately (maybe another limitation of macros?)
+- Doesn't check macro extensions are defined in publicly available static objects (but compiler does)
+- No automated test cases yet: this is just an experiment! (see `examples` directory for some constructs to test manually)
+
 # Usage
 
 If you're using `sbt` 0.12.2+, just put the following lines in `build.sbt`:
@@ -85,11 +93,3 @@ cd Extensions
 scalac -Xplugin:$HOME/.ivy2/cache/com.nativelibs4java/scalaxy-macro-extensions_2.10/jars/scalaxy-macro-extensions_2.10-0.3-SNAPSHOT.jar examples/TestExtensions.scala -Xprint:scalaxy-extensions
 scalac examples/Test.scala
 ```
-
-# Known Issues
-
-- Annotation is resolved by name: if you redefine an `@extend` annotation, this will break compilation.
-- Default parameter values are not supported (due to macros not supporting them?)
-- Implicit values may not be passed appropriately (maybe another limitation of macros?)
-- Doesn't check macro extensions are defined in publicly available static objects (but compiler does)
-- No automatic test cases yet: this is an experiment! (see `examples` directory for some constructs to test manually)
