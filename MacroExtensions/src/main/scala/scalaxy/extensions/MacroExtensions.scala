@@ -17,26 +17,27 @@ import scala.tools.nsc.transform.TypingTransformers
  *  
  *  It defines a toy syntax that uses annotations to define implicit classes:
  *  
- *    @extend(Int) def str(base: Int = 10): String = macro reify(self.splice.toString)
+ *    @extend(Any) def quoted(quote: String): String = quote + self + quote
  *    
  *  Which gets desugared to:
  *  
  *    import scala.language.experimental.macros
- *    implicit class str(self: Int) {
- *      def str = macro str$.str
+ *    implicit class scalaxy$extensions$quoted$1(self: Any) {
+ *      def quoted(quote: String) = macro scalaxy$extensions$quoted$1.quoted
  *    }
- *    object str$ {
- *      def str(c: scala.reflect.macros.Context): c.Expr[String] = {
+ *    object scalaxy$extensions$quoted$1 {
+ *      def quoted(c: scala.reflect.macros.Context)
+ *                (quote: c.Expr[String]): c.Expr[String] = {
  *        import c.universe._
  *        val Apply(_, List(selfTree)) = c.prefix.tree
  *        val self = c.Expr[String](selfTree)
- *        reify(self.splice.toString)
+ *        reify(quote.splice + self.splice + quote.splice)
  *      }
  *    }
  *
  *  This example code doesn't try to be hygienic: it assumes @extend is not locally redefined to something else.
  *
- *  To see the AST before and after the rewrite, run the compiler with -Xprint:parser -Xprint:runtime-extensions.
+ *  To see the AST before and after the rewrite, run the compiler with -Xprint:parser -Xprint:scalaxy-extensions.
  */
 object MacroExtensionsCompiler {
   private val scalaLibraryJar =
