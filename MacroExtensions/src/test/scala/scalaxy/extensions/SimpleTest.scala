@@ -9,14 +9,32 @@ class SimpleTest extends TestBase {
     val (res, _) :: Nil = transform(List(s), name)
     res
   }
-  @Test
-  def noReturnType {
-    trans("object O { @scalaxy.extend(Int) def foo: Int = 10 }")
+  def expectException(reason: String)(block: => Unit) {
     try {
-      trans("object O { @scalaxy.extend(Int) def foo = 10 }")
-      fail("Code should not have compiled, was missing return type")
+      block
+      fail(s"Code should not have compiled: $reason")
     } catch { case ex: Throwable => }
   }
+  
+  @Test
+  def trivial {
+    trans("object O { @scalaxy.extend(Int) def foo: Int = 10 }")
+  }
+  
+  @Test
+  def noReturnType {
+    expectException("return type is missing") {
+      trans("object O { @scalaxy.extend(Int) def foo = 10 }")
+    }
+  }
+  
+  @Test
+  def notHygienic {
+    expectException("self is redefined locally") {
+      trans("object O { @scalaxy.extend(Int) def foo = { val self = 10; self } }")
+    }
+  }
+  
   @Test
   def simple {
     val original = """
