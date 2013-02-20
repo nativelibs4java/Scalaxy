@@ -4,17 +4,14 @@ package test
 import org.junit._
 import Assert._
 
-class SimpleTest extends TestBase {
+class MacroExtensionsTest extends TestBase 
+{
+  override def transform(s: String, name: String = "test") =
+    transformCode(s, name, macroExtensions = true, runtimeExtensions = false)._1
+
   @Test
   def trivial {
     transform("object O { @scalaxy.extend(Int) def foo: Int = 10 }")
-  }
-  
-  @Test
-  def notInModule {
-    expectException("not defined in module") {
-      transform("class O { @scalaxy.extend(Int) def foo: Int = 10 }")
-    }
   }
   
   @Test
@@ -32,30 +29,10 @@ class SimpleTest extends TestBase {
   }
   
   @Test
-  def oneArg {
-    assertSameTransform(
-      """
-        object O {
-          @scalaxy.extend(Int) def foo(quote: String): String = quote + self + quote
-        }
-      """,
-      """
-        object O {
-          import scala.language.experimental.macros;
-          implicit class scalaxy$extensions$foo$1(val self: Int) extends scala.AnyVal {
-            def foo(quote: String): String = macro scalaxy$extensions$foo$1.foo
-          }
-          object scalaxy$extensions$foo$1 {
-            def foo(c: scala.reflect.macros.Context)(quote: c.Expr[String]): c.Expr[String] = {
-              import c.universe._
-              val Apply(_, List(selfTree1)) = c.prefix.tree
-              val self = c.Expr[Int](selfTree1)
-              reify(quote.splice + self.splice + quote.splice)
-            }
-          }
-        }
-      """
-    )
+  def notInModule {
+    expectException("not defined in module") {
+      transform("class O { @scalaxy.extend(Int) def foo: Int = 10 }")
+    }
   }
   
   @Test
@@ -78,6 +55,33 @@ class SimpleTest extends TestBase {
               val Apply(_, List(selfTree1)) = c.prefix.tree
               val self = c.Expr[String](selfTree1)
               reify(self.splice.length)
+            }
+          }
+        }
+      """
+    )
+  }
+  
+  @Test
+  def oneArg {
+    assertSameTransform(
+      """
+        object O {
+          @scalaxy.extend(Int) def foo(quote: String): String = quote + self + quote
+        }
+      """,
+      """
+        object O {
+          import scala.language.experimental.macros;
+          implicit class scalaxy$extensions$foo$1(val self: Int) extends scala.AnyVal {
+            def foo(quote: String): String = macro scalaxy$extensions$foo$1.foo
+          }
+          object scalaxy$extensions$foo$1 {
+            def foo(c: scala.reflect.macros.Context)(quote: c.Expr[String]): c.Expr[String] = {
+              import c.universe._
+              val Apply(_, List(selfTree1)) = c.prefix.tree
+              val self = c.Expr[Int](selfTree1)
+              reify(quote.splice + self.splice + quote.splice)
             }
           }
         }

@@ -93,7 +93,7 @@ class MacroExtensionsPlugin(override val global: Global) extends Plugin {
  *  > nodeToString(ast)
  *  > val DefDef(mods, name, tparams, vparamss, tpt, rhs) = ast // play with extractors to explore the tree and its properties.
  */ 
-class MacroExtensionsComponent(val global: Global, defaultToRuntimeExtensions: Boolean  = false)
+class MacroExtensionsComponent(val global: Global, macroExtensions: Boolean = true, runtimeExtensions: Boolean = false)
     extends PluginComponent
     with TypingTransformers
     with Extensions
@@ -348,11 +348,10 @@ class MacroExtensionsComponent(val global: Global, defaultToRuntimeExtensions: B
         }
         def transformRuntimeExtension(tree: DefDef): Tree = {
           val DefDef(Modifiers(flags, privateWithin, annotations), name, tparams, vparamss, tpt, rhs) = tree
-          annotations match {
-            case List(Apply(Select(New(Ident(annotationName)), initName), List(targetValueTpt))) 
-                if annotationName.toString == "extend" && 
-                   initName == nme.CONSTRUCTOR 
-            =>
+          val extendAnnotationOpt = annotations.find(ExtendAnnotation.unapply(_) != None)
+          extendAnnotationOpt match 
+          {
+            case Some(extendAnnotation @ ExtendAnnotation(targetValueTpt)) =>
               unit.warning(tree.pos, "This extension will create a runtime dependency. To use macro extensions, move this up to a publicly accessible module / object")
               val extensionName = newExtensionName(name)
               val targetTpt = typify(targetValueTpt)
@@ -378,7 +377,7 @@ class MacroExtensionsComponent(val global: Global, defaultToRuntimeExtensions: B
         }
         override def transform(tree: Tree): Tree = tree match {
           // TODO check that this module is statically and publicly accessible.
-          case ModuleDef(mods, name, Template(parents, self, body)) =>
+          case ModuleDef(mods, name, Template(parents, self, body)) if macroExtensions =>
             val newBody = body.flatMap {
               case dd @ DefDef(_, _, _, _, _, _) =>
                 transformMacroExtension(dd).map(transform(_))
@@ -386,7 +385,7 @@ class MacroExtensionsComponent(val global: Global, defaultToRuntimeExtensions: B
                 List(transform(member))
             }
             ModuleDef(mods, name, Template(parents, self, newBody))
-          case dd @ DefDef(_, _, _, _, _, _) if defaultToRuntimeExtensions =>
+          case dd @ DefDef(_, _, _, _, _, _) if runtimeExtensions =>
             transformRuntimeExtension(dd)
           case _ =>
             super.transform(tree)

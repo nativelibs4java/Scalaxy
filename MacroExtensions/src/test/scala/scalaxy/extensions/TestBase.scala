@@ -19,15 +19,13 @@ import scala.tools.nsc.reporters.ConsoleReporter
 
 trait TestBase {
   import MacroExtensionsCompiler.jarOf
-  val jars = 
+  lazy val jars = 
     jarOf(classOf[List[_]]).toSeq ++
     jarOf(classOf[scala.reflect.macros.Context]) ++
     jarOf(classOf[Global])
   
-  def transform(s: String, name: String = "test"): String = {
-    val (res, _) :: Nil = transform(List(s), name)
-    res
-  }
+  def transform(code: String, name: String): String
+  
   def assertSameTransform(original: String, equivalent: String) {
     val expected = transform(equivalent, "equiv")
     val actual = transform(original, "orig")
@@ -37,6 +35,7 @@ trait TestBase {
       assertEquals(expected, actual)
     }
   }
+  
   def expectException(reason: String)(block: => Unit) {
     try {
       block
@@ -45,9 +44,9 @@ trait TestBase {
   }
   
   //def normalize(s: String) = s.trim.replaceAll("^\\s*|\\s*?$", "")
-  def transform(codes: List[String], name: String): List[(String, String)] = {
+  def transformCode(code: String, name: String, macroExtensions: Boolean, runtimeExtensions: Boolean): (String, String) = {
     val settings = new Settings
-    val files = codes.map(code => {
+    val file = {
       val file = File.createTempFile(name, ".scala")
       file.deleteOnExit()
       val out = new PrintWriter(file)
@@ -55,33 +54,31 @@ trait TestBase {
       out.close()
       
       file
-    })
+    }
     try {
-      val args = files.map(_.toString).toArray
+      val args = Array(file.toString)
       val command = 
         new CompilerCommand(
           List("-bootclasspath", jars.mkString(File.pathSeparator)) ++ args, settings)
   
       require(command.ok)
       
-      var transformed = mutable.ListBuffer[(String, String)]()
+      var transformed: (String, String) = null
       val global = new Global(settings, new ConsoleReporter(settings)) {
         override protected def computeInternalPhases() {
           super.computeInternalPhases
-          val comp = new MacroExtensionsComponent(this)
+          val comp = new MacroExtensionsComponent(this, macroExtensions = macroExtensions, runtimeExtensions = runtimeExtensions)
           phasesSet += comp
           // Get node string right after macro extensions component.
-          phasesSet += new TestComponent(this, comp, (s, n) => transformed += s -> n)
+          phasesSet += new TestComponent(this, comp, (s, n) => transformed = s -> n)
           // Stop compilation after typer and refchecks, to see if there are errors.
           phasesSet += new StopComponent(this)
         }
       }
       new global.Run().compile(command.files)
-      assert(codes.size == transformed.size)
-      assert(transformed.forall { case (s, n) => s != null && n != null && s.trim.length != 0 && n.trim.length != 0 })
-      transformed.result()
+      transformed
     } finally {
-      files.foreach(_.delete())
+      file.delete()
     }
   }
   
