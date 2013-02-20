@@ -376,7 +376,7 @@ class MacroExtensionsComponent(val global: Global, macroExtensions: Boolean = tr
               ClassDef(
                 Modifiers((flags | Flag.IMPLICIT) -- Flag.MACRO, privateWithin, Nil),
                 extensionName: TypeName,
-                Nil,
+                outerTParams,
                 Template(
                   List(parentTypeTreeForImplicitWrapper(targetTpt.toString: TypeName)),
                   newSelfValDef(),
@@ -384,7 +384,7 @@ class MacroExtensionsComponent(val global: Global, macroExtensions: Boolean = tr
                     List(selfName -> targetTpt)
                   ) :+
                   // Copying the original def over, without its annotation.
-                  DefDef(Modifiers(flags -- Flag.MACRO, privateWithin, Nil), name, tparams, vparamss, tpt, rhs)
+                  DefDef(Modifiers(flags -- Flag.MACRO, privateWithin, Nil), name, innerTParams, vparamss, tpt, rhs)
                 )
               )
             case _ =>

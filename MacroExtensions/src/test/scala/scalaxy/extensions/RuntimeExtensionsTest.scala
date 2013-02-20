@@ -81,4 +81,22 @@ class RuntimeExtensionsTest extends TestBase
       """
     )
   }
+
+  @Test
+  def innerOuterTypeParams {
+    assertSameTransform(
+      """
+        class C {
+          @scalaxy.extend(Array[A]) def foo[A, B](b: B): (Array[A], B) = (self, b)
+        }
+      """,
+      """
+        class C {
+          implicit class scalaxy$extensions$foo$1[A](val self: Array[A]) extends scala.AnyRef {
+            def foo[B](b: B): (Array[A], B) = (self, b)
+          }
+        }
+      """
+    )
+  }
 }
