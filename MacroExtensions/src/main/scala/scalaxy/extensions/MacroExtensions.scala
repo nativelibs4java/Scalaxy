@@ -106,6 +106,15 @@ class MacroExtensionsComponent(val global: Global)
 
   private final val selfName = "self"
   
+  object ExtendAnnotation {
+    def unapply(tree: Tree) = Option(tree) collect {
+      case Apply(Select(New(Ident(annotationName)), initName), List(targetValueTpt)) 
+        if annotationName.toString == "extend" && 
+           initName == nme.CONSTRUCTOR =>
+        targetValueTpt
+    }
+  }
+  
   def newPhase(prev: Phase): StdPhase = new StdPhase(prev) {
     def apply(unit: CompilationUnit) {
       val onTransformer = new Transformer 
@@ -113,24 +122,34 @@ class MacroExtensionsComponent(val global: Global)
         def newExtensionName(name: Name) =
           unit.fresh.newName("scalaxy$extensions$" + name + "$")
           
+        // Tranforms a value tree (as found in annotation values) to a type tree.
+        def typify(valueTpt: Tree): Tree = valueTpt match {
+          case Ident(n) =>
+            Ident(n.toString: TypeName)
+          case TypeApply(target, args) =>
+            AppliedTypeTree(
+              typify(target),
+              args.map(typify(_))
+            ) 
+          case _ =>
+            unit.error(valueTpt.pos, "Type not handled yet: " + nodeToString(valueTpt) + ": " + valueTpt.getClass.getName)
+            null
+        }
+        
         def transformMacroExtension(tree: DefDef): List[Tree] = 
         {
           val DefDef(Modifiers(flags, privateWithin, annotations), name, tparams, vparamss, tpt, rhs) = tree
-          annotations match 
+          val extendAnnotationOpt = annotations.find(ExtendAnnotation.unapply(_) != None)
+          extendAnnotationOpt match 
           {
-            case List(Apply(Select(New(Ident(annotationName)), initName), List(Ident(typeName)))) 
-                if annotationName.toString == "extend" && 
-                   initName == nme.CONSTRUCTOR =>
+            case Some(extendAnnotation @ ExtendAnnotation(targetValueTpt)) =>
               if (tpt.isEmpty)
                 unit.error(tree.pos, "Macro extensions require explicit return type annotation")
 
               val extensionName = newExtensionName(name)
-              val targetTpt = Ident(typeName.toString: TypeName)
+              val targetTpt = typify(targetValueTpt)
               val selfTreeName: TermName = unit.fresh.newName("selfTree")
               val contextName: TermName = unit.fresh.newName("c")
-              assert(tparams == Nil)
-              
-              //val vparams2 = vparamss.flatten :+ ValDef(NoMods, "self", targetTpt, EmptyTree)
               List(
                 newImportMacros(tree.pos),
                 ClassDef(
@@ -138,19 +157,31 @@ class MacroExtensionsComponent(val global: Global)
                   extensionName: TypeName,
                   tparams,
                   Template(
-                    List(parentTypeTreeForImplicitWrapper(typeName)),
+                    List(parentTypeTreeForImplicitWrapper(targetTpt.toString: TypeName)),
                     newSelfValDef(),
                     genParamAccessorsAndConstructor(
                       List(selfName -> targetTpt)
                     ) :+
-                    // Copying the original def over, without its annotation.
+                    // Copying the original def over, without its @extend annotation.
                     DefDef(
-                      Modifiers(flags | Flag.MACRO, privateWithin, Nil),
+                      Modifiers(flags | Flag.MACRO, privateWithin, annotations.filter(_ ne extendAnnotation)),
                       name, 
                       tparams, 
                       vparamss, 
-                      tpt, 
-                      termPath(extensionName + "." + name)
+                      tpt,
+                      {
+                        val macroPath = termPath(extensionName + "." + name)
+                        if (tparams.isEmpty)
+                          macroPath
+                        else
+                          TypeApply(
+                            macroPath,
+                            tparams.map { 
+                              case tparam @ TypeDef(_, tname, _, _) =>
+                                Ident(tname)
+                            }
+                          )
+                      }
                     )
                   )
                 ), 
@@ -183,6 +214,23 @@ class MacroExtensionsComponent(val global: Global)
                                   AppliedTypeTree(
                                     typePath(contextName + ".Expr"),
                                     List(ptpt)),
+                                  EmptyTree)
+                            }
+                          )
+                      ) ++
+                      (
+                        if (tparams.isEmpty)
+                          Nil
+                        else
+                          List(
+                            tparams.map { 
+                              case tparam @ TypeDef(_, tname, _, _) =>
+                                ValDef(
+                                  Modifiers(Flag.IMPLICIT | Flag.PARAM),
+                                  unit.fresh.newName("evidence$"),
+                                  AppliedTypeTree(
+                                    typePath(contextName + ".WeakTypeTag"),
+                                    List(Ident(tname))),
                                   EmptyTree)
                             }
                           )
@@ -268,19 +316,19 @@ class MacroExtensionsComponent(val global: Global)
         def transformRuntimeExtension(tree: DefDef): Tree = {
           val DefDef(Modifiers(flags, privateWithin, annotations), name, tparams, vparamss, tpt, rhs) = tree
           annotations match {
-            case List(Apply(Select(New(Ident(annotationName)), initName), List(Ident(typeName)))) 
+            case List(Apply(Select(New(Ident(annotationName)), initName), List(targetValueTpt))) 
                 if annotationName.toString == "extend" && 
                    initName == nme.CONSTRUCTOR 
             =>
               unit.warning(tree.pos, "This extension will create a runtime dependency. To use macro extensions, move this up to a publicly accessible module / object")
               val extensionName = newExtensionName(name)
-              val targetTpt = Ident(typeName.toString: TypeName)
+              val targetTpt = typify(targetValueTpt)
               ClassDef(
                 Modifiers((flags | Flag.IMPLICIT) -- Flag.MACRO, privateWithin, Nil),
                 extensionName: TypeName,
                 tparams,
                 Template(
-                  List(parentTypeTreeForImplicitWrapper(typeName)),
+                  List(parentTypeTreeForImplicitWrapper(targetTpt.toString: TypeName)),
                   newSelfValDef(),
                   genParamAccessorsAndConstructor(
                     List(selfName -> targetTpt)
