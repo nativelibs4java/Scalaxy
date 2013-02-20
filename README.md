@@ -10,9 +10,9 @@ Collection of Scala Macro goodies ([BSD-licensed](https://github.com/ochafik/Sca
 - *[MacroExtensions](https://github.com/ochafik/Scalaxy/tree/master/MacroExtensions)* provides an extremely simple (and *experimental*) syntax to define extensions methods as macros:
 
     ```scala
-    @extend(Int) def str1: String = self.toString
-    @extend(Any) def quoted(quote: String): String = quote + self + quote
-    @extend(Int) def str3: String = macro {
+    @scalaxy.extend(Int) def str1: String = self.toString
+    @scalaxy.extend(Any) def quoted(quote: String): String = quote + self + quote
+    @scalaxy.extend(Int) def str3: String = macro {
       println("Extension macro is executing!") 
       reify(self.splice.toString)
     }
