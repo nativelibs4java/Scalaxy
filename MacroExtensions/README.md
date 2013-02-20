@@ -5,7 +5,8 @@ New trivial syntax to define class enrichments as macros ([BSD-licensed](https:/
 Scalaxy/MacroExtensions's compiler plugin supports the following syntax:
 ```scala
 @extend(Int) def str1: String = self.toString
-@extend(Int) def str2: String = macro {
+@extend(Int) def str2(quote: String): String = quote + self + quote
+@extend(Int) def str3: String = macro {
   println("Extension macro is executing!") 
   reify(self.splice.toString)
 }
@@ -13,37 +14,24 @@ Scalaxy/MacroExtensions's compiler plugin supports the following syntax:
 Which allows calls such as:
 ```scala
 println(1.str1)
-println(2.str2)
+println(2.str2("'"))
+println(3.str3)
 ```
-This is done by rewriting the `@extend` declarations into:
+This is done by rewriting the `@extend` declarations above during compilation of the extensions.
+In the case of `str2`, this yields the following:
 ```scala
 import scala.language.experimental.macros
-implicit class scalaxy$extensions$str1$1(self: Int) {
-  def str1(v: Int) = macro scalaxy$extensions$str1$1.str
-}
-object scalaxy$extensions$str1$1 {
-  def str1(c: scala.reflect.macros.Context)
-          (v: c.Expr[Int]): c.Expr[String] = {
-    import c.universe._
-    val Apply(_, List(selfTree)) = c.prefix.tree
-    val self = c.Expr[String](selfTree)
-    reify(self.splice.toString)
-  }
-}
-
-import scala.language.experimental.macros
 implicit class scalaxy$extensions$str2$1(self: Int) {
-  def str2(v: Int) = macro scalaxy$extensions$str2$1.str
+  def str2(quote: String) = macro scalaxy$extensions$str2$1.str
 }
 object scalaxy$extensions$str$1 {
   def str2(c: scala.reflect.macros.Context)
-          (v: c.Expr[Int]): c.Expr[String] = {
+          (quote: c.Expr[String]): c.Expr[String] = {
     import c.universe._
-    val Apply(_, List(selfTree)) = c.prefix.tree
-    val self = c.Expr[String](selfTree)
+    val Apply(_, List(selfTree$1)) = c.prefix.tree
+    val self = c.Expr[String](selfTree$1)
     {
-      println("Extension macro is executing!") 
-      reify(self.splice.toString)
+      reify(quote.splice + self.splice + quote.splice)
     }
   }
 }
@@ -74,3 +62,7 @@ sbt "project scalaxy-extensions" "run examples/extension.scala -Xprint:scalaxy-e
 sbt "project scalaxy-extensions" "run examples/run.scala"
 ```
 
+# Known Issues
+
+- Default parameter values are not supported (due to macros not supporting them)
+- Doesn't check macro extensions are defined in publicly available static objects (but compiler does)

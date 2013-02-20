@@ -1,7 +1,8 @@
 object TestExtensions 
 {  
   @extend(Int) def str0 { println(self.toString) }
-  //@extend(Int) def str00 = self.toString 
+  
+  @extend(Any) def quoted(quote: String): String = quote + self + quote
   
   @extend(Int) def str1: String = self.toString
   

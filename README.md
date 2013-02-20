@@ -11,13 +11,15 @@ Collection of Scala Macro goodies ([BSD-licensed](https://github.com/ochafik/Sca
 
     ```scala
     @extend(Int) def str1: String = self.toString
-    @extend(Int) def str2: String = macro {
+    @extend(Int) def quoted(quote: String): String = quote + self + quote
+    @extend(Int) def str3: String = macro {
       println("Extension macro is executing!") 
       reify(self.splice.toString)
     }
     ...
-    println(1.str1) // this is macro-expanded to `10.toString`...
-    println(2.str2) // ...so is this.
+    println(1.str1) // this is macro-expanded to `1.toString`...
+    println(2.quoted("'")) // this is macro-expanded to `"'" + 1 + "'"`...
+    println(3.str3) // ...and this to `2.toString` (but prints a message during compilation)
     ```
 
 - *[Compilets](https://github.com/ochafik/Scalaxy/tree/master/Compilets)* provide an easy way to express AST rewrites, backed by a compiler plugin and an sbt plugin.

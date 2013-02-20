@@ -183,7 +183,7 @@ class MacroExtensionsComponent(val global: Global)
                                   AppliedTypeTree(
                                     typePath(contextName + ".Expr"),
                                     List(ptpt)),
-                                  prhs)
+                                  EmptyTree)
                             }
                           )
                       ),
@@ -231,7 +231,7 @@ class MacroExtensionsComponent(val global: Global)
                           Apply(
                             TypeApply(
                               termPath(contextName + ".Expr"),
-                              List(tpt)),
+                              List(targetTpt)),
                             List(
                               Ident(selfTreeName: TermName)))),
                         {
@@ -240,7 +240,7 @@ class MacroExtensionsComponent(val global: Global)
                             rhs  
                           } else {
                             val expressionNames = (vparamss.flatten.map(_.name.toString) :+ selfName.toString).toSet
-                            val splicer = new Transformer { 
+                            val splicer = new Transformer {
                               override def transform(tree: Tree) = tree match {
                                 case Ident(n) if n.isTermName && expressionNames.contains(n.toString) =>
                                   Select(tree, "splice": TermName)
