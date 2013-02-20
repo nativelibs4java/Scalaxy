@@ -82,7 +82,7 @@ git clone git://github.com/ochafik/Scalaxy.git
 cd Scalaxy
 sbt update
 cd Extensions
-scalac -Xplugin:$HOME/.ivy2/local/com.nativelibs4java/scalaxy-macro-extensions_2.10/0.3-SNAPSHOT/jars/scalaxy-macro-extensions_2.10.jar examples/TestExtensions.scala -Xprint:scalaxy-extensions
+scalac -Xplugin:$HOME/.ivy2/cache/com.nativelibs4java/scalaxy-macro-extensions_2.10/jars/scalaxy-macro-extensions_2.10-0.3-SNAPSHOT.jar examples/TestExtensions.scala -Xprint:scalaxy-extensions
 scalac examples/Test.scala
 ```
 
