@@ -5,7 +5,7 @@ New *experimental* syntax to define class enrichments as macros ([BSD-licensed](
 Scalaxy/MacroExtensions's compiler plugin supports the following syntax:
 ```scala
 @extend(Int) def str1: String = self.toString
-@extend(Int) def str2(quote: String): String = quote + self + quote
+@extend(Any) def str2(quote: String): String = quote + self + quote
 @extend(Int) def str3: String = macro {
   println("Extension macro is executing!") 
   reify(self.splice.toString)
@@ -21,7 +21,7 @@ This is done by rewriting the `@extend` declarations above during compilation of
 In the case of `str2`, this yields the following:
 ```scala
 import scala.language.experimental.macros
-implicit class scalaxy$extensions$str2$1(self: Int) {
+implicit class scalaxy$extensions$str2$1(self: Any) {
   def str2(quote: String) = macro scalaxy$extensions$str2$1.str
 }
 object scalaxy$extensions$str$1 {
@@ -29,7 +29,7 @@ object scalaxy$extensions$str$1 {
           (quote: c.Expr[String]): c.Expr[String] = {
     import c.universe._
     val Apply(_, List(selfTree$1)) = c.prefix.tree
-    val self = c.Expr[String](selfTree$1)
+    val self = c.Expr[Any](selfTree$1)
     {
       reify(quote.splice + self.splice + quote.splice)
     }

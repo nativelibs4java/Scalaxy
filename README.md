@@ -11,7 +11,7 @@ Collection of Scala Macro goodies ([BSD-licensed](https://github.com/ochafik/Sca
 
     ```scala
     @extend(Int) def str1: String = self.toString
-    @extend(Int) def quoted(quote: String): String = quote + self + quote
+    @extend(Any) def quoted(quote: String): String = quote + self + quote
     @extend(Int) def str3: String = macro {
       println("Extension macro is executing!") 
       reify(self.splice.toString)
