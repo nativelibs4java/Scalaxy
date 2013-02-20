@@ -92,3 +92,4 @@ scalac examples/Test.scala
 - Default parameter values are not supported (due to macros not supporting them?)
 - Implicit values may not be passed appropriately (maybe another limitation of macros?)
 - Doesn't check macro extensions are defined in publicly available static objects (but compiler does)
+- No automatic test cases yet: this is an experiment! (see `examples` directory for some constructs to test manually)
