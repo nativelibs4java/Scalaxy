@@ -47,7 +47,7 @@ trait Extensions
     (
       namesAndTypeTrees.map { 
         case (name, tpt) =>
-          ValDef(Modifiers(Flags.PARAMACCESSOR | Flag.PRIVATE | Flag.LOCAL), name, tpt, EmptyTree)
+          ValDef(Modifiers(Flags.PARAMACCESSOR), name, tpt, EmptyTree)
       }
     ) :+
     DefDef(
