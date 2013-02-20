@@ -93,7 +93,7 @@ class MacroExtensionsPlugin(override val global: Global) extends Plugin {
  *  > nodeToString(ast)
  *  > val DefDef(mods, name, tparams, vparamss, tpt, rhs) = ast // play with extractors to explore the tree and its properties.
  */ 
-class MacroExtensionsComponent(val global: Global)
+class MacroExtensionsComponent(val global: Global, defaultToRuntimeExtensions: Boolean  = false)
     extends PluginComponent
     with TypingTransformers
     with Extensions
@@ -188,7 +188,7 @@ class MacroExtensionsComponent(val global: Global)
                 ClassDef(
                   Modifiers((flags | Flag.IMPLICIT) -- Flag.MACRO, privateWithin, Nil),
                   extensionName: TypeName,
-                  tparams,
+                  Nil,
                   Template(
                     List(parentTypeTreeForImplicitWrapper(targetTpt.toString: TypeName)),
                     newSelfValDef(),
@@ -199,7 +199,7 @@ class MacroExtensionsComponent(val global: Global)
                     DefDef(
                       Modifiers(flags | Flag.MACRO, privateWithin, annotations.filter(_ ne extendAnnotation)),
                       name, 
-                      Nil, 
+                      tparams, 
                       vparamss, 
                       tpt,
                       {
@@ -361,7 +361,7 @@ class MacroExtensionsComponent(val global: Global)
               ClassDef(
                 Modifiers((flags | Flag.IMPLICIT) -- Flag.MACRO, privateWithin, Nil),
                 extensionName: TypeName,
-                tparams,
+                Nil,
                 Template(
                   List(parentTypeTreeForImplicitWrapper(targetTpt.toString: TypeName)),
                   newSelfValDef(),
@@ -386,7 +386,7 @@ class MacroExtensionsComponent(val global: Global)
                 List(transform(member))
             }
             ModuleDef(mods, name, Template(parents, self, newBody))
-          case dd @ DefDef(_, _, _, _, _, _) =>
+          case dd @ DefDef(_, _, _, _, _, _) if defaultToRuntimeExtensions =>
             transformRuntimeExtension(dd)
           case _ =>
             super.transform(tree)

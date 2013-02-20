@@ -1,6 +1,9 @@
 package scalaxy.extensions
 package test
 
+import org.junit._
+import Assert._
+
 import scalaxy.debug._
 
 import java.io._
@@ -21,8 +24,28 @@ trait TestBase {
     jarOf(classOf[scala.reflect.macros.Context]) ++
     jarOf(classOf[Global])
   
+  def transform(s: String, name: String = "test"): String = {
+    val (res, _) :: Nil = transform(List(s), name)
+    res
+  }
+  def assertSameTransform(original: String, equivalent: String) {
+    val expected = transform(equivalent, "equiv")
+    val actual = transform(original, "orig")
+    if (actual != expected) {
+      println(s"EXPECTED\n\t" + expected.replaceAll("\n", "\n\t"))
+      println(s"ACTUAL\n\t" + actual.replaceAll("\n", "\n\t"))
+      assertEquals(expected, actual)
+    }
+  }
+  def expectException(reason: String)(block: => Unit) {
+    try {
+      block
+      fail(s"Code should not have compiled: $reason")
+    } catch { case ex: Throwable => }
+  }
+  
   //def normalize(s: String) = s.trim.replaceAll("^\\s*|\\s*?$", "")
-  def transform(codes: List[String], name: String = "test"): List[(String, String)] = {
+  def transform(codes: List[String], name: String): List[(String, String)] = {
     val settings = new Settings
     val files = codes.map(code => {
       val file = File.createTempFile(name, ".scala")
