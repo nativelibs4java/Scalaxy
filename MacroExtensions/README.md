@@ -2,7 +2,7 @@
 
 New *experimental* syntax to define class enrichments as macros ([BSD-licensed](https://github.com/ochafik/Scalaxy/blob/master/LICENSE)).
 
-Some context [on my blog](http://ochafik.com/blog/?p=872), and some [discussion on scala-internals](https://groups.google.com/d/topic/scala-internals/vzfgUskaJ_w/discussion) (+ make sure to read about known issues below).
+There's some context [on my blog](http://ochafik.com/blog/?p=872), and a short [discussion on scala-internals](https://groups.google.com/d/topic/scala-internals/vzfgUskaJ_w/discussion) (+ make sure to read about known issues below).
 
 Scalaxy/MacroExtensions's compiler plugin supports the following syntax:
 ```scala
