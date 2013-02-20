@@ -24,7 +24,7 @@ In the case of `str2`, this gives the following:
 ```scala
 import scala.language.experimental.macros
 implicit class scalaxy$extensions$str2$1(self: Any) {
-  def str2(quote: String) = macro scalaxy$extensions$str2$1.str
+  def str2(quote: String) = macro scalaxy$extensions$str2$1.str2
 }
 object scalaxy$extensions$str2$1 {
   def str2(c: scala.reflect.macros.Context)
