@@ -89,5 +89,6 @@ scalac examples/Test.scala
 # Known Issues
 
 - Annotation is resolved by name: if you redefine an `@extend` annotation, this will break compilation.
-- Default parameter values are not supported (due to macros not supporting them)
+- Default parameter values are not supported (due to macros not supporting them?)
+- Implicit values may not be passed appropriately (maybe another limitation of macros?)
 - Doesn't check macro extensions are defined in publicly available static objects (but compiler does)
