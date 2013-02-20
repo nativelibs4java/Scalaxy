@@ -17,7 +17,7 @@ import scala.tools.nsc.transform.TypingTransformers
  *  
  *  It defines a toy syntax that uses annotations to define implicit classes:
  *  
- *    @extend(Any) def quoted(quote: String): String = quote + self + quote
+ *    @scalaxy.extend(Any) def quoted(quote: String): String = quote + self + quote
  *    
  *  Which gets desugared to:
  *  
@@ -35,7 +35,7 @@ import scala.tools.nsc.transform.TypingTransformers
  *      }
  *    }
  *
- *  This example code doesn't try to be hygienic: it assumes @extend is not locally redefined to something else.
+ *  This plugin is only partially hygienic: it assumes @scalaxy.extend is not locally redefined to something else.
  *
  *  To see the AST before and after the rewrite, run the compiler with -Xprint:parser -Xprint:scalaxy-extensions.
  */
@@ -76,7 +76,7 @@ object MacroExtensionsCompiler {
  */
 class MacroExtensionsPlugin(override val global: Global) extends Plugin {
   override val name = "scalaxy-extensions"
-  override val description = "Compiler plugin that adds a `@extend(Int) def toStr = self.toString` syntax to create extension methods."
+  override val description = "Compiler plugin that adds a `@scalaxy.extend(Int) def toStr = self.toString` syntax to create extension methods."
   override val components: List[PluginComponent] =
     List(new MacroExtensionsComponent(global))
 }
@@ -87,7 +87,7 @@ class MacroExtensionsPlugin(override val global: Global) extends Plugin {
  *  scala
  *  > :power
  *  > :phase parser // will show us ASTs just after parsing
- *  > val Some(List(ast)) = intp.parse("@extend(Int) def str = self.toString")
+ *  > val Some(List(ast)) = intp.parse("@scalaxy.extend(Int) def str = self.toString")
  *  > nodeToString(ast)
  *  > val DefDef(mods, name, tparams, vparamss, tpt, rhs) = ast // play with extractors to explore the tree and its properties.
  */ 
@@ -193,7 +193,7 @@ class MacroExtensionsComponent(val global: Global)
                     genParamAccessorsAndConstructor(
                       List(selfName -> targetTpt)
                     ) :+
-                    // Copying the original def over, without its @extend annotation.
+                    // Copying the original def over, without its @scalaxy.extend annotation.
                     DefDef(
                       Modifiers(flags | Flag.MACRO, privateWithin, annotations.filter(_ ne extendAnnotation)),
                       name, 

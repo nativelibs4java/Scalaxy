@@ -6,9 +6,9 @@ There's some context [on my blog](http://ochafik.com/blog/?p=872), and a short [
 
 Scalaxy/MacroExtensions's compiler plugin supports the following syntax:
 ```scala
-@extend(Int) def str1: String = self.toString
-@extend(Any) def str2(quote: String): String = quote + self + quote
-@extend(Int) def str3: String = macro {
+@scalaxy.extend(Int) def str1: String = self.toString
+@scalaxy.extend(Any) def str2(quote: String): String = quote + self + quote
+@scalaxy.extend(Int) def str3: String = macro {
   println("Extension macro is executing!") 
   reify(self.splice.toString)
 }
@@ -19,7 +19,7 @@ println(1.str1)
 println(2.str2("'"))
 println(3.str3)
 ```
-This is done by rewriting the `@extend` declarations above during compilation of the extensions.
+This is done by rewriting the `@scalaxy.extend` declarations above during compilation of the extensions.
 In the case of `str2`, this yields the following:
 ```scala
 import scala.language.experimental.macros
@@ -41,7 +41,7 @@ object scalaxy$extensions$str$1 {
 
 # Known Issues
 
-- Annotation is resolved by name: if you redefine an `@extend` annotation, this will break compilation (latest HEAD code uses `@scalaxy.extend` instead, will be published to Maven repo soon).
+- Annotation is resolved by name: if you redefine an `@scalaxy.extend` annotation, this will break compilation.
 - Default parameter values are not supported (due to macros not supporting them?)
 - Implicit values may not be passed appropriately (maybe another limitation of macros?)
 - Doesn't check macro extensions are defined in publicly available static objects (but compiler does)
