@@ -121,7 +121,11 @@ class MacroExtensionsComponent(val global: Global, macroExtensions: Boolean = tr
               val targetTpt = typify(targetValueTpt)
               val typeNamesInTarget = getTypeNames(targetTpt).toSet
               val (outerTParams, innerTParams) =
-                tparams.partition({ case tparam @ TypeDef(_, tname, _, _) => typeNamesInTarget.contains(tname) })
+                tparams.partition { 
+                  case tparam @ TypeDef(_, tname, _, _) => 
+                    typeNamesInTarget.contains(tname) 
+                }
+              
               val selfTreeName: TermName = unit.fresh.newName("selfTree")
               // Don't rename the context, otherwise explicit macros are hard to write.
               val contextName: TermName = "c" //unit.fresh.newName("c")
@@ -155,8 +159,8 @@ class MacroExtensionsComponent(val global: Global, macroExtensions: Boolean = tr
                           TypeApply(
                             macroPath,
                             tparams.map {
-                              case tparam @ TypeDef(_, tname, _, _) =>
-                                Ident(tname)
+                              case TypeDef(_, tname, _, _) =>
+                                Ident(tname.toString: TypeName)
                             }
                           )
                       }
@@ -328,7 +332,9 @@ class MacroExtensionsComponent(val global: Global, macroExtensions: Boolean = tr
           case ModuleDef(mods, name, Template(parents, self, body)) if macroExtensions =>
             val newBody = body.flatMap {
               case dd @ DefDef(_, _, _, _, _, _) =>
-                transformMacroExtension(dd).map(transform(_))
+                // Duplicate the resulting tree to avoid sharing any type tree between class and module..
+                // TODO be finer than that and only duplicate type trees (or names?? not as straightforward as I thought).
+                transformMacroExtension(dd).map(t => transform(t).duplicate)
               case member: Tree =>
                 List(transform(member))
             }

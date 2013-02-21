@@ -8,16 +8,16 @@ Scalaxy/MacroExtensions's compiler plugin supports the following syntax:
 ```scala
 @scalaxy.extend(Int) def str1: String = self.toString
 @scalaxy.extend(Any) def str2(quote: String): String = quote + self + quote
-@scalaxy.extend(Int) def str3: String = macro {
+@scalaxy.extend(Array[T]) def tup[A, B](b: B): (A, B) = macro {
   println("Extension macro is executing!") 
-  reify(self.splice.toString)
+  reify((self.splice.head, b.splice))
 }
 ```
 Which allows calls such as:
 ```scala
 println(1.str1) // macro-expanded to `1.toString`
 println(2.str2("'")) // macro-expanded to `"'" + 2 + "'"`
-println(3.str3) // macro-expanded to `3.toString`  (but prints a message during compilation)
+println(Array(3).tup(1.0)) // macro-expanded to `(Array(3).head, 1.0)`  (and prints a message during compilation)
 ```
 This is done by rewriting the `@scalaxy.extend` declarations above during compilation of the extensions.
 In the case of `str2`, this gives the following:
@@ -45,7 +45,7 @@ object scalaxy$extensions$str2$1 {
 - Default parameter values are not supported (due to macros not supporting them?)
 - Implicit values may not be passed appropriately (maybe another limitation of macros?)
 - Doesn't check macro extensions are defined in publicly available static objects (but compiler does)
-- Small test coverage: this is just an experiment! (see `examples` directory for some constructs to test manually)
+- Test coverage could improve, especially to understand limitations / edge cases.
 
 # Usage
 
