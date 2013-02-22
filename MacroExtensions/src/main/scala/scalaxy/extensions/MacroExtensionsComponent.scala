@@ -191,7 +191,7 @@ class MacroExtensionsComponent(val global: Global, macroExtensions: Boolean = tr
                             vparamss.flatten.map {
                               case ValDef(pmods, pname, ptpt, prhs) =>
                                 ValDef(
-                                  pmods | Flag.PARAM,
+                                  Modifiers(Flag.PARAM),
                                   pname,
                                   AppliedTypeTree(
                                     typePath(contextName + ".Expr"),
@@ -278,10 +278,21 @@ class MacroExtensionsComponent(val global: Global, macroExtensions: Boolean = tr
                                   super.transform(tree)
                               }
                             }
+                            val newRhs = splicer.transform(rhs)
+                            val implicits = vparamss.flatten collect {
+                              case ValDef(pmods, pname, ptpt, prhs) 
+                              if (pmods & Flag.IMPLICIT) != 0 =>
+                                ValDef(
+                                  Modifiers(Flag.IMPLICIT | Flag.LOCAL),
+                                  unit.fresh.newName(pname.toString + "$"),
+                                  ptpt,
+                                  Select(Ident(pname), "splice"))
+                            }
                             Apply(
                               Ident("reify": TermName),
                               List(
-                                splicer.transform(rhs)
+                                if (implicits.isEmpty) newRhs
+                                else Block(implicits :+ newRhs: _*)
                               )
                             )
                           }
