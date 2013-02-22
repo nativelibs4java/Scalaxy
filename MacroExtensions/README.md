@@ -8,7 +8,7 @@ Scalaxy/MacroExtensions's compiler plugin supports the following syntax:
 ```scala
 @scalaxy.extend(Int) def str1: String = self.toString
 @scalaxy.extend(Any) def str2(quote: String): String = quote + self + quote
-@scalaxy.extend(Array[T]) def tup[A, B](b: B): (A, B) = macro {
+@scalaxy.extend(Array[A]) def tup[A, B](b: B): (A, B) = macro {
   println("Extension macro is executing!") 
   reify((self.splice.head, b.splice))
 }
