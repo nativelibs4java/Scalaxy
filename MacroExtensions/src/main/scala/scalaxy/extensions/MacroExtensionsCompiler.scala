@@ -46,15 +46,10 @@ import scala.tools.nsc.transform.TypingTransformers
 object MacroExtensionsCompiler {
   def jarOf(c: Class[_]) =
     Option(c.getProtectionDomain.getCodeSource).map(_.getLocation.getFile)
-  private[extensions] val scalaLibraryJar = jarOf(classOf[List[_]])
+  val scalaLibraryJar = jarOf(classOf[List[_]])
 
   def main(args: Array[String]) {
     try {
-      lazy val jars =
-        jarOf(classOf[List[_]]).toSeq ++
-        jarOf(classOf[scala.reflect.macros.Context]) ++
-        jarOf(classOf[Global])
-    
       val settings = new Settings
       val command =
         new CompilerCommand(
