@@ -60,7 +60,7 @@ class MacroExtensionsComponent(val global: Global, macroExtensions: Boolean = tr
             case Apply(Select(New(ExtendAnnotationName(deprecated)), initName), List(targetValueTpt))
             if initName == nme.CONSTRUCTOR =>
               if (deprecated)
-                unit.warning(tree.pos, "@extend is deprecated. Please use @scalaxy.extend instead")
+                unit.error(tree.pos, "Please use `@scalaxy.extend` instead of `@extend`")
               targetValueTpt
             case _ =>
               println(nodeToString(tree))
