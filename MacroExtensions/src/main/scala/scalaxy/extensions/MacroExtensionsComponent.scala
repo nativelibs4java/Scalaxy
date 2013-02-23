@@ -150,32 +150,43 @@ class MacroExtensionsComponent(val global: Global, macroExtensions: Boolean = tr
               val contextName: TermName = "c" //unit.fresh.newName("c")
 
               def isImplicit(mods: Modifiers) = 
-                (mods & IMPLICIT) != NoMods
+                ((mods.flags & IMPLICIT): Long) != 0
                 
               def isByName(mods: Modifiers) = 
-                (mods & BYNAMEPARAM) != NoMods
+                ((mods.flags & BYNAMEPARAM): Long) != 0
                 
-              val isMacro = (flags & MACRO) != 0
+              val isMacro = 
+                ((flags & MACRO): Long) != 0
                 
-              // Due to https://issues.scala-lang.org/browse/SI-7170, we can have evidence name clashes.
+              val byValueParamExprNames = mutable.HashMap[String, String]()
               val vparamss = vparamss0.map(_.map {
                 case vd @ ValDef(pmods, pname, ptpt, prhs) =>
-                  if (isImplicit(pmods) && isByName(pmods))
-                    unit.error(vd.pos, "Scalaxy does not support for by-name implicit params yet")
+                  val newPTpt = 
+                    if (isByName(pmods)) {
+                      if (isMacro)
+                        unit.error(tree.pos, "Extensions expressed as macros cannot take by-name arguments")
+                      
+                      if (isImplicit(pmods))
+                        unit.error(vd.pos, "Scalaxy does not support for by-name implicit params yet")
+                    
+                      val AppliedTypeTree(target, List(newPTpt)) = ptpt
+                      assert(target.toString == "_root_.scala.<byname>")
+                      newPTpt
+                    } else {
+                      byValueParamExprNames += pname.toString -> unit.fresh.newName(pname + "$Expr$")
+                      ptpt 
+                    }
+                    
+                  if (!prhs.isEmpty)
+                    unit.error(prhs.pos, "Default parameters are not supported yet")
 
                   ValDef(
                     pmods, 
-                    if (isImplicit(pmods)) newTermName(unit.fresh.newName(pname + "$")) else pname, 
-                    ptpt, 
+                    // Due to https://issues.scala-lang.org/browse/SI-7170, we can have evidence name clashes.
+                    pname,//if (isImplicit(pmods)) newTermName(unit.fresh.newName(pname + "$")) else pname, 
+                    newPTpt, 
                     prhs)
               })
-              
-              val (byNameParams, byValueParams) = vparamss.flatten.partition(vd => isByName(vd.mods))
-              
-              val byValueParamExprNames: Map[String, String] = (byValueParams.collect {
-                case ValDef(pmods, pname, ptpt, prhs) =>
-                  pname.toString -> unit.fresh.newName(pname + "$Expr$")
-              }).toMap
               
               def getRealParamName(name: TermName): TermName = {
                 val n = name.toString
@@ -184,8 +195,6 @@ class MacroExtensionsComponent(val global: Global, macroExtensions: Boolean = tr
               def isByValueParam(name: TermName): Boolean = 
                 byValueParamExprNames.contains(name.toString)
               
-              if (isMacro && !byNameParams.isEmpty)
-                unit.error(tree.pos, "Extensions expressed as macros cannot take by-name arguments")
               
               val variableNames = (selfName.toString :: vparamss.flatten.map(_.name.toString)).toSet
               banVariableNames(
@@ -252,16 +261,14 @@ class MacroExtensionsComponent(val global: Global, macroExtensions: Boolean = tr
                         if (vparamss.flatten.isEmpty)
                           Nil
                         else
-                          List(
-                            vparamss.flatten.map {
-                              case ValDef(pmods, pname, ptpt, prhs) =>
-                                ValDef(
-                                  Modifiers(PARAM),
-                                  getRealParamName(pname),
-                                  newExprType(contextName, ptpt),
-                                  EmptyTree)
-                            }
-                          )
+                          vparamss.map(_.map {
+                            case ValDef(pmods, pname, ptpt, prhs) =>
+                              ValDef(
+                                Modifiers(PARAM),
+                                getRealParamName(pname),
+                                newExprType(contextName, ptpt),
+                                EmptyTree)
+                          })
                       ) ++
                       (
                         if (tparams.isEmpty)

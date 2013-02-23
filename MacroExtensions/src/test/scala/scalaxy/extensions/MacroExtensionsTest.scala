@@ -68,7 +68,7 @@ class MacroExtensionsTest extends TestBase
   }
 
   @Test
-  def oneArg {
+  def oneByValueArg {
     assertSameTransform(
       """
         object O {
@@ -193,13 +193,13 @@ class MacroExtensionsTest extends TestBase
           import scala.language.experimental.macros;
           implicit class scalaxy$extensions$squared$1[T](val self: T)
           extends scala.AnyRef {
-            def squared(implicit evidence$1$1$Expr$1: Numeric[T]): T = 
+            def squared(implicit evidence$1$Expr$1: Numeric[T]): T = 
               macro scalaxy$extensions$squared$1.squared[T]
           }
           object scalaxy$extensions$squared$1 {
             def squared[T]
                 (c: scala.reflect.macros.Context)
-                (evidence$1$1$Expr$1: c.Expr[Numeric[T]])
+                (evidence$1$Expr$1: c.Expr[Numeric[T]])
                 (implicit evidence$2: c.WeakTypeTag[T]): c.Expr[T] = 
             {
               import c.universe._
@@ -207,7 +207,7 @@ class MacroExtensionsTest extends TestBase
               val self$Expr$1: c.Expr[T] = c.Expr[T](selfTree$1)
               reify({
                 val self: T = self$Expr$1.splice
-                implicit val evidence$1$1: Numeric[T] = evidence$1$1$Expr$1.splice
+                implicit val evidence$1: Numeric[T] = evidence$1$Expr$1.splice
                 self * self
               })
             }
@@ -237,20 +237,20 @@ class MacroExtensionsTest extends TestBase
           import scala.language.experimental.macros;
           implicit class scalaxy$extensions$squared$1[T](val self: T)
           extends scala.AnyRef {
-            def squared(implicit evidence$1$1$Expr$1: Numeric[T]): T = 
+            def squared(implicit evidence$1$Expr$1: Numeric[T]): T = 
               macro scalaxy$extensions$squared$1.squared[T]
           }
           object scalaxy$extensions$squared$1 {
             def squared[T]
                 (c: scala.reflect.macros.Context)
-                (evidence$1$1$Expr$1: c.Expr[Numeric[T]])
+                (evidence$1$Expr$1: c.Expr[Numeric[T]])
                 (implicit evidence$2: c.WeakTypeTag[T]): c.Expr[T] = 
             {
               import c.universe._
               val Apply(_, List(selfTree$1)) = c.prefix.tree;
               val self: c.Expr[T] = c.Expr[T](selfTree$1);
               {
-                implicit def evidence$1$1$1: c.Expr[Numeric[T]] = c.Expr[Numeric[T]](evidence$1$1$Expr$1);
+                implicit def evidence$1$1: c.Expr[Numeric[T]] = c.Expr[Numeric[T]](evidence$1$Expr$1);
                 {
                   val evExpr = implicity[c.Expr[Numeric[T]]]
                   reify({
@@ -259,6 +259,47 @@ class MacroExtensionsTest extends TestBase
                   })
                 }
               }
+            }
+          }
+        }
+      """
+    )
+  }
+
+  @Test
+  def oneByNameArgWithImplicitClassTag {
+    assertSameTransform(
+      """
+        import scala.reflect.ClassTag
+        object O {
+          @scalaxy.extend(Int) 
+          def fill[T : ClassTag](generator: => String): Array[Array] = 
+            Array.fill[T](self)(generator)
+        }
+      """,
+      """
+        import scala.reflect.ClassTag
+        object O {
+          import scala.language.experimental.macros;
+          implicit class scalaxy$extensions$fill$1(val self: Int) 
+          extends scala.AnyVal {
+            def fill[T](generator: String)(implicit evidence$1$Expr$1: ClassTag[T]): Array[Array] = 
+              macro scalaxy$extensions$fill$1.fill[T]
+          }
+          object scalaxy$extensions$fill$1 {
+            def fill[T](c: scala.reflect.macros.Context)
+                       (generator: c.Expr[String])
+                       (evidence$1$Expr$1: c.Expr[ClassTag[T]])
+                       (implicit evidence$2: c.WeakTypeTag[T]): c.Expr[Array[Array]] = 
+            {
+              import c.universe._
+              val Apply(_, List(selfTree$1)) = c.prefix.tree;
+              val self$Expr$1: c.Expr[Int] = c.Expr[Int](selfTree$1)
+              reify({
+                val self: Int = self$Expr$1.splice
+                implicit val evidence$1: ClassTag[T] = evidence$1$Expr$1.splice
+                Array.fill[T](self)(generator.splice)
+              })
             }
           }
         }
