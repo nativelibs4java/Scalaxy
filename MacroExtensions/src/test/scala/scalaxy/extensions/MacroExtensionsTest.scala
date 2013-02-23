@@ -170,8 +170,7 @@ class MacroExtensionsTest extends TestBase
     assertSameTransform(
       """
         object O {
-          @scalaxy.extend(T) 
-          def squared[T : Numeric]: T = self * self
+          @scalaxy.extend(T) def squared[T : Numeric]: T = self * self
         }
       """,
       """
