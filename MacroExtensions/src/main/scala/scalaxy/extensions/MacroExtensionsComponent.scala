@@ -109,7 +109,7 @@ class MacroExtensionsComponent(val global: Global, macroExtensions: Boolean = tr
 
         def transformMacroExtension(tree: DefDef): List[Tree] =
         {
-          val DefDef(Modifiers(flags, privateWithin, annotations), name, tparams, vparamss, tpt, rhs) = tree
+          val DefDef(Modifiers(flags, privateWithin, annotations), name, tparams, vparamss0, tpt, rhs) = tree
           val extendAnnotationOpt = annotations.find(ExtendAnnotation.unapply(_) != None)
           extendAnnotationOpt match
           {
@@ -130,6 +130,19 @@ class MacroExtensionsComponent(val global: Global, macroExtensions: Boolean = tr
               // Don't rename the context, otherwise explicit macros are hard to write.
               val contextName: TermName = "c" //unit.fresh.newName("c")
 
+              def isImplicit(mods: Modifiers) = 
+                (mods & Flag.IMPLICIT) != NoMods//0
+                
+              // Due to https://issues.scala-lang.org/browse/SI-7170, we can have evidence name clashes.
+              val vparamss = vparamss0.map(_.map {
+                case ValDef(pmods, pname, ptpt, prhs) =>
+                  ValDef(
+                    pmods, 
+                    if (isImplicit(pmods)) newTermName(unit.fresh.newName(pname + "$")) else pname, 
+                    ptpt, 
+                    prhs)
+              })
+              
               val expressionNames = (vparamss.flatten.map(_.name.toString) :+ selfName.toString).toSet
               banVariableNames(expressionNames, rhs)
               List(
@@ -280,8 +293,7 @@ class MacroExtensionsComponent(val global: Global, macroExtensions: Boolean = tr
                             }
                             val newRhs = splicer.transform(rhs)
                             val implicits = vparamss.flatten collect {
-                              case ValDef(pmods, pname, ptpt, prhs) 
-                              if (pmods & Flag.IMPLICIT) != 0 =>
+                              case ValDef(pmods, pname, ptpt, prhs) if isImplicit(pmods) =>
                                 ValDef(
                                   Modifiers(Flag.IMPLICIT | Flag.LOCAL),
                                   unit.fresh.newName(pname.toString + "$"),

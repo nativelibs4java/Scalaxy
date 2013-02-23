@@ -179,19 +179,20 @@ class MacroExtensionsTest extends TestBase
           import scala.language.experimental.macros;
           implicit class scalaxy$extensions$squared$1[T](val self: T)
           extends scala.AnyRef {
-            def squared(implicit evidence$1: Numeric[T]): T = 
+            def squared(implicit evidence$1$1: Numeric[T]): T = 
               macro scalaxy$extensions$squared$1.squared[T]
           }
           object scalaxy$extensions$squared$1 {
-            def squared[T : c.WeakTypeTag]
+            def squared[T]
                 (c: scala.reflect.macros.Context)
-                (evidence$1: c.Expr[Numeric[T]]): c.Expr[T] = 
+                (evidence$1$1: c.Expr[Numeric[T]])
+                (implicit evidence$2: c.WeakTypeTag[T]): c.Expr[T] = 
             {
               import c.universe._
               val Apply(_, List(selfTree1)) = c.prefix.tree
-              val self = c.Expr[Array[A]](selfTree1)
+              val self = c.Expr[T](selfTree1)
               reify({
-                implicit val evidence$1$1 = evidence$1.splice
+                implicit val evidence$1$1$1: Numeric[T] = evidence$1$1.splice
                 self.splice * self.splice
               })
             }
