@@ -16,8 +16,6 @@ object TestExtensions
 
   //@scalaxy.extension[Array[T]] def notNulls[T]: Int = 10
 
-  
-  
   @scalaxy.extension[Int] 
   def copiesOf[T : ClassTag](generator: => T): Array[T] = 
     Array.fill[T](self)(generator)

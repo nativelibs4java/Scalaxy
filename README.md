@@ -10,16 +10,20 @@ Collection of Scala Macro goodies ([BSD-licensed](https://github.com/ochafik/Sca
 - *[MacroExtensions](https://github.com/ochafik/Scalaxy/tree/master/MacroExtensions)* provides an extremely simple (and *experimental*) syntax to define extensions methods as macros:
 
     ```scala
-    @scalaxy.extend(Int) def str1: String = self.toString
-    @scalaxy.extend(Any) def quoted(quote: String): String = quote + self + quote
-    @scalaxy.extend(Array[A]) def tup[A, B](b: B): (A, B) = macro {
-      println("Extension macro is executing!") 
-      reify((self.splice.head, b.splice))
-    }
+    @scalaxy.extension[Any] 
+    def quoted(quote: String): String = 
+      quote + self + quote
+      
+    @scalaxy.extension[Int] 
+    def copiesOf[T : ClassTag](generator: => T): Array[T] = 
+      Array.fill[T](self)(generator)
+  
     ...
-    println(1.str1) // macro-expanded to `1.toString`...
-    println(2.quoted("'")) // macro-expanded to `"'" + 2 + "'"`...
-    println(Array(3).tup(1.0)) // macro-expanded to `(Array(3).head, 1.0)`  (and prints a message during compilation)
+    println(10.quoted("'"))
+    // macro-expanded to `"'" + 10 + "'"`
+    
+    println(10 copiesOf new Entity)
+    // macro-expanded to `Array.fill(3)(new Entity)`
     ```
 
 - *[Compilets](https://github.com/ochafik/Scalaxy/tree/master/Compilets)* provide an easy way to express AST rewrites, backed by a compiler plugin and an sbt plugin.

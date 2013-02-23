@@ -6,46 +6,62 @@ There's some context [on my blog](http://ochafik.com/blog/?p=872), and a short [
 
 Scalaxy/MacroExtensions's compiler plugin supports the following syntax:
 ```scala
-@scalaxy.extend(Int) def str1: String = self.toString
-@scalaxy.extend(Any) def str2(quote: String): String = quote + self + quote
-@scalaxy.extend(Array[A]) def tup[A, B](b: B): (A, B) = macro {
-  println("Extension macro is executing!") 
+@scalaxy.extension[Any] 
+def quoted(quote: String): String = 
+  quote + self + quote
+  
+@scalaxy.extension[Int] 
+def copiesOf[T : ClassTag](generator: => T): Array[T] = 
+  Array.fill[T](self)(generator)
+
+@scalaxy.extension[Array[A]] 
+def tup[A, B](b: B): (A, B) = macro { 
+  // Explicit macro.
+  println("Extension macro is executing!")
   reify((self.splice.head, b.splice))
 }
 ```
 Which allows calls such as:
 ```scala
-println(1.str1) // macro-expanded to `1.toString`
-println(2.str2("'")) // macro-expanded to `"'" + 2 + "'"`
-println(Array(3).tup(1.0)) // macro-expanded to `(Array(3).head, 1.0)`  (and prints a message during compilation)
+println(10.quoted("'"))
+// macro-expanded to `"'" + 10 + "'"`
+
+println(10 copiesOf new Entity)
+// macro-expanded to `Array.fill(3)(new Entity)`
+
+println(Array(3).tup(1.0)) 
+// macro-expanded to `(Array(3).head, 1.0)` (and prints a message during compilation)
 ```
-This is done by rewriting the `@scalaxy.extend` declarations above during compilation of the extensions.
+This is done by rewriting the `@scalaxy.extension[T]` declarations above during compilation of the extensions.
 In the case of `str2`, this gives the following:
 ```scala
 import scala.language.experimental.macros
 implicit class scalaxy$extensions$str2$1(self: Any) {
-  def str2(quote: String) = macro scalaxy$extensions$str2$1.str2
+  def str2(quote$Expr$1: String) = 
+    macro scalaxy$extensions$str2$1.str2
 }
 object scalaxy$extensions$str2$1 {
   def str2(c: scala.reflect.macros.Context)
-          (quote: c.Expr[String]): c.Expr[String] = {
+          (quote$Expr$1: c.Expr[String]): 
+      c.Expr[String] = 
+  {
     import c.universe._
     val Apply(_, List(selfTree$1)) = c.prefix.tree
-    val self = c.Expr[Any](selfTree$1)
-    {
-      reify(quote.splice + self.splice + quote.splice)
-    }
+    val self$Expr$1 = c.Expr[Any](selfTree$1)
+    reify({
+      val self = self$Expr$1.splice
+      val quote = quote$Expr$1.splice
+      quote + self + quote
+    })
   }
 }
 ```
 
 # Known Issues
 
-- Annotation is resolved by name: if you redefine an `@scalaxy.extend` annotation, this will break compilation.
+- Annotation is resolved by name: if you redefine an `@scalaxy.extension` annotation, this will break compilation.
 - Default parameter values are not supported (due to macros not supporting them?)
-- Implicit values may not be passed appropriately (maybe another limitation of macros?)
 - Doesn't check macro extensions are defined in publicly available static objects (but compiler does)
-- Test coverage could improve, especially to understand limitations / edge cases.
 
 # Usage
 
