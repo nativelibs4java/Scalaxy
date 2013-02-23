@@ -85,7 +85,8 @@ class MacroExtensionsTest extends TestBase
           }
           object scalaxy$extensions$foo$1 {
             def foo(c: scala.reflect.macros.Context)
-                   (quote$Expr$1: c.Expr[String]): c.Expr[String] = 
+                   (quote$Expr$1: c.Expr[String]): 
+                c.Expr[String] = 
             {
               import c.universe._
               val Apply(_, List(selfTree$1)) = c.prefix.tree;
@@ -123,8 +124,9 @@ class MacroExtensionsTest extends TestBase
           }
           object scalaxy$extensions$foo$1 {
             def foo[A : c.WeakTypeTag]
-                (c: scala.reflect.macros.Context)
-                (a$Expr$1: c.Expr[A]): c.Expr[A] = 
+                   (c: scala.reflect.macros.Context)
+                   (a$Expr$1: c.Expr[A]):
+                c.Expr[A] = 
             {
               import c.universe._
               val Apply(_, List(selfTree$1)) = c.prefix.tree;
@@ -162,8 +164,9 @@ class MacroExtensionsTest extends TestBase
           }
           object scalaxy$extensions$foo$1 {
             def foo[A : c.WeakTypeTag, B : c.WeakTypeTag]
-                (c: scala.reflect.macros.Context)
-                (b$Expr$1: c.Expr[B]): c.Expr[(Array[A], B)] = 
+                   (c: scala.reflect.macros.Context)
+                   (b$Expr$1: c.Expr[B]):
+                c.Expr[(Array[A], B)] = 
             {
               import c.universe._
               val Apply(_, List(selfTree$1)) = c.prefix.tree;
@@ -197,10 +200,10 @@ class MacroExtensionsTest extends TestBase
               macro scalaxy$extensions$squared$1.squared[T]
           }
           object scalaxy$extensions$squared$1 {
-            def squared[T]
-                (c: scala.reflect.macros.Context)
-                (evidence$1$Expr$1: c.Expr[Numeric[T]])
-                (implicit evidence$2: c.WeakTypeTag[T]): c.Expr[T] = 
+            def squared[T](c: scala.reflect.macros.Context)
+                          (evidence$1$Expr$1: c.Expr[Numeric[T]])
+                          (implicit evidence$2: c.WeakTypeTag[T]): 
+                c.Expr[T] = 
             {
               import c.universe._
               val Apply(_, List(selfTree$1)) = c.prefix.tree;
@@ -241,10 +244,10 @@ class MacroExtensionsTest extends TestBase
               macro scalaxy$extensions$squared$1.squared[T]
           }
           object scalaxy$extensions$squared$1 {
-            def squared[T]
-                (c: scala.reflect.macros.Context)
-                (evidence$1$Expr$1: c.Expr[Numeric[T]])
-                (implicit evidence$2: c.WeakTypeTag[T]): c.Expr[T] = 
+            def squared[T](c: scala.reflect.macros.Context)
+                          (evidence$1$Expr$1: c.Expr[Numeric[T]])
+                          (implicit evidence$2: c.WeakTypeTag[T]): 
+                c.Expr[T] = 
             {
               import c.universe._
               val Apply(_, List(selfTree$1)) = c.prefix.tree;
@@ -290,7 +293,8 @@ class MacroExtensionsTest extends TestBase
             def fill[T](c: scala.reflect.macros.Context)
                        (generator: c.Expr[String])
                        (evidence$1$Expr$1: c.Expr[ClassTag[T]])
-                       (implicit evidence$2: c.WeakTypeTag[T]): c.Expr[Array[Array]] = 
+                       (implicit evidence$2: c.WeakTypeTag[T]): 
+                c.Expr[Array[Array]] = 
             {
               import c.universe._
               val Apply(_, List(selfTree$1)) = c.prefix.tree;
@@ -299,6 +303,44 @@ class MacroExtensionsTest extends TestBase
                 val self: Int = self$Expr$1.splice
                 implicit val evidence$1: ClassTag[T] = evidence$1$Expr$1.splice
                 Array.fill[T](self)(generator.splice)
+              })
+            }
+          }
+        }
+      """
+    )
+  }
+
+  @Test
+  def oneByNameAndOneByValueArg {
+    assertSameTransform(
+      """
+        object O {
+          @scalaxy.extend(Int) 
+          def fillZip(value: Int, generator: => String): Array[(Int, String)] = 
+            Array.fill(self)((value, generator))
+        }
+      """,
+      """
+        object O {
+          import scala.language.experimental.macros;
+          implicit class scalaxy$extensions$fillZip$1(val self: Int) 
+          extends scala.AnyVal {
+            def fillZip(value$Expr$1: Int, generator: String): Array[(Int, String)] = 
+              macro scalaxy$extensions$fillZip$1.fillZip
+          }
+          object scalaxy$extensions$fillZip$1 {
+            def fillZip(c: scala.reflect.macros.Context)
+                       (value$Expr$1: c.Expr[Int], generator: c.Expr[String]): 
+                c.Expr[Array[(Int, String)]] = 
+            {
+              import c.universe._
+              val Apply(_, List(selfTree$1)) = c.prefix.tree;
+              val self$Expr$1: c.Expr[Int] = c.Expr[Int](selfTree$1)
+              reify({
+                val self: Int = self$Expr$1.splice
+                val value: Int = value$Expr$1.splice
+                Array.fill(self)((value, generator.splice))
               })
             }
           }
