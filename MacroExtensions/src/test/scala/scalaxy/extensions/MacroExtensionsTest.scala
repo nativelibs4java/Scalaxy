@@ -54,9 +54,12 @@ class MacroExtensionsTest extends TestBase
           object scalaxy$extensions$len$1 {
             def len(c: scala.reflect.macros.Context): c.Expr[Int] = {
               import c.universe._
-              val Apply(_, List(selfTree1)) = c.prefix.tree
-              val self = c.Expr[String](selfTree1)
-              reify(self.splice.length)
+              val Apply(_, List(selfTree$1)) = c.prefix.tree;
+              val self$Expr$1: c.Expr[String] = c.Expr[String](selfTree$1)
+              reify({
+                val self: String = self$Expr$1.splice
+                self.length
+              })
             }
           }
         }
@@ -77,17 +80,21 @@ class MacroExtensionsTest extends TestBase
           import scala.language.experimental.macros;
           implicit class scalaxy$extensions$foo$1(val self: Int) 
           extends scala.AnyVal {
-            def foo(quote: String): String = 
+            def foo(quote$Expr$1: String): String = 
               macro scalaxy$extensions$foo$1.foo
           }
           object scalaxy$extensions$foo$1 {
             def foo(c: scala.reflect.macros.Context)
-                   (quote: c.Expr[String]): c.Expr[String] = 
+                   (quote$Expr$1: c.Expr[String]): c.Expr[String] = 
             {
               import c.universe._
-              val Apply(_, List(selfTree1)) = c.prefix.tree
-              val self = c.Expr[Int](selfTree1)
-              reify(quote.splice + self.splice + quote.splice)
+              val Apply(_, List(selfTree$1)) = c.prefix.tree;
+              val self$Expr$1: c.Expr[Int] = c.Expr[Int](selfTree$1)
+              reify({
+                val self: Int = self$Expr$1.splice
+                val quote: String = quote$Expr$1.splice
+                quote + self + quote
+              })
             }
           }
         }
@@ -111,20 +118,24 @@ class MacroExtensionsTest extends TestBase
           import scala.language.experimental.macros;
           implicit class scalaxy$extensions$foo$1(val self: Double)
           extends scala.AnyVal {
-            def foo[A](a: A): A = 
+            def foo[A](a$Expr$1: A): A = 
               macro scalaxy$extensions$foo$1.foo[A]
           }
           object scalaxy$extensions$foo$1 {
             def foo[A : c.WeakTypeTag]
                 (c: scala.reflect.macros.Context)
-                (a: c.Expr[A]): c.Expr[A] = 
+                (a$Expr$1: c.Expr[A]): c.Expr[A] = 
             {
               import c.universe._
-              val Apply(_, List(selfTree1)) = c.prefix.tree
-              val self = c.Expr[Double](selfTree1)
+              val Apply(_, List(selfTree$1)) = c.prefix.tree;
+              val self$Expr$1: c.Expr[Double] = c.Expr[Double](selfTree$1)
               reify({
-                println(s"${self.splice}.foo(${a.splice})")
-                a.splice
+                val self: Double = self$Expr$1.splice;
+                val a: A = a$Expr$1.splice;
+                {
+                  println(s"${self}.foo(${a})")
+                  a
+                }
               })
             }
           }
@@ -146,18 +157,22 @@ class MacroExtensionsTest extends TestBase
           import scala.language.experimental.macros;
           implicit class scalaxy$extensions$foo$1[A](val self: Array[A])
           extends scala.AnyRef {
-            def foo[B](b: B): (Array[A], B) = 
+            def foo[B](b$Expr$1: B): (Array[A], B) = 
               macro scalaxy$extensions$foo$1.foo[A, B]
           }
           object scalaxy$extensions$foo$1 {
             def foo[A : c.WeakTypeTag, B : c.WeakTypeTag]
                 (c: scala.reflect.macros.Context)
-                (b: c.Expr[B]): c.Expr[(Array[A], B)] = 
+                (b$Expr$1: c.Expr[B]): c.Expr[(Array[A], B)] = 
             {
               import c.universe._
-              val Apply(_, List(selfTree1)) = c.prefix.tree
-              val self = c.Expr[Array[A]](selfTree1)
-              reify((self.splice, b.splice))
+              val Apply(_, List(selfTree$1)) = c.prefix.tree;
+              val self$Expr$1: c.Expr[Array[A]] = c.Expr[Array[A]](selfTree$1)
+              reify({
+                val self: Array[A] = self$Expr$1.splice
+                val b: B = b$Expr$1.splice
+                (self, b)
+              })
             }
           }
         }
@@ -178,21 +193,22 @@ class MacroExtensionsTest extends TestBase
           import scala.language.experimental.macros;
           implicit class scalaxy$extensions$squared$1[T](val self: T)
           extends scala.AnyRef {
-            def squared(implicit evidence$1$1: Numeric[T]): T = 
+            def squared(implicit evidence$1$1$Expr$1: Numeric[T]): T = 
               macro scalaxy$extensions$squared$1.squared[T]
           }
           object scalaxy$extensions$squared$1 {
             def squared[T]
                 (c: scala.reflect.macros.Context)
-                (evidence$1$1: c.Expr[Numeric[T]])
+                (evidence$1$1$Expr$1: c.Expr[Numeric[T]])
                 (implicit evidence$2: c.WeakTypeTag[T]): c.Expr[T] = 
             {
               import c.universe._
-              val Apply(_, List(selfTree1)) = c.prefix.tree
-              val self = c.Expr[T](selfTree1)
+              val Apply(_, List(selfTree$1)) = c.prefix.tree;
+              val self$Expr$1: c.Expr[T] = c.Expr[T](selfTree$1)
               reify({
-                implicit val evidence$1$1$1: Numeric[T] = evidence$1$1.splice
-                self.splice * self.splice
+                val self: T = self$Expr$1.splice
+                implicit val evidence$1$1: Numeric[T] = evidence$1$1$Expr$1.splice
+                self * self
               })
             }
           }
@@ -211,7 +227,7 @@ class MacroExtensionsTest extends TestBase
             val evExpr = implicity[c.Expr[Numeric[T]]]
             reify({
               implicit val ev = evExpr.splice
-              self.splice * self.splice
+              self * self
             })
           }
         }
@@ -221,25 +237,25 @@ class MacroExtensionsTest extends TestBase
           import scala.language.experimental.macros;
           implicit class scalaxy$extensions$squared$1[T](val self: T)
           extends scala.AnyRef {
-            def squared(implicit evidence$1$1: Numeric[T]): T = 
+            def squared(implicit evidence$1$1$Expr$1: Numeric[T]): T = 
               macro scalaxy$extensions$squared$1.squared[T]
           }
           object scalaxy$extensions$squared$1 {
             def squared[T]
                 (c: scala.reflect.macros.Context)
-                (evidence$1$1: c.Expr[Numeric[T]])
+                (evidence$1$1$Expr$1: c.Expr[Numeric[T]])
                 (implicit evidence$2: c.WeakTypeTag[T]): c.Expr[T] = 
             {
               import c.universe._
-              val Apply(_, List(selfTree1)) = c.prefix.tree
-              val self = c.Expr[T](selfTree1);
+              val Apply(_, List(selfTree$1)) = c.prefix.tree;
+              val self: c.Expr[T] = c.Expr[T](selfTree$1);
               {
-                implicit def evidence$1$1$1: c.Expr[Numeric[T]] = c.Expr[Numeric[T]](evidence$1$1);
+                implicit def evidence$1$1$1: c.Expr[Numeric[T]] = c.Expr[Numeric[T]](evidence$1$1$Expr$1);
                 {
                   val evExpr = implicity[c.Expr[Numeric[T]]]
                   reify({
                     implicit val ev = evExpr.splice
-                    self.splice * self.splice
+                    self * self
                   })
                 }
               }

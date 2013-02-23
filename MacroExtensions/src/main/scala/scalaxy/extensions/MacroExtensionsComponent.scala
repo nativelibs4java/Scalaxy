@@ -143,8 +143,8 @@ class MacroExtensionsComponent(val global: Global, macroExtensions: Boolean = tr
                     typeNamesInTarget.contains(tname) 
                 }
               
-              val selfTreeName: TermName = unit.fresh.newName("selfTree")
-              val selfExprName: TermName = unit.fresh.newName("self$Expr")
+              val selfTreeName: TermName = unit.fresh.newName("selfTree$")
+              val selfExprName: TermName = unit.fresh.newName("self$Expr$")
               
               // Don't rename the context, otherwise explicit macros are hard to write.
               val contextName: TermName = "c" //unit.fresh.newName("c")
@@ -159,7 +159,10 @@ class MacroExtensionsComponent(val global: Global, macroExtensions: Boolean = tr
                 
               // Due to https://issues.scala-lang.org/browse/SI-7170, we can have evidence name clashes.
               val vparamss = vparamss0.map(_.map {
-                case ValDef(pmods, pname, ptpt, prhs) =>
+                case vd @ ValDef(pmods, pname, ptpt, prhs) =>
+                  if (isImplicit(pmods) && isByName(pmods))
+                    unit.error(vd.pos, "Scalaxy does not support for by-name implicit params yet")
+
                   ValDef(
                     pmods, 
                     if (isImplicit(pmods)) newTermName(unit.fresh.newName(pname + "$")) else pname, 
@@ -171,7 +174,7 @@ class MacroExtensionsComponent(val global: Global, macroExtensions: Boolean = tr
               
               val byValueParamExprNames: Map[String, String] = (byValueParams.collect {
                 case ValDef(pmods, pname, ptpt, prhs) =>
-                  pname.toString -> unit.fresh.newName(pname + "$Expr")
+                  pname.toString -> unit.fresh.newName(pname + "$Expr$")
               }).toMap
               
               def getRealParamName(name: TermName): TermName = {
@@ -329,7 +332,7 @@ class MacroExtensionsComponent(val global: Global, macroExtensions: Boolean = tr
                                   Nil,
                                   Nil,
                                   newExprType(contextName, ptpt),
-                                  newExpr(contextName, ptpt.duplicate, Ident(pname)))
+                                  newExpr(contextName, ptpt, Ident(getRealParamName(pname))))
                             }
                             if (implicits.isEmpty) rhs
                             else Block(implicits :+ rhs: _*)
@@ -345,31 +348,23 @@ class MacroExtensionsComponent(val global: Global, macroExtensions: Boolean = tr
                                   super.transform(tree)
                               }
                             }
-                            val byValueParams = (
-                              vparamss.flatten collect {
-                                case ValDef(pmods, pname, ptpt, prhs) 
-                                if isByValueParam(pname) =>
-                                  ValDef(
-                                    Modifiers(LOCAL),
-                                    pname,
-                                    ptpt,
-                                    newSplice(getRealParamName(pname)))
-                              }
-                            ) :+
+                            val selfParam =
                               ValDef(Modifiers(LOCAL), selfName, targetTpt.duplicate, newSplice(selfExprName))
-
-                            val implicits = vparamss.flatten collect {
-                              case ValDef(pmods, pname, ptpt, prhs) if isImplicit(pmods) =>
+                              
+                            val byValueParams = vparamss.flatten collect {
+                              case ValDef(pmods, pname, ptpt, prhs) 
+                              if isByValueParam(pname) =>
                                 ValDef(
-                                  Modifiers(IMPLICIT | LOCAL),
-                                  unit.fresh.newName(pname.toString + "$"),
+                                  Modifiers(if (isImplicit(pmods)) LOCAL | IMPLICIT else LOCAL),
+                                  pname,
                                   ptpt,
-                                  newSplice(pname.toString))
+                                  newSplice(getRealParamName(pname)))
                             }
+
                             Apply(
                               Ident("reify": TermName),
                               List(
-                                Block(implicits ++ byValueParams :+ splicer.transform(rhs): _*)
+                                Block((selfParam :: byValueParams) :+ splicer.transform(rhs): _*)
                               )
                             )
                           }
