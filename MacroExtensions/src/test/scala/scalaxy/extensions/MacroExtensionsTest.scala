@@ -201,4 +201,53 @@ class MacroExtensionsTest extends TestBase
       """
     )
   }
+  
+  @Test
+  def passImplicitsThroughToMacro {
+    assertSameTransform(
+      """
+        object O {
+          @scalaxy.extend(T) 
+          def squared[T : Numeric]: T = macro {
+            val evExpr = implicity[c.Expr[Numeric[T]]]
+            reify({
+              implicit val ev = evExpr.splice
+              self.splice * self.splice
+            })
+          }
+        }
+      """,
+      """
+        object O {
+          import scala.language.experimental.macros;
+          implicit class scalaxy$extensions$squared$1[T](val self: T)
+          extends scala.AnyRef {
+            def squared(implicit evidence$1$1: Numeric[T]): T = 
+              macro scalaxy$extensions$squared$1.squared[T]
+          }
+          object scalaxy$extensions$squared$1 {
+            def squared[T]
+                (c: scala.reflect.macros.Context)
+                (evidence$1$1: c.Expr[Numeric[T]])
+                (implicit evidence$2: c.WeakTypeTag[T]): c.Expr[T] = 
+            {
+              import c.universe._
+              val Apply(_, List(selfTree1)) = c.prefix.tree
+              val self = c.Expr[T](selfTree1);
+              {
+                implicit def evidence$1$1$1: c.Expr[Numeric[T]] = c.Expr[Numeric[T]](evidence$1$1);
+                {
+                  val evExpr = implicity[c.Expr[Numeric[T]]]
+                  reify({
+                    implicit val ev = evExpr.splice
+                    self.splice * self.splice
+                  })
+                }
+              }
+            }
+          }
+        }
+      """
+    )
+  }
 }

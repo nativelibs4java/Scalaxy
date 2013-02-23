@@ -281,7 +281,25 @@ class MacroExtensionsComponent(val global: Global, macroExtensions: Boolean = tr
                         {
                           if ((flags & Flag.MACRO) != 0) {
                             // Extension body is already expressed as a macro, like `macro
-                            rhs
+                            val implicits = vparamss.flatten collect {
+                              case ValDef(pmods, pname, ptpt, prhs) if isImplicit(pmods) =>
+                                DefDef(
+                                  Modifiers(Flag.IMPLICIT),
+                                  newTermName(unit.fresh.newName(pname.toString + "$")),
+                                  Nil,
+                                  Nil,
+                                  AppliedTypeTree(
+                                    typePath(contextName + ".Expr"),
+                                    List(ptpt)),
+                                  Apply(
+                                    TypeApply(
+                                      termPath(contextName + ".Expr"),
+                                      List(ptpt.duplicate)),
+                                    List(
+                                      Ident(pname))))
+                            }
+                            if (implicits.isEmpty) rhs
+                            else Block(implicits :+ rhs: _*)
                           } else {
                             val splicer = new Transformer {
                               override def transform(tree: Tree) = tree match {
