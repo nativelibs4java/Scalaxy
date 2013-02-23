@@ -4,13 +4,13 @@
 
 object comp 
 {
-  @scalaxy.extend(Complex)
+  @scalaxy.extension[void]
   def *(y: Complex): Complex =
     Complex(
       self.real * y.real - self.imag * y.imag,
       self.real * y.imag + self.imag * y.real)
 
-  @scalaxy.extend(Complex)
+  @scalaxy.extension[void]
   def +(y: Complex): Complex =
     Complex(self.real + y.real, self.imag + y.imag)
 }

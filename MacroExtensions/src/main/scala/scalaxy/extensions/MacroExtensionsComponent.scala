@@ -22,7 +22,7 @@ import scala.tools.nsc.transform.TypingTransformers
  *  scala
  *  > :power
  *  > :phase parser // will show us ASTs just after parsing
- *  > val Some(List(ast)) = intp.parse("@scalaxy.extend(Int) def str = self.toString")
+ *  > val Some(List(ast)) = intp.parse("@scalaxy.extension[Int] def str = self.toString")
  *  > nodeToString(ast)
  *  > val DefDef(mods, name, tparams, vparamss, tpt, rhs) = ast // play with extractors to explore the tree and its properties.
  */
@@ -49,20 +49,28 @@ class MacroExtensionsComponent(val global: Global, macroExtensions: Boolean = tr
       val onTransformer = new Transformer
       {
         object ExtendAnnotation {
-          object ExtendAnnotationName {
-            def unapply(tpt: Tree) = Option(tpt.toString) collect {
-              case "extend" =>
-                true
-              case "scalaxy.extend" =>
-                false
-            }
-          }
           def unapply(tree: Tree) = Option(tree) collect {
-            case Apply(Select(New(ExtendAnnotationName(deprecated)), initName), List(targetValueTpt))
-            if initName == nme.CONSTRUCTOR =>
-              if (deprecated)
-                unit.error(tree.pos, "Please use `@scalaxy.extend` instead of `@extend`")
-              targetValueTpt
+            case Apply(Select(New(AppliedTypeTree(name, List(tpt))), initName), Nil)
+            if initName == nme.CONSTRUCTOR && name.toString == "scalaxy.extension" =>
+              tpt
+            case Apply(Select(New(name), initName), List(targetValueTpt))
+            if initName == nme.CONSTRUCTOR && name.toString.matches("extend|scalaxy.extend") =>
+              unit.error(tree.pos, "Please use `@scalaxy.extension[T]` instead of `@extend(T)` or `@scalaxy.extend(T)`")
+              
+              // Tranforms a value tree (as found in annotation values) to a type tree.
+              def typify(valueTpt: Tree): Tree = valueTpt match {
+                case Ident(n) =>
+                  Ident(n.toString: TypeName)
+                case TypeApply(target, args) =>
+                  AppliedTypeTree(
+                    typify(target),
+                    args.map(typify(_))
+                  )
+                case _ =>
+                  unit.error(valueTpt.pos, "Type not handled yet: " + nodeToString(valueTpt) + ": " + valueTpt.getClass.getName)
+                  TypeTree(null)
+              }
+              typify(targetValueTpt)
             case _ =>
               println(nodeToString(tree))
               null
@@ -85,57 +93,17 @@ class MacroExtensionsComponent(val global: Global, macroExtensions: Boolean = tr
         def newExtensionName(name: Name) =
           unit.fresh.newName("scalaxy$extensions$" + name + "$")
 
-        // Tranforms a value tree (as found in annotation values) to a type tree.
-        def typify(valueTpt: Tree): Tree = valueTpt match {
-          case Ident(n) =>
-            Ident(n.toString: TypeName)
-          case TypeApply(target, args) =>
-            AppliedTypeTree(
-              typify(target),
-              args.map(typify(_))
-            )
-          case _ =>
-            unit.error(valueTpt.pos, "Type not handled yet: " + nodeToString(valueTpt) + ": " + valueTpt.getClass.getName)
-            null
-        }
-
-        def getTypeNames(tpt: Tree): Seq[TypeName] = {
-          val res = mutable.ArrayBuffer[TypeName]()
-          new Traverser { override def traverse(tree: Tree) = tree match {
-            case Ident(n: TypeName) => res += n
-            case _ => super.traverse(tree)
-          }}.traverse(tpt)
-          res.result()
-        }
-        
-        def newExprType(contextName: TermName, tpt: Tree) = {
-          AppliedTypeTree(
-            typePath(contextName + ".Expr"),
-            List(tpt))
-        }
-        def newExpr(contextName: TermName, tpt: Tree, value: Tree) = {
-          Apply(
-            TypeApply(
-              termPath(contextName + ".Expr"),
-              List(tpt)),
-            List(value))
-        }
-        def newSplice(name: String) = {
-          Select(Ident(name: TermName), "splice": TermName)
-        }
-
         def transformMacroExtension(tree: DefDef): List[Tree] =
         {
           val DefDef(Modifiers(flags, privateWithin, annotations), name, tparams, vparamss0, tpt, rhs) = tree
           val extendAnnotationOpt = annotations.find(ExtendAnnotation.unapply(_) != None)
           extendAnnotationOpt match
           {
-            case Some(extendAnnotation @ ExtendAnnotation(targetValueTpt)) =>
+            case Some(extendAnnotation @ ExtendAnnotation(targetTpt)) =>
               if (tpt.isEmpty)
                 unit.error(tree.pos, "Macro extensions require explicit return type annotation")
 
               val extensionName = newExtensionName(name)
-              val targetTpt = typify(targetValueTpt)
               val typeNamesInTarget = getTypeNames(targetTpt).toSet
               val (outerTParams, innerTParams) =
                 tparams.partition { 
@@ -390,10 +358,9 @@ class MacroExtensionsComponent(val global: Global, macroExtensions: Boolean = tr
           val extendAnnotationOpt = annotations.find(ExtendAnnotation.unapply(_) != None)
           extendAnnotationOpt match
           {
-            case Some(extendAnnotation @ ExtendAnnotation(targetValueTpt)) =>
+            case Some(extendAnnotation @ ExtendAnnotation(targetTpt)) =>
               unit.warning(tree.pos, "This extension will create a runtime dependency. To use macro extensions, move this up to a publicly accessible module / object")
               val extensionName = newExtensionName(name)
-              val targetTpt = typify(targetValueTpt)
               val typeNamesInTarget = getTypeNames(targetTpt).toSet
               val (outerTParams, innerTParams) =
                 tparams.partition({ case tparam @ TypeDef(_, tname, _, _) => typeNamesInTarget.contains(tname) })

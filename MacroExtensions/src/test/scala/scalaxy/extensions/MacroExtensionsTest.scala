@@ -11,27 +11,27 @@ class MacroExtensionsTest extends TestBase
 
   @Test
   def trivial {
-    transform("object O { @scalaxy.extend(Int) def foo: Int = 10 }")
+    transform("object O { @scalaxy.extension[Int] def foo: Int = 10 }")
   }
 
   @Test
   def noReturnType {
     expectException("return type is missing") {
-      transform("object O { @scalaxy.extend(Int) def foo = 10 }")
+      transform("object O { @scalaxy.extension[Int] def foo = 10 }")
     }
   }
 
   @Test
   def notHygienic {
     expectException("self is redefined locally") {
-      transform("object O { @scalaxy.extend(Int) def foo = { val self = 10; self } }")
+      transform("object O { @scalaxy.extension[Int] def foo = { val self = 10; self } }")
     }
   }
 
   @Test
   def notInModule {
     expectException("not defined in module") {
-      transform("class O { @scalaxy.extend(Int) def foo: Int = 10 }")
+      transform("class O { @scalaxy.extension[Int] def foo: Int = 10 }")
     }
   }
 
@@ -40,7 +40,7 @@ class MacroExtensionsTest extends TestBase
     assertSameTransform(
       """
         object O {
-          @scalaxy.extend(String) def len: Int = self.length
+          @scalaxy.extension[String] def len: Int = self.length
         }
       """,
       """
@@ -72,7 +72,7 @@ class MacroExtensionsTest extends TestBase
     assertSameTransform(
       """
         object O {
-          @scalaxy.extend(Int) def foo(quote: String): String = quote + self + quote
+          @scalaxy.extension[Int] def foo(quote: String): String = quote + self + quote
         }
       """,
       """
@@ -108,7 +108,7 @@ class MacroExtensionsTest extends TestBase
     assertSameTransform(
       """
         object O {
-          @scalaxy.extend(Double) def foo[A](a: A): A = {
+          @scalaxy.extension[Double] def foo[A](a: A): A = {
             println(s"$self.foo($a)")
             a
           }
@@ -151,7 +151,7 @@ class MacroExtensionsTest extends TestBase
     assertSameTransform(
       """
         object O {
-          @scalaxy.extend(Array[A]) def foo[A, B](b: B): (Array[A], B) = (self, b)
+          @scalaxy.extension[Array[A]] def foo[A, B](b: B): (Array[A], B) = (self, b)
         }
       """,
       """
@@ -188,7 +188,7 @@ class MacroExtensionsTest extends TestBase
     assertSameTransform(
       """
         object O {
-          @scalaxy.extend(T) def squared[T : Numeric]: T = self * self
+          @scalaxy.extension[T] def squared[T : Numeric]: T = self * self
         }
       """,
       """
@@ -225,7 +225,7 @@ class MacroExtensionsTest extends TestBase
     assertSameTransform(
       """
         object O {
-          @scalaxy.extend(T) 
+          @scalaxy.extension[T] 
           def squared[T : Numeric]: T = macro {
             val evExpr = implicity[c.Expr[Numeric[T]]]
             reify({
@@ -275,8 +275,8 @@ class MacroExtensionsTest extends TestBase
       """
         import scala.reflect.ClassTag
         object O {
-          @scalaxy.extend(Int) 
-          def fill[T : ClassTag](generator: => String): Array[Array] = 
+          @scalaxy.extension[Int] 
+          def fill[T : ClassTag](generator: => T): Array[T] = 
             Array.fill[T](self)(generator)
         }
       """,
@@ -286,15 +286,15 @@ class MacroExtensionsTest extends TestBase
           import scala.language.experimental.macros;
           implicit class scalaxy$extensions$fill$1(val self: Int) 
           extends scala.AnyVal {
-            def fill[T](generator: String)(implicit evidence$1$Expr$1: ClassTag[T]): Array[Array] = 
+            def fill[T](generator: T)(implicit evidence$1$Expr$1: ClassTag[T]): Array[T] = 
               macro scalaxy$extensions$fill$1.fill[T]
           }
           object scalaxy$extensions$fill$1 {
             def fill[T](c: scala.reflect.macros.Context)
-                       (generator: c.Expr[String])
+                       (generator: c.Expr[T])
                        (evidence$1$Expr$1: c.Expr[ClassTag[T]])
                        (implicit evidence$2: c.WeakTypeTag[T]): 
-                c.Expr[Array[Array]] = 
+                c.Expr[Array[T]] = 
             {
               import c.universe._
               val Apply(_, List(selfTree$1)) = c.prefix.tree;
@@ -316,7 +316,7 @@ class MacroExtensionsTest extends TestBase
     assertSameTransform(
       """
         object O {
-          @scalaxy.extend(Int) 
+          @scalaxy.extension[Int] 
           def fillZip(value: Int, generator: => String): Array[(Int, String)] = 
             Array.fill(self)((value, generator))
         }

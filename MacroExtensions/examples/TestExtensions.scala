@@ -1,32 +1,55 @@
-object TestExtensions 
-{  
-  import scala.math.Numeric
-  /*@extend(Array[T]) def avg[T <: Numeric[T]]: T = 
-    if (self.isEmpty) implicitly[Numeric[T]].zero
-    else (self.max + self.min)
-    */
-    
-  @scalaxy.extend(Any) def faulty {
+/*
+run examples/TestExtensions.scala -Xprint:scalaxy-extensions
+run examples/Test.scala
+*/
+object TestExtensions
+{
+  import scala.language.experimental.macros
+  import scala.reflect.ClassTag
+  /*
+  @scalaxy.extension[Any] def faulty {
     val self3 = 10
     println(self3)
   }
-    
-  @scalaxy.extend(Array[T]) def notNulls[T <: AnyRef]: Int =
-    self.count(_ ne null)
-    
-  @scalaxy.extend(Int) def str0 { println(self.toString) }
+  */
+  //@scalaxy.extension[Array[T]] def notNulls[T <: AnyRef]: Int = self.count(_ ne null)
+
+  //@scalaxy.extension[Array[T]] def notNulls[T]: Int = 10
+
   
-  @scalaxy.extend(Any) def quoted(quote: String): String = quote + self + quote
   
-  @scalaxy.extend(Int) def str1: String = self.toString
+  @scalaxy.extension[Int] 
+  def copiesOf[T : ClassTag](generator: => T): Array[T] = 
+    Array.fill[T](self)(generator)
   
-  @scalaxy.extend(Int) def str2: String = macro {
+  //@scalaxy.extension[Array[A]] def foo[A, B](b: B): (Array[A], B) = (self, b)
+  /*
+  @scalaxy.extension[Array[A]] def tup[A, B](b: B): (A, B) = macro {
+    println("Extension macro is executing!") 
+    reify((self.splice.head, b.splice))
+  }
+  */
+  
+  /*
+  @scalaxy.extension[Array[Int]] def inotNulls: Int =
+    self.count(_ != 0)
+
+  @scalaxy.extension[Int] def str0 { println(self.toString) }
+
+  @scalaxy.extension[Any] def quoted(quote: String): String = quote + self + quote
+
+  @scalaxy.extension[Int] def str1: String = self.toString
+
+  @scalaxy.extension[Int] def str2: String = macro
+  {
     println("EXECUTING EXTENSION MACRO!")
     reify(self.splice.toString)
   }
+  */
+
   /*
-  @extend(Int) def str = macro reify(self.splice.toString)
-  @extend(Int) def str = macro {
+  @scalaxy.extension[Int] def str = macro reify(self.splice.toString)
+  @scalaxy.extension[Int] def str = macro {
     ...
     reify(self.splice.toString)
   }

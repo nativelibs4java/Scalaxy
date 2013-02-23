@@ -11,20 +11,20 @@ class RuntimeExtensionsTest extends TestBase
 
   @Test
   def trivial {
-    transform("class C { @scalaxy.extend(Int) def foo: Int = 10 }")
+    transform("class C { @scalaxy.extension[Int] def foo: Int = 10 }")
   }
 
   @Test
   def noReturnType {
     expectException("return type is missing") {
-      transform("class C { @scalaxy.extend(Int) def foo = 10 }")
+      transform("class C { @scalaxy.extension[Int] def foo = 10 }")
     }
   }
 
   @Test
   def notHygienic {
     expectException("self is redefined locally") {
-      transform("class C { @scalaxy.extend(Int) def foo = { val self = 10; self } }")
+      transform("class C { @scalaxy.extension[Int] def foo = { val self = 10; self } }")
     }
   }
 
@@ -33,7 +33,7 @@ class RuntimeExtensionsTest extends TestBase
     assertSameTransform(
       """
         class C {
-          @scalaxy.extend(String) def len: Int = self.length
+          @scalaxy.extension[String] def len: Int = self.length
         }
       """,
       """
@@ -51,7 +51,7 @@ class RuntimeExtensionsTest extends TestBase
     assertSameTransform(
       """
         class C {
-          @scalaxy.extend(Int) def hash: Int = self.hashCode
+          @scalaxy.extension[Int] def hash: Int = self.hashCode
         }
       """,
       """
@@ -69,7 +69,7 @@ class RuntimeExtensionsTest extends TestBase
     assertSameTransform(
       """
         class C {
-          @scalaxy.extend(Int) def foo(quote: String): String = quote + self + quote
+          @scalaxy.extension[Int] def foo(quote: String): String = quote + self + quote
         }
       """,
       """
@@ -87,7 +87,7 @@ class RuntimeExtensionsTest extends TestBase
     assertSameTransform(
       """
         class C {
-          @scalaxy.extend(Array[A]) def foo[A, B](b: B): (Array[A], B) = (self, b)
+          @scalaxy.extension[Array[A]] def foo[A, B](b: B): (Array[A], B) = (self, b)
         }
       """,
       """

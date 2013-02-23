@@ -25,7 +25,7 @@ import scala.tools.nsc.transform.TypingTransformers
  */
 class MacroExtensionsPlugin(override val global: Global) extends Plugin {
   override val name = "scalaxy-extensions"
-  override val description = "Compiler plugin that adds a `@scalaxy.extend(Int) def toStr = self.toString` syntax to create extension methods."
+  override val description = "Compiler plugin that adds a `@scalaxy.extension[Int] def toStr = self.toString` syntax to create extension methods."
   override val components: List[PluginComponent] =
     List(new MacroExtensionsComponent(global))
 }

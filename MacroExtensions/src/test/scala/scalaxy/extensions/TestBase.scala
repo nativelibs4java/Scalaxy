@@ -77,7 +77,11 @@ trait TestBase {
           // Get node string right after macro extensions component.
           phasesSet += new TestComponent(this, comp, (s, n) => transformed = s -> n)
           // Stop compilation after typer and refchecks, to see if there are errors.
-          phasesSet += new StopComponent(this)
+          if ((System.getenv("SCALAXY_TEST_COMPILE_FULLY") == "1" || System.getProperty("scalaxy.test.compile.fully") == "true")) {
+            println("COMPILING TESTS FULLY!")
+          } else {
+            phasesSet += new StopComponent(this)
+          }
         }
       }
       new global.Run().compile(command.files)

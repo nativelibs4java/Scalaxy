@@ -21,7 +21,7 @@ import scala.tools.nsc.transform.TypingTransformers
  *
  *  It defines a toy syntax that uses annotations to define implicit classes:
  *
- *    @scalaxy.extend(Any) def quoted(quote: String): String = quote + self + quote
+ *    @scalaxy.extension[Any] def quoted(quote: String): String = quote + self + quote
  *
  *  Which gets desugared to:
  *

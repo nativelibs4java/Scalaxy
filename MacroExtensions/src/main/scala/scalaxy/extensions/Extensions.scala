@@ -2,6 +2,8 @@
 // Feel free to modify and reuse this for any purpose ("public domain / I don't care").
 package scalaxy.extensions
 
+import scala.collection.mutable
+
 //import scala.reflect.api.Universe
 import scala.tools.nsc.Global
 import scala.reflect.internal.Flags
@@ -43,6 +45,31 @@ trait Extensions
 
   def newEmptyTpt() = TypeTree(null)
 
+  def getTypeNames(tpt: Tree): Seq[TypeName] = {
+    val res = mutable.ArrayBuffer[TypeName]()
+    new Traverser { override def traverse(tree: Tree) = tree match {
+      case Ident(n: TypeName) => res += n
+      case _ => super.traverse(tree)
+    }}.traverse(tpt)
+    res.result()
+  }
+  
+  def newExprType(contextName: TermName, tpt: Tree) = {
+    AppliedTypeTree(
+      typePath(contextName + ".Expr"),
+      List(tpt))
+  }
+  def newExpr(contextName: TermName, tpt: Tree, value: Tree) = {
+    Apply(
+      TypeApply(
+        termPath(contextName + ".Expr"),
+        List(tpt)),
+      List(value))
+  }
+  def newSplice(name: String) = {
+    Select(Ident(name: TermName), "splice": TermName)
+  }
+  
   def genParamAccessorsAndConstructor(namesAndTypeTrees: List[(String, Tree)]): List[Tree] = {
     (
       namesAndTypeTrees.map {
