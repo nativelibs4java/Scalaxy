@@ -61,12 +61,13 @@ trait TreeReifyingTransformers
       if (remove(Flag.LOCAL)) names += "LOCAL"
       if (remove(Flag.PARAM)) names += "PARAM"
       if (remove(Flag.IMPLICIT)) names += "IMPLICIT"
+      if (remove(Flag.MUTABLE)) names += "MUTABLE"
       assert(v == 0, "Flag not handled yet: " + v)
-      val flagTrees = names.map(n => newSelect(newTermIdent("Flag"), n))
+      val flagTrees = names.map(n => Select(Ident("Flag": TermName), n))
       if (flagTrees.isEmpty)
         newTermIdent("NoMods")
       else
-        flagTrees.reduceLeft[Tree]((a, b) => newApply(newSelect(a, encode("|")), b))
+        flagTrees.reduceLeft[Tree]((a, b) => Apply(Select(a, encode("|")), List(b)))
     }
     
     override def transform(tree: Tree): Tree = tree match {
@@ -79,6 +80,7 @@ trait TreeReifyingTransformers
       case ExistentialTypeTree(target, args) =>
         transformApplyLike("ExistentialTypeTree", target, args)
       case Ident(n) =>
+        // TODO pass spliceable names in, and handle them here!
         newApply("Ident", transform(n))
       case Select(target, n) =>
         newApply("Select", transform(target), newConstant(n.toString))
@@ -88,6 +90,8 @@ trait TreeReifyingTransformers
         newApply("If", transform(cond), transform(a), transform(b))
       case ValDef(mods, name, tpt, rhs) =>
         newApply("ValDef", transform(mods), transform(name), transform(tpt), transform(rhs))
+      case _ if tree.isEmpty =>
+        Ident("EmptyTree": TermName)
       case LabelDef(name, params, rhs) =>
         newApply("LabelDef", transform(name), newApplyList(params.map(transform(_)): _*), transform(rhs))
       case Literal(Constant(v)) =>

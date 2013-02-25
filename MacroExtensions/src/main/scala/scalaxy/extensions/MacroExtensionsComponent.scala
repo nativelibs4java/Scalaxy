@@ -30,9 +30,11 @@ class MacroExtensionsComponent(
   val global: Global, 
   macroExtensions: Boolean = true, 
   runtimeExtensions: Boolean = false,
-  useThisForSelf: Boolean = false)
+  useThisForSelf: Boolean = false,
+  useUntypedReify: Boolean = false)
     extends PluginComponent
     with TypingTransformers
+    with TreeReifyingTransformers
     with Extensions
 {
   import global._
@@ -63,9 +65,6 @@ class MacroExtensionsComponent(
               unit.error(tree.pos, msg)
               sys.error(msg)
               null
-            //case _ =>
-            //  println(nodeToString(tree))
-            //  null
           }
         }
         def banVariableNames(names: Set[String], root: Tree) {
@@ -285,7 +284,7 @@ class MacroExtensionsComponent(
                         ValDef(
                           NoMods,
                           if (isMacro) selfName else selfExprName,
-                          newExprType(contextName, targetTpt),
+                          newEmptyTpt,//newExprType(contextName, targetTpt),
                           newExpr(contextName, targetTpt, Ident(selfTreeName: TermName))),
                         {
                           if (isMacro) {
@@ -308,7 +307,7 @@ class MacroExtensionsComponent(
                                   newTermName(unit.fresh.newName(pname.toString + "$")),
                                   Nil,
                                   Nil,
-                                  newExprType(contextName, ptpt),
+                                  newEmptyTpt,//newExprType(contextName, ptpt),
                                   newExpr(contextName, ptpt, Ident(getRealParamName(pname))))
                             }
                             Block(implicits :+ (if (useThisForSelf) selfTransformer.transform(rhs) else rhs): _*)
@@ -330,7 +329,12 @@ class MacroExtensionsComponent(
                               }
                             }
                             val selfParam =
-                              ValDef(Modifiers(LOCAL), selfName, targetTpt.duplicate, newSplice(selfExprName))
+                              ValDef(
+                                Modifiers(LOCAL), 
+                                selfName, 
+                                newEmptyTpt,//targetTpt.duplicate, 
+                                newSplice(selfExprName)
+                              )
                               
                             val byValueParams = vparamss.flatten collect {
                               case ValDef(pmods, pname, ptpt, prhs) 
@@ -338,16 +342,24 @@ class MacroExtensionsComponent(
                                 ValDef(
                                   Modifiers(if (isImplicit(pmods)) LOCAL | IMPLICIT else LOCAL),
                                   pname,
-                                  ptpt,
+                                  newEmptyTpt,//ptpt,
                                   newSplice(getRealParamName(pname)))
                             }
 
-                            Apply(
-                              Ident("reify": TermName),
-                              List(
-                                Block((selfParam :: byValueParams) :+ splicer.transform(rhs): _*)
+                            val rei = Block((selfParam :: byValueParams) :+ splicer.transform(rhs): _*)
+                            if (useUntypedReify)
+                              newExpr(
+                                contextName, 
+                                tpt, 
+                                Apply(
+                                  termPath(contextName + ".typeCheck"), 
+                                  List(
+                                    new TreeReifyingTransformer().transform(rei))))
+                            else
+                              Apply(
+                                Ident("reify": TermName),
+                                List(rei)
                               )
-                            )
                           }
                         }
                       )
