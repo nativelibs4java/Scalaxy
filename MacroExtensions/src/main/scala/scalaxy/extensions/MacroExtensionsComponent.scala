@@ -30,7 +30,7 @@ class MacroExtensionsComponent(
   val global: Global, 
   macroExtensions: Boolean = true, 
   runtimeExtensions: Boolean = false,
-  useThisForSelf: Boolean = false, // set to true for experiments
+  useThisForSelf: Boolean = true,
   useUntypedReify: Boolean = false) // set to true for experiments
     extends PluginComponent
     with TypingTransformers
@@ -66,6 +66,17 @@ class MacroExtensionsComponent(
               sys.error(msg)
               null
           }
+        }
+        def banAmbiguousThis(tree: Tree, rootTpt: Tree) {
+          new DefsTraverser {
+            def implDefs = parents.filter(_.isInstanceOf[ImplDef])
+            override def traverse(tree: Tree) = tree match {
+              case This(q) if q.isEmpty && !implDefs.isEmpty =>
+                unit.error(tree.pos, "Ambiguous reference to `this`. Please refine as any of " + (rootTpt :: implDefs.map(_.name)).map(_ + ".this").mkString(", "))
+              case _ =>
+                super.traverse(tree)
+            }
+          }.traverse(tree)
         }
         def banVariableNames(names: Set[String], root: Tree) {
           val banTraverser = new Traverser {
@@ -170,6 +181,7 @@ class MacroExtensionsComponent(
                 variableNames + "reify", 
                 rhs
               )
+              banAmbiguousThis(rhs, targetTpt)
               
               def typeGetter(tpt: Tree): Tree = {
                 //if (containsReferenceToTParams(tpt))
@@ -315,7 +327,9 @@ class MacroExtensionsComponent(
                           if (isMacro) {
                             def selfTransformer = new Transformer {
                               override def transform(tree: Tree) = tree match {
-                                case This(n) if n.isEmpty =>
+                                case This(n) 
+                                if n.isEmpty || 
+                                   n.toString == targetTpt.toString =>
                                   Ident(selfName)
                                 case Ident(n: TermName) if n.toString == selfName =>
                                   unit.warning(tree.pos, s"'$selfName' is deprecated, please use 'this' instead")
@@ -418,7 +432,7 @@ class MacroExtensionsComponent(
                               )
                             }
                             //println(s"RESULT = ${nodeToString(result)}")
-                            println(s"RESULT = $result")
+                            //println(s"RESULT = $result")
                             result
                           }
                         }

@@ -33,6 +33,25 @@ trait Extensions
     }
   }
 
+  
+  class DefsTraverser extends Traverser {
+    var parents: List[DefTree] = Nil
+    override def traverse(tree: Tree) = tree match {
+      case dt: DefTree =>
+        enterDefTree(dt)
+        super.traverse(tree)
+        leaveDefTree(dt)
+      case _ =>
+        super.traverse(tree)
+    }
+    def enterDefTree(dt: DefTree) {
+      parents = dt :: parents
+    }
+    def leaveDefTree(dt: DefTree) {
+      parents = parents.tail
+    }
+  }
+
   def termPath(path: String): Tree = {
     termPath(path.split("\\.").toList)
   }

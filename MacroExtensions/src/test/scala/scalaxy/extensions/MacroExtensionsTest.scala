@@ -14,6 +14,7 @@ class MacroExtensionsTest extends TestBase
     transform("object O { @scalaxy.extension[Int] def foo: Int = 10 }")
   }
 
+  @Ignore
   @Test
   def noReturnType {
     expectException("return type is missing") {
@@ -21,17 +22,33 @@ class MacroExtensionsTest extends TestBase
     }
   }
 
-  @Test
-  def notHygienic {
-    expectException("self is redefined locally") {
-      transform("object O { @scalaxy.extension[Int] def foo = { val self = 10; self } }")
-    }
-  }
-
+  @Ignore
   @Test
   def notInModule {
     expectException("not defined in module") {
       transform("class O { @scalaxy.extension[Int] def foo: Int = 10 }")
+    }
+  }
+
+  @Test
+  def notHygienic {
+    expectException("self is redefined locally") {
+      transform("object O { @scalaxy.extension[Int] def foo: Int = { val self = 10; self } }")
+    }
+  }
+
+  @Test
+  def ambiguousThis {
+    expectException("ambiguous this") {
+      transform("""
+        object O {
+          @scalaxy.extension[Int] 
+          def foo: Int = {
+            new Object() { println(this) };
+            10
+          }
+        }
+      """)
     }
   }
 

@@ -34,10 +34,15 @@ trait TestBase {
   }
 
   def expectException(reason: String)(block: => Unit) {
+    var failed = true
     try {
       block
+      failed = false
+    } catch { case ex: Throwable => 
+      //ex.printStackTrace() 
+    }
+    if (!failed)
       fail(s"Code should not have compiled: $reason")
-    } catch { case ex: Throwable => }
   }
 
   //def normalize(s: String) = s.trim.replaceAll("^\\s*|\\s*?$", "")
@@ -66,6 +71,7 @@ trait TestBase {
         override val settings = settings0
         override def displayPrompt() {}
         override def display(pos: Position, msg: String, severity: Severity) {
+          //println(s"[$name]: $severity: $msg")
           report += severity -> msg
         }
       }
@@ -85,6 +91,11 @@ trait TestBase {
         }
       }
       new global.Run().compile(command.files)
+      //println(s"errs = ${report.toSeq}")
+      val errors = report.filter(_._1.toString == "ERROR")
+      if (!errors.isEmpty)
+        sys.error("Found " + errors.size + " errors: " + errors.mkString(", "))
+      
       (transformed._1, transformed._2, report.toSeq)
     } finally {
       file.delete()
