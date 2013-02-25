@@ -452,6 +452,10 @@ class MacroExtensionsComponent(
           {
             case Some(extendAnnotation @ ExtendAnnotation(targetTpt)) =>
               unit.warning(tree.pos, "This extension will create a runtime dependency. To use macro extensions, move this up to a publicly accessible module / object")
+              
+              if (tpt.isEmpty)
+                unit.error(tree.pos, "Macro extensions require explicit return type annotation")
+
               val extensionName = newExtensionName(name)
               val typeNamesInTarget = getTypeNames(targetTpt).toSet
               val (outerTParams, innerTParams) =

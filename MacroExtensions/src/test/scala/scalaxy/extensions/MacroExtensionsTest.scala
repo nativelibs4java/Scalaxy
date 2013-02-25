@@ -14,7 +14,6 @@ class MacroExtensionsTest extends TestBase
     transform("object O { @scalaxy.extension[Int] def foo: Int = 10 }")
   }
 
-  @Ignore
   @Test
   def noReturnType {
     expectException("return type is missing") {
