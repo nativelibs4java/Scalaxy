@@ -33,7 +33,11 @@ trait TreeReifyingTransformers
   def newSelect(target: Tree, name: String): Tree =
     newApply("Select", target, newConstant(name))
   
-  class TreeReifyingTransformer extends Transformer {
+  class TreeReifyingTransformer(
+    exprSplicer: TermName => Option[Tree], 
+    typeTreeGetter: Tree/*TypeName*/ => Option[Tree])
+      extends Transformer 
+  {
     def newTermIdent(n: String): Tree =
       newApply("Ident", transform(newTermName(n)))
       
@@ -65,7 +69,7 @@ trait TreeReifyingTransformers
       assert(v == 0, "Flag not handled yet: " + v)
       val flagTrees = names.map(n => Select(Ident("Flag": TermName), n))
       if (flagTrees.isEmpty)
-        newTermIdent("NoMods")
+        Ident("NoFlags": TermName)
       else
         flagTrees.reduceLeft[Tree]((a, b) => Apply(Select(a, encode("|")), List(b)))
     }
@@ -79,9 +83,14 @@ trait TreeReifyingTransformers
         transformApplyLike("AppliedTypeTree", target, args)
       case ExistentialTypeTree(target, args) =>
         transformApplyLike("ExistentialTypeTree", target, args)
-      case Ident(n) =>
-        // TODO pass spliceable names in, and handle them here!
-        newApply("Ident", transform(n))
+      case Ident(n: TypeName) =>
+        typeTreeGetter(tree).getOrElse {
+          newApply("Ident", transform(n))
+        }
+      case Ident(n: TermName) =>
+        exprSplicer(n).getOrElse {
+          newApply("Ident", transform(n))
+        }
       case Select(target, n) =>
         newApply("Select", transform(target), newConstant(n.toString))
       case Block(statements, value) =>
@@ -90,6 +99,8 @@ trait TreeReifyingTransformers
         newApply("If", transform(cond), transform(a), transform(b))
       case ValDef(mods, name, tpt, rhs) =>
         newApply("ValDef", transform(mods), transform(name), transform(tpt), transform(rhs))
+      case Function(params, body) =>
+        newApply("Function", newApplyList(params.map(transform(_)): _*), transform(body))
       case _ if tree.isEmpty =>
         Ident("EmptyTree": TermName)
       case LabelDef(name, params, rhs) =>

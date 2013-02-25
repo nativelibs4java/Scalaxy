@@ -101,6 +101,16 @@ class MacroExtensionsComponent(
                   case tparam @ TypeDef(_, tname, _, _) => 
                     typeNamesInTarget.contains(tname) 
                 }
+                
+              val typeNamesInSignature = typeNamesInTarget ++ tparams.flatMap(getTypeNames(_))
+              
+              def containsReferenceToTParams(tpt: Tree) = {
+                val typeNames = getTypeNames(tpt)
+                typeNames.exists((tpn: TypeName) => typeNamesInSignature.contains(tpn))
+              }
+              
+              val tparamNames =
+                (tparams.map { case tparam @ TypeDef(_, tname, _, _) => tname.toString }).toSet
               
               val selfTreeName: TermName = unit.fresh.newName("selfTree$")
               val selfExprName: TermName = unit.fresh.newName("self$Expr$")
@@ -132,7 +142,7 @@ class MacroExtensionsComponent(
                       assert(target.toString == "_root_.scala.<byname>")
                       newPTpt
                     } else {
-                      byValueParamExprNames += pname.toString -> unit.fresh.newName(pname + "$Expr$")
+                      byValueParamExprNames += pname.toString -> unit.fresh.newName(pname + "$Expr$") 
                       ptpt 
                     }
                     
@@ -160,6 +170,28 @@ class MacroExtensionsComponent(
                 variableNames + "reify", 
                 rhs
               )
+              
+              def typeGetter(tpt: Tree): Option[Tree] = {
+                //if (containsReferenceToTParams(tpt))
+                  Some(
+                    Select(
+                      TypeApply(
+                        termPath(contextName + ".universe.weakTypeTag"),
+                        List(tpt)
+                      ),
+                      "tpe"
+                    )
+                  )
+                //else {
+                //  None
+                //}
+              }
+              
+              def typeTreeGetter(tpt: Tree): Option[Tree] = {
+                typeGetter(tpt).map(tpe => {
+                  Apply(Ident("TypeTree": TermName), List(tpe))
+                })
+              }
               
               List(
                 newImportMacros(tree.pos),
@@ -316,13 +348,15 @@ class MacroExtensionsComponent(
                               override def transform(tree: Tree) = tree match {
                                 case This(n) if useThisForSelf && n.isEmpty =>
                                   Ident(selfName)
-                                case Ident(n: TermName) if useThisForSelf && n.toString == selfName =>
+                                case Ident(n: TermName) 
+                                if useThisForSelf && n.toString == selfName =>
                                   unit.warning(tree.pos, s"'$selfName' is deprecated, please use 'this' instead")
                                   tree
                                 case Ident(n: TermName) 
                                 if variableNames.contains(n.toString) &&
                                    n.toString != selfName &&
-                                   !isByValueParam(n) =>
+                                   !isByValueParam(n) && 
+                                   !useUntypedReify =>
                                   newSplice(n)
                                 case _ =>
                                   super.transform(tree)
@@ -343,23 +377,48 @@ class MacroExtensionsComponent(
                                   Modifiers(if (isImplicit(pmods)) LOCAL | IMPLICIT else LOCAL),
                                   pname,
                                   newEmptyTpt,//ptpt,
+                                  // TODO pass implicits if (useUntypedReify)
                                   newSplice(getRealParamName(pname)))
                             }
 
-                            val rei = Block((selfParam :: byValueParams) :+ splicer.transform(rhs): _*)
-                            if (useUntypedReify)
+                            // When using untyped reification, only pass implicits through. 
+                            val result = if (useUntypedReify) {
+                              /*val rei = Block(
+                                //byValueParams.filter(vd => isImplicit(vd.mods)) :+
+                                splicer.transform(rhs)//: _*
+                              )*/
+                              val rei = splicer.transform(rhs)
+
                               newExpr(
                                 contextName, 
                                 tpt, 
                                 Apply(
                                   termPath(contextName + ".typeCheck"), 
                                   List(
-                                    new TreeReifyingTransformer().transform(rei))))
-                            else
+                                    new TreeReifyingTransformer(
+                                      exprSplicer = tn => {
+                                        val s = tn.toString
+                                        if (s == selfName)
+                                          Some(Select(Ident(selfExprName: TermName), "tree"))
+                                        else
+                                          byValueParamExprNames.get(s).map(n =>
+                                            Select(Ident(n: TermName), "tree"))
+                                      },
+                                      typeTreeGetter = typeTreeGetter(_)
+                                    ).transform(rei),
+                                    typeGetter(tpt).get)))
+                            } else {
                               Apply(
                                 Ident("reify": TermName),
-                                List(rei)
+                                List(
+                                  Block(
+                                    (selfParam :: byValueParams) :+ splicer.transform(rhs): _*
+                                  )
+                                )
                               )
+                            }
+                            println(s"RESULT = $result")
+                            result
                           }
                         }
                       )
