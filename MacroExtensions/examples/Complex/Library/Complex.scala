@@ -1,12 +1,20 @@
 final case class Complex(real: Double, imag: Double) {
-  @inline
   def **(y: Complex) =
     Complex(
       this.real * y.real - this.imag * y.imag,
       this.real * y.imag + this.imag * y.real)
 
-  @inline
   def ++(y: Complex) =
+    Complex(this.real + y.real, this.imag + y.imag)
+    
+  @inline
+  def ***(y: Complex) =
+    Complex(
+      this.real * y.real - this.imag * y.imag,
+      this.real * y.imag + this.imag * y.real)
+
+  @inline
+  def +++(y: Complex) =
     Complex(this.real + y.real, this.imag + y.imag)
 }
 
@@ -49,16 +57,16 @@ object MacroImplicits
 {
   @scalaxy.extension[Complex]
   def module: Double =
-    self.real * self.real + self.imag * self.imag
+    this.real * this.real + this.imag * this.imag
 
   @scalaxy.extension[Complex]
   def *(y: Complex): Complex =
     Complex(
-      self.real * y.real - self.imag * y.imag,
-      self.real * y.imag + self.imag * y.real)
+      this.real * y.real - this.imag * y.imag,
+      this.real * y.imag + this.imag * y.real)
 
   @scalaxy.extension[Complex]
   def +(y: Complex): Complex =
-    Complex(self.real + y.real, self.imag + y.imag)
+    Complex(this.real + y.real, this.imag + y.imag)
 }
 

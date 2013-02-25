@@ -1,7 +1,10 @@
 /*
-sbt clean && sbt "project Usage" "run 0" "run 1" "run 2" "run 3"
+sbt clean && sbt "run 0" "run 1" "run 2" "run 3" "run 4"
+
+; clean ; run 0 ; run 1 ; run 2 ; run 3 ; run 4
 */
 import scalaxy.loops._
+import scala.language.postfixOps
 
 // TODO hygienize self and params (by value, not by name as currently)
 object Run extends App {
@@ -29,10 +32,16 @@ object Run extends App {
       r = r * b + a
     r
   }
-  def Members(a: Complex, b: Complex) = {
+  def NormalMembers(a: Complex, b: Complex) = {
     var r = a
     for (i <- 0 until n optimized)
       r = (r ** b) ++ a
+    r
+  }
+  def InlineMembers(a: Complex, b: Complex) = {
+    var r = a
+    for (i <- 0 until n optimized)
+      r = (r *** b) +++ a
     r
   }
   
@@ -44,6 +53,7 @@ object Run extends App {
     case 0 => tst(n, "Naive Extensions") { NaiveExtensions(x, y) }
     case 1 => tst(n, "Inline Extensions") { InlineExtensions(x, y) }
     case 2 => tst(n, "Macro Extensions") { MacroExtensions(x, y) }
-    case 3 => tst(n, "Inline Members") { Members(x, y) }
+    case 3 => tst(n, "Normal Members") { NormalMembers(x, y) }
+    case 4 => tst(n, "Inline Members") { InlineMembers(x, y) }
   }
 }
