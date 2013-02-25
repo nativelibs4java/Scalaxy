@@ -171,23 +171,19 @@ class MacroExtensionsComponent(
                 rhs
               )
               
-              def typeGetter(tpt: Tree): Option[Tree] = {
+              def typeGetter(tpt: Tree): Tree = {
                 //if (containsReferenceToTParams(tpt))
-                Some(
-                  Select(
-                    TypeApply(
-                      termPath(contextName + ".universe.weakTypeTag"),
-                      List(tpt)
-                    ),
-                    "tpe"
-                  )
-                )
+                Select(
+                  TypeApply(
+                    termPath(contextName + ".universe.weakTypeTag"),
+                    List(tpt)),
+                  "tpe")
               }
               
-              def typeTreeGetter(tpt: Tree): Option[Tree] = {
-                typeGetter(tpt).map(tpe => {
-                  Apply(Ident("TypeTree": TermName), List(tpe))
-                })
+              def typeTreeGetter(tpt: Tree): Tree = {
+                Apply(
+                  Ident("TypeTree": TermName), 
+                  List(typeGetter(tpt)))
               }
               
               List(
@@ -410,7 +406,7 @@ class MacroExtensionsComponent(
                                     termPath(contextName + ".typeCheck"), 
                                     List(
                                       untypedResult,
-                                      typeGetter(tpt).get))))
+                                      typeGetter(tpt)))))
                             } else {
                               Apply(
                                 Ident("reify": TermName),

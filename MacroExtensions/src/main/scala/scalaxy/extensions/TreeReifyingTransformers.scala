@@ -35,8 +35,8 @@ trait TreeReifyingTransformers extends Extensions
   
   class TreeReifyingTransformer(
     exprSplicer: TermName => Option[Tree], 
-    typeGetter: Tree => Option[Tree],
-    typeTreeGetter: Tree => Option[Tree])
+    typeGetter: Tree => Tree,
+    typeTreeGetter: Tree => Tree)
       extends Transformer 
   {
     def newTermIdent(n: String): Tree =
@@ -84,28 +84,22 @@ trait TreeReifyingTransformers extends Extensions
       case TypeApply(target, args) =>
         transformApplyLike("TypeApply", target, args)
       case Ident(n: TypeName) =>
-        typeTreeGetter(tree).getOrElse {
-          newApply("Ident", transform(n))
-        }
+        typeTreeGetter(tree)
       case AppliedTypeTree(target, args) =>
-        val ttarget = typeGetter(tree).map(tpe =>
+        val ttarget = 
           Apply(
             Ident("TypeTree": TermName), 
             List(
-              termPath(tpe, "typeConstructor")))
-        ).getOrElse {
-          super.transform(target)
-        }
+              termPath(typeGetter(tree), "typeConstructor")))
         
         newApply(
           "AppliedTypeTree", 
           ttarget, 
           newApplyList(args.map(transform(_)): _*))
-        //transformApplyLike("AppliedTypeTree", target, args)
       case ExistentialTypeTree(target, args) =>
         transformApplyLike("ExistentialTypeTree", target, args)
       case _: TypeTree if !tree.isEmpty =>
-        typeTreeGetter(super.transform(tree)).get // TODO
+        typeTreeGetter(super.transform(tree))
       case Ident(n: TermName) =>
         exprSplicer(n).getOrElse {
           newApply("Ident", transform(n))
