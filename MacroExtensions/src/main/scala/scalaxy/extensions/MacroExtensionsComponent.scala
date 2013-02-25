@@ -46,9 +46,9 @@ class MacroExtensionsComponent(
   override val runsBefore = List[String]("namer")
 
   private final val selfName = "self"
-
-
-  def newPhase(prev: Phase): StdPhase = new StdPhase(prev) {
+  
+  def newPhase(prev: Phase): StdPhase = new StdPhase(prev) 
+  {
     def apply(unit: CompilationUnit) {
       val onTransformer = new Transformer
       {
@@ -59,25 +59,13 @@ class MacroExtensionsComponent(
               tpt
             case Apply(Select(New(name), initName), List(targetValueTpt))
             if initName == nme.CONSTRUCTOR && name.toString.matches("extend|scalaxy.extend") =>
-              unit.error(tree.pos, "Please use `@scalaxy.extension[T]` instead of `@extend(T)` or `@scalaxy.extend(T)`")
-              
-              // Tranforms a value tree (as found in annotation values) to a type tree.
-              def typify(valueTpt: Tree): Tree = valueTpt match {
-                case Ident(n) =>
-                  Ident(n.toString: TypeName)
-                case TypeApply(target, args) =>
-                  AppliedTypeTree(
-                    typify(target),
-                    args.map(typify(_))
-                  )
-                case _ =>
-                  unit.error(valueTpt.pos, "Type not handled yet: " + nodeToString(valueTpt) + ": " + valueTpt.getClass.getName)
-                  TypeTree(null)
-              }
-              typify(targetValueTpt)
-            case _ =>
-              println(nodeToString(tree))
+              val msg = "Please use `@scalaxy.extension[T]` instead of `@extend(T)` or `@scalaxy.extend(T)`"
+              unit.error(tree.pos, msg)
+              sys.error(msg)
               null
+            //case _ =>
+            //  println(nodeToString(tree))
+            //  null
           }
         }
         def banVariableNames(names: Set[String], root: Tree) {
