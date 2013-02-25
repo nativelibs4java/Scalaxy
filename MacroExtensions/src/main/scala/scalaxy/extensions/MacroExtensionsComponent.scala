@@ -30,8 +30,8 @@ class MacroExtensionsComponent(
   val global: Global, 
   macroExtensions: Boolean = true, 
   runtimeExtensions: Boolean = false,
-  useThisForSelf: Boolean = false,
-  useUntypedReify: Boolean = false)
+  useThisForSelf: Boolean = false, // set to true for experiments
+  useUntypedReify: Boolean = false) // set to true for experiments
     extends PluginComponent
     with TypingTransformers
     with TreeReifyingTransformers
@@ -173,18 +173,15 @@ class MacroExtensionsComponent(
               
               def typeGetter(tpt: Tree): Option[Tree] = {
                 //if (containsReferenceToTParams(tpt))
-                  Some(
-                    Select(
-                      TypeApply(
-                        termPath(contextName + ".universe.weakTypeTag"),
-                        List(tpt)
-                      ),
-                      "tpe"
-                    )
+                Some(
+                  Select(
+                    TypeApply(
+                      termPath(contextName + ".universe.weakTypeTag"),
+                      List(tpt)
+                    ),
+                    "tpe"
                   )
-                //else {
-                //  None
-                //}
+                )
               }
               
               def typeTreeGetter(tpt: Tree): Option[Tree] = {
@@ -389,24 +386,31 @@ class MacroExtensionsComponent(
                               )*/
                               val rei = splicer.transform(rhs)
 
+                              val untypedResult = 
+                                new TreeReifyingTransformer(
+                                  exprSplicer = tn => {
+                                    val s = tn.toString
+                                    if (s == selfName)
+                                      Some(Select(Ident(selfExprName: TermName), "tree"))
+                                    else
+                                      byValueParamExprNames.get(s).map(n =>
+                                        Select(Ident(n: TermName), "tree"))
+                                  },
+                                  typeGetter = typeGetter(_),
+                                  typeTreeGetter = typeTreeGetter(_)
+                                ).transform(rei)
+                              
                               newExpr(
                                 contextName, 
-                                tpt, 
-                                Apply(
-                                  termPath(contextName + ".typeCheck"), 
-                                  List(
-                                    new TreeReifyingTransformer(
-                                      exprSplicer = tn => {
-                                        val s = tn.toString
-                                        if (s == selfName)
-                                          Some(Select(Ident(selfExprName: TermName), "tree"))
-                                        else
-                                          byValueParamExprNames.get(s).map(n =>
-                                            Select(Ident(n: TermName), "tree"))
-                                      },
-                                      typeTreeGetter = typeTreeGetter(_)
-                                    ).transform(rei),
-                                    typeGetter(tpt).get)))
+                                tpt,
+                                Block(
+                                  Apply(Ident("println"), List(untypedResult)),
+                                  //untypedResult))
+                                  Apply(
+                                    termPath(contextName + ".typeCheck"), 
+                                    List(
+                                      untypedResult,
+                                      typeGetter(tpt).get))))
                             } else {
                               Apply(
                                 Ident("reify": TermName),
@@ -417,6 +421,7 @@ class MacroExtensionsComponent(
                                 )
                               )
                             }
+                            //println(s"RESULT = ${nodeToString(result)}")
                             println(s"RESULT = $result")
                             result
                           }

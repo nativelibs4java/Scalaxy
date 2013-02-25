@@ -39,6 +39,10 @@ trait Extensions
   def termPath(components: List[String]): Tree = {
     components.tail.foldLeft(Ident(components.head: TermName): Tree)((p, n) => Select(p, n: TermName))
   }
+  def termPath(root: Tree, path: String): Tree = {
+    val components = path.split("\\.").toList
+    components.foldLeft(root)((p, n) => Select(p, n: TermName))
+  }
 
   def typePath(path: String): Tree = {
     val components = path.split("\\.")

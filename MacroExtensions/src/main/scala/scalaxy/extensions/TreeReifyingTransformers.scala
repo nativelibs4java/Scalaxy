@@ -9,7 +9,7 @@ import scala.tools.nsc.Global
 import scala.reflect.internal.Flags
 import scala.reflect.NameTransformer
 
-trait TreeReifyingTransformers
+trait TreeReifyingTransformers extends Extensions
 {
   val global: Global
   import global._
@@ -35,14 +35,18 @@ trait TreeReifyingTransformers
   
   class TreeReifyingTransformer(
     exprSplicer: TermName => Option[Tree], 
-    typeTreeGetter: Tree/*TypeName*/ => Option[Tree])
+    typeGetter: Tree => Option[Tree],
+    typeTreeGetter: Tree => Option[Tree])
       extends Transformer 
   {
     def newTermIdent(n: String): Tree =
       newApply("Ident", transform(newTermName(n)))
       
-    def transform(n: Name): Tree =
+    def transform(n: Name): Tree = {
+      if (n.toString == "T")
+        new RuntimeException("TTTT: " + n).printStackTrace()
       newApply(if (n.isTermName) "newTermName" else "newTypeName", newConstant(n.toString))
+    }
     
     def transformApplyLike(f: String, target: Tree, args: List[Tree]): Tree =
       newApply(f, transform(target), newApplyList(args.map(transform(_)): _*))
@@ -79,18 +83,35 @@ trait TreeReifyingTransformers
         transformApplyLike("Apply", target, args)
       case TypeApply(target, args) =>
         transformApplyLike("TypeApply", target, args)
-      case AppliedTypeTree(target, args) =>
-        transformApplyLike("AppliedTypeTree", target, args)
-      case ExistentialTypeTree(target, args) =>
-        transformApplyLike("ExistentialTypeTree", target, args)
       case Ident(n: TypeName) =>
         typeTreeGetter(tree).getOrElse {
           newApply("Ident", transform(n))
         }
+      case AppliedTypeTree(target, args) =>
+        val ttarget = typeGetter(tree).map(tpe =>
+          Apply(
+            Ident("TypeTree": TermName), 
+            List(
+              termPath(tpe, "typeConstructor")))
+        ).getOrElse {
+          super.transform(target)
+        }
+        
+        newApply(
+          "AppliedTypeTree", 
+          ttarget, 
+          newApplyList(args.map(transform(_)): _*))
+        //transformApplyLike("AppliedTypeTree", target, args)
+      case ExistentialTypeTree(target, args) =>
+        transformApplyLike("ExistentialTypeTree", target, args)
+      case _: TypeTree if !tree.isEmpty =>
+        typeTreeGetter(super.transform(tree)).get // TODO
       case Ident(n: TermName) =>
         exprSplicer(n).getOrElse {
           newApply("Ident", transform(n))
         }
+      case Typed(a, b) =>
+        newApply("Typed", transform(a), transform(b))
       case Select(target, n) =>
         newApply("Select", transform(target), newConstant(n.toString))
       case Block(statements, value) =>
@@ -101,7 +122,11 @@ trait TreeReifyingTransformers
         newApply("ValDef", transform(mods), transform(name), transform(tpt), transform(rhs))
       case Function(params, body) =>
         newApply("Function", newApplyList(params.map(transform(_)): _*), transform(body))
+      case _: TypeTree if tree.isEmpty =>
+        //println("EMPTY TYPE TREE: " + tree)
+        Apply(Ident("TypeTree": TermName), List(newConstant(null)))
       case _ if tree.isEmpty =>
+        //println("EMPTY TREE: " + tree)
         Ident("EmptyTree": TermName)
       case LabelDef(name, params, rhs) =>
         newApply("LabelDef", transform(name), newApplyList(params.map(transform(_)): _*), transform(rhs))

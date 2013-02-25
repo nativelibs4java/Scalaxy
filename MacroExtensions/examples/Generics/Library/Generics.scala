@@ -1,4 +1,7 @@
 package scalaxy
+import scalaxy.loops._
+import scala.language.postfixOps // Optional.
+
 package object generics
 {
   @scalaxy.extension[T] 
@@ -46,7 +49,7 @@ package object generics
     this >= other
 }
 
-object GenericsAlgo extends App
+object ExampleAlgo
 {
   import generics._
   
@@ -63,8 +66,28 @@ object Matrices {
   final class Matrix[T : Numeric : ClassTag](
     val rows: Int, 
     val columns: Int, 
-    val values: Array[T]
-  )
+    val values: Array[T])
+  {
+    private def get(row: Int, col: Int): T =
+      this.values(row * columns + col)
+      
+    override def toString: String = {
+      val b = new StringBuilder()
+      for (i <- 0 until rows optimized) {
+        b ++= "{ "
+        for (j <- 0 until columns optimized) {
+          b ++= get(i, j).toString
+          if (j != columns - 1)
+            b ++= ", "
+        }
+        b ++= "}"
+        if (i != rows - 1)
+          b ++= ","
+        b ++= "\n"
+      }
+      b.toString
+    }
+  }
   
   object Matrix {
     def apply[T : Numeric : ClassTag](rows: Int, columns: Int): Matrix[T] =
@@ -73,21 +96,25 @@ object Matrices {
       
   @scalaxy.extension[Matrix[T]]
   def apply[T : Numeric : ClassTag](row: Int, col: Int): T =
-    this.values(row * columns + col)
+    this.values(row * this.columns + col)
   
   @scalaxy.extension[Matrix[T]]
   def update[T : Numeric : ClassTag](row: Int, col: Int, value: T) {
-    this.values(row * columns + col) = value
+    this.values(row * this.columns + col) = value
   }
   
   @scalaxy.extension[Matrix[T]]
   def *[T : Numeric : ClassTag](other: Matrix[T]): Matrix[T] = {
-    assert(this.columns == other.columns, s"Mismatching sizes: $this * $other")
+    require(
+      this.columns == other.rows, 
+      s"Mismatching sizes: (${this.rows} x ${this.columns}) * (${other.rows} x ${other.columns})")
+
+    //TODO: debug: val out: Matrix[T] = ... 
     val out = Matrix[T](this.rows, other.columns)
-    for (i <- 0 until this.rows) {
-      for (j <- 0 until other.columns) {
+    for (i <- 0 until this.rows optimized) {
+      for (j <- 0 until other.columns optimized) {
         var sum = 0.asInstanceOf[T]
-        for (k <- 0 until this.columns) {
+        for (k <- 0 until this.columns optimized) {
           sum += this(i, k) * other(k, j)
         }
         out(i, j) = sum
