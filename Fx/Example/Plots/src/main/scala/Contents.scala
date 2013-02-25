@@ -19,17 +19,25 @@ object Contents {
     // To use an explicit range / tick unit instead, use:
     // val xAxis = new NumberAxis("Age", 0, 100, 4)
     
-    val chart = new LineChart[Number, Number](xAxis,yAxis)
+    val chart = new ScatterChart[Number, Number](xAxis,yAxis)
+
     chart.getData.setAll(
       buildXYSeries(files)(file => {
         // CSV file with column names in first line:
-        readCSV(file)("c", "b") {
-          case Array(age, brightness) => (age.toDouble, brightness.toDouble)
+        if (file.getName.matches(".*?\\.(csv|tsv)")) {
+          readCSV(file)("c", "b") {
+            case Array(age, brightness) => (age.toDouble, brightness.toDouble)
+          }
+        } else {
+          // Space-separated fields with % comments:
+          // readFields(file) {
+          //   case Array(a, b, c, d) => (age.toDouble, brightness.toDouble)
+          // }
+          readFields(file) {
+             case a =>
+                (a(0).toDouble, a(1).toDouble)
+          }
         }
-        // Space-separated fields with % comments:
-        // readFields(file) {
-        //   case Array(a, b, c, d) => (age.toDouble, brightness.toDouble)
-        // }
       })
     )
     chart
