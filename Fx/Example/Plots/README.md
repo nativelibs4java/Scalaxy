@@ -1,9 +1,24 @@
-Prequisite:
+# Prequisites
 
 - Install [paulp's sbt launch script](https://github.com/paulp/sbt-extras)
-- Install git.
+- Install [git](http://git-scm.com/download/) 
+- Install [JDK 7 with JavaFX](http://www.oracle.com/technetwork/java/javafx/downloads/index.html), and make sure it's the default version of Java in "Java Preferences":
 
-Test with:
+  ```
+    java -version
+  ``` 
+  
+  Should give a version equal or superior to:
+  
+  ```
+    java version "1.7.0_13"
+    Java(TM) SE Runtime Environment (build 1.7.0_13-b20)
+    Java HotSpot(TM) 64-Bit Server VM (build 23.7-b01, mixed mode)
+  ```
+
+# Running
+
+You can run the plotting utils with:
 
     git clone git://github.com/ochafik/Scalaxy.git
     cd Scalaxy/Fx/Example/Plots
