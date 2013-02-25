@@ -18,7 +18,7 @@ trait TreeReifyingTransformers extends Extensions
   def newConstant(v: Any) = 
     Literal(Constant(v))
     
-  def newApplyList(args: Tree*): Tree =
+  def newApplyList(args: List[Tree]): Tree =
     if (args.isEmpty)
       Ident("Nil": TermName)
     else
@@ -48,14 +48,28 @@ trait TreeReifyingTransformers extends Extensions
       newApply(if (n.isTermName) "newTermName" else "newTypeName", newConstant(n.toString))
     }
     
-    def transformApplyLike(f: String, target: Tree, args: List[Tree]): Tree =
-      newApply(f, transform(target), newApplyList(args.map(transform(_)): _*))
-
-    def transform(mods: Modifiers): Tree = {
-      val Modifiers(flags, privateWithin, annotations) = mods
-      newApply("Modifiers", transform(flags), transform(privateWithin), newApplyList(annotations.map(transform(_)): _*))
+    def transform(constant: Constant): Tree = {
+      val Constant(value) = constant
+      newApply(
+        "Constant",
+        newConstant(value))
     }
     
+    def transform(mods: Modifiers): Tree = {
+      val Modifiers(flags, privateWithin, annotations) = mods
+      newApply(
+        "Modifiers", 
+        transform(flags), 
+        transform(privateWithin), 
+        transform(annotations))
+    }
+    
+    def transform(trees: List[Tree]): Tree =
+      newApplyList(trees.map(transform(_)))
+    
+    def transforms(treess: List[List[Tree]]): Tree = 
+      newApplyList(treess.map(transform(_)))
+          
     def transform(flags: FlagSet): Tree = {
       var v = flags: Long
       var names = Set[String]()
@@ -78,60 +92,173 @@ trait TreeReifyingTransformers extends Extensions
         flagTrees.reduceLeft[Tree]((a, b) => Apply(Select(a, encode("|")), List(b)))
     }
     
-    override def transform(tree: Tree): Tree = tree match {
-      case Apply(target, args) =>
-        transformApplyLike("Apply", target, args)
-      case TypeApply(target, args) =>
-        transformApplyLike("TypeApply", target, args)
-      case Ident(n: TypeName) =>
-        typeTreeGetter(tree)
-      case AppliedTypeTree(target, args) =>
-        val ttarget = 
-          Apply(
-            Ident("TypeTree": TermName), 
-            List(
-              termPath(typeGetter(tree), "typeConstructor")))
+    /*
+    class Extractors(extractors: (String, Tree => Option[_ <: Product])*) 
+    {
+      private val extractorsList = extractors.toList
+      
+      private def unapply(tree: Tree, extractors: List[(String, Tree => Option[_ <: Product])]): Option[Product] = extractors match {
+        case Nil => None
+        case x :: xs =>
+          x.unapplySeq(tree).getOrElse(unapply(tree, xs))
+      }
+      
+      def unapply(tree: Tree): Option[Tree] =
+        unapply(tree, extractorsList)
+    }
+    */
+    override def transform(tree: Tree): Tree = {
+      /*val xs = new Extractors(
+        "Try" -> ((t: Tree) => Try.unapply(t))
+      )*/
+      tree match {
+        case Ident(n: TypeName) =>
+          typeTreeGetter(tree)
+        case AppliedTypeTree(target, args) =>
+          val ttarget = 
+            Apply(
+              Ident("TypeTree": TermName), 
+              List(
+                termPath(typeGetter(tree), "typeConstructor")))
+          
+          newApply(
+            "AppliedTypeTree", 
+            ttarget, 
+            transform(args))
+        case ExistentialTypeTree(target, args) =>
+          newApply(
+            "ExistentialTypeTree",
+            transform(target),
+            transform(args))
+        case _: TypeTree if !tree.isEmpty =>
+          typeTreeGetter(super.transform(tree))
+        case Ident(n: TermName) =>
+          exprSplicer(n).getOrElse {
+            newApply(
+              "Ident", 
+              transform(n))
+          }
+        case Select(target, n) =>
+          newApply(
+            "Select", 
+            transform(target), 
+            newConstant(n.toString))
+        case Block(statements, value) =>
+          newApply(
+            "Block", 
+            (statements :+ value).map(transform(_)): _*)
+        case _: TypeTree if tree.isEmpty =>
+          newApply(
+            "TypeTree",
+            newConstant(null))
+        case _ if tree.isEmpty =>
+          Ident("EmptyTree": TermName)
         
-        newApply(
-          "AppliedTypeTree", 
-          ttarget, 
-          newApplyList(args.map(transform(_)): _*))
-      case ExistentialTypeTree(target, args) =>
-        transformApplyLike("ExistentialTypeTree", target, args)
-      case _: TypeTree if !tree.isEmpty =>
-        typeTreeGetter(super.transform(tree))
-      case Ident(n: TermName) =>
-        exprSplicer(n).getOrElse {
-          newApply("Ident", transform(n))
-        }
-      case Typed(a, b) =>
-        newApply("Typed", transform(a), transform(b))
-      case Select(target, n) =>
-        newApply("Select", transform(target), newConstant(n.toString))
-      case Block(statements, value) =>
-        newApply("Block", (statements :+ value).map(transform(_)): _*)
-      case If(cond, a, b) =>
-        newApply("If", transform(cond), transform(a), transform(b))
-      case ValDef(mods, name, tpt, rhs) =>
-        newApply("ValDef", transform(mods), transform(name), transform(tpt), transform(rhs))
-      case Function(params, body) =>
-        newApply("Function", newApplyList(params.map(transform(_)): _*), transform(body))
-      case _: TypeTree if tree.isEmpty =>
-        //println("EMPTY TYPE TREE: " + tree)
-        Apply(Ident("TypeTree": TermName), List(newConstant(null)))
-      case _ if tree.isEmpty =>
-        //println("EMPTY TREE: " + tree)
-        Ident("EmptyTree": TermName)
-      case LabelDef(name, params, rhs) =>
-        newApply("LabelDef", transform(name), newApplyList(params.map(transform(_)): _*), transform(rhs))
-      case Literal(Constant(v)) =>
-        newApply("Literal", newApply("Constant", newConstant(v)))
-      case null => 
-        null
-      case _ =>
-        // TODO ValDef, DefDef, ClassDef, Template, Function...
-        println("TODO reify properly " + tree.getClass.getName + " <- " + tree.getClass.getSuperclass.getName + ": " + tree)
-        newSelect(newApply("reify", super.transform(tree)), "tree")
+          
+        case Apply(target, args) =>
+          newApply(
+            "Apply", 
+            transform(target),
+            transform(args))
+        case TypeApply(target, args) =>
+          newApply(
+            "TypeApply", 
+            transform(target),
+            transform(args))
+        case New(tpt) =>
+          newApply(
+            "New",
+            transform(tpt))
+        case Typed(a, b) =>
+          newApply(
+            "Typed", 
+            transform(a), 
+            transform(b))
+        case If(cond, a, b) =>
+          newApply(
+            "If", 
+            transform(cond), 
+            transform(a), 
+            transform(b))
+        case ValDef(mods, name, tpt, rhs) =>
+          newApply(
+            "ValDef", 
+            transform(mods), 
+            transform(name), 
+            transform(tpt), 
+            transform(rhs))
+        case DefDef(mods, name, tparams, vparamss, tpt, rhs) =>
+          newApply(
+            "DefDef", 
+            transform(mods), 
+            transform(name), 
+            transform(tparams),
+            transforms(vparamss),
+            transform(tpt), 
+            transform(rhs))
+        case ClassDef(mods, name, tparams, impl) =>
+          newApply(
+            "ClassDef", 
+            transform(mods), 
+            transform(name), 
+            transform(tparams),
+            transform(impl))
+        case ModuleDef(mods, name, impl) =>
+          newApply(
+            "ModuleDef", 
+            transform(mods), 
+            transform(name), 
+            transform(impl))
+        case Template(parents, self, body) =>
+          newApply(
+            "Template", 
+            transform(parents),
+            transform(self),
+            transform(body))
+        case Function(params, body) =>
+          newApply(
+            "Function", 
+            transform(params), 
+            transform(body))
+        case LabelDef(name, params, rhs) =>
+          newApply(
+            "LabelDef", 
+            transform(name), 
+            transform(params), 
+            transform(rhs))
+        case Literal(value) =>
+          newApply(
+            "Literal",
+            transform(value))
+        case Try(block, catches, finalizer) =>
+          newApply(
+            "Try", 
+            transform(block), 
+            transform(catches), 
+            transform(finalizer))
+        case CaseDef(pat, guard, body) =>
+          newApply(
+            "CaseDef",
+            transform(pat),
+            transform(guard),
+            transform(body))
+        case Bind(name, body) =>
+          newApply(
+            "Bind",
+            transform(name),
+            transform(body))
+        case Match(selector, cases) =>
+          newApply(
+            "Match",
+            transform(selector),
+            transform(cases))
+        case null => 
+          null
+        case _ =>
+          // TODO ValDef, DefDef, ClassDef, Template, Function...
+          println("TODO reify properly " + tree.getClass.getName + " <- " + tree.getClass.getSuperclass.getName + ": " + tree)
+          newSelect(newApply("reify", super.transform(tree)), "tree")
+      }
     }
   }
 }

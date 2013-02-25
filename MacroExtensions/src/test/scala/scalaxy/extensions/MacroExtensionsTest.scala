@@ -6,8 +6,13 @@ import Assert._
 
 class MacroExtensionsTest extends TestBase
 {
-  override def transform(s: String, name: String = "test") =
+  override def transform(s: String, name: String = "test") = {
+    // First, compile with untyped reify:
+    transformCode(s, name, macroExtensions = true, runtimeExtensions = false, useUntypedReify = true)
+    
+    // Then return result of compilation without untyped reify:
     transformCode(s, name, macroExtensions = true, runtimeExtensions = false, useUntypedReify = false)._1
+  }
 
   @Test
   def trivial {
