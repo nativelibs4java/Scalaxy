@@ -1,3 +1,7 @@
+Prequisite:
+
+- Install [paulp's sbt launch script](https://github.com/paulp/sbt-extras)
+
 Test with:
 
     sbt "~run first.csv second.csv"
