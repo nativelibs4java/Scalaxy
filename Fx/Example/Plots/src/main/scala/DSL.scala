@@ -8,10 +8,10 @@ import scala.collection.JavaConversions._
 trait XYDataDSL {
   import javafx.scene.chart.XYChart
   
-  def readXYSeries
-        (files: File*)
-        (f: File => Seq[XYChart.Data[Number, Number]]): 
-      Seq[XYChart.Series[Number, Number]] = 
+  def buildXYSeries
+        (files: Seq[File])
+        (f: File => Seq[XYChart.Data[Number, Number]]) 
+      : Seq[XYChart.Series[Number, Number]] = 
   {
     for (file <- files) yield {
       val series = new XYChart.Series[Number, Number]()

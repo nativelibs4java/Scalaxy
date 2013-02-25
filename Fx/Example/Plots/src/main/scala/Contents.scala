@@ -21,7 +21,7 @@ object Contents {
     
     val chart = new LineChart[Number, Number](xAxis,yAxis)
     chart.getData.setAll(
-      readXYSeries(files: _*)(file => {
+      buildXYSeries(files)(file => {
         readCSV(file)("c", "b") {
           case Array(age, brightness) => (age.toDouble, brightness.toDouble)
         }
