@@ -22,9 +22,14 @@ object Contents {
     val chart = new LineChart[Number, Number](xAxis,yAxis)
     chart.getData.setAll(
       buildXYSeries(files)(file => {
+        // CSV file with column names in first line:
         readCSV(file)("c", "b") {
           case Array(age, brightness) => (age.toDouble, brightness.toDouble)
         }
+        // Space-separated fields with % comments:
+        // readFields(file) {
+        //   case Array(a, b, c, d) => (age.toDouble, brightness.toDouble)
+        // }
       })
     )
     chart
