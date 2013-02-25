@@ -29,7 +29,7 @@ object GenericsTest extends App
     a(2, 2) = 1
     
     val b = Matrix[Int](3, 3)
-    b(0, 0) = 1
+    b(0, 0) = 2
     b(1, 1) = 2
     b(2, 2) = 1
     println(a)

@@ -31,7 +31,7 @@ class MacroExtensionsComponent(
   macroExtensions: Boolean = true, 
   runtimeExtensions: Boolean = false,
   useThisForSelf: Boolean = true,
-  useUntypedReify: Boolean = false) // set to true for experiments
+  useUntypedReify: Boolean = true)
     extends PluginComponent
     with TypingTransformers
     with TreeReifyingTransformers
