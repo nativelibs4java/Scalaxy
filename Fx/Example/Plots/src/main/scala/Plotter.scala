@@ -21,18 +21,28 @@ object Plotter extends App {
 
 class Plotter extends Application {
   override def start(primaryStage: Stage) {
+    def scene = primaryStage.getScene
     primaryStage.set(
       title = "Plot",
       scene = new Scene(
         new StackPane() {
           getChildren.add(
-            Contents.buildChart(getParameters.getRaw.map(new File(_)))
+            new BorderPane().set(
+              center = Contents.buildChart(getParameters.getRaw.map(new File(_))),
+              bottom = new Button().set(
+                text = "Reload stylesheet",
+                onAction = {
+                  com.sun.javafx.css.StyleManager.getInstance().reloadStylesheets(scene)
+                }
+              )
+            )
           )
         }, 
         500, 
         250
       )
     )
+    scene.getStylesheets.add("Chart.css");
     primaryStage.show()
   }
 }
