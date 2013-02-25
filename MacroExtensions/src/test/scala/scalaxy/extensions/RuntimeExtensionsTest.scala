@@ -7,7 +7,7 @@ import Assert._
 class RuntimeExtensionsTest extends TestBase
 {
   override def transform(s: String, name: String = "test") =
-    transformCode(s, name, macroExtensions = false, runtimeExtensions = true)._1
+    transformCode(s, name, macroExtensions = false, runtimeExtensions = true, useUntypedReify = false)._1
 
   @Test
   def trivial {

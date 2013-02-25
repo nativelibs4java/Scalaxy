@@ -41,7 +41,7 @@ trait TestBase {
   }
 
   //def normalize(s: String) = s.trim.replaceAll("^\\s*|\\s*?$", "")
-  def transformCode(code: String, name: String, macroExtensions: Boolean, runtimeExtensions: Boolean): (String, String, Seq[(AbstractReporter#Severity, String)]) = {
+  def transformCode(code: String, name: String, macroExtensions: Boolean, runtimeExtensions: Boolean, useUntypedReify: Boolean): (String, String, Seq[(AbstractReporter#Severity, String)]) = {
     val settings0 = new Settings
     val file = {
       val file = File.createTempFile(name, ".scala")
@@ -72,7 +72,7 @@ trait TestBase {
       val global = new Global(settings0, reporter) {
         override protected def computeInternalPhases() {
           super.computeInternalPhases
-          val comp = new MacroExtensionsComponent(this, macroExtensions = macroExtensions, runtimeExtensions = runtimeExtensions)
+          val comp = new MacroExtensionsComponent(this, macroExtensions = macroExtensions, runtimeExtensions = runtimeExtensions, useUntypedReify = useUntypedReify)
           phasesSet += comp
           // Get node string right after macro extensions component.
           phasesSet += new TestComponent(this, comp, (s, n) => transformed = s -> n)

@@ -7,7 +7,7 @@ import Assert._
 class MacroExtensionsTest extends TestBase
 {
   override def transform(s: String, name: String = "test") =
-    transformCode(s, name, macroExtensions = true, runtimeExtensions = false)._1
+    transformCode(s, name, macroExtensions = true, runtimeExtensions = false, useUntypedReify = false)._1
 
   @Test
   def trivial {
@@ -55,9 +55,9 @@ class MacroExtensionsTest extends TestBase
             def len(c: scala.reflect.macros.Context): c.Expr[Int] = {
               import c.universe._
               val Apply(_, List(selfTree$1)) = c.prefix.tree;
-              val self$Expr$1: c.Expr[String] = c.Expr[String](selfTree$1)
+              val self$Expr$1 = c.Expr[String](selfTree$1)
               reify({
-                val self: String = self$Expr$1.splice
+                val self = self$Expr$1.splice
                 self.length
               })
             }
@@ -90,10 +90,10 @@ class MacroExtensionsTest extends TestBase
             {
               import c.universe._
               val Apply(_, List(selfTree$1)) = c.prefix.tree;
-              val self$Expr$1: c.Expr[Int] = c.Expr[Int](selfTree$1)
+              val self$Expr$1 = c.Expr[Int](selfTree$1)
               reify({
-                val self: Int = self$Expr$1.splice
-                val quote: String = quote$Expr$1.splice
+                val self = self$Expr$1.splice
+                val quote = quote$Expr$1.splice
                 quote + self + quote
               })
             }
@@ -130,10 +130,10 @@ class MacroExtensionsTest extends TestBase
             {
               import c.universe._
               val Apply(_, List(selfTree$1)) = c.prefix.tree;
-              val self$Expr$1: c.Expr[Double] = c.Expr[Double](selfTree$1)
+              val self$Expr$1 = c.Expr[Double](selfTree$1)
               reify({
-                val self: Double = self$Expr$1.splice;
-                val a: A = a$Expr$1.splice;
+                val self = self$Expr$1.splice;
+                val a = a$Expr$1.splice;
                 {
                   println(s"${self}.foo(${a})")
                   a
@@ -170,10 +170,10 @@ class MacroExtensionsTest extends TestBase
             {
               import c.universe._
               val Apply(_, List(selfTree$1)) = c.prefix.tree;
-              val self$Expr$1: c.Expr[Array[A]] = c.Expr[Array[A]](selfTree$1)
+              val self$Expr$1 = c.Expr[Array[A]](selfTree$1)
               reify({
-                val self: Array[A] = self$Expr$1.splice
-                val b: B = b$Expr$1.splice
+                val self = self$Expr$1.splice
+                val b = b$Expr$1.splice
                 (self, b)
               })
             }
@@ -207,10 +207,10 @@ class MacroExtensionsTest extends TestBase
             {
               import c.universe._
               val Apply(_, List(selfTree$1)) = c.prefix.tree;
-              val self$Expr$1: c.Expr[T] = c.Expr[T](selfTree$1)
+              val self$Expr$1 = c.Expr[T](selfTree$1)
               reify({
-                val self: T = self$Expr$1.splice
-                implicit val evidence$1: Numeric[T] = evidence$1$Expr$1.splice
+                val self = self$Expr$1.splice
+                implicit val evidence$1 = evidence$1$Expr$1.splice
                 self * self
               })
             }
@@ -251,9 +251,9 @@ class MacroExtensionsTest extends TestBase
             {
               import c.universe._
               val Apply(_, List(selfTree$1)) = c.prefix.tree;
-              val self: c.Expr[T] = c.Expr[T](selfTree$1);
+              val self = c.Expr[T](selfTree$1);
               {
-                implicit def evidence$1$1: c.Expr[Numeric[T]] = c.Expr[Numeric[T]](evidence$1$Expr$1);
+                implicit def evidence$1$1 = c.Expr[Numeric[T]](evidence$1$Expr$1);
                 {
                   val evExpr = implicity[c.Expr[Numeric[T]]]
                   reify({
@@ -298,10 +298,10 @@ class MacroExtensionsTest extends TestBase
             {
               import c.universe._
               val Apply(_, List(selfTree$1)) = c.prefix.tree;
-              val self$Expr$1: c.Expr[Int] = c.Expr[Int](selfTree$1)
+              val self$Expr$1 = c.Expr[Int](selfTree$1)
               reify({
-                val self: Int = self$Expr$1.splice
-                implicit val evidence$1: ClassTag[T] = evidence$1$Expr$1.splice
+                val self = self$Expr$1.splice
+                implicit val evidence$1 = evidence$1$Expr$1.splice
                 Array.fill[T](self)(generator.splice)
               })
             }
@@ -336,10 +336,10 @@ class MacroExtensionsTest extends TestBase
             {
               import c.universe._
               val Apply(_, List(selfTree$1)) = c.prefix.tree;
-              val self$Expr$1: c.Expr[Int] = c.Expr[Int](selfTree$1)
+              val self$Expr$1 = c.Expr[Int](selfTree$1)
               reify({
-                val self: Int = self$Expr$1.splice
-                val value: Int = value$Expr$1.splice
+                val self = self$Expr$1.splice
+                val value = value$Expr$1.splice
                 Array.fill(self)((value, generator.splice))
               })
             }
