@@ -13,6 +13,25 @@ trait Extensions
   val global: Global
   import global._
   import definitions._
+  
+  class DefsTransformer extends Transformer {
+    var parents: List[DefTree] = Nil
+    override def transform(tree: Tree) = tree match {
+      case dt: DefTree =>
+        enterDefTree(dt)
+        val res = super.transform(tree)
+        leaveDefTree(dt)
+        res
+      case _ =>
+        super.transform(tree)
+    }
+    def enterDefTree(dt: DefTree) {
+      parents = dt :: parents
+    }
+    def leaveDefTree(dt: DefTree) {
+      parents = parents.tail
+    }
+  }
 
   def termPath(path: String): Tree = {
     termPath(path.split("\\.").toList)
