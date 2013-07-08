@@ -58,8 +58,10 @@ trait Tuploids extends CommonScalaNames {
       if isTupleTypeRef(ref) =>
         true
       case _ =>
+        //if (tpe != null)
+        //  println("NOT A TUPLE TYPE: " + tpe + ": " + tpe.getClass.getName)
         //if (tpe.toString.contains("Tuple"))
-        //println(s"tpe($tpe: ${tpe.getClass.getName}).typeConstructor = ${tpe.typeConstructor} (${tpe.typeSymbol})")
+        //  println(s"tpe($tpe: ${tpe.getClass.getName}).typeConstructor = ${tpe.typeConstructor} (${tpe.typeSymbol})")
         false
     }
   }

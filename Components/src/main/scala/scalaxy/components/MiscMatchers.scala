@@ -309,8 +309,13 @@ trait MiscMatchers extends Tuploids {
   
   lazy val scalaPackage = ScalaPackage 
   object TupleSelect {
+    private def isTupleName(name: Name) =
+      name.toString.matches(""".*Tuple\d+""")
+      
     def unapply(tree: Tree) = tree match {
-      case Select(Ident(scalaPackage), name) if name.toString.matches(""".*Tuple\d+""") =>
+      case Select(Ident(scalaPackage), name) if isTupleName(name) =>
+        true
+      case Ident(name) if isTupleName(name) =>
         true
       case _ =>
         false

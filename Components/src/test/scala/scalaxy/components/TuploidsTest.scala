@@ -35,7 +35,8 @@ import Assert._
 import org.hamcrest.CoreMatchers._
 
 class TuploidsTest 
-    extends Tuploids 
+    extends Tuploids
+    with MiscMatchers
     with WithRuntimeUniverse
     with WithTestFresh
 {
@@ -73,5 +74,24 @@ class TuploidsTest
                         
     assertFalse(isTuploidType(typeOf[MutableCaseClass]))
     assertFalse(isTuploidType(typeOf[MutableClass]))
+  }
+  
+  @Test
+  def testTupleCreation {
+    val t = reify({ (1, 1f) }).tree
+    val tt = typeCheck(t)
+    /*
+    println(t)
+    println(t.tpe)
+    println(TupleCreation.unapply(t))
+    
+    println(tt)
+    println(tt.tpe)
+    println(TupleCreation.unapply(tt))
+    */
+    assertEquals(
+      Some(List(Literal(Constant(1)), Literal(Constant(1f)))) + "",
+      TupleCreation.unapply(tt) + ""
+    )
   }
 }
