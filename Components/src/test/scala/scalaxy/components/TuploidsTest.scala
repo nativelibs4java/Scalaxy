@@ -65,6 +65,12 @@ class TuploidsTest
   }
   
   @Test
+  def testTupleTypeArgs {
+    val TypeRef(_, _, List(tpe)) = typeOf[Array[(Int, Float)]]
+    assertTrue(isTupleType(tpe))
+  }
+  
+  @Test
   def testTuploids {
     assertTrue(isTuploidType(typeOf[Int]))
     assertTrue(isTuploidType(typeOf[(Int, Int)]))
@@ -74,24 +80,5 @@ class TuploidsTest
                         
     assertFalse(isTuploidType(typeOf[MutableCaseClass]))
     assertFalse(isTuploidType(typeOf[MutableClass]))
-  }
-  
-  @Test
-  def testTupleCreation {
-    val t = reify({ (1, 1f) }).tree
-    val tt = typeCheck(t)
-    /*
-    println(t)
-    println(t.tpe)
-    println(TupleCreation.unapply(t))
-    
-    println(tt)
-    println(tt.tpe)
-    println(TupleCreation.unapply(tt))
-    */
-    assertEquals(
-      Some(List(Literal(Constant(1)), Literal(Constant(1f)))) + "",
-      TupleCreation.unapply(tt) + ""
-    )
   }
 }

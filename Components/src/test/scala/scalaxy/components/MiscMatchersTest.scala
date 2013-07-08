@@ -51,4 +51,14 @@ class MiscMatchersTest
       extractTupleComponentTypes(reify((1, 2f)))
     )
   }
+  
+  @Test
+  def testTupleCreation {
+    val t = reify({ (1, 1f) }).tree
+    val tt = typeCheck(t)
+    assertEquals(
+      Some(List(Literal(Constant(1)), Literal(Constant(1f)))) + "",
+      TupleCreation.unapply(tt) + ""
+    )
+  }
 }
