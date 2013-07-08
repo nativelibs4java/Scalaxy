@@ -7,7 +7,7 @@ object Scalaxy extends Build
 {
   lazy val scalaSettings = Seq(
     //exportJars := true, // use jars in classpath
-    scalaVersion := "2.10.0",
+    scalaVersion := "2.10.2",
     //scalaVersion := "2.11.0-SNAPSHOT",
     crossScalaVersions := Seq(
       "2.11.0-SNAPSHOT"))
@@ -47,11 +47,11 @@ object Scalaxy extends Build
     Seq(
       javacOptions ++= Seq("-Xlint:unchecked"),
       scalacOptions ++= Seq(
-        "-encoding", "UTF-8", 
+        "-encoding", "UTF-8",
+        "-optimise", 
         "-deprecation",
         "-feature",
-        "-unchecked",
-        "-optimise"
+        "-unchecked"
       ),
       //scalacOptions in Test ++= Seq("-Xprint:typer"),
       //fork in Test := true,
