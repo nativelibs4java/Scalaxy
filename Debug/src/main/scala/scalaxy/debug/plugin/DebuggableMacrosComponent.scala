@@ -20,9 +20,9 @@ class DebuggableMacrosComponent(val global: Global)
   override val runsBefore = List[String]("refchecks")
  
   def newPhase(prev: Phase): StdPhase = new StdPhase(prev) {
-    def apply(unit: CompilationUnit) {
+    def apply(compilationUnit: CompilationUnit) {
       var hasUnannotatedTrees = false 
-      val unannotatedTreesDetector = new Traverser(unit) {
+      val unannotatedTreesDetector = new Traverser() {
         override def traverse(tree: Tree) {
           if (tree.pos == NoPosition) {
             println("Unannotated tree: " + tree)
@@ -31,7 +31,7 @@ class DebuggableMacrosComponent(val global: Global)
           super.traverse(tree)
         }
       }
-      unit.body = unannotatedTreesDetector.traverse(unit.body)
+      unannotatedTreesDetector.traverse(compilationUnit.body)
     }
   }
 }
