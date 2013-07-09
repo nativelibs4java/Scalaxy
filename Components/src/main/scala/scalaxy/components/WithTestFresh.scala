@@ -32,7 +32,7 @@ package scalaxy.components
 
 trait WithTestFresh {
   private var nextId = 0L
-  
+
   def fresh(s: String) = synchronized {
     val v = nextId
     nextId += 1

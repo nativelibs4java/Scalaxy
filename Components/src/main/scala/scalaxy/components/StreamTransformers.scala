@@ -33,27 +33,25 @@ package scalaxy.components
 import scala.reflect.api.Universe
 
 trait StreamTransformers
-extends MiscMatchers
-   with TreeBuilders
-   with TraversalOps
-   with Streams 
-   with StreamSources 
-   with StreamOps
-   with StreamSinks
-{
+    extends MiscMatchers
+    with TreeBuilders
+    with TraversalOps
+    with Streams
+    with StreamSources
+    with StreamOps
+    with StreamSinks {
   val global: Universe
   import global._
   import definitions._
   import Flag._
-  
+
   def stream = true
-  
+
   case class OpsStream(
-    source: StreamSource, 
-    colTree: Tree, 
-    ops: List[StreamTransformer]
-  )
-  
+    source: StreamSource,
+    colTree: Tree,
+    ops: List[StreamTransformer])
+
   def newTransformer = new Transformer /* TODO: TypingTransformer */ {
     object OpsStream {
       def unapply(tree: Tree) = {
@@ -96,17 +94,17 @@ extends MiscMatchers
     override def transform(tree: Tree): Tree = {
       //val retryWithSmallerChain = false
       //def internalTransform(tree: Tree, retryWithSmallerChain: Boolean) = transform(tree)
-      
+
       internalTransform(tree)
     }
-      
+
     protected def internalTransform(
-        tree: Tree, 
-        retryWithSmallerChain: Boolean = true): Tree = 
-    {
-      //if (!shouldOptimize(tree))
-      //  super.transform(tree)
-      //else
+      tree: Tree,
+      retryWithSmallerChain: Boolean = true): Tree =
+      {
+        //if (!shouldOptimize(tree))
+        //  super.transform(tree)
+        //else
         try {
           tree match {
             case ArrayTabulate(componentType, lengths @ (firstLength :: otherLengths), f @ Func(params, body), manifest) =>
@@ -115,86 +113,87 @@ extends MiscMatchers
                 tpe.normalize.widen
               //else
               //  tpe
-              
-              val lengthDefs = lengths.map { case length =>
-                newVariable("n$", currentOwner, tree.pos, false, typeCheck(length, IntTpe))
+
+              val lengthDefs = lengths.map {
+                case length =>
+                  newVariable("n$", currentOwner, tree.pos, false, typeCheck(length, IntTpe))
               }
-                  
+
               //msg(tree.pos, "transformed Array.tabulate[" + returnType + "] into equivalent while loop") 
               {
-                  
+
                 def replaceTabulates(lengthDefs: List[VarDef], parentArrayIdentGen: IdentGen, params: List[ValDef], mappings: Map[Symbol, TreeGen], symbolReplacements: Map[Symbol, Symbol]): (Tree, Type) = {
-              
+
                   val param = params.head
                   val pos = tree.pos
                   val nVar = lengthDefs.head
                   val iVar = newVariable("i$", currentOwner, pos, true, newInt(0))
                   val iVal = newVariable("i$val$", currentOwner, pos, false, iVar())
-                  
+
                   val newMappings: Map[Symbol, TreeGen] = mappings + (param.symbol -> iVal)
                   val newReplacements = symbolReplacements ++ Map(param.symbol -> iVal.symbol, f.symbol -> currentOwner)
-                  
+
                   val mappedArrayTpe = getArrayType(lengthDefs.size, returnType)
-                  
+
                   val arrayVar = if (parentArrayIdentGen == null)
                     newVariable("m$", currentOwner, tree.pos, false, newArrayMulti(mappedArrayTpe, returnType, lengthDefs.map(_.identGen()), manifest))
                   else
                     VarDef(parentArrayIdentGen, null, null)
-                  
-                  val subArrayVar =  if (lengthDefs.tail == Nil)
+
+                  val subArrayVar = if (lengthDefs.tail == Nil)
                     null
                   else
                     newVariable("subArray$", currentOwner, tree.pos, false, newApply(tree.pos, arrayVar(), iVal()))
-                                    
+
                   val (newBody, bodyType) = if (lengthDefs.tail == Nil)
-                      (
-                          replaceOccurrences(
-                            body,
-                            newMappings,
-                            newReplacements,
-                            Map()
-                          ),
-                          returnType
-                      )
-                  else
-                      replaceTabulates(
-                        lengthDefs.tail,
-                        subArrayVar,
-                        params.tail,
+                    (
+                      replaceOccurrences(
+                        body,
                         newMappings,
-                        newReplacements
-                      )
-                  
+                        newReplacements,
+                        Map()
+                      ),
+                        returnType
+                    )
+                  else
+                    replaceTabulates(
+                      lengthDefs.tail,
+                      subArrayVar,
+                      params.tail,
+                      newMappings,
+                      newReplacements
+                    )
+
                   val checkedBody = typeCheck(
                     newBody,
                     bodyType
                   )
-                  
+
                   (
                     super.transform {
                       typed {
                         treeCopy.Block(
                           tree,
                           (
-                            if (parentArrayIdentGen == null) 
+                            if (parentArrayIdentGen == null)
                               lengthDefs.map(_.definition) :+ arrayVar.definition
-                            else 
+                            else
                               Nil
                           ) ++
-                          List(
-                            iVar.definition,
-                            whileLoop(
-                              currentOwner,
-                              tree,
-                              binOp(
-                                iVar(),
-                                IntTpe.member(LT),
-                                nVar()
-                              ),
-                              Block(
-                                (
-                                  if (lengthDefs.tail == Nil)
-                                    List(
+                            List(
+                              iVar.definition,
+                              whileLoop(
+                                currentOwner,
+                                tree,
+                                binOp(
+                                  iVar(),
+                                  IntTpe.member(LT),
+                                  nVar()
+                                ),
+                                Block(
+                                  (
+                                    if (lengthDefs.tail == Nil)
+                                      List(
                                       iVal.definition,
                                       newUpdate(
                                         tree.pos,
@@ -203,18 +202,18 @@ extends MiscMatchers
                                         checkedBody
                                       )
                                     )
-                                  else {
-                                    List(
-                                      iVal.definition,
-                                      subArrayVar.definition,
-                                      checkedBody
-                                    )
-                                  }
-                                ),
-                                incrementIntVar(iVar, newInt(1))
+                                    else {
+                                      List(
+                                        iVal.definition,
+                                        subArrayVar.definition,
+                                        checkedBody
+                                      )
+                                    }
+                                  ),
+                                  incrementIntVar(iVar, newInt(1))
+                                )
                               )
-                            )
-                          ),
+                            ),
                           if (parentArrayIdentGen == null)
                             arrayVar()
                           else
@@ -227,21 +226,18 @@ extends MiscMatchers
                 }
                 replaceTabulates(lengthDefs, null, params, Map(), Map())._1
               }
-            case OpsStream(opsStream) 
-            if 
-              stream &&
+            case OpsStream(opsStream) if stream &&
               //(opsStream.source ne null) && 
               //!opsStream.ops.isEmpty && 
               //(opsStream ne null) && 
-              (opsStream.colTree ne null) && 
-              !matchedColTreeIds.contains(opsStream.colTree) 
-              =>
+              (opsStream.colTree ne null) &&
+              !matchedColTreeIds.contains(opsStream.colTree) =>
               import opsStream._
-              
-              val txt = "Streamed ops on " + (if (source == null) "UNKNOWN COL" else source.tree.tpe) + " : " + ops/*.map(_.getClass.getName)*/.mkString(", ")
+
+              val txt = "Streamed ops on " + (if (source == null) "UNKNOWN COL" else source.tree.tpe) + " : " + ops /*.map(_.getClass.getName)*/ .mkString(", ")
               matchedColTreeIds += colTree
               //msg(tree.pos, "# " + txt) 
-              
+
               {
                 try {
                   val stream = Stream(source, ops)
@@ -256,16 +252,16 @@ extends MiscMatchers
                     for (SideEffectFullComponent(comp, sideEffects, preventedOptimizations) <- componentsWithSideEffects) {
                       for (sideEffect <- sideEffects) {
                         if (preventedOptimizations)
-                          warning(sideEffect.pos, 
-                                  "This side-effect prevents optimization of the enclosing " + comp + " operation ; node = " + sideEffect //+
-                            //(if (verbose) " ; node = " + nodeToString(sideEffect) else "")
+                          warning(sideEffect.pos,
+                            "This side-effect prevents optimization of the enclosing " + comp + " operation ; node = " + sideEffect //+
+                          //(if (verbose) " ; node = " + nodeToString(sideEffect) else "")
                           )
                         else if (verbose)
                           warnSideEffect(sideEffect)
                       }
                       //println("Side effects of " + comp + " :\n\t" + sideEffects.mkString(",\n\t"))
                     }
-                    
+
                     val sub = super.transform(tree)
                     if (retryWithSmallerChain)
                       internalTransform(sub, retryWithSmallerChain = false)
@@ -274,7 +270,7 @@ extends MiscMatchers
                 }
               }
             case _ =>
-              super.transform(tree)//toMatch)
+              super.transform(tree) //toMatch)
           }
         } catch {
           case ex: CodeWontBenefitFromOptimization =>
@@ -286,39 +282,37 @@ extends MiscMatchers
               ex.printStackTrace
             super.transform(tree)
         }
-    }
+      }
   }
   def checkStreamWillBenefitFromOptimization(stream: Stream): Unit = {
     val Stream(source, transformers) = stream
-    
+
     val sourceAndOps = source +: transformers
-    
+
     import TraversalOps._
-    
+
     val closuresCount = sourceAndOps.map(_.closuresCount).sum
     (transformers, closuresCount, source) match {
       case (Seq(), _, _) =>
         throw CodeWontBenefitFromOptimization("No operations chain : " + sourceAndOps)
       case (_, _, _: AbstractArrayStreamSource) if !transformers.isEmpty =>
-        // ok to transform any stream that starts with an array
+      // ok to transform any stream that starts with an array
       case (Seq(_), 0, _) =>
         throw CodeWontBenefitFromOptimization("Only one operations without closure is not enough to optimize : " + sourceAndOps)
       case (Seq(_), 1, _: ListStreamSource) =>
         throw CodeWontBenefitFromOptimization("List operations chains need at least 2 closures to make the optimization beneficial : " + sourceAndOps)
-      case 
-        (
-          Seq(
-            _: FilterWhileOp |
-            _: MaxOp |
-            _: MinOp |
-            _: SumOp |
-            _: ProductOp |
-            _: ToCollectionOp
-          ), 
-          1, 
-          _: RangeStreamSource
-        ) 
-        =>
+      case (
+        Seq(
+          _: FilterWhileOp |
+          _: MaxOp |
+          _: MinOp |
+          _: SumOp |
+          _: ProductOp |
+          _: ToCollectionOp
+          ),
+        1,
+        _: RangeStreamSource
+        ) =>
         throw CodeWontBenefitFromOptimization("This operations stream would not benefit from a while-loop-rewrite optimization : " + sourceAndOps)
       case _ =>
     }

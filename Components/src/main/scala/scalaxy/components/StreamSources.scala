@@ -9,10 +9,9 @@ package scalaxy.components
 import scala.reflect.api.Universe
 
 trait StreamSources
-extends Streams
-with StreamSinks
-with CommonScalaNames 
-{
+    extends Streams
+    with StreamSinks
+    with CommonScalaNames {
   val global: Universe
   import global._
   import definitions._
@@ -21,7 +20,7 @@ with CommonScalaNames
     def tree: Tree
     def array: Tree
     def componentType: Type
-    
+
     override def unwrappedTree = array
     override def privilegedDirection = None
     def emit(direction: TraversalDirection)(implicit loop: Loop) = {
@@ -46,9 +45,9 @@ with CommonScalaNames
             newInt(0)
         }
       )
-        
+
       val itemVar = newVariable("item$", currentOwner, pos, false, newApply(pos, aVar(), iVar()))
-        
+
       loop.preOuter += aVar.definition
       loop.preOuter += nVar.definition
       loop.preOuter += iVar.definition
@@ -58,7 +57,7 @@ with CommonScalaNames
         else
           binOp(iVar(), IntTpe.member(LT), nVar())
       )
-      
+
       loop.preInner += itemVar.definition
       loop.postInner += (
         if (reverseOrder)
@@ -73,41 +72,40 @@ with CommonScalaNames
       )
     }
   }
-  case class WrappedArrayStreamSource(tree: Tree, array: Tree, componentType: Type) 
-  extends AbstractArrayStreamSource 
-  with CanCreateArraySink
-  with SideEffectFreeStreamComponent
-  {
-    override def isResultWrapped = true 
+  case class WrappedArrayStreamSource(tree: Tree, array: Tree, componentType: Type)
+      extends AbstractArrayStreamSource
+      with CanCreateArraySink
+      with SideEffectFreeStreamComponent {
+    override def isResultWrapped = true
   }
-  
-  abstract class ExplicitCollectionStreamSource(val tree: Tree, items: List[Tree], val componentType: Type) 
-  extends AbstractArrayStreamSource {
-    val array = newArrayApply(newTypeTree(componentType), items:_*)
-    
+
+  abstract class ExplicitCollectionStreamSource(val tree: Tree, items: List[Tree], val componentType: Type)
+      extends AbstractArrayStreamSource {
+    val array = newArrayApply(newTypeTree(componentType), items: _*)
+
     override def analyzeSideEffectsOnStream(analyzer: SideEffectsAnalyzer) =
-      analyzer.analyzeSideEffects(tree, items:_*)
+      analyzer.analyzeSideEffects(tree, items: _*)
   }
-  case class ListStreamSource(tree: Tree, componentType: Type) 
-  extends StreamSource 
-  with CanCreateListSink
-  with SideEffectFreeStreamComponent {
+  case class ListStreamSource(tree: Tree, componentType: Type)
+      extends StreamSource
+      with CanCreateListSink
+      with SideEffectFreeStreamComponent {
     val list = tree // TODO 
-      
+
     override def unwrappedTree = list
     override def privilegedDirection = Some(FromLeft)
     def emit(direction: TraversalDirection)(implicit loop: Loop) = {
       import loop.{ currentOwner, transform }
       assert(direction == FromLeft)
-      
+
       val pos = list.pos
 
       val skipFirst = false // TODO
       val colTpe = list.tpe
-      
+
       val aVar = newVariable("list$", currentOwner, pos, true, transform(list))
       val itemVar = newVariable("item$", currentOwner, pos, false, newSelect(aVar(), headName))
-      
+
       loop.preOuter += aVar.definition
       loop.tests += (
         if ("1" == System.getenv("SCALACL_LIST_TEST_ISEMPTY")) // Safer, but 10% slower
@@ -115,7 +113,7 @@ with CommonScalaNames
         else
           newIsInstanceOf(aVar(), appliedType(NonEmptyListClass.asType.toType.typeConstructor, List(componentType)))
       )
-      
+
       loop.preInner += itemVar.definition
       loop.postInner += (
         typeCheck(
@@ -129,38 +127,38 @@ with CommonScalaNames
       new StreamValue(itemVar)
     }
   }
-  
-  case class RangeStreamSource(tree: Tree, from: Tree, to: Tree, byValue: Int, isUntil: Boolean) 
-  extends StreamSource 
-  with CanCreateVectorSink
-  with SideEffectFreeStreamComponent {
+
+  case class RangeStreamSource(tree: Tree, from: Tree, to: Tree, byValue: Int, isUntil: Boolean)
+      extends StreamSource
+      with CanCreateVectorSink
+      with SideEffectFreeStreamComponent {
     override def privilegedDirection = Some(FromLeft)
 
     def emit(direction: TraversalDirection)(implicit loop: Loop) = {
       assert(direction == FromLeft)
       import loop.{ currentOwner, transform }
       val pos = tree.pos
-      
+
       val fromVar = newVariable("from$", currentOwner, tree.pos, false, typeCheck(transform(from), IntTpe))
       val toVar = newVariable("to$", currentOwner, tree.pos, false, typeCheck(transform(to), IntTpe))
       val itemVar = newVariable("item$", currentOwner, tree.pos, true, fromVar())
       val itemVal = newVariable("item$val$", currentOwner, tree.pos, false, itemVar())
-      
+
       val size = {
         val span = intSub(toVar(), fromVar())
-        val width = if (isUntil) 
+        val width = if (isUntil)
           span
         else
           intAdd(span, newInt(1))
-        
+
         if (byValue == 1)
           width
         else
           intDiv(width, newInt(byValue))
       }
       val sizeVal = newVariable("outputSize$", currentOwner, tree.pos, false, size)
-      val iVar = newVariable("outputIndex$", currentOwner, tree.pos, true, newInt(0))//if (reverseOrder) intSub(outputSizeVar(), newInt(1)) else newInt(0))
-      val iVal = newVariable("i", currentOwner, tree.pos, true, iVar())//if (reverseOrder) intSub(outputSizeVar(), newInt(1)) else newInt(0))
+      val iVar = newVariable("outputIndex$", currentOwner, tree.pos, true, newInt(0)) //if (reverseOrder) intSub(outputSizeVar(), newInt(1)) else newInt(0))
+      val iVal = newVariable("i", currentOwner, tree.pos, true, iVar()) //if (reverseOrder) intSub(outputSizeVar(), newInt(1)) else newInt(0))
 
       loop.preOuter += fromVar.definition
       loop.preOuter += toVar.definition
@@ -182,10 +180,10 @@ with CommonScalaNames
       )
       loop.preInner += itemVal.definition // it's important to keep a non-mutable local reference !
       loop.preInner += (iVal.defIfUsed _)
-      
+
       loop.postInner += incrementIntVar(itemVar, newInt(byValue))
       loop.postInner += (() => iVal.ifUsed { incrementIntVar(iVar, newInt(1)) })
-      
+
       new StreamValue(
         value = itemVal,
         valueIndex = Some(iVal),
@@ -193,22 +191,21 @@ with CommonScalaNames
       )
     }
   }
-  case class OptionStreamSource(tree: Tree, componentOption: Option[Tree], onlyIfNotNull: Boolean, componentType: Type) 
-  extends StreamSource 
-  with CanCreateOptionSink
-  with SideEffectFreeStreamComponent 
-  {
+  case class OptionStreamSource(tree: Tree, componentOption: Option[Tree], onlyIfNotNull: Boolean, componentType: Type)
+      extends StreamSource
+      with CanCreateOptionSink
+      with SideEffectFreeStreamComponent {
     def emit(direction: TraversalDirection)(implicit loop: Loop) = {
       import loop.{ currentOwner, transform }
       val pos = tree.pos
-      
+
       loop.isLoop = false
-      
+
       val (valueVar: VarDef, isDefinedVar: VarDef, isAlwaysDefined: Boolean) = componentOption match {
         case Some(component) =>
           val valueVar = newVariable("value$", currentOwner, pos, false, transform(component))
-          val (isDefinedValue, isAlwaysDefined) = 
-            if (onlyIfNotNull && !isAnyVal(component.tpe)) 
+          val (isDefinedValue, isAlwaysDefined) =
+            if (onlyIfNotNull && !isAnyVal(component.tpe))
               component match {
                 case Literal(Constant(v)) =>
                   val isAlwaysDefined = v != null
@@ -216,7 +213,7 @@ with CommonScalaNames
                 case _ =>
                   (newIsNotNull(valueVar()), false)
               }
-            else 
+            else
               (newBool(true), true)
           val isDefinedVar = newVariable("isDefined$", currentOwner, pos, false, isDefinedValue)
           loop.preOuter += valueVar.definition
@@ -234,7 +231,7 @@ with CommonScalaNames
         loop.tests += isDefinedVar()
       } else
         loop.tests += newBool(true)
-      
+
       new StreamValue(
         value = valueVar,
         valueIndex = Some(() => newInt(0)),
@@ -242,28 +239,27 @@ with CommonScalaNames
           if (isAlwaysDefined)
             newInt(1)
           else
-            If(isDefinedVar(), newInt(1), newInt(0)) 
+            If(isDefinedVar(), newInt(1), newInt(0))
         })
       )
     }
   }
-  
-  case class ArrayApplyStreamSource(override val tree: Tree, components: List[Tree], override val componentType: Type) 
-  extends ExplicitCollectionStreamSource(tree, components, componentType) 
-  with CanCreateArraySink
-  {
-    override def isResultWrapped = false 
+
+  case class ArrayApplyStreamSource(override val tree: Tree, components: List[Tree], override val componentType: Type)
+      extends ExplicitCollectionStreamSource(tree, components, componentType)
+      with CanCreateArraySink {
+    override def isResultWrapped = false
   }
-  
-  case class SeqApplyStreamSource(override val tree: Tree, components: List[Tree], override val componentType: Type) 
-  extends ExplicitCollectionStreamSource(tree, components, componentType) with CanCreateListSink // default Seq implementation is List
-  
-  case class IndexedSeqApplyStreamSource(override val tree: Tree, components: List[Tree], override val componentType: Type) 
-  extends ExplicitCollectionStreamSource(tree, components, componentType) with CanCreateVectorSink // default IndexedSeq implementation is Vector
-  
-  case class ListApplyStreamSource(override val tree: Tree, components: List[Tree], override val componentType: Type) 
-  extends ExplicitCollectionStreamSource(tree, components, componentType) with CanCreateListSink
-  
+
+  case class SeqApplyStreamSource(override val tree: Tree, components: List[Tree], override val componentType: Type)
+    extends ExplicitCollectionStreamSource(tree, components, componentType) with CanCreateListSink // default Seq implementation is List
+
+  case class IndexedSeqApplyStreamSource(override val tree: Tree, components: List[Tree], override val componentType: Type)
+    extends ExplicitCollectionStreamSource(tree, components, componentType) with CanCreateVectorSink // default IndexedSeq implementation is Vector
+
+  case class ListApplyStreamSource(override val tree: Tree, components: List[Tree], override val componentType: Type)
+    extends ExplicitCollectionStreamSource(tree, components, componentType) with CanCreateListSink
+
   object StreamSource {
     object By {
       def unapply(treeOpt: Option[Tree]) = treeOpt match {
@@ -296,7 +292,7 @@ with CommonScalaNames
         OptionStreamSource(tree, None, onlyIfNotNull = true, componentType)
       case IntRange(from, to, By(byValue), isUntil, filters) =>
         assert(filters.isEmpty, "Filters are not empty !!!")
-        RangeStreamSource(tree, from, to, byValue, isUntil/*, filters*/)
+        RangeStreamSource(tree, from, to, byValue, isUntil /*, filters*/ )
     }
   }
 }

@@ -39,7 +39,7 @@ trait WithRuntimeUniverse {
   import global._
 
   def verbose = false
-  
+
   def withSymbol[T <: Tree](sym: Symbol, tpe: Type = NoType)(tree: T): T = tree
   def typed[T <: Tree](tree: T): T = tree
   def inferImplicitValue(pt: Type): Tree =
@@ -48,9 +48,9 @@ trait WithRuntimeUniverse {
   def setType(sym: Symbol, tpe: Type): Symbol = sym
   def setType(tree: Tree, tpe: Type): Tree = tree
   def setPos(tree: Tree, pos: Position): Tree = tree
-  
+
   lazy val toolbox = cm.mkToolBox()
-  def typeCheck(x: Expr[_]): Tree = 
+  def typeCheck(x: Expr[_]): Tree =
     typeCheck(x.tree)
   def typeCheck(tree: Tree, pt: Type = WildcardType): Tree = {
     val ttree = tree.asInstanceOf[toolbox.u.Tree]
@@ -59,10 +59,11 @@ trait WithRuntimeUniverse {
     else {
       try {
         toolbox.typeCheck(
-          ttree, 
+          ttree,
           pt.asInstanceOf[toolbox.u.Type])
-      } catch { case ex: Throwable =>
-        throw new RuntimeException(s"Failed to typeCheck($tree, $pt): $ex", ex)
+      } catch {
+        case ex: Throwable =>
+          throw new RuntimeException(s"Failed to typeCheck($tree, $pt): $ex", ex)
       }
     }.asInstanceOf[Tree]
   }

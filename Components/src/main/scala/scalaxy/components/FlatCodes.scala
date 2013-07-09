@@ -34,20 +34,19 @@ import scala.reflect.ClassTag
 
 object FlatCodes {
   def EmptyFlatCode[T] = FlatCode[T](Seq(), Seq(), Seq())
-  
+
   def merge[T](fcs: FlatCode[T]*)(f: Seq[T] => Seq[T]): FlatCode[T] =
     fcs.reduceLeft(_ ++ _).mapValues(f)
- 
+
 }
 
 case class FlatCode[T](
-  /// External functions that are referenced by statements and / or values 
-  outerDefinitions: Seq[T] = Seq(), 
-  /// List of variable definitions and other instructions (if statements, do / while loops...)
-  statements: Seq[T] = Seq(), 
-  /// Final values of the code in a "flattened tuple" style
-  values: Seq[T] = Seq()
-) {
+    /// External functions that are referenced by statements and / or values 
+    outerDefinitions: Seq[T] = Seq(),
+    /// List of variable definitions and other instructions (if statements, do / while loops...)
+    statements: Seq[T] = Seq(),
+    /// Final values of the code in a "flattened tuple" style
+    values: Seq[T] = Seq()) {
   def map[V](f: T => V): FlatCode[V] =
     FlatCode[V](
       outerDefinitions = outerDefinitions.map(f),
@@ -61,26 +60,26 @@ case class FlatCode[T](
       statements = f(statements),
       values = f(values)
     )
-    
+
   def mapEachValue(f: T => Seq[T]): FlatCode[T] =
     copy(values = values.flatMap(f))
-  
+
   def mapValues(f: Seq[T] => Seq[T]): FlatCode[T] =
     copy(values = f(values))
-  
+
   def ++(fc: FlatCode[T]) =
     FlatCode(outerDefinitions ++ fc.outerDefinitions, statements ++ fc.statements, values ++ fc.values)
 
   def >>(fc: FlatCode[T]) =
-        FlatCode(outerDefinitions ++ fc.outerDefinitions, statements ++ fc.statements ++ values, fc.values)
+    FlatCode(outerDefinitions ++ fc.outerDefinitions, statements ++ fc.statements ++ values, fc.values)
 
   def noValues =
-        FlatCode(outerDefinitions, statements ++ values, Seq())
+    FlatCode(outerDefinitions, statements ++ values, Seq())
 
   def addOuters(outerDefs: Seq[T]) =
     copy(outerDefinitions = outerDefinitions ++ outerDefs)
-    
-  def addStatements(stats: Seq[T]) = 
+
+  def addStatements(stats: Seq[T]) =
     copy(statements = statements ++ stats)
 
   def printDebug(name: String = "") = {
@@ -92,26 +91,26 @@ case class FlatCode[T](
     println("\t--")
     pt(values)
   }
-  
-  def flatMap[V : ClassTag](f: T => FlatCode[V]): FlatCode[V] = 
-  {
-    val Array(convDefs, convStats, convVals) =
-      Array(outerDefinitions, statements, values).map(_ map f)
-    
-    val outerDefinitions2 = 
-      Seq(convDefs, convStats, convVals).flatMap(_.flatMap(_.outerDefinitions)).distinct.toArray.sortBy(_.toString.startsWith("#"))
-    
-    val statements2 = 
-      Seq(convStats, convVals).flatMap(_.flatMap(_.statements))
-    
-    val values2: Seq[V] = 
-      convVals.flatMap(_.values)
-      
-    FlatCode[V](
-      outerDefinitions2,
-      statements2,
-      values2
-    )
-  }
+
+  def flatMap[V: ClassTag](f: T => FlatCode[V]): FlatCode[V] =
+    {
+      val Array(convDefs, convStats, convVals) =
+        Array(outerDefinitions, statements, values).map(_ map f)
+
+      val outerDefinitions2 =
+        Seq(convDefs, convStats, convVals).flatMap(_.flatMap(_.outerDefinitions)).distinct.toArray.sortBy(_.toString.startsWith("#"))
+
+      val statements2 =
+        Seq(convStats, convVals).flatMap(_.flatMap(_.statements))
+
+      val values2: Seq[V] =
+        convVals.flatMap(_.values)
+
+      FlatCode[V](
+        outerDefinitions2,
+        statements2,
+        values2
+      )
+    }
 }
 

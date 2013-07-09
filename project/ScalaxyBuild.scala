@@ -54,7 +54,6 @@ object Scalaxy extends Build {
     Defaults.defaultSettings ++
     infoSettings ++
     sonatypeSettings ++
-    scalariformSettings ++
     seq(lsSettings: _*) ++
     Seq(
       javacOptions ++= Seq("-Xlint:unchecked"),
@@ -166,7 +165,7 @@ object Scalaxy extends Build {
       ))
 
   lazy val components =
-    Project(id = "scalaxy-components", base = file("Components"), settings = reflectSettings)
+    Project(id = "scalaxy-components", base = file("Components"), settings = reflectSettings ++ scalariformSettings)
 
   lazy val compiletsPlugin =
     Project(

@@ -8,15 +8,14 @@ package scalaxy.components
 
 import scala.reflect.api.Universe
 
-trait Streams 
-extends TreeBuilders 
-with TupleAnalysis 
-with CodeAnalysis 
-{
+trait Streams
+    extends TreeBuilders
+    with TupleAnalysis
+    with CodeAnalysis {
   val global: Universe
   import global._
   import definitions._
-  
+
   def warning(pos: Position, msg: String): Unit
 
   trait LocalContext {
@@ -27,12 +26,12 @@ with CodeAnalysis
     type OptTreeGen = () => Option[Tree]
     class TreeGenList {
       var data = Seq[Either[Tree, OptTreeGen]]()
-      def +=(tree: Tree) = 
+      def +=(tree: Tree) =
         data ++= Seq(Left(tree))
-      
-      def ++=(trees: Seq[Tree]) = 
+
+      def ++=(trees: Seq[Tree]) =
         data ++= trees.map(Left(_))
-      
+
       def +=(treeGen: OptTreeGen) =
         data ++= Seq(Right(treeGen))
 
@@ -40,7 +39,7 @@ with CodeAnalysis
         for (treeGen <- treeGenOpt)
           data ++= Seq(Right(() => Some(treeGen())))
 
-      def toSeq: Seq[Tree] = data flatMap(_ match {
+      def toSeq: Seq[Tree] = data flatMap (_ match {
         case Left(tree) => Some(tree)
         case Right(treeGen) => treeGen()
       })
@@ -48,44 +47,44 @@ with CodeAnalysis
     }
     val preOuter = new TreeGenList
     val tests = new TreeGenList
-    
+
     class Inners {
       val pre = new TreeGenList
       val core = new TreeGenList
       val post = new TreeGenList
-      
-      def toList = 
+
+      def toList =
         pre.toList ++ core.toList ++ post.toList
     }
     protected val rootInners = new Inners
     protected var inners = rootInners
-    
+
     def innerIf(cond: TreeGen) =
       innerComposition(sub => {
         typeCheck(
           If(
-            cond(), 
-            Block(sub, EmptyTree), 
+            cond(),
+            Block(sub, EmptyTree),
             EmptyTree
           ),
           UnitTpe
         )
       })
-    
+
     def innerComposition(composer: List[Tree] => Tree) = {
       val sub = new Inners
-      inners.core += (() => Some(composer(sub.toList))) 
+      inners.core += (() => Some(composer(sub.toList)))
       inners = sub
     }
     def preInner = inners.pre
     def inner = inners.core
     var isLoop = true
     def postInner = inners.post
-    
+
     //val preInner = new TreeGenList
     //val inner = new TreeGenList
     //val postInner = new TreeGenList
-    
+
     val postOuter = new TreeGenList
 
     class SubContext(list: TreeGenList) extends LocalContext {
@@ -95,7 +94,7 @@ with CodeAnalysis
     }
     val innerContext = new SubContext(preInner)
     val outerContext = new SubContext(preOuter)
-    
+
     def tree: Tree = {
       val postOuterSeq = postOuter.toSeq
       val (postStats, postVal) =
@@ -111,21 +110,21 @@ with CodeAnalysis
       )
       val ret = Block(
         preOuter.toList ++
-        Seq(
-          if (isLoop)
-            whileLoop(
+          Seq(
+            if (isLoop)
+              whileLoop(
               owner = currentOwner,
               pos = pos,
               cond = cond,
               body = body
             )
-          else
-            typeCheck(
-              If(cond, body, EmptyTree),
-              UnitTpe
-            )
-        ) ++
-        postStats,
+            else
+              typeCheck(
+                If(cond, body, EmptyTree),
+                UnitTpe
+              )
+          ) ++
+            postStats,
         postVal
       )
       typed { ret }
@@ -150,9 +149,9 @@ with CodeAnalysis
   class DefaultTupleValue(val tpe: Type, val elements: IdentGen*) extends TupleValue {
     if (elements.isEmpty && tpe != UnitTpe)
       throw new RuntimeException("Invalid elements with tpe " + tpe + " : " + elements.mkString(", "))
-      
+
     def this(vd: VarDef) = this(vd.tpe, vd)
-    
+
     override def apply(): Ident = {
       if (elements.size != 1)
         throw new UnsupportedOperationException("TODO tpe " + tpe + ", elements = " + elements.mkString(", "))
@@ -162,10 +161,10 @@ with CodeAnalysis
     val tupleInfo = getTupleInfo(tpe)
     def fibersCount = tupleInfo.componentSize
     def componentsCount = elements.size
-    
+
     protected def hasOneFiber =
       fibersCount == 1 && elements.size == 1
-        
+
     def subValue(fiberOffset: Int, fiberLength: Int)(implicit context: LocalContext): IdentGen =
       if (fiberLength == 1 && fiberOffset == 0 && hasOneFiber)
         elements(0)
@@ -179,20 +178,19 @@ with CodeAnalysis
       else
         throw new RuntimeException("not implemented")
   }
-  
+
   implicit def varDef2TupleValue(value: VarDef) =
     new DefaultTupleValue(value.definition.tpe, value)
-    
+
   case class StreamValue(
-    value: TupleValue, 
-    extraFirstValue: Option[TupleValue] = None,
-    valueIndex: Option[TreeGen] = None, 
-    valuesCount: Option[TreeGen] = None
-  ) {
+      value: TupleValue,
+      extraFirstValue: Option[TupleValue] = None,
+      valueIndex: Option[TreeGen] = None,
+      valuesCount: Option[TreeGen] = None) {
     def tpe = value.tpe
     def withoutSizeInfo = copy(valueIndex = None, valuesCount = None)
   }
-   
+
   sealed trait TraversalDirection
   case object FromLeft extends TraversalDirection
   case object FromRight extends TraversalDirection
@@ -206,13 +204,13 @@ with CodeAnalysis
   case object NoResult extends ResultKind
   case object ScalarResult extends ResultKind
   case object StreamResult extends ResultKind
-  
+
   case class CanChainResult(canChain: Boolean, reason: Option[String])
   trait StreamChainTestable {
     def consumesExtraFirstValue: Boolean = false
     def producesExtraFirstValue: Boolean = false
     def privilegedDirection: Option[TraversalDirection] = None
-    
+
     def canChainAfter(previous: StreamChainTestable, privilegedDirection: Option[TraversalDirection]) = {
       //println("previous.producesExtraFirstValue = " + previous.producesExtraFirstValue + ", this.consumesExtraFirstValue = " + consumesExtraFirstValue)
       if (previous.producesExtraFirstValue && !consumesExtraFirstValue)
@@ -223,37 +221,37 @@ with CodeAnalysis
         CanChainResult(true, None)
     }
   }
-  
+
   class SideEffectsAnalyzer {
-    
+
     def analyzeSideEffects(base: Tree, trees: Tree*): SideEffects = {
       val flagger = createSideEffectsEvaluator(base, cached = false)
       trees.map(flagger.evaluate(_)).foldLeft(sideEffectFreeAnalysis)(_ ++ _)
     }
-      
-    def sideEffectFreeAnalysis: SideEffects = 
+
+    def sideEffectFreeAnalysis: SideEffects =
       Seq()
-      
-    def isSideEffectFree(analysis: SideEffects): Boolean = 
-      analysis.isEmpty 
+
+    def isSideEffectFree(analysis: SideEffects): Boolean =
+      analysis.isEmpty
   }
   trait SideEffectFreeStreamComponent extends StreamComponent {
     override def analyzeSideEffectsOnStream(analyzer: SideEffectsAnalyzer) =
       analyzer.sideEffectFreeAnalysis
   }
-  
+
   trait StreamComponent extends StreamChainTestable {
     def tree: Tree
-    
+
     def closuresCount = 0
-    
+
     /// Used to chain stream detection : give the unwrapped content of the tree
     def unwrappedTree = tree
     def analyzeSideEffectsOnStream(analyzer: SideEffectsAnalyzer): SideEffects
   }
   trait CanCreateStreamSink extends StreamChainTestable {
     override def consumesExtraFirstValue: Boolean = true
-    
+
     def createStreamSink(expectedType: Type, componentTpe: Type, outputSize: Option[TreeGen]): StreamSink
   }
   trait StreamSource extends StreamComponent {
@@ -263,39 +261,36 @@ with CodeAnalysis
     def order: Order
     def reverses = false
     def resultKind: ResultKind = StreamResult
-    
+
     def transform(value: StreamValue)(implicit loop: Loop): StreamValue
   }
   trait StreamSink extends SideEffectFreeStreamComponent {
     def output(value: StreamValue, expectedType: Type)(implicit loop: Loop): Unit
   }
   case class Stream(
-    source: StreamSource, 
-    transformers: Seq[StreamTransformer]
-  )
+    source: StreamSource,
+    transformers: Seq[StreamTransformer])
   case class SideEffectFullComponent(
     component: StreamComponent,
     sideEffects: SideEffects,
-    preventedOptimizations: Boolean
-  )
-  case class CodeWontBenefitFromOptimization(reason: String) 
-  extends UnsupportedOperationException(reason)
-  
+    preventedOptimizations: Boolean)
+  case class CodeWontBenefitFromOptimization(reason: String)
+    extends UnsupportedOperationException(reason)
+
   case class BrokenOperationsStreamException(
-    msg: String, 
-    sourceAndOps: Seq[StreamComponent], 
-    componentsWithSideEffects: Seq[SideEffectFullComponent]
-  ) extends UnsupportedOperationException(msg)
-  
+    msg: String,
+    sourceAndOps: Seq[StreamComponent],
+    componentsWithSideEffects: Seq[SideEffectFullComponent]) extends UnsupportedOperationException(msg)
+
   def warnSideEffect(tree: Tree) = {
     warning(tree.pos, "Beware of side-effects in operations streams." + (if (verbose) " (" + tree + ")" else ""))
   }
   def assembleStream(stream: Stream, outerTree: Tree, transform: Tree => Tree, pos: Position, currentOwner: Symbol): Tree = {
     val Stream(source, transformers) = stream
-    
+
     val sourceAndOps = source +: transformers
-    
-    val sinkCreatorOpt = 
+
+    val sinkCreatorOpt =
       if (transformers.last.resultKind == StreamResult)
         sourceAndOps.collect({ case ccss: CanCreateStreamSink => ccss }).lastOption match {
           case Some(sinkCreator) =>
@@ -305,33 +300,34 @@ with CodeAnalysis
         }
       else
         None
-        
+
     implicit val loop = new Loop(pos, currentOwner, transform)
     var direction: Option[TraversalDirection] = None // TODO choose depending on preferred directions...
-    
+
     val analyzer = new SideEffectsAnalyzer
-    
-    val brokenChain = 
+
+    val brokenChain =
       sourceAndOps.
         map(comp => (comp, comp.analyzeSideEffectsOnStream(analyzer))).
         dropWhile(_._2.isEmpty)
-    
+
     val componentsWithSideEffects = brokenChain.filter(!_._2.isEmpty)
-    
+
     if (brokenChain.size > 1) {
       throw BrokenOperationsStreamException(
-        "Operations stream broken by side-effects", 
-        sourceAndOps, 
-        componentsWithSideEffects.zipWithIndex.map({ case ((comp, se), i) => 
-          val prevented = i != componentsWithSideEffects.size - 1
-          SideEffectFullComponent(comp, se, prevented) 
+        "Operations stream broken by side-effects",
+        sourceAndOps,
+        componentsWithSideEffects.zipWithIndex.map({
+          case ((comp, se), i) =>
+            val prevented = i != componentsWithSideEffects.size - 1
+            SideEffectFullComponent(comp, se, prevented)
         })
       )
     }
     if (verbose)
       for ((comp, sideEffects) <- componentsWithSideEffects; sideEffect <- sideEffects)
         warnSideEffect(sideEffect)
-    
+
     for (Seq(a, b) <- (sourceAndOps ++ sinkCreatorOpt.toSeq).sliding(2, 1)) {
       val CanChainResult(canChain, reason) = b.canChainAfter(a, direction)
       if (!canChain) {
@@ -339,14 +335,14 @@ with CodeAnalysis
       }
       direction = b.privilegedDirection.orElse(direction)
     }
-    
+
     var value = source.emit(direction.getOrElse(FromLeft))
-    
+
     for (transformer <- transformers)
       value = transformer.transform(value)
-      
+
     for (sinkCreator <- sinkCreatorOpt) {
-      val expectedType = outerTree.tpe//sourceAndOps.last.tree.tpe
+      val expectedType = outerTree.tpe //sourceAndOps.last.tree.tpe
       val sink = sinkCreator.createStreamSink(expectedType, value.value.tpe, value.valuesCount)
       sink.output(value, expectedType)
     }

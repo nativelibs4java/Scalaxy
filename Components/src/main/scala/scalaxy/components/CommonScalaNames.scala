@@ -22,7 +22,7 @@ trait CommonScalaNames {
     assert(str != null)
     newTermName(NameTransformer.encode(str))
   }
-  
+
   lazy val ADD = encode("+")
   lazy val AND = encode("&")
   lazy val ASR = encode(">>")
@@ -50,7 +50,7 @@ trait CommonScalaNames {
   lazy val XOR = encode("^")
   lazy val ZAND = encode("&&")
   lazy val ZOR = encode("||")
-  
+
   lazy val THIS = newTermName("this")
   lazy val SELF = newTermName("self")
 
@@ -118,48 +118,47 @@ trait CommonScalaNames {
   def C(name: String) = rootMirror.staticClass(name)
   def M(name: String) = rootMirror.staticModule(name)
   def P(name: String) = rootMirror.staticPackage(name)
-  
+
   lazy val ScalaReflectPackage = P("scala.reflect")
   lazy val ScalaCollectionPackage = P("scala.collection")
   lazy val ScalaMathPackage = P("scala.math")
   lazy val ScalaMathPackageClass =
-    ScalaMathPackage.moduleClass//.asModule.moduleClass
+    ScalaMathPackage.moduleClass //.asModule.moduleClass
   lazy val ScalaMathCommonClass = C("scala.MathCommon")
-  
-  lazy val SeqModule          = M("scala.collection.Seq")
-  lazy val SeqClass           = C("scala.collection.Seq")
-  lazy val SetModule          = M("scala.collection.Set")
-  lazy val SetClass           = C("scala.collection.Set")
-  lazy val VectorClass        = C("scala.collection.Set")
-  lazy val ListClass          = C("scala.List")
-  lazy val ImmutableListClass = C("scala.collection.immutable.List")
-  lazy val NonEmptyListClass  = C("scala.collection.immutable.$colon$colon")
-  lazy val IndexedSeqModule   = M("scala.collection.IndexedSeq")
-  lazy val IndexedSeqClass    = C("scala.collection.IndexedSeq")
-  lazy val OptionModule       = M("scala.Option")
-  lazy val OptionClass        = C("scala.Option")
-  lazy val SomeModule         = M("scala.Some")
-  lazy val NoneModule         = M("scala.None")
-  lazy val StringOpsClass     = C("scala.collection.immutable.StringOps")
-  lazy val ArrayOpsClass      = C("scala.collection.mutable.ArrayOps")
 
-    
-  lazy val VectorBuilderClass         = C("scala.collection.immutable.VectorBuilder")
-  lazy val ListBufferClass            = C("scala.collection.mutable.ListBuffer")
-  lazy val ArrayBufferClass           = C("scala.collection.mutable.ArrayBuffer")
-  lazy val WrappedArrayBuilderClass   = C("scala.collection.mutable.WrappedArrayBuilder")
-  lazy val RefArrayBuilderClass       = C("scala.collection.mutable.ArrayBuilder.ofRef")
-  lazy val RefArrayOpsClass           = C("scala.collection.mutable.ArrayOps.ofRef")
-  lazy val SetBuilderClass            = C("scala.collection.mutable.SetBuilder")
-  
-  lazy val RichWrappers: Set[Symbol] = 
+  lazy val SeqModule = M("scala.collection.Seq")
+  lazy val SeqClass = C("scala.collection.Seq")
+  lazy val SetModule = M("scala.collection.Set")
+  lazy val SetClass = C("scala.collection.Set")
+  lazy val VectorClass = C("scala.collection.Set")
+  lazy val ListClass = C("scala.List")
+  lazy val ImmutableListClass = C("scala.collection.immutable.List")
+  lazy val NonEmptyListClass = C("scala.collection.immutable.$colon$colon")
+  lazy val IndexedSeqModule = M("scala.collection.IndexedSeq")
+  lazy val IndexedSeqClass = C("scala.collection.IndexedSeq")
+  lazy val OptionModule = M("scala.Option")
+  lazy val OptionClass = C("scala.Option")
+  lazy val SomeModule = M("scala.Some")
+  lazy val NoneModule = M("scala.None")
+  lazy val StringOpsClass = C("scala.collection.immutable.StringOps")
+  lazy val ArrayOpsClass = C("scala.collection.mutable.ArrayOps")
+
+  lazy val VectorBuilderClass = C("scala.collection.immutable.VectorBuilder")
+  lazy val ListBufferClass = C("scala.collection.mutable.ListBuffer")
+  lazy val ArrayBufferClass = C("scala.collection.mutable.ArrayBuffer")
+  lazy val WrappedArrayBuilderClass = C("scala.collection.mutable.WrappedArrayBuilder")
+  lazy val RefArrayBuilderClass = C("scala.collection.mutable.ArrayBuilder.ofRef")
+  lazy val RefArrayOpsClass = C("scala.collection.mutable.ArrayOps.ofRef")
+  lazy val SetBuilderClass = C("scala.collection.mutable.SetBuilder")
+
+  lazy val RichWrappers: Set[Symbol] =
     Array("Byte", "Short", "Int", "Char", "Long", "Float", "Double", "Boolean").
-    map(n => C("scala.runtime.Rich" + n)).toSet
-  
+      map(n => C("scala.runtime.Rich" + n)).toSet
+
   lazy val CanBuildFromClass = C("scala.collection.generic.CanBuildFrom")
 
   lazy val ArrayIndexOutOfBoundsExceptionClass = C("java.lang.ArrayIndexOutOfBoundsException")
-  
+
   lazy val primArrayNames = Array(
     (IntTpe, "ofInt"),
     (LongTpe, "ofLong"),
@@ -171,15 +170,15 @@ trait CommonScalaNames {
     (DoubleTpe, "ofDouble"),
     (UnitTpe, "ofUnit")
   )
-  
-  lazy val primArrayBuilderClasses = primArrayNames.map { 
-    case (sym, n) => 
-      (sym, C("scala.collection.mutable.ArrayBuilder." + n)) 
+
+  lazy val primArrayBuilderClasses = primArrayNames.map {
+    case (sym, n) =>
+      (sym, C("scala.collection.mutable.ArrayBuilder." + n))
   } toMap
 
-  lazy val primArrayOpsClasses = primArrayNames.map { 
-    case (sym, n) => 
-      (sym, C("scala.collection.mutable.ArrayOps." + n)) 
+  lazy val primArrayOpsClasses = primArrayNames.map {
+    case (sym, n) =>
+      (sym, C("scala.collection.mutable.ArrayOps." + n))
   } toMap
 
 }

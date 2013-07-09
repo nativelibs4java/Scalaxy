@@ -37,14 +37,13 @@ import scala.reflect.NameTransformer
 import scala.reflect.api.Universe
 
 trait TupleAnalysis
-extends MiscMatchers
-   with TreeBuilders
-{
+    extends MiscMatchers
+    with TreeBuilders {
   val global: Universe
 
   import global._
   import definitions._
-  
+
   case class TupleInfo(tpe: Type, components: Seq[TupleInfo]) {
     assert(tpe != null, "null type in TupleInfo")
     lazy val flattenTypes: Seq[Type] = {
@@ -73,14 +72,14 @@ extends MiscMatchers
     }
   }
   private val tupleInfos = new scala.collection.mutable.HashMap[Type, TupleInfo]
-  
+
   def getTupleInfo(tpe: Type): TupleInfo = {
     assert(tpe != null, "null type in getTupleInfo")
     val actualTpe = normalize(tpe)
     tupleInfos.getOrElseUpdate(
-      actualTpe, 
-      if (isUnit(actualTpe)) 
-        TupleInfo(UnitTpe, Seq()) 
+      actualTpe,
+      if (isUnit(actualTpe))
+        TupleInfo(UnitTpe, Seq())
       else {
         actualTpe match {
           case t: TypeRef =>
@@ -88,7 +87,7 @@ extends MiscMatchers
               TupleInfo(t, t.args.map(getTupleInfo))
             else
               TupleInfo(t, Seq())
-          case NoType => 
+          case NoType =>
             TupleInfo(NoType, Seq())
           case _ =>
             throw new RuntimeException("Unhandled type : " + tpe + " (" + actualTpe + ": " + Option(actualTpe).map(_.getClass.getName) + ")")
@@ -98,19 +97,19 @@ extends MiscMatchers
       }
     )
   }
-  def flattenTypes(tpe: Type): Seq[Type] = 
+  def flattenTypes(tpe: Type): Seq[Type] =
     getTupleInfo(tpe).flattenTypes
-  
-  def flattenFiberPaths(tpe: Type): Seq[List[Int]] = 
+
+  def flattenFiberPaths(tpe: Type): Seq[List[Int]] =
     flattenFiberPaths(getTupleInfo(tpe))
-  
-  def flattenFiberPaths(info: TupleInfo): Seq[List[Int]] = { 
+
+  def flattenFiberPaths(info: TupleInfo): Seq[List[Int]] = {
     val TupleInfo(_, components) = info
     if (components.isEmpty)
       Seq(Nil)
     else
       components.map(flattenFiberPaths).zipWithIndex flatMap {
-        case (paths, i) => paths.map(path => i :: path) 
+        case (paths, i) => paths.map(path => i :: path)
       }
   }
   def getType(tree: Tree) = {
@@ -123,10 +122,10 @@ extends MiscMatchers
       tree.tpe
     }
   }
-  def applyFiberPath(rootGen: TreeGen, path: List[Int]): (Tree, Type) = { 
+  def applyFiberPath(rootGen: TreeGen, path: List[Int]): (Tree, Type) = {
     applyFiberPath(rootGen, rootGen().tpe, path)
   }
-  
+
   def applyFiberPath(rootGen: TreeGen, rootTpe: Type, path: List[Int]): (Tree, Type) = {
     def sub(invertedPath: List[Int]): (Tree, Type) = invertedPath match {
       case Nil =>
@@ -135,7 +134,7 @@ extends MiscMatchers
       case i :: rest =>
         val (inner, innerTpe) = applyFiberPath(rootGen, rootTpe, rest)
         val name = N("_" + (i + 1))
-        
+
         //println("Getting member " + i + " of (" + inner + ": " + inner.tpe + ") ; invertedPath = " + invertedPath)
         assert(innerTpe != NoType, "Cannot apply tuple path on untyped tree")
         val info = getTupleInfo(innerTpe)
@@ -144,16 +143,16 @@ extends MiscMatchers
         //println(s"innerTpe($innerTpe).member(name($name)) = sym($sym: ${sym.typeSignature})")
         // TODO typeCheck?
         //typeCheck
-        
+
         (
           Select(inner, name),
           info.components(i).tpe
         )
-        
+
     }
     sub(path.reverse)
   }
-  
+
   def getComponentOffsetAndSizeOfIthMember(tpe: Type, i: Int) = {
     val TupleInfo(_, components) = getTupleInfo(tpe)
     (
@@ -161,20 +160,20 @@ extends MiscMatchers
       components(i).componentSize
     )
   }
-  
+
   /**
    * Phases :
    * - unique renaming
    * - tuple cartography (map symbols and treeId to TupleSlices : x._2 will be checked against x ; if is x's symbol is mapped, the resulting slice will be composed and flattened
    * - tuple + block flattening (gives (Seq[Tree], Seq[Tree]) result)
    */
-   // separate pass should return symbolsDefined, symbolsUsed
-   // DefTree vs. RefTree
+  // separate pass should return symbolsDefined, symbolsUsed
+  // DefTree vs. RefTree
 
   case class TupleSlice(baseSymbol: Symbol, sliceOffset: Int, sliceLength: Int) {
     def subSlice(offset: Int, length: Int) =
       TupleSlice(baseSymbol, sliceOffset + offset, length)
-    
+
     def toTreeGen(analyzer: TupleAnalyzer): TreeGen = () => {
       val info = getTupleInfo(baseSymbol.typeSignature)
       val rootTpe = baseSymbol.typeSignature
@@ -223,15 +222,14 @@ extends MiscMatchers
         }
         Some(ret.toList)
       case _ =>
-        throw new RuntimeException("Not a bound tuple : " + tree + " (" + tree.getClass.getName + ")")//\n\tnodes = " + nodeToString(tree))
+        throw new RuntimeException("Not a bound tuple : " + tree + " (" + tree.getClass.getName + ")") //\n\tnodes = " + nodeToString(tree))
         //System.exit(1)
         None
     }
   }
   class TupleAnalyzer(tree: Tree) {
-    
 
-    var treeTupleSlices = new scala.collection.mutable.HashMap[(/*Int,*/ Tree), TupleSlice]()
+    var treeTupleSlices = new scala.collection.mutable.HashMap[( /*Int,*/ Tree), TupleSlice]()
     //private var symbolTupleSlices = new scala.collection.mutable.HashMap[Symbol, TupleSlice]()
     var symbolTupleSlices = new scala.collection.mutable.HashMap[Symbol, TupleSlice]()
 
@@ -249,17 +247,17 @@ extends MiscMatchers
       //assert(info.componentSize == 1, "Invalid multi-fibers slice for symbol " + sym + " (" + info.componentSize + " fibers)")
       TupleSlice(sym, 0, info.componentSize)
     }
-    
+
     def getTreeSlice(tree: Tree, recursive: Boolean = false): Option[TupleSlice] = {
-      val direct = symbolTupleSlices.get(tree.symbol).orElse(treeTupleSlices.get((/*tree.id, */tree)))
+      val direct = symbolTupleSlices.get(tree.symbol).orElse(treeTupleSlices.get(( /*tree.id, */ tree)))
       if (recursive && direct != None)
         getSymbolSlice(direct.get.baseSymbol, recursive).orElse(direct)
       else
         direct.orElse(
-          if (tree.symbol == null || 
-            !tree.symbol.isTerm ||//.getClass != classOf[TermSymbol] || // not isInstanceOf ! We don't want ModuleSymbol nor MethodSymbol here, which are both TermSymbol subclasses 
-            tree.tpe == null || tree.tpe == NoType) 
-            None 
+          if (tree.symbol == null ||
+            !tree.symbol.isTerm || //.getClass != classOf[TermSymbol] || // not isInstanceOf ! We don't want ModuleSymbol nor MethodSymbol here, which are both TermSymbol subclasses 
+            tree.tpe == null || tree.tpe == NoType)
+            None
           else {
             //println("Created slice for symbol " + tree.symbol + " (tree = " + tree + ", symbol.class = " + tree.symbol.getClass.getName + ")")
             Some(createTupleSlice(tree.symbol, tree.tpe))
@@ -267,7 +265,7 @@ extends MiscMatchers
           }
         )
     }
-    
+
     def setSlice(sym: Symbol, slice: TupleSlice) = {
       assert(sym != slice.baseSymbol, "Invalid self-slice for symbol " + sym)
       //println("Setting slice " + slice + " for symbol " + sym)
@@ -279,7 +277,7 @@ extends MiscMatchers
       val info = getTupleInfo(slice.baseSymbol.typeSignature)
       val n = info.flattenPaths.size
       assert(slice.sliceOffset + slice.sliceLength <= n, "invalid slice for type " + tree.tpe + " : " + slice + ", flat types = " + info.flattenTypes)
-      treeTupleSlices((/*tree.id, */tree)) = slice
+      treeTupleSlices(( /*tree.id, */ tree)) = slice
       tree match {
         case vd: ValDef =>
           symbolTupleSlices(tree.symbol) = slice
@@ -331,15 +329,15 @@ extends MiscMatchers
           case TupleComponent(target, i) if target != null =>
             super.traverse(tree)
             val (componentsOffset, componentCount) = getComponentOffsetAndSizeOfIthMember(target.tpe, i)
-            
+
             //println("Identified tuple component " + i + " of " + target)
             getTreeSlice(target) match {
               case Some(slice) =>
                 //println("\ttarget got slice " + slice)
                 setSlice(tree, TupleSlice(slice.baseSymbol, componentsOffset, componentCount))
               case _ =>
-                //println("No tuple slice symbol info for tuple component i = " + i + " : " + target + "\n\t-> " + nodeToStringNoComment(target))
-                //println("\ttree : " + nodeToStringNoComment(tree))
+              //println("No tuple slice symbol info for tuple component i = " + i + " : " + target + "\n\t-> " + nodeToStringNoComment(target))
+              //println("\ttree : " + nodeToStringNoComment(tree))
             }
           case Typed(expr, tpt) =>
             super.traverse(tree)
@@ -353,21 +351,21 @@ extends MiscMatchers
       }
       // TODO: Understand why we can't just use Tree param types: getting error:
       // "Parameter type in structural refinement may not refer to an abstract type defined outside that refinement"
-      def propagateSlice(aSource: AnyRef, aDestination: AnyRef) = {//source: Tree, destination: Tree) = {
+      def propagateSlice(aSource: AnyRef, aDestination: AnyRef) = { //source: Tree, destination: Tree) = {
         val source = aSource.asInstanceOf[Tree]
         val destination = aDestination.asInstanceOf[Tree]
         getTreeSlice(source) match {
           case Some(slice) =>
             setSlice(destination, slice)
-            //println("Propagated slice " + slice + " from " + source + " to " + destination)
+          //println("Propagated slice " + slice + " from " + source + " to " + destination)
           case _ =>
-        } 
+        }
       }
     }.traverse(tree)
 
     //println("treeTupleSlices = \n\t" + treeTupleSlices.mkString("\n\t"))
     //println("symbolTupleSlices = \n\t" + symbolTupleSlices.mkString("\n\t"))
-    
+
     // 1) Create unique names for unique symbols !
     // 2) Detect external references, lift them up in arguments.
     // 3) Annotate code with usage :
