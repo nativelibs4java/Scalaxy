@@ -1,6 +1,9 @@
 package scalaxy.compilets
 package components
 
+import scala.language.reflectiveCalls
+import scala.language.postfixOps
+
 import scala.tools.nsc.plugins.PluginComponent
 import scala.tools.nsc.ast.TreeDSL
 import scala.tools.nsc.transform.TypingTransformers
