@@ -34,16 +34,15 @@ import org.junit._
 import Assert._
 import org.hamcrest.CoreMatchers._
 
-class MiscMatchersTest 
-    extends MiscMatchers 
+class MiscMatchersTest
+    extends MiscMatchers
     with WithRuntimeUniverse
-    with WithTestFresh
-{
+    with WithTestFresh {
   import global._
-    
+
   def extractTupleComponentTypes(x: Expr[_]) =
     TupleCreation.unapply(typeCheck(x.tree)).map(_.map(_.tpe.normalize.widen))
-  
+
   @Test
   def testTuples {
     assertEquals(
@@ -51,7 +50,7 @@ class MiscMatchersTest
       extractTupleComponentTypes(reify((1, 2f)))
     )
   }
-  
+
   @Test
   def testTupleCreation {
     val t = reify({ (1, 1f) }).tree

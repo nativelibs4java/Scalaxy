@@ -124,7 +124,7 @@ trait CommonScalaNames {
 
   lazy val ScalaReflectPackage = P("scala.reflect")
   lazy val ScalaCollectionPackage = P("scala.collection")
-  lazy val ScalaMathPackage = P("scala.math")
+  lazy val ScalaMathPackage = M("scala.math.package")
   lazy val ScalaMathPackageClass =
     ScalaMathPackage.moduleClass //.asModule.moduleClass
   lazy val ScalaMathCommonClass = C("scala.MathCommon")

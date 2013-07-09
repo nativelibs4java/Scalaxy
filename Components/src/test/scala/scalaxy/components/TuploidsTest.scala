@@ -34,14 +34,13 @@ import org.junit._
 import Assert._
 import org.hamcrest.CoreMatchers._
 
-class TuploidsTest 
+class TuploidsTest
     extends Tuploids
     with MiscMatchers
     with WithRuntimeUniverse
-    with WithTestFresh
-{
+    with WithTestFresh {
   import global._
-  
+
   class EmptyClass()
   case class EmptyCaseClass()
   class ImmutableClass(a: Int, b: Int)
@@ -50,7 +49,7 @@ class TuploidsTest
   case class MutableCaseClass(a: Int, b: Int) {
     var v = 0
   }
-    
+
   @Test
   def testTuples {
     assertFalse(isTupleType(typeOf[(Int)]))
@@ -63,21 +62,21 @@ class TuploidsTest
     assertTrue(isTupleType(typeOf[(Int, Int)]))
     assertTrue(isTupleType(typeOf[(Int, Int, Float, (Double, Int))]))
   }
-  
+
   @Test
   def testTupleTypeArgs {
     val TypeRef(_, _, List(tpe)) = typeOf[Array[(Int, Float)]]
     assertTrue(isTupleType(tpe))
   }
-  
+
   @Test
   def testTuploids {
     assertTrue(isTuploidType(typeOf[Int]))
     assertTrue(isTuploidType(typeOf[(Int, Int)]))
-    
+
     assertTrue(isTuploidType(typeOf[ImmutableCaseClass]))
     assertTrue(isTuploidType(typeOf[ImmutableClass]))
-                        
+
     assertFalse(isTuploidType(typeOf[MutableCaseClass]))
     assertFalse(isTuploidType(typeOf[MutableClass]))
   }
