@@ -68,8 +68,11 @@ object Scalaxy extends Build {
       //fork in Test := true,
       fork := true,
       parallelExecution in Test := false,
-      libraryDependencies += "junit" % "junit" % "4.10" % "test",
-      libraryDependencies += "com.novocode" % "junit-interface" % "0.8" % "test")
+      libraryDependencies ++= Seq(
+        "junit" % "junit" % "4.10" % "test",
+        "com.novocode" % "junit-interface" % "0.8" % "test"
+      )
+    )
 
   lazy val reflectSettings =
     standardSettings ++
