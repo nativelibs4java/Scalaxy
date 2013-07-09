@@ -30,6 +30,9 @@
  */
 package scalaxy.components
 
+import scala.language.implicitConversions
+import scala.language.postfixOps
+
 import scala.reflect.api.Universe
 
 trait TreeBuilders
