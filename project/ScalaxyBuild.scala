@@ -137,7 +137,7 @@ object Scalaxy extends Build {
       settings =
         standardSettings ++
         Seq(publish := { }))
-    .aggregate(compilets, fx, beans, components, debug, extensions)
+    .aggregate(compilets, fx, beans, components, debug, extensions, reified)
 
   lazy val compilets =
     Project(
@@ -205,6 +205,9 @@ object Scalaxy extends Build {
 
   lazy val debug =
     Project(id = "scalaxy-debug", base = file("Debug"), settings = reflectSettings)
+
+  lazy val reified =
+    Project(id = "scalaxy-reified", base = file("Reified"), settings = reflectSettings)
 
   lazy val fxSettings = reflectSettings ++ Seq(
     unmanagedJars in Compile ++= Seq(
