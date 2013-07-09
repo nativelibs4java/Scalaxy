@@ -3,8 +3,19 @@ import Keys._
 import sbtassembly.Plugin._ ; import AssemblyKeys._
 import ls.Plugin._
 
-object Scalaxy extends Build
-{
+import scalariform.formatter.preferences._
+import com.typesafe.sbt.SbtScalariform.scalariformSettings
+import com.typesafe.sbt.SbtScalariform._
+
+object Scalaxy extends Build {
+  // See https://github.com/mdr/scalariform
+  ScalariformKeys.preferences := FormattingPreferences()
+    .setPreference(MultilineScaladocCommentsStartOnFirstLine, true)
+    .setPreference(PreserveDanglingCloseParenthesis, true)
+    .setPreference(AlignSingleLineCaseStatements, true)
+    .setPreference(DoubleIndentClassDeclaration, true)
+    .setPreference(PreserveDanglingCloseParenthesis, false)
+
   lazy val scalaSettings = Seq(
     //exportJars := true, // use jars in classpath
     scalaVersion := "2.10.2",
@@ -43,6 +54,7 @@ object Scalaxy extends Build
     Defaults.defaultSettings ++
     infoSettings ++
     sonatypeSettings ++
+    scalariformSettings ++
     seq(lsSettings: _*) ++
     Seq(
       javacOptions ++= Seq("-Xlint:unchecked"),

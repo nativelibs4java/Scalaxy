@@ -197,13 +197,11 @@ extends MiscMatchers
         val sub = this
         what match {
           case Ident(_) =>
-            //println("Found bind with name " + name)
             Some(Seq(tree.symbol -> rootSlice))
           case sub(m) =>
             Some(m :+ (tree.symbol -> rootSlice))
           case _ =>
-            throw new RuntimeException("Not a bound tuple : " + tree + " (" + tree.getClass.getName + ")")// + nodeToString(tree))
-            //System.exit(1)
+            throw new RuntimeException("Not a bound tuple : " + tree + " (" + tree.getClass.getName + ")")
             None
         }
       case TupleCreation(components) =>
