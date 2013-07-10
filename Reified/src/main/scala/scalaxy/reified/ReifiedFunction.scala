@@ -6,7 +6,7 @@ import scala.reflect.runtime.universe.Expr
 class ReifiedFunction[A, B](
   f: A => B,
   taggedExpr: Expr[A => B],
-  captures: Seq[AnyRef])
+  captures: Seq[(AnyRef, universe.Type)])
     extends ReifiedValue[A => B](f, taggedExpr, captures)
     with Function1[A, B] {
     

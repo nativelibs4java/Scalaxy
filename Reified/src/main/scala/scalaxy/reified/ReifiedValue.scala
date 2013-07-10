@@ -7,11 +7,12 @@ import scalaxy.reified.impl.CaptureConversions
 import scalaxy.reified.impl.CaptureConversions.Conversion
 import scalaxy.reified.impl.CaptureTag
 import scalaxy.reified.impl.CurrentMirrorTreeCreator
+import scalaxy.reified.impl.Utils.typeCheck
 
-class ReifiedValue[A](
+class ReifiedValue[A] private[reified] (
     val value: A,
     private[reified] val taggedExpr: universe.Expr[A],
-    val captures: Seq[AnyRef]) {
+    val captures: Seq[(AnyRef, universe.Type)]) {
 
   def expr(conversion: Conversion = CaptureConversions.DEFAULT): universe.Expr[A] = {
     import universe._
@@ -19,12 +20,16 @@ class ReifiedValue[A](
       override def transform(tree: universe.Tree): Tree = {
         tree match {
           case CaptureTag(_, _, captureIndex) =>
-            val capturedValue = captures(captureIndex)
-            val conv = conversion.orElse({
+            val (capturedValue, valueType) = captures(captureIndex)
+            // TODO: add identity set to detect conversion cycles
+            // (useless for immutable types, though)
+            val converter: Conversion = conversion.orElse({
               case _ =>
                 sys.error(s"This type of captured value is not supported: $capturedValue")
-            }: Conversion)
-            conv((capturedValue, conv))
+            })
+            val converted = converter((capturedValue, valueType, converter))
+            //typeCheck(converted)
+            converted
           case _ =>
             super.transform(tree)
         }
@@ -61,7 +66,7 @@ class ReifiedValue[A](
 }
 
 object ReifiedValue {
-  def apply[A](value: A, taggedExpr: universe.Expr[A], captures: Seq[AnyRef]): ReifiedValue[A] = {
+  def apply[A](value: A, taggedExpr: universe.Expr[A], captures: Seq[(AnyRef, universe.Type)]): ReifiedValue[A] = {
     if (value.isInstanceOf[Function1[_, _]] &&
         taggedExpr.tree.isInstanceOf[scala.reflect.api.Trees#Function]) {
       new ReifiedFunction[Any, Any](
