@@ -1,4 +1,4 @@
-package scalaxy.debug.test
+package scalaxy.reified.test
 
 import org.junit._
 import org.junit.Assert._
@@ -13,6 +13,7 @@ class ReifiedTest {
     val r = reify(10 * x)
     assertTrue(r.isInstanceOf[ReifiedValue[_]])
     assertEquals(Seq(10), r.captures.toSeq)
+    println(r.expr)
   }
   
   @Test
@@ -21,5 +22,6 @@ class ReifiedTest {
     val r = reify((y: Int) => x * y)
     assertTrue(r.isInstanceOf[ReifiedFunction[_, _]])
     assertEquals(Seq(10), r.captures.toSeq)
+    println(r.expr)
   }
 }
