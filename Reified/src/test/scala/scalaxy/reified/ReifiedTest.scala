@@ -38,10 +38,10 @@ class ReifiedTest {
     }
     
     val comp10 = compose(10)
-    assertEquals(Seq(666, 10, 1234), comp10.captures.toSeq)
+    assertEquals(Seq(10, 1234, 666), comp10.captures.toSeq)
     
     val comp100 = compose(100)
-    assertEquals(Seq(666, 100, 1234), comp100.captures.toSeq)
+    assertEquals(Seq(100, 1234, 666), comp100.captures.toSeq)
     
     println(comp10.expr.tree)
     println(comp100.expr.tree)
