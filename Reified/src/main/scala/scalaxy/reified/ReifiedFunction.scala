@@ -1,21 +1,14 @@
 package scalaxy.reified
 
-import scala.language.experimental.macros
-
-import scala.reflect._
-import scala.reflect.macros.Context
-import scala.reflect.runtime
-import scala.tools.reflect.ToolBox
+import scala.reflect.runtime.universe
   
 class ReifiedFunction[A, B](
   f: A => B,
-  rawExpr: runtime.universe.Expr[A => B],
+  rawExpr: universe.Expr[A => B],
   captures: Seq[AnyRef])
     extends ReifiedValue[A => B](f, rawExpr, captures)
     with Function1[A, B] {
     
-  import runtime.universe._
-  
   def apply(a: A): B = f(a)
   
   override def compose[C](g: C => A): C => B = g match {
@@ -28,7 +21,7 @@ class ReifiedFunction[A, B](
   def compose[C](g: ReifiedFunction[C, A]): C => B = {
     new ReifiedFunction[C, B](
       f.compose(g),
-      reify({
+      universe.reify({
         (c: C) => {
           // TODO: treat `val x = function` as a def in ScalaCL
           val ff = expr.splice

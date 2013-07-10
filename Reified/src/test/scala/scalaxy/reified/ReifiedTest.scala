@@ -10,18 +10,19 @@ class ReifiedTest {
   @Test
   def testValue = {
     val x = 10
-    val r = reify(10 * x)
+    val r = reify(100 * x)
     assertTrue(r.isInstanceOf[ReifiedValue[_]])
     assertEquals(Seq(10), r.captures.toSeq)
-    println(r.expr)
+    assertEquals("100.*(10)", r.expr.tree.toString)
   }
   
   @Test
   def testFunction = {
     val x = 10
-    val r = reify((y: Int) => x * y)
+    val y = 20
+    val r = reify((v: Int) => x * v * y)
     assertTrue(r.isInstanceOf[ReifiedFunction[_, _]])
-    assertEquals(Seq(10), r.captures.toSeq)
-    println(r.expr)
+    assertEquals(Seq(10, 20), r.captures.toSeq)
+    assertEquals("((v: Int) => 10.*(v).*(20))", r.expr.tree.toString)
   }
 }
