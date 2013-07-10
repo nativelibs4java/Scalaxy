@@ -5,7 +5,8 @@ import scala.reflect.runtime.universe._
 import scala.reflect.runtime.currentMirror
 import scala.reflect.api._
 
-case class CurrentMirrorTreeCreator(tree: Tree) extends TreeCreator {
+/** TreeCreator that uses {@link scala.reflect.runtime.currentMirror} */
+private[reified] case class CurrentMirrorTreeCreator(tree: Tree) extends TreeCreator {
   def apply[U <: Universe with Singleton](m: scala.reflect.api.Mirror[U]): U # Tree = {
     if (m eq currentMirror) {
       tree.asInstanceOf[U # Tree]

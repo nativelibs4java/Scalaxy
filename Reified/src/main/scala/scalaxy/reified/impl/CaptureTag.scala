@@ -9,7 +9,7 @@ import scalaxy.reified.impl.TypeChecks.typeCheck
  * Internal methods used for implementation purposes.
  */
 object CaptureTag {
-      
+  /** Symbol of CaptureTag.apply method */
   private lazy val captureSymbol = {
     val captureModule = currentMirror.staticModule("scalaxy.reified.impl.CaptureTag")
     captureModule.moduleClass.typeSignature.member("apply": TermName)
@@ -21,6 +21,7 @@ object CaptureTag {
    */
   def apply[T](ref: T, captureIndex: Int): T = ???
   
+  /** Construct the AST for the capture tag call that corresponds to these params. */
   def construct(tpe: Type, value: Tree, captureIndex: Int): Tree = {
     Apply(
       TypeApply(Ident(captureSymbol), List(TypeTree(tpe))),
