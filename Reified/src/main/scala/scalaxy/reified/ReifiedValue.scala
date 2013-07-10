@@ -6,6 +6,19 @@ import scala.reflect.runtime.currentMirror
 import scalaxy.reified.impl.CaptureTag
 import scalaxy.reified.impl.CurrentMirrorTreeCreator
 
+object ReifiedValue {
+  def apply[A](value: A, taggedExpr: universe.Expr[A], captures: Seq[AnyRef]): ReifiedValue[A] = {
+    if (value.isInstanceOf[Function1[_, _]]) {
+      new ReifiedFunction[Any, Any](
+        value.asInstanceOf[Function[Any, Any]], 
+        taggedExpr.asInstanceOf[universe.Expr[Function[Any, Any]]], 
+        captures).asInstanceOf[ReifiedValue[A]]
+    } else {
+      new ReifiedValue[A](value, taggedExpr, captures)
+    }
+  }
+}
+
 class ReifiedValue[A](
     val value: A,
     private[reified] val taggedExpr: universe.Expr[A],

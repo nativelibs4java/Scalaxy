@@ -1,10 +1,11 @@
 package scalaxy.reified
 
 import scala.reflect.runtime.universe
+import scala.reflect.runtime.universe.Expr
   
 class ReifiedFunction[A, B](
   f: A => B,
-  taggedExpr: universe.Expr[A => B],
+  taggedExpr: Expr[A => B],
   captures: Seq[AnyRef])
     extends ReifiedValue[A => B](f, taggedExpr, captures)
     with Function1[A, B] {
@@ -19,21 +20,19 @@ class ReifiedFunction[A, B](
   }
   
   def compose[C](g: ReifiedFunction[C, A]): ReifiedFunction[C, B] = {
-    val fTaggedExpr = taggedExpr
-    val gTaggedExpr = g.taggedExprWithOffsetCaptureIndices(captures.size)
-    
-    new ReifiedFunction[C, B](
-      f.compose(g),
-      universe.reify({
-        (c: C) => {
-          // TODO: treat `val x = function` as a def in ScalaCL
-          val ff = fTaggedExpr.splice
-          val gg = gTaggedExpr.splice
-          ff(gg(c))
-        }
-      }),
-      // TODO: offset captures in g.expr by captures.size
-      captures ++ g.captures
-    )
+    composeValues[C => B](Seq(this, g))({ 
+      case Seq(fTaggedExpr: Expr[A => B], gTaggedExpr: Expr[C => A]) =>
+        (
+          f.compose(g),
+          universe.reify({
+            (c: C) => {
+              // TODO: treat `val x = function` as a def in ScalaCL
+              val ff = fTaggedExpr.splice
+              val gg = gTaggedExpr.splice
+              ff(gg(c))
+            }
+          })
+        )
+    }).asInstanceOf[ReifiedFunction[C, B]]
   }
 }
