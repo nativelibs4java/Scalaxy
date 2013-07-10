@@ -36,7 +36,7 @@ class ReifiedTest {
     
     def testValue(v: Any, str: String = null) = {
       val r = reify(v)
-      println(s"Type of $v once captured is ${r.captures.map(_._2).head}")
+      //println(s"Type of $v once captured is ${r.captures.map(_._2).head}")
       assertEquals(Seq(v), r.captures.map(_._1))
       try {
         val tree = r.expr().tree

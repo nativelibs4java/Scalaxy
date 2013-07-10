@@ -18,7 +18,7 @@ object CaptureConversions {
   final lazy val DEFAULT: Conversion = {
     CONSTANT orElse 
     REIFIED_VALUE orElse 
-    ARRAY orElse 
+    //ARRAY orElse 
     IMMUTABLE_COLLECTION
   }
   
