@@ -3,6 +3,8 @@ package scalaxy.reified
 import scala.reflect.runtime.universe
 import scala.reflect.runtime.currentMirror
 
+import scalaxy.reified.impl.CaptureConversions
+import scalaxy.reified.impl.CaptureConversions.Conversion
 import scalaxy.reified.impl.CaptureTag
 import scalaxy.reified.impl.CurrentMirrorTreeCreator
 
@@ -11,29 +13,30 @@ class ReifiedValue[A](
     private[reified] val taggedExpr: universe.Expr[A],
     val captures: Seq[AnyRef]) {
 
-  lazy val expr: universe.Expr[A] = {
+  def expr(conversion: Conversion = CaptureConversions.DEFAULT): universe.Expr[A] = {
     import universe._
     mapTaggedExpr(new Transformer {
       override def transform(tree: universe.Tree): Tree = {
         tree match {
           case CaptureTag(_, _, captureIndex) =>
             val capturedValue = captures(captureIndex)
-            capturedValue match {
-              case (_: Number) | (_: String) | (_: java.lang.Character) =>
-                Literal(Constant(capturedValue))
-              // TODO: convert immutable array, seq, list, set, map
-              //case _: Array[_] =>
-              //  universe.reify(Array[AnyRef]
-              case r: ReifiedValue[_] =>
-                r.expr.tree.duplicate
+            val conv = conversion.orElse({
               case _ =>
                 sys.error(s"This type of captured value is not supported: $capturedValue")
-            }
+            }: Conversion)
+            conv((capturedValue, conv))
           case _ =>
             super.transform(tree)
         }
       }
     })
+  }
+  
+  override def toString = {
+    if (value == null)
+      "null"
+    else
+      value.toString
   }
   
   private[reified] def mapTaggedExpr(transformer: universe.Transformer): universe.Expr[A] = {
