@@ -8,7 +8,8 @@ import scalaxy.reified.impl.CurrentMirrorTreeCreator
 
 object ReifiedValue {
   def apply[A](value: A, taggedExpr: universe.Expr[A], captures: Seq[AnyRef]): ReifiedValue[A] = {
-    if (value.isInstanceOf[Function1[_, _]]) {
+    if (value.isInstanceOf[Function1[_, _]] &&
+        taggedExpr.tree.isInstanceOf[scala.reflect.api.Trees#Function]) {
       new ReifiedFunction[Any, Any](
         value.asInstanceOf[Function[Any, Any]], 
         taggedExpr.asInstanceOf[universe.Expr[Function[Any, Any]]], 

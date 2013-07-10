@@ -31,7 +31,10 @@ package object impl {
   def reifyValue[A : c.WeakTypeTag](c: Context)(v: c.Expr[A]): c.Expr[ReifiedValue[A]] = {
     val (expr, capturesExpr) = transformReifiedRefs(c)(v)
     c.universe.reify({
-      new ReifiedValue[A](
+      // Use factory method instead of constructor: in case the runtime
+      // type of the value is a function, it will call ReifiedFunction's
+      // constructor instead.
+      ReifiedValue[A](
         v.splice, 
         TypeChecks.typeCheck(expr.splice), 
         capturesExpr.splice
@@ -71,7 +74,7 @@ package object impl {
       override def transform(t: Tree): Tree = {
         if (t.symbol != null && !isDefLike(t)) {
           val sym = t.symbol
-          // TODO: fine-tune capture.
+          // TODO: fine-tune capture constraints.
           //println(s"transform($t { tpe = ${t.tpe}, symbol = ${sym}, isFreeTerm = ${sym.isFreeTerm}, owner = ${sym.owner}, isMethod = ${sym.isMethod}, isLocal = ${sym.isLocal} })")
           if (sym.isTerm && !localDefSyms.contains(sym)) {
             val tsym = sym.asTerm
@@ -103,7 +106,7 @@ package object impl {
               c.typeCheck(
                 Apply(
                   TypeApply(
-                    f, 
+                    f,
                     List(TypeTree(tpe))),
                   List(t, captureIndexExpr.tree)),
                 tpe)
