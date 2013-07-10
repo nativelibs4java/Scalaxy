@@ -3,13 +3,15 @@ package scalaxy.reified.impl
 import scala.reflect.runtime.universe._
 import scala.reflect.runtime.currentMirror
 
+import scalaxy.reified.impl.TypeChecks.typeCheck
+
 /**
  * Internal methods used for implementation purposes.
  */
-object Capture {
+object CaptureTag {
       
   private lazy val captureSymbol = {
-    val captureModule = currentMirror.staticModule("scalaxy.reified.impl.Capture")
+    val captureModule = currentMirror.staticModule("scalaxy.reified.impl.CaptureTag")
     captureModule.moduleClass.typeSignature.member("apply": TermName)
   }
   
@@ -19,20 +21,29 @@ object Capture {
    */
   def apply[T](ref: T, captureIndex: Int): T = ???
   
-  /** Deconstructor for Capture.apply call in ASTs.
+  def construct(tpe: Type, value: Tree, captureIndex: Int): Tree = {
+    Apply(
+      TypeApply(Ident(captureSymbol), List(TypeTree(tpe))),
+      List(
+        value,
+        Literal(
+          Constant(captureIndex))))
+  }
+  
+  /** Deconstructor for CaptureTag.apply call in ASTs.
    *  @return Some(captureIndex) constant param of the Captured.apply call.
    */
-  def unapply(tree: Tree): Option[Int] = {
+  def unapply(tree: Tree): Option[(Type, Tree, Int)] = {
     tree match {
       case 
         Apply(
-          TypeApply(f, List(tpe)),
+          TypeApply(f, List(tpt)),
           List(
             value,
             Literal(
               Constant(captureIndex: Int)))) 
                 if f.symbol == captureSymbol =>
-        Some(captureIndex)
+        Some((tpt.tpe, value, captureIndex))
       case _ =>
         None
     }

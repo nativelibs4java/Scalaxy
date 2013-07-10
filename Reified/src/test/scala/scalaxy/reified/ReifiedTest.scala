@@ -25,4 +25,25 @@ class ReifiedTest {
     assertEquals(Seq(10, 20), r.captures.toSeq)
     assertEquals("((v: Int) => 10.*(v).*(20))", r.expr.tree.toString)
   }
+  
+  @Test
+  def testFunctionComposition = {
+    def compose(capture1: Int): ReifiedFunction[Int, Int] = {
+      val capture2 = 666
+      val f = reify((x: Int) => x * x + capture2)
+      val capture3 = 1234
+      val g = reify((x: Int) => capture1 + capture3)
+      
+      f.compose(g)
+    }
+    
+    val comp10 = compose(10)
+    assertEquals(Seq(666, 10, 1234), comp10.captures.toSeq)
+    
+    val comp100 = compose(100)
+    assertEquals(Seq(666, 100, 1234), comp100.captures.toSeq)
+    
+    println(comp10.expr.tree)
+    println(comp100.expr.tree)
+  }
 }

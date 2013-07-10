@@ -18,7 +18,11 @@ package object impl {
       )
     )
     c.universe.reify({
-      new ReifiedFunction[A, B](f.splice, expr.splice, capturesExpr.splice)
+      new ReifiedFunction[A, B](
+        f.splice, 
+        TypeChecks.typeCheck(expr.splice), 
+        capturesExpr.splice
+      )
     })
   }
   
@@ -32,7 +36,11 @@ package object impl {
       )
     )
     c.universe.reify({
-      new ReifiedValue[A](v.splice, expr.splice, capturesExpr.splice)
+      new ReifiedValue[A](
+        v.splice, 
+        TypeChecks.typeCheck(expr.splice), 
+        capturesExpr.splice
+      )
     })
   }
   
@@ -92,7 +100,7 @@ package object impl {
               //println(s"symbol.tpe = ${sym.typeSignature}
               // Abuse reify to get correct reference to `capture`.
               val Apply(TypeApply(f, List(_)), _) = {
-                reify(scalaxy.reified.impl.Capture[Int](10, 1)).tree
+                reify(scalaxy.reified.impl.CaptureTag[Int](10, 1)).tree
               }
               c.typeCheck(
                 Apply(
@@ -104,7 +112,7 @@ package object impl {
             } else if (tsym.isMethod) {
               super.transform(t)
             } else {
-              c.error(t.pos, s"Capture of this expression is not supported (symbol = $tsym)")
+              c.error(t.pos, s"CaptureTag of this expression is not supported (symbol = $tsym)")
               t
             } 
           } else {
