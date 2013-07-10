@@ -88,7 +88,7 @@ class ReifiedTest {
     val comp100 = compose(100)
     assertEquals(Seq(100, 1234, 666), comp100.captures.map(_._1))
     
-    println(comp10.expr().tree)
-    println(comp100.expr().tree)
+    //println(comp10.expr().tree)
+    //println(comp100.expr().tree)
   }
 }

@@ -47,7 +47,7 @@ object CaptureConversions {
     val (elementType, castToAnyRef) = tpe match {
       case TypeRef(_, _, elementType :: _) 
           if tpe <:< typeOf[Traversable[_]] =>
-        println(s"GOT ELEMENT TYPE $elementType")
+        //println(s"GOT ELEMENT TYPE $elementType")
         elementType -> false
       case _ =>
         typeOf[AnyRef] -> true
@@ -83,7 +83,7 @@ object CaptureConversions {
       else
         apply
       
-    println(s"res = $res")
+    //println(s"res = $res")
     res
   }
   
