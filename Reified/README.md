@@ -12,10 +12,8 @@ import scalaxy.reified._
 
 def test(capture1: Int): ReifiedFunction[Int, Int] = {
   // Capture of arrays is TODO
-  //val capture2 = Array(10, 20, 30)
-  //val f = reify((x: Int) => capture1 + capture2(x))
-  val capture2 = 1245
-  val f = reify((x: Int) => capture1 + capture2)
+  //val capture2 = Seq(10, 20, 30)
+  val f = reify((x: Int) => capture1 + capture2(x))
   val g = reify((x: Int) => x * x)
   
   g.compose(f)
