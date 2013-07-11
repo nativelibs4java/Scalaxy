@@ -18,27 +18,29 @@ package object impl {
     )
   }
   def reifyFunction[A : c.WeakTypeTag, B : c.WeakTypeTag](c: Context)(f: c.Expr[A => B]): c.Expr[ReifiedFunction[A, B]] = {
+    
     val (expr, capturesExpr) = transformReifiedRefs(c)(f)
     c.universe.reify({
       new ReifiedFunction[A, B](
-        f.splice, 
-        Utils.typeCheck(expr.splice), 
-        capturesExpr.splice
-      )
+        f.splice,
+        new Reification[A => B](
+          Utils.typeCheck(expr.splice), 
+          capturesExpr.splice))
     })
   }
   
   def reifyValue[A : c.WeakTypeTag](c: Context)(v: c.Expr[A]): c.Expr[ReifiedValue[A]] = {
+    
     val (expr, capturesExpr) = transformReifiedRefs(c)(v)
     c.universe.reify({
       // Use factory method instead of constructor: in case the runtime
       // type of the value is a function, it will call ReifiedFunction's
       // constructor instead.
       ReifiedValue[A](
-        v.splice, 
-        Utils.typeCheck(expr.splice), 
-        capturesExpr.splice
-      )
+        v.splice,
+        new Reification[A](
+          Utils.typeCheck(expr.splice), 
+          capturesExpr.splice))
     })
   }
   
@@ -46,6 +48,7 @@ package object impl {
    *  return their ordered list along with the resulting tree.
    */
   private def transformReifiedRefs[A](c: Context)(expr: c.Expr[A]): (c.Expr[universe.Expr[A]], c.Expr[Seq[(AnyRef, universe.Type)]]) = {
+    //c.Expr[Reification[A]] = {
     import c.universe._
     import definitions._
     
@@ -182,5 +185,11 @@ package object impl {
           c.typeOf[Seq[(AnyRef, universe.Type)]]))
     }
     (transformedExpr, capturesArrayExpr)
+    /*c.universe.reify({
+      new Reification[A](
+        Utils.typeCheck(transformedExpr.splice), 
+        capturesArrayExpr.splice
+      )
+    })*/
   }
 }

@@ -1,8 +1,8 @@
-package scalaxy.reified.impl
+package scalaxy.reified
 
-import scalaxy.reified.ReifiedValue
-import scalaxy.reified.impl.Utils.{ typeCheck, toolbox, newExpr }
+import scalaxy.reified.impl.Utils.{ toolbox, newExpr }
 
+import scala.reflect.runtime.universe
 import scala.reflect.runtime.universe._
 import scala.reflect.runtime.universe.definitions._
 import scala.reflect.runtime.currentMirror
@@ -52,18 +52,29 @@ object CaptureConversions {
       case _ =>
         typeOf[AnyRef] -> true
     }
+    
+    def getModulePath(moduleSym: ModuleSymbol): Tree = {
+      val elements = moduleSym.fullName.split("\\.").toList
+      def rec(root: Tree, sub: List[String]): Tree = sub match {
+        case Nil => root
+        case name :: rest => rec(Select(root, name: TermName), rest)
+      }
+      rec(Ident(elements.head: TermName), elements.tail)
+    }
     val apply = 
       Apply(
         TypeApply(
           Select(
-            Ident(moduleSym),
+            getModulePath(moduleSym), //Ident(moduleSym),
             methodSym),
           List(TypeTree(elementType))),
         col.map(value => {
           val convertedValue = conversion((value, elementType, conversion))
           if (castToAnyRef) {
             val convertedValueExpr = newExpr[Any](convertedValue)  
-            reify(convertedValueExpr.splice.asInstanceOf[AnyRef]).tree
+            universe.reify(
+              convertedValueExpr.splice.asInstanceOf[AnyRef]
+            ).tree
           } else {
             convertedValue
           } 
@@ -72,7 +83,7 @@ object CaptureConversions {
     val res = 
       if (requiresClassTag)
         Apply(
-          toolbox.resetAllAttrs(apply),
+          apply,//toolbox.resetAllAttrs(apply),
           //List(reify(implicitly[reflect.ClassTag[AnyRef]](reflect.ClassTag.AnyRef)).tree))//
           List(
             toolbox.inferImplicitValue(

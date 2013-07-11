@@ -2,12 +2,12 @@ package scalaxy.reified
 
 import scala.reflect.runtime.universe
 import scala.reflect.runtime.universe.Expr
-  
+import scalaxy.reified.impl.Reification
+
 class ReifiedFunction[A, B](
   f: A => B,
-  taggedExpr: Expr[A => B],
-  captures: Seq[(AnyRef, universe.Type)])
-    extends ReifiedValue[A => B](f, taggedExpr, captures)
+  reification: Reification[A => B])
+    extends ReifiedValue[A => B](f, reification)
     with Function1[A, B] {
     
   override def apply(a: A): B = f(a)
@@ -20,6 +20,8 @@ class ReifiedFunction[A, B](
   }
   
   def compose[C](g: ReifiedFunction[C, A]): ReifiedFunction[C, B] = {
+    val f = this
+    //reify((c: C) => f(g(c)))
     ReifiedFunction.compose(g, this)
   }
   
@@ -31,12 +33,15 @@ class ReifiedFunction[A, B](
   }
   
   def andThen[C](g: ReifiedFunction[B, C]): ReifiedFunction[A, C] = {
+    val f = this
+    //reify((a: A) => g(f(a)))
     ReifiedFunction.compose(this, g)
   }
 }
 
 object ReifiedFunction {
   def compose[A, B, C](ab: ReifiedFunction[A, B], bc: ReifiedFunction[B, C]): ReifiedFunction[A, C] = {
+    //reify((a: A) => bc(ab(a)))
     composeValues[A => C](Seq(ab, bc))({ 
       case Seq(abTaggedExpr: Expr[A => B], bcTaggedExpr: Expr[B => C]) =>
         (

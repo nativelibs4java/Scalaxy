@@ -3,8 +3,6 @@ package scalaxy.reified.impl
 import scala.reflect.runtime.universe._
 import scala.reflect.runtime.currentMirror
 
-import scalaxy.reified.impl.Utils.typeCheck
-
 /**
  * Internal methods used for implementation purposes.
  */

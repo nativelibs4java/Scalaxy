@@ -6,7 +6,7 @@ import scala.tools.reflect.ToolBox
 
 object Utils {
   
-  private[impl] def newExpr[A](tree: Tree): Expr[A] = {
+  private[reified] def newExpr[A](tree: Tree): Expr[A] = {
     Expr[A](
       currentMirror,
       CurrentMirrorTreeCreator(tree))
@@ -16,7 +16,7 @@ object Utils {
     newExpr[A](typeCheck(expr.tree))
   }
   
-  private[impl] val toolbox = currentMirror.mkToolBox()
+  private[reified] val toolbox = currentMirror.mkToolBox()
   
   def typeCheck(tree: Tree, pt: Type = WildcardType): Tree = {
     // TODO reuse toolbox if costly to create and if doesn't take too much memory. 
