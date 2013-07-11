@@ -9,50 +9,49 @@ import scala.reflect.runtime.currentMirror
 import scala.collection.immutable
 
 /**
- * Conversions for captured references of common types. 
+ * Conversions for captured references of common types.
  */
 object CaptureConversions {
-  
-  type Conversion = PartialFunction[(Any, Type, Any/*full Conversion*/), Tree]
-  
+
+  type Conversion = PartialFunction[(Any, Type, Any /*full Conversion*/ ), Tree]
+
   final lazy val DEFAULT: Conversion = {
-    CONSTANT orElse 
-    REIFIED_VALUE orElse 
-    //ARRAY orElse 
-    IMMUTABLE_COLLECTION
+    CONSTANT orElse
+      REIFIED_VALUE orElse
+      //ARRAY orElse 
+      IMMUTABLE_COLLECTION
   }
-  
+
   final lazy val CONSTANT: Conversion = {
     case (value @ (
-        (_: Number) | 
-        (_: java.lang.Boolean) | 
-        (_: String) | 
-        (_: java.lang.Character)), tpe: Type, conversion: Conversion) =>
+      (_: Number) |
+      (_: java.lang.Boolean) |
+      (_: String) |
+      (_: java.lang.Character)), tpe: Type, conversion: Conversion) =>
       Literal(Constant(value))
   }
-  
+
   final lazy val REIFIED_VALUE: Conversion = {
     case (value: ReifiedValue[_], tpe: Type, conversion: Conversion) =>
       value.expr(conversion).tree.duplicate
   }
-  
+
   // returns collection.apply + elementType
   private def collectionApply(
-      syms: (ModuleSymbol, TermSymbol), 
-      col: Iterable[_], 
-      tpe: Type, 
-      conversion: Conversion): (Tree, Type) = {
+    syms: (ModuleSymbol, TermSymbol),
+    col: Iterable[_],
+    tpe: Type,
+    conversion: Conversion): (Tree, Type) = {
 
     val (moduleSym, methodSym) = syms
     val (elementType, castToAnyRef) = tpe match {
-      case TypeRef(_, _, elementType :: _) 
-          if tpe <:< typeOf[Traversable[_]] =>
+      case TypeRef(_, _, elementType :: _) if tpe <:< typeOf[Traversable[_]] =>
         //println(s"GOT ELEMENT TYPE $elementType")
         elementType -> false
       case _ =>
         typeOf[AnyRef] -> true
     }
-    
+
     def getModulePath(moduleSym: ModuleSymbol): Tree = {
       val elements = moduleSym.fullName.split("\\.").toList
       def rec(root: Tree, sub: List[String]): Tree = sub match {
@@ -71,24 +70,24 @@ object CaptureConversions {
         col.map(value => {
           val convertedValue = conversion((value, elementType, conversion))
           if (castToAnyRef) {
-            val convertedValueExpr = newExpr[Any](convertedValue)  
+            val convertedValueExpr = newExpr[Any](convertedValue)
             universe.reify(
               convertedValueExpr.splice.asInstanceOf[AnyRef]
             ).tree
           } else {
             convertedValue
-          } 
+          }
         }).toList
       ),
-      elementType
+        elementType
     )
   }
-  
+
   /** @deprecated Still buggy */
   @deprecated("Still buggy", since = "")
   final lazy val ARRAY: Conversion = {
     lazy val Array_syms = (ArrayModule, ArrayModule_overloadedApply)
-    
+
     {
       case (array: Array[_], tpe: Type, conversion: Conversion) =>
         val (conv, elementType) = collectionApply(Array_syms, array, tpe, conversion)
@@ -102,11 +101,11 @@ object CaptureConversions {
             toolbox.inferImplicitValue(
               typeRef(
                 classTagType,
-                classTagSym, 
+                classTagSym,
                 List(elementType)))))
     }
   }
-  
+
   final lazy val IMMUTABLE_COLLECTION: Conversion = {
     def symsOf(name: String) = {
       val moduleSym = currentMirror.staticModule("scala.collection.immutable." + name)
@@ -123,7 +122,7 @@ object CaptureConversions {
     lazy val Stack_syms = symsOf("Stack")
     lazy val Queue_syms = symsOf("Queue")
     lazy val Seq_syms = symsOf("Seq")
-      
+
     {
       case (col: immutable.Range, tpe: Type, conversion: Conversion) =>
         val start = newExpr[Int](Literal(Constant(col.start)))

@@ -7,26 +7,24 @@ import scala.reflect.macros.Context
 import scala.reflect.runtime.universe
 
 package object impl {
-  
+
   private[reified] def composeValues[A](values: Seq[_ <: ReifiedValue[_]])(compositor: Seq[universe.Expr[_]] => (A, universe.Expr[A])): ReifiedValue[A] = {
-    val offsets = values.scanLeft(0)({ 
+    val offsets = values.scanLeft(0)({
       case (cumulativeOffset, value) =>
-        cumulativeOffset + value.reification.captures.size
+        cumulativeOffset + value.captures.size
     }).dropRight(1)
-    val taggedExprs = values.zip(offsets).map({ case (value, offset) =>
-      value.reification.taggedExprWithOffsetCaptureIndices(offset)
+    val taggedExprs = values.zip(offsets).map({
+      case (value, offset) =>
+        value.taggedExprWithOffsetCaptureIndices(offset)
     })
-    
+
     val (valueResult, exprResult) = compositor(taggedExprs)
-    ReifiedValue[A](
+    new ReifiedValue[A](
       valueResult,
-      new Reification[A](
-        exprResult,
-        values.flatMap(_.reification.captures)
-      )
-    )
+      exprResult,
+      values.flatMap(_.captures))
   }
-  
+
   private def runtimeExpr[A](c: Context)(tree: c.universe.Tree): c.Expr[universe.Expr[A]] = {
     c.Expr[universe.Expr[A]](
       c.reifyTree(
@@ -36,43 +34,28 @@ package object impl {
       )
     )
   }
-  def reifyFunction[A : c.WeakTypeTag, B : c.WeakTypeTag](c: Context)(f: c.Expr[A => B]): c.Expr[A => B] = {
-    
-    val (expr, capturesExpr) = transformReifiedRefs(c)(f)
-    c.universe.reify({
-      new ReifiedFunction[A, B](
-        f.splice,
-        new Reification[A => B](
-          Utils.typeCheck(expr.splice), 
-          capturesExpr.splice))
-    })
-  }
-  
-  def reifyValue[A : c.WeakTypeTag](c: Context)(v: c.Expr[A]): c.Expr[ReifiedValue[A]] = {
-    
+
+  def reifyValue[A: c.WeakTypeTag](c: Context)(v: c.Expr[A]): c.Expr[ReifiedValue[A]] = {
     val (expr, capturesExpr) = transformReifiedRefs(c)(v)
     c.universe.reify({
-      // Use factory method instead of constructor: in case the runtime
-      // type of the value is a function, it will call ReifiedFunction's
-      // constructor instead.
-      ReifiedValue[A](
+      new ReifiedValue[A](
         v.splice,
-        new Reification[A](
-          Utils.typeCheck(expr.splice), 
-          capturesExpr.splice))
+        Utils.typeCheck(expr.splice),
+        capturesExpr.splice)
     })
   }
-  
-  /** Detect captured references, replace them by capture tags and
+
+  /**
+   * Detect captured references, replace them by capture tags and
    *  return their ordered list along with the resulting tree.
    */
   private def transformReifiedRefs[A](c: Context)(expr: c.Expr[A]): (c.Expr[universe.Expr[A]], c.Expr[Seq[(AnyRef, universe.Type)]]) = {
     //c.Expr[Reification[A]] = {
     import c.universe._
     import definitions._
-    
+
     val tree = c.typeCheck(expr.tree)
-    
+
     val localDefSyms = collection.mutable.HashSet[Symbol]()
     def isDefLike(t: Tree) = t match {
       case Function(_, _) => true
@@ -87,13 +70,15 @@ package object impl {
         }
       }
     }).traverse(tree)
-    
+
     var lastCaptureIndex = -1
     val capturedTerms = collection.mutable.ArrayBuffer[(Tree, Type)]()
     val capturedSymbols = collection.mutable.HashMap[TermSymbol, Int]()
-    
+
     val transformer = new Transformer {
       override def transform(t: Tree): Tree = {
+        /*
+        TODO check which types can be captured
         if (t.tpe != null) {
           def checkType(tpe: Type) {
             if (tpe != NoType) {
@@ -111,6 +96,7 @@ package object impl {
           checkType(t.tpe)
           //t.tpe.foreach(checkType(_))
         }
+        */
         if (t.symbol != null && !isDefLike(t)) {
           val sym = t.symbol
           // TODO: fine-tune capture constraints.
@@ -146,7 +132,7 @@ package object impl {
                     lastCaptureIndex
                 }
               )
-              
+
               val tpe = t.tpe.normalize.widen
               // Abuse reify to get correct reference to `capture`.
               val Apply(TypeApply(f, List(_)), _) = {
@@ -162,7 +148,7 @@ package object impl {
             } else {
               c.error(t.pos, s"Cannot capture this type of expression (symbol = $tsym)")
               t
-            } 
+            }
           } else {
             super.transform(t)
           }
@@ -171,7 +157,7 @@ package object impl {
         }
       }
     }
-    
+
     val transformedExpr = runtimeExpr[A](c)(transformer.transform(tree))
     val capturesArrayExpr = {
       // Abuse reify to get correct seq constructor

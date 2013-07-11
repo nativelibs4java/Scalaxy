@@ -10,11 +10,10 @@ import scala.tools.reflect.ToolBox
 import scalaxy.reified.reify
 
 class CaptureConversionsTest extends TestUtils {
-  
+
   def testValue(v: Any, str: String = null, predicate: Any => Boolean = null) = {
     val r = reify(if (true) v else 0)
-    //println(s"Type of $v once captured is ${r.reification.captures.map(_._2).head}")
-    assertEquals(Seq(v), r.reification.capturedValues)
+    assertEquals(Seq(v), r.capturedValues)
     try {
       val tree = r.expr().tree
       val eval = toolbox.eval(toolbox.resetAllAttrs(tree))
@@ -30,7 +29,7 @@ class CaptureConversionsTest extends TestUtils {
     }
     //assertEquals(Option(str).getOrElse(v.toString), r.expr().tree.toString)
   }
-  
+
   @Test
   def testConstants {
     testValue(true)
@@ -44,17 +43,17 @@ class CaptureConversionsTest extends TestUtils {
     testValue(10.0)
     testValue("10", "\"10\"")
   }
-  
+
   @Test
   def testArrays {
     // TODO
     //testValue(Array(1, 2))
   }
-  
+
   @Test
   def testImmutableCollections {
     import scala.collection.immutable._
-    
+
     testValue(Set(1, 2))
     testValue(Seq(1, 2))
     testValue(List(1, 2), predicate = _.isInstanceOf[List[_]])
@@ -70,7 +69,7 @@ class CaptureConversionsTest extends TestUtils {
     testValue(1 until 10, predicate = _.isInstanceOf[Range])
     testValue(1 until 10 by 2, predicate = _.isInstanceOf[Range])
     testValue(10 until 1 by -2, predicate = _.isInstanceOf[Range])
-    
+
     //testValue(Map('a' -> 1, 'b' -> 2))
   }
 }
