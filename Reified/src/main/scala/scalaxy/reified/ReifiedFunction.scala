@@ -3,6 +3,7 @@ package scalaxy.reified
 import scala.reflect.runtime.universe
 import scala.reflect.runtime.universe.Expr
 import scalaxy.reified.impl.Reification
+import scalaxy.reified.impl.composeValues
 
 class ReifiedFunction[A, B](
   f: A => B,

@@ -1,14 +1,13 @@
 package scalaxy.reified
 
-import scalaxy.reified.CaptureConversions
-import scalaxy.reified.CaptureConversions.Conversion
-import scalaxy.reified.impl.Reification
+import scalaxy.reified.impl.{ Reification, HasReification }
 
 class ReifiedValue[A] private[reified] (
-    val value: A,
-    private[reified] val reification: Reification[A]) {
+  val value: A,
+  val reification: Reification[A])
+    extends HasReification[A] {
   
-  def expr(conversion: Conversion = CaptureConversions.DEFAULT) = {
+  def expr(conversion: CaptureConversions.Conversion = CaptureConversions.DEFAULT) = {
     reification.expr(conversion)
   }
         
@@ -21,9 +20,12 @@ class ReifiedValue[A] private[reified] (
 }
 
 object ReifiedValue {
+  implicit def reifiedValue2Value[A](r: ReifiedValue[A]): A = r.value
+
   def apply[A](value: A, reification: Reification[A]): ReifiedValue[A] = {
-    if (value.isInstanceOf[Function1[_, _]] &&
-        reification.taggedExpr.tree.isInstanceOf[scala.reflect.api.Trees#Function]) {
+    // Do not check that reification.rawExpr is a Trees#Function, because it might be
+    // a Block with declarations of captured values, ending with a Function.
+    if (value.isInstanceOf[Function1[_, _]]) {
       new ReifiedFunction[Any, Any](
         value.asInstanceOf[Function[Any, Any]], 
         reification.asInstanceOf[Reification[Any => Any]]

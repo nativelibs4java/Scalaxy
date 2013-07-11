@@ -8,6 +8,25 @@ import scala.reflect.runtime.universe
 
 package object impl {
   
+  private[reified] def composeValues[A](values: Seq[_ <: ReifiedValue[_]])(compositor: Seq[universe.Expr[_]] => (A, universe.Expr[A])): ReifiedValue[A] = {
+    val offsets = values.scanLeft(0)({ 
+      case (cumulativeOffset, value) =>
+        cumulativeOffset + value.reification.captures.size
+    }).dropRight(1)
+    val taggedExprs = values.zip(offsets).map({ case (value, offset) =>
+      value.reification.taggedExprWithOffsetCaptureIndices(offset)
+    })
+    
+    val (valueResult, exprResult) = compositor(taggedExprs)
+    ReifiedValue[A](
+      valueResult,
+      new Reification[A](
+        exprResult,
+        values.flatMap(_.reification.captures)
+      )
+    )
+  }
+  
   private def runtimeExpr[A](c: Context)(tree: c.universe.Tree): c.Expr[universe.Expr[A]] = {
     c.Expr[universe.Expr[A]](
       c.reifyTree(
@@ -17,7 +36,7 @@ package object impl {
       )
     )
   }
-  def reifyFunction[A : c.WeakTypeTag, B : c.WeakTypeTag](c: Context)(f: c.Expr[A => B]): c.Expr[ReifiedFunction[A, B]] = {
+  def reifyFunction[A : c.WeakTypeTag, B : c.WeakTypeTag](c: Context)(f: c.Expr[A => B]): c.Expr[A => B] = {
     
     val (expr, capturesExpr) = transformReifiedRefs(c)(f)
     c.universe.reify({
@@ -90,7 +109,7 @@ package object impl {
             }
           }
           checkType(t.tpe)
-          t.tpe.foreach(checkType(_))
+          //t.tpe.foreach(checkType(_))
         }
         if (t.symbol != null && !isDefLike(t)) {
           val sym = t.symbol
@@ -112,6 +131,8 @@ package object impl {
             } else if (tsym.isLazy) {
               c.error(t.pos, "Cannot capture lazy vals")
               t
+            } else if (tsym.isMethod || tsym.isModule && tsym.isStable) {
+              super.transform(t)
             } else if (tsym.isVal || tsym.isAccessor) {
               val captureIndexExpr = c.literal(
                 capturedSymbols.get(tsym) match {
@@ -121,7 +142,7 @@ package object impl {
                     lastCaptureIndex += 1
                     capturedSymbols += tsym -> lastCaptureIndex
                     capturedTerms += Ident(tsym) -> t.tpe
-                    
+                    //println("CAPTURED " + tsym)
                     lastCaptureIndex
                 }
               )
@@ -138,8 +159,6 @@ package object impl {
                     List(TypeTree(tpe))),
                   List(t, captureIndexExpr.tree)),
                 tpe)
-            } else if (tsym.isMethod) {
-              super.transform(t)
             } else {
               c.error(t.pos, s"Cannot capture this type of expression (symbol = $tsym)")
               t

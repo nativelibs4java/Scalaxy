@@ -207,7 +207,7 @@ object Scalaxy extends Build {
     Project(id = "scalaxy-debug", base = file("Debug"), settings = reflectSettings)
 
   lazy val reified =
-    Project(id = "scalaxy-reified", base = file("Reified"), settings = reflectSettings)
+    Project(id = "scalaxy-reified", base = file("Reified"), settings = reflectSettings ++ scalariformSettings)
 
   lazy val fxSettings = reflectSettings ++ Seq(
     unmanagedJars in Compile ++= Seq(

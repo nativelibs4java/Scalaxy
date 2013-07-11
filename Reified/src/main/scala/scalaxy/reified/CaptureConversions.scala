@@ -36,12 +36,12 @@ object CaptureConversions {
       value.expr(conversion).tree.duplicate
   }
   
+  // returns collection.apply + elementType
   private def collectionApply(
       syms: (ModuleSymbol, TermSymbol), 
       col: Iterable[_], 
       tpe: Type, 
-      conversion: Conversion, 
-      requiresClassTag: Boolean = false): Tree = {
+      conversion: Conversion): (Tree, Type) = {
 
     val (moduleSym, methodSym) = syms
     val (elementType, castToAnyRef) = tpe match {
@@ -61,7 +61,7 @@ object CaptureConversions {
       }
       rec(Ident(elements.head: TermName), elements.tail)
     }
-    val apply = 
+    (
       Apply(
         TypeApply(
           Select(
@@ -79,31 +79,31 @@ object CaptureConversions {
             convertedValue
           } 
         }).toList
-      )
-    val res = 
-      if (requiresClassTag)
-        Apply(
-          apply,//toolbox.resetAllAttrs(apply),
-          //List(reify(implicitly[reflect.ClassTag[AnyRef]](reflect.ClassTag.AnyRef)).tree))//
-          List(
-            toolbox.inferImplicitValue(
-              typeRef(
-                typeOf[reflect.ClassTag[_]], 
-                currentMirror.staticClass("scala.reflect.ClassTag"), 
-                List(elementType)))))
-      else
-        apply
-      
-    //println(s"res = $res")
-    res
+      ),
+      elementType
+    )
   }
   
+  /** @deprecated Still buggy */
+  @deprecated("Still buggy", since = "")
   final lazy val ARRAY: Conversion = {
     lazy val Array_syms = (ArrayModule, ArrayModule_overloadedApply)
     
     {
       case (array: Array[_], tpe: Type, conversion: Conversion) =>
-        collectionApply(Array_syms, array, tpe, conversion, requiresClassTag = true)
+        val (conv, elementType) = collectionApply(Array_syms, array, tpe, conversion)
+        val classTagSym = currentMirror.staticClass("scala.reflect.ClassTag")
+        val classTagType = classTagSym.toType
+        //val classTagType = typeOf[scala.reflect.ClassTag[_]]
+        //val classTagSym = classTagType.typeSymbol
+        Apply(
+          conv,
+          List(
+            toolbox.inferImplicitValue(
+              typeRef(
+                classTagType,
+                classTagSym, 
+                List(elementType)))))
     }
   }
   
@@ -113,24 +113,48 @@ object CaptureConversions {
       val methodSym = moduleSym.moduleClass.typeSignature.member("apply": TermName).asTerm
       (moduleSym, methodSym)
     }
+    //lazy val TreeSet_syms = symsOf("TreeSet")
+    //lazy val SortedSet_syms = symsOf("SortedSet")
+    lazy val HashSet_syms = symsOf("HashSet")
+    //lazy val BitSet_syms = symsOf("BitSet")
     lazy val Set_syms = symsOf("Set")
     lazy val List_syms = symsOf("List")
     lazy val Vector_syms = symsOf("Vector")
     lazy val Stack_syms = symsOf("Stack")
+    lazy val Queue_syms = symsOf("Queue")
     lazy val Seq_syms = symsOf("Seq")
       
     {
+      case (col: immutable.Range, tpe: Type, conversion: Conversion) =>
+        val start = newExpr[Int](Literal(Constant(col.start)))
+        val end = newExpr[Int](Literal(Constant(col.end)))
+        val step = newExpr[Int](Literal(Constant(col.step)))
+        if (col.isInclusive)
+          universe.reify(start.splice to end.splice by step.splice).tree
+        else
+          universe.reify(start.splice until end.splice by step.splice).tree
+      // TODO inject ordering
+      //case (col: immutable.TreeSet[_], tpe: Type, conversion: Conversion)
+      //    if tpe != typeOf[AnyRef] && tpe != typeOf[Any] =>
+      //  collectionApply(TreeSet_syms, col, tpe, conversion)._1
+      //case (col: immutable.SortedSet[_], tpe: Type, conversion: Conversion)
+      //    if tpe != typeOf[AnyRef] && tpe != typeOf[Any] =>
+      //  collectionApply(SortedSet_syms, col, tpe, conversion)._1
+      case (col: immutable.HashSet[_], tpe: Type, conversion: Conversion) =>
+        collectionApply(HashSet_syms, col, tpe, conversion)._1
       case (col: immutable.Set[_], tpe: Type, conversion: Conversion) =>
-        collectionApply(Set_syms, col, tpe, conversion)
+        collectionApply(Set_syms, col, tpe, conversion)._1
       case (col: immutable.List[_], tpe: Type, conversion: Conversion) =>
-        collectionApply(List_syms, col, tpe, conversion)
+        collectionApply(List_syms, col, tpe, conversion)._1
       case (col: immutable.Vector[_], tpe: Type, conversion: Conversion) =>
-        collectionApply(Vector_syms, col, tpe, conversion)
+        collectionApply(Vector_syms, col, tpe, conversion)._1
       case (col: immutable.Stack[_], tpe: Type, conversion: Conversion) =>
-        collectionApply(Stack_syms, col, tpe, conversion)
+        collectionApply(Stack_syms, col, tpe, conversion)._1
+      case (col: immutable.Queue[_], tpe: Type, conversion: Conversion) =>
+        collectionApply(Queue_syms, col, tpe, conversion)._1
       case (col: immutable.Seq[_], tpe: Type, conversion: Conversion) =>
-        collectionApply(Seq_syms, col, tpe, conversion)
-      // TODO: Map
+        collectionApply(Seq_syms, col, tpe, conversion)._1
+      // TODO: Map, BitSet
       //case (map: immutable.Map[_], tpe: Type, conversion: Conversion) =>      
     }
   }
