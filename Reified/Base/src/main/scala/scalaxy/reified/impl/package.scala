@@ -42,33 +42,7 @@ package object impl {
 
     import c.universe._
 
-    val (expr, capturesExpr, capturedTypeTagsMapExpr) = transformReifiedRefs(c)(v)
-
-    /*
-    def utilsMethodTree(name: TermName): Tree =
-      Select(
-        getModulePath(c.universe)(rootMirror.staticModule("scalaxy.reified.impl.Utils")),
-        name)
-
-    val checkedExpr = c.Expr[universe.Expr[A]](
-      Apply(
-        utilsMethodTree("resolveTypeVariables"),
-        List(
-          Apply(
-            utilsMethodTree("typeCheck"),
-            List(expr.tree)),
-          capturedTypeTagsMapExpr.tree))
-    )*/
-    //println(s"checkedExpr = $checkedExpr")
-    /*
-    c.universe.reify({
-      Utils.createReifiedValue[A](
-        v.splice,
-        expr.splice,
-        capturesExpr.splice,
-        capturedTypeTagsMapExpr.splice)
-    })
-    */
+    val (expr, capturesExpr) = transformReifiedRefs(c)(v)
     c.universe.reify({
       new ReifiedValue[A](
         v.splice,
@@ -81,7 +55,7 @@ package object impl {
    * Detect captured references, replace them by capture tags and
    *  return their ordered list along with the resulting tree.
    */
-  private def transformReifiedRefs[A](c: Context)(expr: c.Expr[A]): (c.Expr[universe.Expr[A]], c.Expr[Seq[(AnyRef, universe.Type)]], c.Expr[Map[String, universe.TypeTag[_]]]) = {
+  private def transformReifiedRefs[A](c: Context)(expr: c.Expr[A]): (c.Expr[universe.Expr[A]], c.Expr[Seq[(AnyRef, universe.Type)]]) = {
     //c.Expr[Reification[A]] = {
     import c.universe._
     import definitions._
@@ -106,7 +80,7 @@ package object impl {
     var lastCaptureIndex = -1
     val capturedTerms = collection.mutable.ArrayBuffer[(Tree, Type)]()
     val capturedSymbols = collection.mutable.HashMap[TermSymbol, Int]()
-    val capturedTypeTags = collection.mutable.HashMap[String, c.Expr[universe.TypeTag[_]]]()
+    val capturedTypeTags = collection.mutable.Set[String]()
 
     val transformer = new Transformer {
       override def transform(t: Tree): Tree = {
@@ -119,6 +93,7 @@ package object impl {
               if (tsym.isParameter) {
                 val name = tsym.name.toString
                 if (!capturedTypeTags.contains(name)) {
+                  capturedTypeTags += name
                   val inferredTypeTag = {
                     c.inferImplicitValue(for (t <- typeOf[universe.TypeTag[Int]]) yield {
                       if (t == typeOf[Int])
@@ -128,12 +103,8 @@ package object impl {
                     })
                   }
                   if (inferredTypeTag == EmptyTree) {
-                    //c.error(t.pos, "Failed to find evidence for type variable " + name)
-                    println("Failed to find evidence for type variable " + name)
-                  } else {
-                    println("Captured type variable " + name + " (" + inferredTypeTag + ")")
-
-                    capturedTypeTags(name) = c.Expr[universe.TypeTag[_]](inferredTypeTag)
+                    c.error(t.pos, "Failed to find evidence for type variable " + name)
+                    //println("Failed to find evidence for type variable " + name)
                   }
                 }
               }
@@ -141,7 +112,7 @@ package object impl {
           }
           val tpe = t.tpe.normalize.widen
           visitType(tpe)
-          tpe.foreach(visitType(_))
+          //tpe.foreach(visitType(_))
         }
         val sym = t.symbol
         if (sym != null && !isDefLike(t) && sym.isTerm && !localDefSyms.contains(sym)) {
@@ -226,27 +197,6 @@ package object impl {
             }).toList),
           c.typeOf[Seq[(AnyRef, universe.Type)]]))
     }
-    val capturedTypeTagsMapExpr = {
-      // Abuse reify to get correct seq constructor.
-      val Apply(mapConstructor, _) = reify(Map[String, universe.TypeTag[_]]()).tree
-      // Build the list of captured terms (with their types).
-      c.Expr[Map[String, universe.TypeTag[_]]](
-        c.typeCheck(
-          Apply(
-            mapConstructor,
-            capturedTypeTags.toList.map({
-              case (name, typeTagExpr) =>
-                reify({
-                  (
-                    c.literal(name).splice,
-                    typeTagExpr.splice
-                  )
-                }).tree
-            })
-          )
-        )
-      )
-    }
-    (transformedExpr, capturesArrayExpr, capturedTypeTagsMapExpr)
+    (transformedExpr, capturesArrayExpr)
   }
 }
