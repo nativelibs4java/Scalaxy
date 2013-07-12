@@ -36,6 +36,17 @@ libraryDependencies += "com.nativelibs4java" %% "scalaxy-reified" % "0.3-SNAPSHO
 resolvers += Resolver.sonatypeRepo("snapshots")
 ```
 
+# Why?
+
+To make it easy to deal with dynamic computations that could benefit from re-compilation at runtime for optimization purposes, or from conversion to other forms of executables (e.g. conversion to SQL, to OpenCL with ScalaCL, etc...).
+
+For instance, let's say you have a complex financial derivatives valuation framework. It depends on lots of data (eventually stored in arrays and maps, e.g. dividend dates and values), which are fetched dynamically by your program, and it is composed of many pieces that can be assembled in many different ways (you might have several valuation algorithms, several yield curve types, and so on).
+If each of these pieces returns a reified value (an instanceof `ReifiedValue[_]` returned by the `scalaxy.reified.reify` method, e.g. a `ReifiedValue[(Date, Map[Product, Double]) => Double]`), then thanks to reified values being composable your top level will be able to return a reified value as well, which will be a function of, say, the evaluation date, and maybe a map of market data bumps.
+You can evaluate that function straight away, since every reified value holds the original value: evaluation will then be classically dynamic, with functions calling functions and all.
+Or... if you need better performance from that function (which your program might call thousands of times), you can fetch that function's AST, compile it _at runtime_ with a `scala.tool.ToolBox` and get a fresh function with the same signature, but with all the static analysis optimizations the compiler was able to shove in. 
+
+More detailed examples will hopefully come soon...
+
 # TODO
 
 - Add many more tests
