@@ -26,8 +26,20 @@ private[reified] trait HasReifiedValue[A] {
  * in the capturedTerms field of this reified value).
  */
 final case class ReifiedValue[A: TypeTag] private[reified] (
+  /**
+   * Original value passed to {@link scalaxy.reified.reify}
+   */
   val value: A,
+  /**
+   * AST of the value, with {@link scalaxy.impl.CaptureTag} calls wherever an external value
+   * reference was captured.
+   */
   val taggedExpr: Expr[A],
+  /**
+   * Runtime values of the references captured by the AST, along with their static type at the site
+   * of the capture.
+   * The order of captures matches {@link scalaxy.impl.CaptureTag#indexCapture}.
+   */
   val capturedTerms: Seq[(AnyRef, Type)])
     extends HasReifiedValue[A] {
 
@@ -69,15 +81,21 @@ final case class ReifiedValue[A: TypeTag] private[reified] (
    * value that was captured by the expression.
    */
   def expr(conversion: CaptureConversions.Conversion = CaptureConversions.DEFAULT): Expr[A] = {
+    // TODO debug optimized conversion and use it!
     stableExpr(conversion)
     //optimizedExpr(conversion)
   }
 
+  /**
+   * Flatten the reified values captured by this reified value's AST, and return an equivalent
+   * reified value which does not contain any captured reified value.
+   * All the other captures are shifted / retagged appropriately.
+   */
   private[reified] def flatten(capturesOffset: Int = 0): ReifiedValue[A] = {
     val flatCapturedTerms = collection.mutable.ArrayBuffer[(AnyRef, Type)]()
     flatCapturedTerms ++= capturedTerms
 
-    val mappedExpr = mapTaggedExpr(new Transformer {
+    val transformer = new Transformer {
       override def transform(tree: Tree): Tree = {
         tree match {
           case CaptureTag(tpe, ref, captureIndex) =>
@@ -99,15 +117,15 @@ final case class ReifiedValue[A: TypeTag] private[reified] (
             super.transform(tree)
         }
       }
-    })
+    }
     new ReifiedValue[A](
       value,
-      mappedExpr,
+      newExpr[A](transformer.transform(taggedExpr.tree)),
       flatCapturedTerms.toList)
   }
 
   private def stableExpr(conversion: CaptureConversions.Conversion = CaptureConversions.DEFAULT): Expr[A] = {
-    mapTaggedExpr(new Transformer {
+    val transformer = new Transformer {
       override def transform(tree: Tree): Tree = {
         tree match {
           case CaptureTag(_, _, captureIndex) =>
@@ -121,9 +139,14 @@ final case class ReifiedValue[A: TypeTag] private[reified] (
             super.transform(tree)
         }
       }
-    })
+    }
+    newExpr[A](transformer.transform(taggedExpr.tree))
   }
 
+  /**
+   * Return a block which starts by declaring all the captured values, and ends with a value that
+   * only contains references to these declarations.
+   */
   private def optimizedExpr(conversion: CaptureConversions.Conversion = CaptureConversions.DEFAULT): Expr[A] = {
     val flatCaptures = new collection.mutable.ArrayBuffer[(AnyRef, Type)]()
     flatCaptures ++= capturedTerms
@@ -172,25 +195,8 @@ final case class ReifiedValue[A: TypeTag] private[reified] (
           function
         )
     )
-    println(s"res = $res")
+    //println(s"res = $res")
     res //typeCheck(res)
-  }
-
-  private[reified] def mapTaggedExpr(transformer: Transformer): Expr[A] = {
-    newExpr[A](transformer.transform(taggedExpr.tree))
-  }
-
-  private[reified] def taggedExprWithOffsetCaptureIndices(offset: Int): Expr[A] = {
-    mapTaggedExpr(new Transformer {
-      override def transform(tree: Tree): Tree = {
-        tree match {
-          case CaptureTag(tpe, ref, captureIndex) =>
-            CaptureTag.construct(tpe, ref, captureIndex + offset)
-          case _ =>
-            super.transform(tree)
-        }
-      }
-    })
   }
 }
 
