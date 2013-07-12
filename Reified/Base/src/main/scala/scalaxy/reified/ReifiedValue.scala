@@ -15,7 +15,7 @@ private[reified] trait HasReifiedValue[A] {
 }
 
 /**
- * Reified value can be created by {@link scalaxy.reified.reify}.
+ * Reified value which can be created by {@link scalaxy.reified.reify}.
  */
 final case class ReifiedValue[A: TypeTag] private[reified] (
   val value: A,
