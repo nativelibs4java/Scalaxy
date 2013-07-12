@@ -24,8 +24,8 @@ trait TestUtils {
       toolbox.eval(tree)
     } catch {
       case _: Throwable =>
-        //val reset = toolbox.resetAllAttrs(tree)
-        val reset = toolbox.resetLocalAttrs(tree)
+        val reset = toolbox.resetAllAttrs(tree)
+        //val reset = toolbox.resetLocalAttrs(tree)
         try {
           toolbox.eval(reset)
         } catch {

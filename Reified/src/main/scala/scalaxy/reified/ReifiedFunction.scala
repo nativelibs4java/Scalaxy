@@ -29,8 +29,8 @@ class ReifiedFunction1[A: TypeTag, B: TypeTag](
   //  val r = cast(g)
   def compose[C: TypeTag](g: ReifiedFunction1[C, A]): ReifiedFunction1[C, B] = {
     val f = this
-    //base.reify((c: C) => f(g(c)))
-    ReifiedFunction1.compose(g, this)
+    base.reify((c: C) => f(g(c)))
+    //ReifiedFunction1.compose(g, this)
   }
 
   //def andThen[C: TypeTag](g: B => C): ReifiedFunction1[A, C] = {
@@ -38,8 +38,8 @@ class ReifiedFunction1[A: TypeTag, B: TypeTag](
   def andThen[C: TypeTag](g: ReifiedFunction1[B, C]): ReifiedFunction1[A, C] = {
     val f = this
     //implicit val C = TypeTag.Any.asInstanceOf[TypeTag[C]]
-    //base.reify((a: A) => g(f(a)))
-    ReifiedFunction1.compose(this, g)
+    base.reify((a: A) => g(f(a)))
+    //ReifiedFunction1.compose(this, g)
   }
 
   override def toString = s"${getClass.getSimpleName}($value)"

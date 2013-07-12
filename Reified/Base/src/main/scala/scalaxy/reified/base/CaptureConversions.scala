@@ -94,7 +94,8 @@ object CaptureConversions {
         }
         Apply(
           conv,
-          List(toolbox.inferImplicitValue(classTagType)))
+          List(
+            resolveModulePaths(universe)(toolbox.inferImplicitValue(classTagType))))
     }
   }
 

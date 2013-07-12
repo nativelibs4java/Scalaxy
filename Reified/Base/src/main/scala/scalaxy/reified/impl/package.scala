@@ -60,15 +60,21 @@ package object impl {
           capturedTypeTagsMapExpr.tree))
     )*/
     //println(s"checkedExpr = $checkedExpr")
-    val res = c.universe.reify({
+    /*
+    c.universe.reify({
       Utils.createReifiedValue[A](
         v.splice,
         expr.splice,
         capturesExpr.splice,
         capturedTypeTagsMapExpr.splice)
     })
-    //println(s"res = $res")
-    res
+    */
+    c.universe.reify({
+      new ReifiedValue[A](
+        v.splice,
+        Utils.typeCheck(expr.splice),
+        capturesExpr.splice)
+    })
   }
 
   /**

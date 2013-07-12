@@ -1,5 +1,6 @@
 package scalaxy.reified.impl
 
+import scala.reflect.runtime.universe
 import scala.reflect.runtime.universe._
 import scala.reflect.runtime.currentMirror
 import scala.tools.reflect.ToolBox
@@ -18,12 +19,26 @@ object Utils {
     newExpr[A](typeCheck(expr.tree))
   }
 
-  def createReifiedValue[A](
+  def createReifiedValue_[A](
     value: A,
     taggedExpr: Expr[A],
     capturedTerms: Seq[(AnyRef, Type)],
     paramTypeTags: Map[String, TypeTag[_]]): ReifiedValue[A] = {
     //println("RESOLVING " + expr)
+
+    def transformSymbol(sym: Symbol): Symbol = {
+      if (sym == null || sym == NoSymbol) {
+        sym
+      } else {
+        for (s <- sym) yield {
+          if (s.isType) {
+            transformType(s.asType.toType).typeSymbol
+          } else {
+            s
+          }
+        }
+      }
+    }
 
     def transformType(tpe: Type): Type = {
       if (tpe == null || tpe == NoType) {
@@ -65,13 +80,17 @@ object Utils {
             TypeTree(transformType(tree.tpe))
           case _ =>
             val trans = transformType(tree.tpe)
+            val transSym = transformSymbol(tree.symbol)
+            //println(s"[$tree]\n\t${tree.tpe} -> $trans\n\t${tree.symbol} -> $transSym")
             super.transform(tree)
         }
       }
     }
+    val transformedTaggedExpr = newExpr[A](typeTagsTransformer.transform(typeCheck(taggedExpr.tree)))
+    println(s"transformedTaggedExpr = $transformedTaggedExpr")
     ReifiedValue[A](
       value,
-      newExpr[A](typeTagsTransformer.transform(typeCheck(taggedExpr.tree))),
+      transformedTaggedExpr,
       capturedTerms.map { case (v, tpe) => (v, transformType(tpe)) }
     )
   }
@@ -86,6 +105,19 @@ object Utils {
       case name :: rest => rec(Select(root, name: TermName), rest)
     }
     rec(Ident(elements.head: TermName), elements.tail)
+  }
+
+  private[reified] def resolveModulePaths(u: scala.reflect.api.Universe)(root: u.Tree): u.Tree = {
+    import u._
+    new Transformer {
+      override def transform(tree: Tree) = tree match {
+        case Ident() if tree.symbol != null && tree.symbol.isModule =>
+          println("REPLACING " + tree + " BY MODULE PATH")
+          getModulePath(u)(tree.symbol.asModule)
+        case _ =>
+          super.transform(tree)
+      }
+    }.transform(root)
   }
 
   def replaceTypes(tree: Tree, replacements: Map[String, TypeTag[_]]): Tree = {
