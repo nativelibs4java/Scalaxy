@@ -10,7 +10,7 @@ This is still highly experimental, documentation will come soon enough.
 ```scala
 import scalaxy.reified._
 
-def test(capture1: Int): ReifiedFunction[Int, Int] = {
+def comp(capture1: Int): ReifiedFunction1[Int, Int] = {
   // Capture of arrays is TODO
   val capture2 = Seq(10, 20, 30)
   val f = reify((x: Int) => capture1 + capture2(x))
@@ -19,8 +19,8 @@ def test(capture1: Int): ReifiedFunction[Int, Int] = {
   g.compose(f)
 }
 
-println(test(10).expr.tree)
-println(test(100).expr.tree)
+println(comp(10).expr.tree)
+println(comp(100).expr.tree)
 ```
 
 # Usage

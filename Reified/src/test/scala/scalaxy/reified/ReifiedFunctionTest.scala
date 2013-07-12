@@ -12,13 +12,27 @@ import scalaxy.reified._
 class ReifiedFunctionTest extends TestUtils {
 
   @Test
-  def testFunction {
+  def testDummyFunction {
+    try {
+      val r = reify((v: Int) => v * v)
+      assertEquals("((v: Int) => v.*(v))", r.expr().tree.toString)
+      assertSameEvals(r, 0, 1, 2)
+    } catch {
+      case th: Throwable =>
+        th.printStackTrace(System.out)
+        throw th
+    }
+  }
+
+  @Test
+  def testFunctionWithCaptures {
     try {
       val x = 10
       val y = 20
       val r = reify((v: Int) => x * v * y)
       assertEquals(Seq(10, 20), r.capturedValues)
-      assertEquals("((v: Int) => 10.*(v).*(20))", r.expr().tree.toString)
+      assertSameEvals(r, 0, 1, 2)
+      //assertEquals("((v: Int) => 10.*(v).*(20))", r.expr().tree.toString)
     } catch {
       case th: Throwable =>
         th.printStackTrace(System.out)

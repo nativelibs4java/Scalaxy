@@ -19,15 +19,74 @@ package object reified {
 
   def reify[A](v: A): ReifiedValue[A] = macro impl.reifyValue[A]
 
-  implicit def reifiedValue2ReifiedFunction[A: TypeTag, B: TypeTag](r: ReifiedValue[A => B]): ReifiedFunction1[A, B] = {
-    new ReifiedFunction1(r)
+  /**
+   * Wrapper that provides Function1-like methods to a reified Function1 value.
+   */
+  implicit class ReifiedFunction1[T1: TypeTag, R: TypeTag](
+    val value: ReifiedValue[T1 => R])
+      extends HasReifiedValue[T1 => R] {
+
+    assert(value != null)
+
+    override def reifiedValue = value
+
+    def apply(a: T1): R = value.value(a)
+
+    def compose[A: TypeTag](g: ReifiedFunction1[A, T1]): ReifiedFunction1[A, R] = {
+      val f = this
+      base.reify((c: A) => f(g(c)))
+    }
+
+    def andThen[A: TypeTag](g: ReifiedFunction1[R, A]): ReifiedFunction1[T1, A] = {
+      val f = this
+      base.reify((a: T1) => g(f(a)))
+    }
   }
 
-  implicit def reifiedFunction2ReifiedValue[A, B](r: ReifiedFunction1[A, B]): ReifiedValue[A => B] = {
-    r.value
+  /**
+   * Wrapper that provides Function2-like methods to a reified Function2 value.
+   */
+  implicit class ReifiedFunction2[T1: TypeTag, T2: TypeTag, R: TypeTag](
+    val value: ReifiedValue[Function2[T1, T2, R]])
+      extends HasReifiedValue[Function2[T1, T2, R]] {
+
+    assert(value != null)
+
+    override def reifiedValue = value
+
+    def apply(v1: T1, v2: T2): R = value.value(v1, v2)
+
+    /*
+    // TODO fix this:
+    def curried: ReifiedFunction1[T1, ReifiedFunction1[T2, R]] = {
+      val f = this
+      def finish(v1: T1) = {
+        base.reify((v2: T2) => {
+          f(v1, v2)
+        })
+      }
+      base.reify((v1: T1) => finish(v1))
+    }
+    */
+
+    def tupled: ReifiedFunction1[(T1, T2), R] = {
+      val f = this
+      base.reify((p: (T1, T2)) => {
+        val (v1, v2) = p
+        f(v1, v2)
+      })
+    }
   }
 
-  implicit def reifiedValue2Value[A](r: ReifiedValue[A]): A = r.value
-  implicit def reifiedFunction2Value[A, B](r: ReifiedFunction1[A, B]): A => B = r.value
+  /**
+   * Implicitly extract reified value from its wrappers (such as ReifiedFunction1, ReifiedFunction2).
+   */
+  implicit def hasReifiedValueToReifiedValue[A](r: HasReifiedValue[A]): ReifiedValue[A] = {
+    r.reifiedValue
+  }
+  /**
+   * Implicitly convert reified value to their original non-reified value.
+   */
+  implicit def hasReifiedValueToValue[A](r: HasReifiedValue[A]): A = r.reifiedValue.value
 }
 

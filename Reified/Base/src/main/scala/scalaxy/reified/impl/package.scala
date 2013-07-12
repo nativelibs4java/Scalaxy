@@ -11,23 +11,6 @@ import scalaxy.reified.impl.Utils._
 
 package object impl {
 
-  private[reified] def composeValues[A](values: Seq[_ <: ReifiedValue[_]])(compositor: Seq[universe.Expr[_]] => (A, universe.Expr[A])): ReifiedValue[A] = {
-    val offsets = values.scanLeft(0)({
-      case (cumulativeOffset, value) =>
-        cumulativeOffset + value.capturedTerms.size
-    }).dropRight(1)
-    val taggedExprs = values.zip(offsets).map({
-      case (value, offset) =>
-        value.taggedExprWithOffsetCaptureIndices(offset)
-    })
-
-    val (valueResult, exprResult) = compositor(taggedExprs)
-    new ReifiedValue[A](
-      valueResult,
-      exprResult,
-      values.flatMap(_.capturedTerms))
-  }
-
   private def runtimeExpr[A](c: Context)(tree: c.universe.Tree): c.Expr[universe.Expr[A]] = {
     c.Expr[universe.Expr[A]](
       c.reifyTree(
@@ -118,10 +101,10 @@ package object impl {
         if (sym != null && !isDefLike(t) && sym.isTerm && !localDefSyms.contains(sym)) {
           val tsym = sym.asTerm
           if (tsym.isVar) {
-            c.error(t.pos, "Cannot capture a var")
+            c.error(t.pos, "Cannot capture this var: " + tsym)
             t
-          } else if (tsym.isLazy) {
-            c.error(t.pos, "Cannot capture lazy vals")
+          } else if (tsym.isLazy && tsym.fullName != "scala.reflect.runtime.universe") {
+            c.error(t.pos, "Cannot capture this lazy val: " + tsym)
             t
           } else if (tsym.isMethod || tsym.isModule && tsym.isStable) {
             super.transform(t)
@@ -153,7 +136,7 @@ package object impl {
                 List(t, captureIndexExpr.tree)),
               tpe)
           } else {
-            c.error(t.pos, s"Cannot capture this type of expression (symbol = $tsym)")
+            c.error(t.pos, s"Cannot capture this type of expression (symbol = $tsym): " + tsym)
             t
           }
         } else {

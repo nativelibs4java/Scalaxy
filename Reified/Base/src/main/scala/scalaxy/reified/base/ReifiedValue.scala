@@ -1,14 +1,14 @@
 package scalaxy.reified.base
 
-import scalaxy.reified.impl
-
 import scala.reflect.runtime.universe._
 
+import scalaxy.reified.impl
 import scalaxy.reified.impl.CaptureTag
-import scalaxy.reified.impl.Utils.newExpr
+import scalaxy.reified.impl.Utils._
 
 trait HasReifiedValue[A] {
   def reifiedValue: ReifiedValue[A]
+  override def toString = s"${getClass.getSimpleName}(${reifiedValue.value}, ${reifiedValue.taggedExpr.tree}, ${reifiedValue.capturedTerms})"
 }
 
 final case class ReifiedValue[A] private[reified] (
@@ -21,7 +21,7 @@ final case class ReifiedValue[A] private[reified] (
 
   def capturedValues: Seq[AnyRef] = capturedTerms.map(_._1)
 
-  def flattenCaptures(capturesOffset: Int): ReifiedValue[A] = {
+  def flattenCaptures(capturesOffset: Int = 0): ReifiedValue[A] = {
     val flatCapturedTerms = collection.mutable.ArrayBuffer[(AnyRef, Type)]()
     flatCapturedTerms ++= capturedTerms
 
@@ -35,10 +35,11 @@ final case class ReifiedValue[A] private[reified] (
                 val subTree = sub.taggedExpr.tree
 
                 flatCapturedTerms ++= sub.capturedTerms
+                subTree /*
                 if (value.taggedExpr.tree eq subTree)
                   subTree.duplicate
                 else
-                  subTree
+                  subTree*/
               case _ =>
                 CaptureTag.construct(tpe, ref, captureIndex + capturesOffset)
             }
@@ -53,7 +54,16 @@ final case class ReifiedValue[A] private[reified] (
       flatCapturedTerms.toList)
   }
 
+  /**
+   * Get the AST of this reified value, using the specified conversion function for any
+   * value that was captured by the expression.
+   */
   def expr(conversion: CaptureConversions.Conversion = CaptureConversions.DEFAULT): Expr[A] = {
+    stableExpr(conversion)
+    //optimizedExpr(conversion)
+  }
+
+  private def stableExpr(conversion: CaptureConversions.Conversion = CaptureConversions.DEFAULT): Expr[A] = {
     mapTaggedExpr(new Transformer {
       override def transform(tree: Tree): Tree = {
         tree match {
@@ -69,6 +79,58 @@ final case class ReifiedValue[A] private[reified] (
         }
       }
     })
+  }
+
+  private def optimizedExpr(conversion: CaptureConversions.Conversion = CaptureConversions.DEFAULT): Expr[A] = {
+    val flatCaptures = new collection.mutable.ArrayBuffer[(AnyRef, Type)]()
+    flatCaptures ++= capturedTerms
+    val captureValueTrees = new collection.mutable.HashMap[Int, Tree]()
+    def captureRefName(captureIndex: Int): TermName = "scalaxy$capture$" + captureIndex
+
+    // TODO predeclare the captures in a block that returns the function
+    val function = (new Transformer {
+      override def transform(tree: Tree): Tree = {
+        tree match {
+          case CaptureTag(_, _, captureIndex) =>
+            val (capturedValue, valueType) = capturedTerms(captureIndex)
+            capturedValue match {
+              case hr: HasReifiedValue[_] =>
+                val flatRef = hr.reifiedValue.flattenCaptures(flatCaptures.size)
+                flatCaptures ++= flatRef.capturedTerms
+                // TODO maybe no need to duplicate if tree was unchanged (when no capture)
+                super.transform(hr.reifiedValue.taggedExpr.tree) //.duplicate)
+              case _ =>
+                val converter: CaptureConversions.Conversion = conversion.orElse({
+                  case _ =>
+                    sys.error(s"This type of captured value is not supported: $capturedValue")
+                })
+                captureValueTrees(captureIndex) = converter((capturedValue, valueType, converter))
+                Ident(captureRefName(captureIndex))
+            }
+          case _ =>
+            super.transform(tree)
+        }
+      }
+    }).transform(taggedExpr.tree)
+
+    val res = newExpr[A](
+      if (flatCaptures.isEmpty)
+        function
+      else
+        Block(
+          (
+            for {
+              ((_, tpe), captureIndex) <- flatCaptures.zipWithIndex
+              tree = captureValueTrees(captureIndex)
+            } yield {
+              ValDef(Modifiers(Flag.LOCAL), captureRefName(captureIndex), TypeTree(if (tpe == null) NoType else tpe), tree)
+            }
+          ).toList,
+          function
+        )
+    )
+    println(s"res = $res")
+    res //typeCheck(res)
   }
 
   private[reified] def mapTaggedExpr(transformer: Transformer): Expr[A] = {

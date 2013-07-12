@@ -17,8 +17,8 @@ class ReifiedValueTest extends TestUtils {
     val r = reify(100 * x)
     assertTrue(r.isInstanceOf[ReifiedValue[_]])
     assertEquals(Seq(10), r.capturedValues)
-    assertEquals("100.*(10)", r.expr().tree.toString)
-    assertEquals(100 * 10, eval(r.expr().tree))
+    //assertEquals("100.*(10)", r.expr().tree.toString)
+    assertEquals(100 * 10, eval(r))
   }
 
   @Ignore
@@ -33,7 +33,7 @@ class ReifiedValueTest extends TestUtils {
     assertEquals(Seq(x), a.asInstanceOf[ReifiedValue[_]].capturedValues)
     assertEquals(Seq(y, a), b.capturedValues)
 
-    assertEquals(b.value, eval(b.expr().tree))
+    assertEquals(b.value, eval(b))
     //println(b.taggedExpr)
   }
 }
