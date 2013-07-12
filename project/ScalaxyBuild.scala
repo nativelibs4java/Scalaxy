@@ -215,6 +215,7 @@ object Scalaxy extends Build {
   lazy val reified =
     Project(id = "scalaxy-reified", base = file("Reified"), settings = reflectSettings ++ scalariformSettings)
     .dependsOn(reifiedBase)
+    .aggregate(reifiedBase)
 
   lazy val fxSettings = reflectSettings ++ Seq(
     unmanagedJars in Compile ++= Seq(
