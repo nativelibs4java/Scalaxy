@@ -1,9 +1,12 @@
 package scalaxy.reified
 
+import scala.reflect.runtime.universe
 import scala.reflect.runtime.universe._
 
 import scalaxy.reified.impl.CaptureTag
+import scalaxy.reified.impl.Utils
 import scalaxy.reified.impl.Utils._
+import scala.tools.reflect.ToolBox
 
 /**
  * Reified value wrapper.
@@ -16,6 +19,11 @@ private[reified] trait HasReifiedValue[A] {
 
 /**
  * Reified value which can be created by {@link scalaxy.reified.reify}.
+ * This object retains the runtime value passed to {@link scalaxy.reified.reify} as well as its
+ * compile-time AST.
+ * It also keeps track of the values captured by the AST in its scope, which are identified in the
+ * AST by calls to {@link scalaxy.impl.CaptureTag} (which contain the index of the captured value
+ * in the capturedTerms field of this reified value).
  */
 final case class ReifiedValue[A: TypeTag] private[reified] (
   val value: A,
@@ -26,9 +34,46 @@ final case class ReifiedValue[A: TypeTag] private[reified] (
   override def reifiedValue = this
   override def valueTag = typeTag[A]
 
-  def capturedValues: Seq[AnyRef] = capturedTerms.map(_._1)
+  /**
+   * Compile the AST (using the provided conversion to convert captured values to ASTs).
+   * Requires scala-compiler.jar to be in the classpath.
+   * Note: with Sbt, you can put scala-compiler.jar in the classpath with the following setting:
+   * <pre><code>
+   *   libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-compiler" % _)
+   * </code></pre>
+   */
+  def compile(
+    conversion: CaptureConversions.Conversion = CaptureConversions.DEFAULT,
+    toolbox: ToolBox[universe.type] = impl.Utils.optimisingToolbox): () => A = {
 
-  def flatten(capturesOffset: Int = 0): ReifiedValue[A] = {
+    val ast = expr(conversion).tree
+
+    val result = {
+      try {
+        toolbox.compile(toolbox.resetAllAttrs(ast))
+      } catch {
+        case _: Throwable =>
+          try {
+            toolbox.compile(ast)
+          } catch {
+            case ex: Throwable =>
+              throw new RuntimeException("Compilation failed: " + ex + "\nSource:\n\t" + ast, ex)
+          }
+      }
+    }
+    () => result().asInstanceOf[A]
+  }
+
+  /**
+   * Get the AST of this reified value, using the specified conversion function for any
+   * value that was captured by the expression.
+   */
+  def expr(conversion: CaptureConversions.Conversion = CaptureConversions.DEFAULT): Expr[A] = {
+    stableExpr(conversion)
+    //optimizedExpr(conversion)
+  }
+
+  private[reified] def flatten(capturesOffset: Int = 0): ReifiedValue[A] = {
     val flatCapturedTerms = collection.mutable.ArrayBuffer[(AnyRef, Type)]()
     flatCapturedTerms ++= capturedTerms
 
@@ -59,15 +104,6 @@ final case class ReifiedValue[A: TypeTag] private[reified] (
       value,
       mappedExpr,
       flatCapturedTerms.toList)
-  }
-
-  /**
-   * Get the AST of this reified value, using the specified conversion function for any
-   * value that was captured by the expression.
-   */
-  def expr(conversion: CaptureConversions.Conversion = CaptureConversions.DEFAULT): Expr[A] = {
-    stableExpr(conversion)
-    //optimizedExpr(conversion)
   }
 
   private def stableExpr(conversion: CaptureConversions.Conversion = CaptureConversions.DEFAULT): Expr[A] = {

@@ -19,7 +19,7 @@ object Utils {
     newExpr[A](typeCheck(expr.tree))
   }
 
-  private[reified] val toolbox = currentMirror.mkToolBox()
+  private[reified] val optimisingToolbox = currentMirror.mkToolBox(options = "-optimise")
 
   private[reified] def getModulePath(u: scala.reflect.api.Universe)(moduleSym: u.ModuleSymbol): u.Tree = {
     import u._
@@ -45,15 +45,14 @@ object Utils {
   }
 
   private[reified] def typeCheck(tree: Tree, pt: Type = WildcardType): Tree = {
-    // TODO reuse toolbox if costly to create and if doesn't take too much memory. 
-    val ttree = tree.asInstanceOf[toolbox.u.Tree]
+    val ttree = tree.asInstanceOf[optimisingToolbox.u.Tree]
     if (ttree.tpe != null && ttree.tpe != NoType)
       tree
     else {
       try {
-        toolbox.typeCheck(
+        optimisingToolbox.typeCheck(
           ttree,
-          pt.asInstanceOf[toolbox.u.Type])
+          pt.asInstanceOf[optimisingToolbox.u.Type])
       } catch {
         case ex: Throwable =>
           throw new RuntimeException(s"Failed to typeCheck($tree, $pt): $ex", ex)

@@ -18,7 +18,7 @@ class ReifiedValueTest extends TestUtils {
     assertTrue(r.isInstanceOf[ReifiedValue[_]])
     assertEquals(Seq(10), r.capturedValues)
     //assertEquals("100.*(10)", r.expr().tree.toString)
-    assertEquals(100 * 10, eval(r))
+    assertEquals(100 * 10, r.compile()())
   }
 
   @Ignore
@@ -33,7 +33,7 @@ class ReifiedValueTest extends TestUtils {
     assertEquals(Seq(x), a.asInstanceOf[ReifiedValue[_]].capturedValues)
     assertEquals(Seq(y, a), b.capturedValues)
 
-    assertEquals(b.value, eval(b))
+    assertEquals(b.value, b.compile()())
     //println(b.taggedExpr)
   }
 }

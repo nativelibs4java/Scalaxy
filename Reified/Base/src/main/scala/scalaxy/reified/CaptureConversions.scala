@@ -105,7 +105,7 @@ object CaptureConversions {
         Apply(
           conv,
           List(
-            resolveModulePaths(universe)(toolbox.inferImplicitValue(classTagType))))
+            resolveModulePaths(universe)(optimisingToolbox.inferImplicitValue(classTagType))))
     }
   }
 
