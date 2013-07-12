@@ -15,6 +15,10 @@ trait TestUtils {
 
   lazy val toolbox = currentMirror.mkToolBox()
 
+  def eval[A](r: ReifiedValue[A]): A = {
+    eval(r.expr().tree).asInstanceOf[A]
+  }
+
   def eval(tree: universe.Tree): Any = {
     try {
       toolbox.eval(tree)
@@ -36,9 +40,8 @@ trait TestUtils {
     //val toolbox = currentMirror.mkToolBox()
     for (input <- inputs) {
       val directEval = f(input)
-
-      val tree = f.expr().tree
-      val reifiedEval = toolbox.eval(tree)
+      val reifiedF = eval(f)
+      val reifiedEval = reifiedF(input)
 
       assertEquals(directEval, reifiedEval)
     }

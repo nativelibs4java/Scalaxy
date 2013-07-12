@@ -39,19 +39,4 @@ class ReifiedTest extends TestUtils {
     assertEquals(12, f(10))
   }
 
-  @Test
-  def testCapture2 {
-    def test(capture1: Int) = {
-      // Capture of arrays is TODO
-      val capture2 = Seq(10, 20, 30)
-      val f = reify((x: Int) => capture1 + capture2(x))
-      val g = reify((x: Int) => x * x)
-
-      g.compose(f)
-    }
-
-    println(test(10).expr().tree)
-    println(test(100).expr().tree)
-  }
-
 }

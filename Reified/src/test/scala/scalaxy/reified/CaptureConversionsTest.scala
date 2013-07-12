@@ -15,8 +15,7 @@ class CaptureConversionsTest extends TestUtils {
     val r = reify(if (true) v else 0)
     assertEquals(Seq(v), r.capturedValues)
     try {
-      val tree = r.expr().tree
-      val value = eval(tree)
+      val value = eval(r)
       if (v.getClass.isArray) {
         val meth = classOf[Assert].getMethod("assertArrayEquals", v.getClass, v.getClass)
         meth.invoke(null, v.asInstanceOf[AnyRef], value.asInstanceOf[AnyRef])
