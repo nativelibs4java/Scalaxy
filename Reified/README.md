@@ -63,7 +63,7 @@ More detailed examples will hopefully come soon...
 
 - Add many more tests
 - Debug `ReifiedValue.optimizedExpr` and remove `ReifiedValue.stableExpr` (which copies captures to their call site, probably producing bad performance at the moment).
-- Convert captured functions to defs for better performance (perform static analysis on AST to see if a function's only references are of the form `f.apply(...)`)
+- Convert captured reified functions to defs for better performance (perform static analysis on AST to see if a function's only references are of the form `f.apply(...)`)
 - Write an end-to-end usage example with benchmarks, once `optimizedExpr` is the default (maybe an algebraic expressions parser / compiler?)
 - Fix `ReifiedFunction2.curried`
 - Provide a `ReifiedPartialFunction` wrapper with an `orElse` method that extracts match cases and recomposes a match that's optimizable by the compiler
