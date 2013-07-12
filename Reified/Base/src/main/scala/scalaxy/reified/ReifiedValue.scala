@@ -1,17 +1,22 @@
-package scalaxy.reified.base
+package scalaxy.reified
 
 import scala.reflect.runtime.universe._
 
-import scalaxy.reified.impl
 import scalaxy.reified.impl.CaptureTag
 import scalaxy.reified.impl.Utils._
 
-trait HasReifiedValue[A] {
-  def reifiedValue: ReifiedValue[A]
+/**
+ * Reified value wrapper.
+ */
+private[reified] trait HasReifiedValue[A] {
+  private[reified] def reifiedValue: ReifiedValue[A]
   def valueTag: TypeTag[A]
   override def toString = s"${getClass.getSimpleName}(${reifiedValue.value}, ${reifiedValue.taggedExpr.tree}, ${reifiedValue.capturedTerms})"
 }
 
+/**
+ * Reified value can be created by {@link scalaxy.reified.reify}.
+ */
 final case class ReifiedValue[A: TypeTag] private[reified] (
   val value: A,
   val taggedExpr: Expr[A],

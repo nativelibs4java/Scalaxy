@@ -6,7 +6,6 @@ import scala.reflect._
 import scala.reflect.macros.Context
 import scala.reflect.runtime.universe
 
-import scalaxy.reified.base.ReifiedValue
 import scalaxy.reified.impl.Utils._
 
 package object impl {
@@ -20,6 +19,8 @@ package object impl {
       )
     )
   }
+
+  private[reified] def reifyMacro[A: universe.TypeTag](v: A): ReifiedValue[A] = macro reifyImpl[A]
 
   def reifyImpl[A: c.WeakTypeTag](c: Context)(v: c.Expr[A])(tt: c.Expr[universe.TypeTag[A]]): c.Expr[ReifiedValue[A]] = {
 

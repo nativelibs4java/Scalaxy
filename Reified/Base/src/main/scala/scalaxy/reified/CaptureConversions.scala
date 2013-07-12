@@ -1,4 +1,4 @@
-package scalaxy.reified.base
+package scalaxy.reified
 
 import scalaxy.reified.impl.Utils._
 
@@ -16,6 +16,12 @@ object CaptureConversions {
 
   type Conversion = PartialFunction[(Any, Type, Any /*full Conversion*/ ), Tree]
 
+  /**
+   * Default conversion function that handles constants, reified values, arrays and immutable
+   * collections.
+   * Other conversion functions can be composed with this default (or with a subset of its
+   * components) with the standard PartialFunction methods (orElse...).
+   */
   final lazy val DEFAULT: Conversion = {
     CONSTANT orElse
       REIFIED_VALUE orElse
@@ -23,6 +29,7 @@ object CaptureConversions {
       IMMUTABLE_COLLECTION
   }
 
+  /** Converts captured constants (AnyVal, String) to their corresponding AST */
   final lazy val CONSTANT: Conversion = {
     case (value @ (
       (_: Number) |
@@ -32,6 +39,7 @@ object CaptureConversions {
       Literal(Constant(value))
   }
 
+  /** Inlines a reified value's AST */
   final lazy val REIFIED_VALUE: Conversion = {
     case (value: HasReifiedValue[_], tpe: Type, conversion: Conversion) =>
       value.reifiedValue.expr(conversion).tree.duplicate
@@ -80,8 +88,10 @@ object CaptureConversions {
     )
   }
 
-  /** @deprecated Still buggy */
-  //@deprecated("Still buggy", since = "")
+  /**
+   * Convert an array an AST that represents a call to Array.apply with a 'best guess' component
+   *  type, and all values converted.
+   */
   final lazy val ARRAY: Conversion = {
     lazy val Array_syms = (ArrayModule, ArrayModule_overloadedApply)
 
@@ -99,6 +109,11 @@ object CaptureConversions {
     }
   }
 
+  /**
+   * Convert an immutable collection to an AST that represents a call to a constructor for that
+   *  collection type with a 'best guess' component type, and all values converted.
+   *  Types supported are HashSet, Set, List, Vector, Stack, Queue, Seq.
+   */
   final lazy val IMMUTABLE_COLLECTION: Conversion = {
     def symsOf(name: String) = {
       val moduleSym = currentMirror.staticModule("scala.collection.immutable." + name)
