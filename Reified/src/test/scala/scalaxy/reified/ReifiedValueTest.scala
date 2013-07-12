@@ -21,6 +21,7 @@ class ReifiedValueTest extends TestUtils {
     assertEquals(100 * 10, eval(r.expr().tree))
   }
 
+  @Ignore
   @Test
   def testFlat {
     val x: AnyRef = Seq(1, 2, 3)
