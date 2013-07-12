@@ -1,6 +1,6 @@
 package scalaxy.reified
 
-import scalaxy.reified.impl.Utils._
+import scalaxy.reified.internal.Utils._
 
 import scala.reflect.runtime.universe
 import scala.reflect.runtime.universe._
@@ -39,7 +39,7 @@ object CaptureConversions {
       Literal(Constant(value))
   }
 
-  /** Inlines a reified value's AST */
+  /** Inlines reified values' ASTs */
   final lazy val REIFIED_VALUE: Conversion = {
     case (value: HasReifiedValue[_], tpe: Type, conversion: Conversion) =>
       value.reifiedValue.expr(conversion).tree.duplicate
@@ -89,7 +89,7 @@ object CaptureConversions {
   }
 
   /**
-   * Convert an array an AST that represents a call to Array.apply with a 'best guess' component
+   * Converts arrays to an AST that represents a call to Array.apply with a 'best guess' component
    *  type, and all values converted.
    */
   final lazy val ARRAY: Conversion = {
@@ -110,7 +110,7 @@ object CaptureConversions {
   }
 
   /**
-   * Convert an immutable collection to an AST that represents a call to a constructor for that
+   * Converts immutable collections to an AST that represents a call to a constructor for that
    *  collection type with a 'best guess' component type, and all values converted.
    *  Types supported are HashSet, Set, List, Vector, Stack, Queue, Seq.
    */

@@ -3,9 +3,9 @@ package scalaxy.reified
 import scala.reflect.runtime.universe
 import scala.reflect.runtime.universe._
 
-import scalaxy.reified.impl.CaptureTag
-import scalaxy.reified.impl.Utils
-import scalaxy.reified.impl.Utils._
+import scalaxy.reified.internal.CaptureTag
+import scalaxy.reified.internal.Utils
+import scalaxy.reified.internal.Utils._
 import scala.tools.reflect.ToolBox
 
 /**
@@ -22,7 +22,7 @@ private[reified] trait HasReifiedValue[A] {
  * This object retains the runtime value passed to {@link scalaxy.reified.reify} as well as its
  * compile-time AST.
  * It also keeps track of the values captured by the AST in its scope, which are identified in the
- * AST by calls to {@link scalaxy.impl.CaptureTag} (which contain the index of the captured value
+ * AST by calls to {@link scalaxy.internal.CaptureTag} (which contain the index of the captured value
  * in the capturedTerms field of this reified value).
  */
 final case class ReifiedValue[A: TypeTag] private[reified] (
@@ -31,14 +31,14 @@ final case class ReifiedValue[A: TypeTag] private[reified] (
    */
   val value: A,
   /**
-   * AST of the value, with {@link scalaxy.impl.CaptureTag} calls wherever an external value
+   * AST of the value, with {@link scalaxy.internal.CaptureTag} calls wherever an external value
    * reference was captured.
    */
   val taggedExpr: Expr[A],
   /**
    * Runtime values of the references captured by the AST, along with their static type at the site
    * of the capture.
-   * The order of captures matches {@link scalaxy.impl.CaptureTag#indexCapture}.
+   * The order of captures matches {@link scalaxy.internal.CaptureTag#indexCapture}.
    */
   val capturedTerms: Seq[(AnyRef, Type)])
     extends HasReifiedValue[A] {
@@ -56,7 +56,7 @@ final case class ReifiedValue[A: TypeTag] private[reified] (
    */
   def compile(
     conversion: CaptureConversions.Conversion = CaptureConversions.DEFAULT,
-    toolbox: ToolBox[universe.type] = impl.Utils.optimisingToolbox): () => A = {
+    toolbox: ToolBox[universe.type] = internal.Utils.optimisingToolbox): () => A = {
 
     val ast = expr(conversion).tree
 

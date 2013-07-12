@@ -1,0 +1,1 @@
+Scalaxy/Reify provides a reify method that goes beyond the stock Universe.reify method, by taking care of captured values and allowing composition of reified functions for improved flexibility of dynamic usage of ASTs. The original expression is also available at runtime, without having to compile it with ToolBox.eval.

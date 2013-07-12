@@ -217,6 +217,29 @@ object Scalaxy extends Build {
     .dependsOn(reifiedBase)
     .aggregate(reifiedBase)
 
+  lazy val reifiedDoc = Project(
+    id = "scalaxy-reified-doc", 
+    base = file("Reified/Doc"), 
+    settings = reflectSettings ++ Seq(
+      scalacOptions in (Compile, doc) <++= (scalaVersion) map {
+        case (scalaVersion) =>
+          //Seq("-doc-source-url", "http://www.scala-lang.org/api/" + scalaVersion + "/index.html#package")
+          Seq("-doc-source-url", "http://www.scala-lang.org/api/2.10.2/index.html#package")
+      },
+      scalacOptions in (Compile, doc) <++= (name, description, version, sourceDirectory, scalaVersion) map {
+        case (name, description, version, sourceDirectory, scalaVersion) =>
+          Opts.doc.title(name + ": " + description) ++ 
+          Opts.doc.version(version) ++ 
+          Seq("-doc-source-url", "http://www.scala-lang.org/api/" + scalaVersion + "/index.html#package") ++
+          Seq("-doc-root-content", (sourceDirectory / "main/rootdoc.txt").getAbsolutePath)
+      },
+      unmanagedSourceDirectories in Compile <<= (
+        (Seq(reified, reifiedBase) map (unmanagedSourceDirectories in _ in Compile)).join.apply {
+          (s) => s.flatten.toSeq
+        }
+      )
+    )).dependsOn(reified, reifiedBase)
+
   lazy val fxSettings = reflectSettings ++ Seq(
     unmanagedJars in Compile ++= Seq(
       new File(System.getProperty("java.home")) / "lib" / "jfxrt.jar"

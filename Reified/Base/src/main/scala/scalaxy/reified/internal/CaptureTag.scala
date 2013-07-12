@@ -1,4 +1,4 @@
-package scalaxy.reified.impl
+package scalaxy.reified.internal
 
 import scala.reflect.runtime.universe._
 import scala.reflect.runtime.currentMirror
@@ -33,8 +33,8 @@ object CaptureTag {
   }
 
   /**
-   * Deconstructor for {@link scalaxy.impl.CaptureTag#apply} calls in ASTs.
-   *  @return if a {@link scalaxy.impl.CaptureTag#apply} call was matched, return some tuple made of the static type of the captured value, the original reference that was captured, and the index of the runtime value of the capture in {@link scalaxy.reified.ReifiedValue#capturedTerms}. Otherwise, return {@link scala.None}.
+   * Deconstructor for {@link scalaxy.internal.CaptureTag#apply} calls in ASTs.
+   *  @return if a {@link scalaxy.internal.CaptureTag#apply} call was matched, return some tuple made of the static type of the captured value, the original reference that was captured, and the index of the runtime value of the capture in {@link scalaxy.reified.ReifiedValue#capturedTerms}. Otherwise, return {@link scala.None}.
    */
   def unapply(tree: Tree): Option[(Type, Tree, Int)] = {
     tree match {
@@ -54,7 +54,7 @@ object CaptureTag {
    * Symbol of CaptureTag.apply method
    */
   private lazy val captureSymbol = {
-    val captureModule = currentMirror.staticModule("scalaxy.reified.impl.CaptureTag")
+    val captureModule = currentMirror.staticModule("scalaxy.reified.internal.CaptureTag")
     captureModule.moduleClass.typeSignature.member("apply": TermName)
   }
 }
