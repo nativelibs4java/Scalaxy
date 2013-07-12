@@ -6,6 +6,8 @@ import org.junit.Assert._
 import scala.reflect.runtime.universe
 import scala.reflect.runtime.currentMirror
 import scala.tools.reflect.ToolBox
+import scala.reflect.ClassTag
+import scala.reflect.runtime.universe.TypeTag
 
 import scalaxy.reified.{ reify, ReifiedValue }
 
@@ -18,7 +20,8 @@ trait TestUtils {
       toolbox.eval(tree)
     } catch {
       case _: Throwable =>
-        val reset = toolbox.resetAllAttrs(tree)
+        //val reset = toolbox.resetAllAttrs(tree)
+        val reset = toolbox.resetLocalAttrs(tree)
         try {
           toolbox.eval(reset)
         } catch {
@@ -28,7 +31,8 @@ trait TestUtils {
         }
     }
   }
-  def assertSameEvals[A, B](f: ReifiedValue[A => B], inputs: A*) {
+
+  def assertSameEvals[A: TypeTag, B: TypeTag](f: ReifiedValue[A => B], inputs: A*) {
     //val toolbox = currentMirror.mkToolBox()
     for (input <- inputs) {
       val directEval = f(input)

@@ -1,12 +1,13 @@
-package scalaxy.reified
+package scalaxy.reified.base
 
-import scalaxy.reified.impl.Utils.{ toolbox, newExpr }
+import scalaxy.reified.impl.Utils._
 
 import scala.reflect.runtime.universe
 import scala.reflect.runtime.universe._
 import scala.reflect.runtime.universe.definitions._
 import scala.reflect.runtime.currentMirror
 import scala.collection.immutable
+import scala.reflect.{ ClassTag, Manifest, ClassManifestFactory }
 
 /**
  * Conversions for captured references of common types.
@@ -18,7 +19,7 @@ object CaptureConversions {
   final lazy val DEFAULT: Conversion = {
     CONSTANT orElse
       REIFIED_VALUE orElse
-      //ARRAY orElse 
+      ARRAY orElse
       IMMUTABLE_COLLECTION
   }
 
@@ -44,27 +45,23 @@ object CaptureConversions {
     conversion: Conversion): (Tree, Type) = {
 
     val (moduleSym, methodSym) = syms
-    val (elementType, castToAnyRef) = tpe match {
-      case TypeRef(_, _, elementType :: _) if tpe <:< typeOf[Traversable[_]] =>
+    val (elementType, castToAnyRef) = (tpe, col) match {
+      case (TypeRef(_, _, elementType :: _), _) if tpe <:< typeOf[Traversable[_]] =>
         //println(s"GOT ELEMENT TYPE $elementType")
         elementType -> false
+      case (_, wa: collection.mutable.WrappedArray[_]) =>
+        val elementManifest = wa.elemTag.asInstanceOf[Manifest[_]]
+        // case _: Array[_] => ClassManifestFactory.classType(col.getClass.getComponentType)
+        manifestToTypeTag(currentMirror, elementManifest).tpe.asInstanceOf[Type] -> false
       case _ =>
         typeOf[AnyRef] -> true
     }
 
-    def getModulePath(moduleSym: ModuleSymbol): Tree = {
-      val elements = moduleSym.fullName.split("\\.").toList
-      def rec(root: Tree, sub: List[String]): Tree = sub match {
-        case Nil => root
-        case name :: rest => rec(Select(root, name: TermName), rest)
-      }
-      rec(Ident(elements.head: TermName), elements.tail)
-    }
     (
       Apply(
         TypeApply(
           Select(
-            getModulePath(moduleSym), //Ident(moduleSym),
+            getModulePath(universe)(moduleSym), //Ident(moduleSym),
             methodSym),
           List(TypeTree(elementType))),
         col.map(value => {
@@ -84,25 +81,20 @@ object CaptureConversions {
   }
 
   /** @deprecated Still buggy */
-  @deprecated("Still buggy", since = "")
+  //@deprecated("Still buggy", since = "")
   final lazy val ARRAY: Conversion = {
     lazy val Array_syms = (ArrayModule, ArrayModule_overloadedApply)
 
     {
       case (array: Array[_], tpe: Type, conversion: Conversion) =>
         val (conv, elementType) = collectionApply(Array_syms, array, tpe, conversion)
-        val classTagSym = currentMirror.staticClass("scala.reflect.ClassTag")
-        val classTagType = classTagSym.toType
-        //val classTagType = typeOf[scala.reflect.ClassTag[_]]
-        //val classTagSym = classTagType.typeSymbol
+        val classTagType = for (t <- typeOf[ClassTag[Int]]) yield {
+          if (t == typeOf[Int]) elementType
+          else t
+        }
         Apply(
           conv,
-          List(
-            toolbox.inferImplicitValue(
-              typeRef(
-                classTagType,
-                classTagSym,
-                List(elementType)))))
+          List(toolbox.inferImplicitValue(classTagType)))
     }
   }
 

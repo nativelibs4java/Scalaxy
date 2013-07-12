@@ -1,4 +1,6 @@
-package scalaxy.reified
+package scalaxy.reified.base
+
+import scalaxy.reified.impl
 
 import scala.reflect.runtime.universe._
 
@@ -8,24 +10,24 @@ import scalaxy.reified.impl.Utils.newExpr
 final case class ReifiedValue[A] private[reified] (
     val value: A,
     val taggedExpr: Expr[A],
-    val captures: Seq[(AnyRef, Type)]) {
+    val capturedTerms: Seq[(AnyRef, Type)]) {
 
-  def capturedValues: Seq[AnyRef] = captures.map(_._1)
+  def capturedValues: Seq[AnyRef] = capturedTerms.map(_._1)
 
   def flattenCaptures(capturesOffset: Int): ReifiedValue[A] = {
-    val flatCaptures = collection.mutable.ArrayBuffer[(AnyRef, Type)]()
-    flatCaptures ++= captures
+    val flatCapturedTerms = collection.mutable.ArrayBuffer[(AnyRef, Type)]()
+    flatCapturedTerms ++= capturedTerms
 
     val mappedExpr = mapTaggedExpr(new Transformer {
       override def transform(tree: Tree): Tree = {
         tree match {
           case CaptureTag(tpe, ref, captureIndex) =>
-            captures(captureIndex) match {
+            capturedTerms(captureIndex) match {
               case (value: ReifiedValue[_], _) =>
-                val sub = value.flattenCaptures(capturesOffset + captures.size)
+                val sub = value.flattenCaptures(capturesOffset + capturedTerms.size)
                 val subTree = sub.taggedExpr.tree
 
-                flatCaptures ++= sub.captures
+                flatCapturedTerms ++= sub.capturedTerms
                 if (value.taggedExpr.tree eq subTree)
                   subTree.duplicate
                 else
@@ -41,7 +43,7 @@ final case class ReifiedValue[A] private[reified] (
     new ReifiedValue[A](
       value,
       mappedExpr,
-      flatCaptures.toSeq)
+      flatCapturedTerms.toList)
   }
 
   def expr(conversion: CaptureConversions.Conversion = CaptureConversions.DEFAULT): Expr[A] = {
@@ -49,7 +51,7 @@ final case class ReifiedValue[A] private[reified] (
       override def transform(tree: Tree): Tree = {
         tree match {
           case CaptureTag(_, _, captureIndex) =>
-            val (capturedValue, valueType) = captures(captureIndex)
+            val (capturedValue, valueType) = capturedTerms(captureIndex)
             val converter: CaptureConversions.Conversion = conversion.orElse({
               case _ =>
                 sys.error(s"This type of captured value is not supported: $capturedValue")

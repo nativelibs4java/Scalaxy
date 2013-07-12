@@ -7,11 +7,18 @@ import scala.reflect._
 import scala.reflect.macros.Context
 import scala.reflect.runtime
 import scala.reflect.runtime.universe
+import scala.reflect.runtime.universe.TypeTag
+
+import scalaxy.reified.impl
+import scalaxy.reified.base.ReifiedValue
 
 package object reified {
-  def reify[A](v: A): ReifiedValue[A] = macro reified.impl.reifyValue[A]
 
-  implicit def reifiedValue2ReifiedFunction[A, B](r: ReifiedValue[A => B]): ReifiedFunction1[A, B] = {
+  type ReifiedValue[A] = base.ReifiedValue[A]
+
+  def reify[A](v: A): ReifiedValue[A] = macro impl.reifyValue[A]
+
+  implicit def reifiedValue2ReifiedFunction[A: TypeTag, B: TypeTag](r: ReifiedValue[A => B]): ReifiedFunction1[A, B] = {
     new ReifiedFunction1(r)
   }
 
@@ -20,5 +27,6 @@ package object reified {
   }
 
   implicit def reifiedValue2Value[A](r: ReifiedValue[A]): A = r.value
+  implicit def reifiedFunction2Value[A, B](r: ReifiedFunction1[A, B]): A => B = r.value
 }
 

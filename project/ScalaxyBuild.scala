@@ -61,6 +61,8 @@ object Scalaxy extends Build {
         "-encoding", "UTF-8",
         "-optimise", 
         "-deprecation",
+        //"-Xlog-implicits",
+        //"-Ymacro-debug-lite", "-Ydebug",
         "-feature",
         "-unchecked"
       ),
@@ -206,9 +208,13 @@ object Scalaxy extends Build {
   lazy val debug =
     Project(id = "scalaxy-debug", base = file("Debug"), settings = reflectSettings)
 
+  lazy val reifiedBase =
+    Project(id = "scalaxy-reified-base", base = file("Reified/Base"), settings = reflectSettings ++ scalariformSettings)
+    .dependsOn(debug)
+
   lazy val reified =
     Project(id = "scalaxy-reified", base = file("Reified"), settings = reflectSettings ++ scalariformSettings)
-    .dependsOn(debug)
+    .dependsOn(reifiedBase)
 
   lazy val fxSettings = reflectSettings ++ Seq(
     unmanagedJars in Compile ++= Seq(

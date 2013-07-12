@@ -16,10 +16,15 @@ class CaptureConversionsTest extends TestUtils {
     assertEquals(Seq(v), r.capturedValues)
     try {
       val tree = r.expr().tree
-      val eval = toolbox.eval(toolbox.resetAllAttrs(tree))
-      assertEquals(v, eval)
+      val value = eval(tree)
+      if (v.getClass.isArray) {
+        val meth = classOf[Assert].getMethod("assertArrayEquals", v.getClass, v.getClass)
+        meth.invoke(null, v.asInstanceOf[AnyRef], value.asInstanceOf[AnyRef])
+      } else {
+        assertEquals("Got " + value + ": " + value.getClass.getName, v, value)
+      }
       if (predicate != null) {
-        assertTrue("Predicate failed for " + eval, predicate(eval))
+        assertTrue("Predicate failed for " + value, predicate(value))
       }
     } catch {
       case ex: Throwable =>
@@ -46,8 +51,7 @@ class CaptureConversionsTest extends TestUtils {
 
   @Test
   def testArrays {
-    // TODO
-    //testValue(Array(1, 2))
+    testValue(Array(1, 2))
   }
 
   @Test
