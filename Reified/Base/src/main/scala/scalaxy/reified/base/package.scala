@@ -9,6 +9,6 @@ import scala.reflect.runtime
 import scala.reflect.runtime.universe
 
 package object base {
-  def reify[A](v: A): ReifiedValue[A] = macro impl.reifyValue[A]
+  def reify[A](v: A): ReifiedValue[A] = macro impl.reifyImpl[A]
 }
 

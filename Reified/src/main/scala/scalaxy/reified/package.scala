@@ -29,13 +29,16 @@ package object reified {
   type HasReifiedValue[A] = base.HasReifiedValue[A]
 
   /**
-   * Reify a value, preserving the original value and keeping track of the values it captures.
+   * Reify a value (including functions), preserving the original value and keeping track of the
+   * values it captures from the scope of its expression.
    * This allows for runtime processing of the value's AST (being able to capture external values makes this method more flexible than Universe.reify).
+   * Compile-time error are raised when an external reference cannot be captured safely (vars and
+   * lazy vals are not considered safe, for instance).
    * Captured values are inlined in the reified value's AST with a conversion function,
-   * which can be curtomized (by default, it handles constants, arrays, immutable collections,
+   * which can be customized (by default, it handles constants, arrays, immutable collections,
    * reified values and their wrappers).
    */
-  def reify[A](v: A): ReifiedValue[A] = macro impl.reifyValue[A]
+  def reify[A](v: A): ReifiedValue[A] = macro impl.reifyImpl[A]
 
   /**
    * Wrapper that provides Function1-like methods to a reified Function1 value.

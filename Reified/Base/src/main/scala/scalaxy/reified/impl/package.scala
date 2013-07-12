@@ -21,7 +21,7 @@ package object impl {
     )
   }
 
-  def reifyValue[A: c.WeakTypeTag](c: Context)(v: c.Expr[A]): c.Expr[ReifiedValue[A]] = {
+  def reifyImpl[A: c.WeakTypeTag](c: Context)(v: c.Expr[A]): c.Expr[ReifiedValue[A]] = {
 
     import c.universe._
 
