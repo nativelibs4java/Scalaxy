@@ -26,12 +26,9 @@ println(f(1))
 val ast = f.expr().tree
 println(ast) 
 
-// Put scala-compiler.jar in your classpath for the following to work:
-import scala.tools.reflect.ToolBox
-val toolbox = scala.reflect.runtime.currentMirror.mkToolBox()
-// Compile the AST at runtime:
-val compiledF = toolbox.eval(toolbox.resetAllAttrs(ast))
-// Evaluation, using the runtime-compiled function:
+// Compile the AST at runtime (needs scala-compiler.jar in the classpath):
+val compiledF = ast.compile()()
+// Evaluation, using the freshly-compiled function:
 println(compiledF(1))
 ```
 
