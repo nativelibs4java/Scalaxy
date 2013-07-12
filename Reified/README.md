@@ -19,8 +19,8 @@ def comp(capture1: Int): ReifiedFunction1[Int, Int] = {
   g.compose(f)
 }
 
-println(comp(10).expr.tree)
-println(comp(100).expr.tree)
+println(comp(10).expr().tree)
+println(comp(100).expr().tree)
 ```
 
 # Usage
