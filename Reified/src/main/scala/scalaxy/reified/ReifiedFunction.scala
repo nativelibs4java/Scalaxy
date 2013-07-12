@@ -9,9 +9,12 @@ import scalaxy.reified.impl.composeValues
 import scalaxy.debug._
 
 class ReifiedFunction1[A: TypeTag, B: TypeTag](
-    val value: ReifiedValue[A => B]) {
+  val value: ReifiedValue[A => B])
+    extends HasReifiedValue[A => B] {
 
   assert(value != null)
+
+  override def reifiedValue = value
 
   def apply(a: A): B = value.value(a)
 
@@ -41,7 +44,7 @@ class ReifiedFunction1[A: TypeTag, B: TypeTag](
     //ReifiedFunction1.compose(this, r)
   }
 
-  override def toString = value.toString
+  override def toString = s"${getClass.getSimpleName}($value)"
 }
 /*
 object ReifiedFunction1 {

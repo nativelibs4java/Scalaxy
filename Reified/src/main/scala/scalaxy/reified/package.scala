@@ -15,6 +15,7 @@ import scalaxy.reified.base.ReifiedValue
 package object reified {
 
   type ReifiedValue[A] = base.ReifiedValue[A]
+  type HasReifiedValue[A] = base.HasReifiedValue[A]
 
   def reify[A](v: A): ReifiedValue[A] = macro impl.reifyValue[A]
 

@@ -33,8 +33,8 @@ object CaptureConversions {
   }
 
   final lazy val REIFIED_VALUE: Conversion = {
-    case (value: ReifiedValue[_], tpe: Type, conversion: Conversion) =>
-      value.expr(conversion).tree.duplicate
+    case (value: HasReifiedValue[_], tpe: Type, conversion: Conversion) =>
+      value.reifiedValue.expr(conversion).tree.duplicate
   }
 
   // returns collection.apply + elementType

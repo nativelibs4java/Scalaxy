@@ -7,10 +7,17 @@ import scala.reflect.runtime.universe._
 import scalaxy.reified.impl.CaptureTag
 import scalaxy.reified.impl.Utils.newExpr
 
+trait HasReifiedValue[A] {
+  def reifiedValue: ReifiedValue[A]
+}
+
 final case class ReifiedValue[A] private[reified] (
-    val value: A,
-    val taggedExpr: Expr[A],
-    val capturedTerms: Seq[(AnyRef, Type)]) {
+  val value: A,
+  val taggedExpr: Expr[A],
+  val capturedTerms: Seq[(AnyRef, Type)])
+    extends HasReifiedValue[A] {
+
+  override def reifiedValue = this
 
   def capturedValues: Seq[AnyRef] = capturedTerms.map(_._1)
 
