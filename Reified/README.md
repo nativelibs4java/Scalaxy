@@ -35,7 +35,14 @@ libraryDependencies += "com.nativelibs4java" %% "scalaxy-reified" % "0.3-SNAPSHO
 // Scalaxy/Reified snapshots are published on the Sonatype repository.
 resolvers += Resolver.sonatypeRepo("snapshots")
 ```
-    
+
+# TODO
+
+- Add many more tests
+- Fix `ReifiedFunction2.curried`
+- Provide a `ReifiedPartialFunction` wrapper with an `orElse` method that extracts match cases and recomposes a match that's optimizable by the compiler
+- Write an end-to-end usage example with benchmarks (algebraic expressions parser / compiler?)
+
 # Hacking
 
 If you want to build / test / hack on this project:
