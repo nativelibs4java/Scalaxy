@@ -22,8 +22,9 @@ val f = comp(10)
 // Normal evaluation, using regular function:
 println(f(1))
 
+// Get the function's AST, inlining all captured values and captured reified values:
 val ast = f.expr().tree
-println(ast) // show the AST that was captured
+println(ast) 
 
 // Put scala-compiler.jar in your classpath for the following to work:
 import scala.tools.reflect.ToolBox
