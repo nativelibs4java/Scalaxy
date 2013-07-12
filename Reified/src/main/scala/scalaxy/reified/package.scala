@@ -12,11 +12,29 @@ import scala.reflect.runtime.universe.TypeTag
 import scalaxy.reified.impl
 import scalaxy.reified.base.ReifiedValue
 
+/**
+ * Scalaxy/Reified: the reify method in this package captures it's compile-time argument's AST,
+ * allowing / preserving values captured outside its expression.
+ */
 package object reified {
 
+  /**
+   * Type of a reified value.
+   */
   type ReifiedValue[A] = base.ReifiedValue[A]
+
+  /**
+   * Type of a reified value wrapper.
+   */
   type HasReifiedValue[A] = base.HasReifiedValue[A]
 
+  /**
+   * Reify a value, preserving the original value and keeping track of the values it captures.
+   * This allows for runtime processing of the value's AST (being able to capture external values makes this method more flexible than Universe.reify).
+   * Captured values are inlined in the reified value's AST with a conversion function,
+   * which can be curtomized (by default, it handles constants, arrays, immutable collections,
+   * reified values and their wrappers).
+   */
   def reify[A](v: A): ReifiedValue[A] = macro impl.reifyValue[A]
 
   /**
@@ -84,6 +102,7 @@ package object reified {
   implicit def hasReifiedValueToReifiedValue[A](r: HasReifiedValue[A]): ReifiedValue[A] = {
     r.reifiedValue
   }
+
   /**
    * Implicitly convert reified value to their original non-reified value.
    */
