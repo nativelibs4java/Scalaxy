@@ -21,12 +21,13 @@ package object impl {
     )
   }
 
-  def reifyImpl[A: c.WeakTypeTag](c: Context)(v: c.Expr[A]): c.Expr[ReifiedValue[A]] = {
+  def reifyImpl[A: c.WeakTypeTag](c: Context)(v: c.Expr[A])(tt: c.Expr[universe.TypeTag[A]]): c.Expr[ReifiedValue[A]] = {
 
     import c.universe._
 
     val (expr, capturesExpr) = transformReifiedRefs(c)(v)
     c.universe.reify({
+      implicit val valueTag = tt.splice
       new ReifiedValue[A](
         v.splice,
         Utils.typeCheck(expr.splice),

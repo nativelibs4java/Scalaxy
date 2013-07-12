@@ -8,20 +8,22 @@ import scalaxy.reified.impl.Utils._
 
 trait HasReifiedValue[A] {
   def reifiedValue: ReifiedValue[A]
+  def valueTag: TypeTag[A]
   override def toString = s"${getClass.getSimpleName}(${reifiedValue.value}, ${reifiedValue.taggedExpr.tree}, ${reifiedValue.capturedTerms})"
 }
 
-final case class ReifiedValue[A] private[reified] (
+final case class ReifiedValue[A: TypeTag] private[reified] (
   val value: A,
   val taggedExpr: Expr[A],
   val capturedTerms: Seq[(AnyRef, Type)])
     extends HasReifiedValue[A] {
 
   override def reifiedValue = this
+  override def valueTag = typeTag[A]
 
   def capturedValues: Seq[AnyRef] = capturedTerms.map(_._1)
 
-  def flattenCaptures(capturesOffset: Int = 0): ReifiedValue[A] = {
+  def flatten(capturesOffset: Int = 0): ReifiedValue[A] = {
     val flatCapturedTerms = collection.mutable.ArrayBuffer[(AnyRef, Type)]()
     flatCapturedTerms ++= capturedTerms
 
@@ -31,7 +33,7 @@ final case class ReifiedValue[A] private[reified] (
           case CaptureTag(tpe, ref, captureIndex) =>
             capturedTerms(captureIndex) match {
               case (value: ReifiedValue[_], _) =>
-                val sub = value.flattenCaptures(capturesOffset + capturedTerms.size)
+                val sub = value.flatten(capturesOffset + capturedTerms.size)
                 val subTree = sub.taggedExpr.tree
 
                 flatCapturedTerms ++= sub.capturedTerms
@@ -95,7 +97,7 @@ final case class ReifiedValue[A] private[reified] (
             val (capturedValue, valueType) = capturedTerms(captureIndex)
             capturedValue match {
               case hr: HasReifiedValue[_] =>
-                val flatRef = hr.reifiedValue.flattenCaptures(flatCaptures.size)
+                val flatRef = hr.reifiedValue.flatten(flatCaptures.size)
                 flatCaptures ++= flatRef.capturedTerms
                 // TODO maybe no need to duplicate if tree was unchanged (when no capture)
                 super.transform(hr.reifiedValue.taggedExpr.tree) //.duplicate)

@@ -7,8 +7,9 @@ import scala.reflect._
 import scala.reflect.macros.Context
 import scala.reflect.runtime
 import scala.reflect.runtime.universe
+import scala.reflect.runtime.universe.TypeTag
 
 package object base {
-  def reify[A](v: A): ReifiedValue[A] = macro impl.reifyImpl[A]
+  def reify[A: TypeTag](v: A): ReifiedValue[A] = macro impl.reifyImpl[A]
 }
 

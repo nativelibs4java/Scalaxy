@@ -7,7 +7,7 @@ import scala.reflect._
 import scala.reflect.macros.Context
 import scala.reflect.runtime
 import scala.reflect.runtime.universe
-import scala.reflect.runtime.universe.TypeTag
+import scala.reflect.runtime.universe.{ typeTag, TypeTag }
 
 import scalaxy.reified.impl
 import scalaxy.reified.base.ReifiedValue
@@ -38,7 +38,7 @@ package object reified {
    * which can be customized (by default, it handles constants, arrays, immutable collections,
    * reified values and their wrappers).
    */
-  def reify[A](v: A): ReifiedValue[A] = macro impl.reifyImpl[A]
+  def reify[A: TypeTag](v: A): ReifiedValue[A] = macro impl.reifyImpl[A]
 
   /**
    * Wrapper that provides Function1-like methods to a reified Function1 value.
@@ -50,6 +50,7 @@ package object reified {
     assert(value != null)
 
     override def reifiedValue = value
+    override def valueTag = typeTag[T1 => R]
 
     def apply(a: T1): R = value.value(a)
 
@@ -74,6 +75,7 @@ package object reified {
     assert(value != null)
 
     override def reifiedValue = value
+    override def valueTag = typeTag[Function2[T1, T2, R]]
 
     def apply(v1: T1, v2: T2): R = value.value(v1, v2)
 
