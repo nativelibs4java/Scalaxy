@@ -124,6 +124,11 @@ final case class ReifiedValue[A: TypeTag] private[reified] (
       flatCapturedTerms.toList)
   }
 
+  /**
+   * Naive AST resolution that inlines captured values in their reference site.
+   * As this might instantiate captured collections more than needed, this should be dropped as
+   * soon as optimizedExpr is stable.
+   */
   private def stableExpr(conversion: CaptureConversions.Conversion = CaptureConversions.DEFAULT): Expr[A] = {
     val transformer = new Transformer {
       override def transform(tree: Tree): Tree = {
