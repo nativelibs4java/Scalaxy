@@ -11,7 +11,6 @@ This is still highly experimental, documentation will come soon enough.
 import scalaxy.reified._
 
 def comp(capture1: Int): ReifiedFunction1[Int, Int] = {
-  // Capture of arrays is TODO
   val capture2 = Seq(10, 20, 30)
   val f = reify((x: Int) => capture1 + capture2(x))
   val g = reify((x: Int) => x * x)
@@ -19,8 +18,20 @@ def comp(capture1: Int): ReifiedFunction1[Int, Int] = {
   g.compose(f)
 }
 
-println(comp(10).expr().tree)
-println(comp(100).expr().tree)
+val f = comp(10)
+// Normal evaluation, using regular function:
+println(f(1))
+
+val ast = f.expr().tree
+println(ast) // show the AST that was captured
+
+// Put scala-compiler.jar in your classpath for the following to work:
+import scala.tools.reflect.ToolBox
+val toolbox = scala.reflect.runtime.currentMirror.mkToolBox()
+// Compile the AST at runtime:
+val compiledF = toolbox.eval(toolbox.resetAllAttrs(ast))
+// Evaluation, using the runtime-compiled function:
+println(compiledF(1))
 ```
 
 # Usage
