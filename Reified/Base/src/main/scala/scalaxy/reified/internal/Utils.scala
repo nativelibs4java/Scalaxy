@@ -7,6 +7,10 @@ import scala.tools.reflect.ToolBox
 
 import scalaxy.reified.ReifiedValue
 
+/**
+ * Utility methods used by Scalaxy/Reified's implementation.
+ * Should not be called by users of the library, API might change even in minor / patch versions.
+ */
 object Utils {
 
   private[reified] def newExpr[A](tree: Tree): Expr[A] = {

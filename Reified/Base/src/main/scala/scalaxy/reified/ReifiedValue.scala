@@ -12,34 +12,32 @@ import scala.tools.reflect.ToolBox
  * Reified value wrapper.
  */
 private[reified] trait HasReifiedValue[A] {
+
+  /** Underlying reified value of this object */
   private[reified] def reifiedValue: ReifiedValue[A]
+
+  /** Type tag of the reified value */
   def valueTag: TypeTag[A]
+
+  /** String representation of this object, mainly for debugging purposes */
   override def toString = s"${getClass.getSimpleName}(${reifiedValue.value}, ${reifiedValue.taggedExpr.tree}, ${reifiedValue.capturedTerms})"
 }
 
 /**
- * Reified value which can be created by {@link scalaxy.reified.reify}.
- * This object retains the runtime value passed to {@link scalaxy.reified.reify} as well as its
+ * Reified value which can be created by [[scalaxy.reified.reify]].
+ * This object retains the runtime value passed to [[scalaxy.reified.reify]] as well as its
  * compile-time AST.
  * It also keeps track of the values captured by the AST in its scope, which are identified in the
- * AST by calls to {@link scalaxy.internal.CaptureTag} (which contain the index of the captured value
+ * AST by calls to [[scalaxy.reified.internal.CaptureTag]] (which contain the index of the captured value
  * in the capturedTerms field of this reified value).
+ *
+ * @param value original value passed to [[scalaxy.reified.reify]]
+ * @param taggedExpr AST of the value, with [[scalaxy.reified.internal.CaptureTag]] calls wherever an external value reference was captured.
+ * @param capturedTerms runtime values of the references captured by the AST, along with their static type at the site of the capture. The order of captures matches captureIndex in  [[scalaxy.reified.internal.CaptureTag.apply]].
  */
 final case class ReifiedValue[A: TypeTag] private[reified] (
-  /**
-   * Original value passed to {@link scalaxy.reified.reify}
-   */
   val value: A,
-  /**
-   * AST of the value, with {@link scalaxy.internal.CaptureTag} calls wherever an external value
-   * reference was captured.
-   */
   val taggedExpr: Expr[A],
-  /**
-   * Runtime values of the references captured by the AST, along with their static type at the site
-   * of the capture.
-   * The order of captures matches {@link scalaxy.internal.CaptureTag#indexCapture}.
-   */
   val capturedTerms: Seq[(AnyRef, Type)])
     extends HasReifiedValue[A] {
 
@@ -50,9 +48,9 @@ final case class ReifiedValue[A: TypeTag] private[reified] (
    * Compile the AST (using the provided conversion to convert captured values to ASTs).
    * Requires scala-compiler.jar to be in the classpath.
    * Note: with Sbt, you can put scala-compiler.jar in the classpath with the following setting:
-   * <pre><code>
+   * {{{
    *   libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-compiler" % _)
-   * </code></pre>
+   * }}}
    */
   def compile(
     conversion: CaptureConversions.Conversion = CaptureConversions.DEFAULT,

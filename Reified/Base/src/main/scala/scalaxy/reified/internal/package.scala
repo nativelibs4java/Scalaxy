@@ -8,6 +8,9 @@ import scala.reflect.runtime.universe
 
 import scalaxy.reified.internal.Utils._
 
+/**
+ * Internal methods and classes used by Scalaxy/Reified's implementation
+ */
 package object internal {
 
   private def runtimeExpr[A](c: Context)(tree: c.universe.Tree): c.Expr[universe.Expr[A]] = {

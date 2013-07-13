@@ -31,6 +31,8 @@ package object reified {
 
   /**
    * Wrapper that provides Function1-like methods to a reified Function1 value.
+   *
+   * @param value reified function value
    */
   implicit class ReifiedFunction1[T1: TypeTag, R: TypeTag](
     val value: ReifiedValue[T1 => R])
@@ -41,6 +43,7 @@ package object reified {
     override def reifiedValue = value
     override def valueTag = typeTag[T1 => R]
 
+    /** Evaluate this function using the regular, non-reified runtime value */
     def apply(a: T1): R = value.value(a)
 
     def compose[A: TypeTag](g: ReifiedFunction1[A, T1]): ReifiedFunction1[A, R] = {
@@ -56,6 +59,8 @@ package object reified {
 
   /**
    * Wrapper that provides Function2-like methods to a reified Function2 value.
+   *
+   * @param value reified function value
    */
   implicit class ReifiedFunction2[T1: TypeTag, T2: TypeTag, R: TypeTag](
     val value: ReifiedValue[Function2[T1, T2, R]])
@@ -66,6 +71,7 @@ package object reified {
     override def reifiedValue = value
     override def valueTag = typeTag[Function2[T1, T2, R]]
 
+    /** Evaluate this function using the regular, non-reified runtime value */
     def apply(v1: T1, v2: T2): R = value.value(v1, v2)
 
     /*

@@ -4,7 +4,7 @@ import scala.reflect.runtime.universe._
 import scala.reflect.runtime.currentMirror
 
 /**
- * Object that enables tagging of values captured by {@link scalaxy.reified.ReifiedValue}'s ASTs.
+ * Object that enables tagging of values captured by [[scalaxy.reified.ReifiedValue]]'s ASTs.
  * Provides creation and extraction of capture tagging calls.
  */
 object CaptureTag {
@@ -21,7 +21,7 @@ object CaptureTag {
    * Construct the AST for the capture tagging call that corresponds to these params.
    * @param tpe static type of the captured value
    * @param reference original reference that was captured
-   * @param captureIndex index of the runtime value of the capture in {@link scalaxy.reified.ReifiedValue#capturedTerms}
+   * @param captureIndex index of the runtime value of the capture in [[scalaxy.reified.ReifiedValue.capturedTerms]]
    */
   def construct(tpe: Type, reference: Tree, captureIndex: Int): Tree = {
     Apply(
@@ -33,8 +33,8 @@ object CaptureTag {
   }
 
   /**
-   * Deconstructor for {@link scalaxy.internal.CaptureTag#apply} calls in ASTs.
-   *  @return if a {@link scalaxy.internal.CaptureTag#apply} call was matched, return some tuple made of the static type of the captured value, the original reference that was captured, and the index of the runtime value of the capture in {@link scalaxy.reified.ReifiedValue#capturedTerms}. Otherwise, return {@link scala.None}.
+   * Deconstructor for [[scalaxy.reified.internal.CaptureTag.apply]] tagging calls in ASTs.
+   *  @return if a [[scalaxy.reified.internal.CaptureTag.apply]] tagging call was matched, return some tuple made of the static type of the captured value, the original reference that was captured, and the index of the runtime value of the capture in [[scalaxy.reified.ReifiedValue#capturedTerms]]. Otherwise, return None.
    */
   def unapply(tree: Tree): Option[(Type, Tree, Int)] = {
     tree match {

@@ -39,7 +39,9 @@ object CaptureConversions {
       Literal(Constant(value))
   }
 
-  /** Inlines reified values' ASTs */
+  /**
+   * Inlines reified values' ASTs
+   */
   final lazy val REIFIED_VALUE: Conversion = {
     case (value: HasReifiedValue[_], tpe: Type, conversion: Conversion) =>
       value.reifiedValue.expr(conversion).tree.duplicate
