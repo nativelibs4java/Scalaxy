@@ -1,4 +1,0 @@
-<plugin>
-  <name>scalaxy-macro-extensions</name>
-  <classname>scalaxy.extensions.MacroExtensionsPlugin</classname>
-</plugin>

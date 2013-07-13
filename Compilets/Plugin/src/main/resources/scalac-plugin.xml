@@ -1,4 +1,0 @@
-<plugin>
-  <name>Scalaxy</name>
-  <classname>scalaxy.compilets.plugin.ScalaxyPlugin</classname>
-</plugin>
