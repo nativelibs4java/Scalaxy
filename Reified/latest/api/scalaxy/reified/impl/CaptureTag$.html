@@ -2,17 +2,17 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
         <head>
-          <title>CaptureConversions - scalaxy-reified-doc: scalaxy-reified-doc 0.3-SNAPSHOT - scalaxy.reified.CaptureConversions</title>
-          <meta name="description" content="CaptureConversions - scalaxy - reified - doc scalaxy - reified - doc 0.3 - SNAPSHOT - scalaxy.reified.CaptureConversions" />
-          <meta name="keywords" content="CaptureConversions scalaxy reified doc scalaxy reified doc 0.3 SNAPSHOT scalaxy.reified.CaptureConversions" />
+          <title>CaptureTag - scalaxy-reified-doc: scalaxy-reified-doc 0.3-SNAPSHOT - scalaxy.reified.impl.CaptureTag</title>
+          <meta name="description" content="CaptureTag - scalaxy - reified - doc scalaxy - reified - doc 0.3 - SNAPSHOT - scalaxy.reified.impl.CaptureTag" />
+          <meta name="keywords" content="CaptureTag scalaxy reified doc scalaxy reified doc 0.3 SNAPSHOT scalaxy.reified.impl.CaptureTag" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
-      <link href="../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
-      <link href="../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <link href="../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
       <script type="text/javascript">
          if(top === self) {
-            var url = '../../index.html';
-            var hash = 'scalaxy.reified.CaptureConversions$';
+            var url = '../../../index.html';
+            var hash = 'scalaxy.reified.impl.CaptureTag$';
             var anchor = window.location.hash;
             var anchor_opt = '';
             if (anchor.length >= 1)
@@ -24,9 +24,9 @@
         </head>
         <body class="value">
       <div id="definition">
-        <img src="../../lib/object_big.png" />
-        <p id="owner"><a href="../package.html" class="extype" name="scalaxy">scalaxy</a>.<a href="package.html" class="extype" name="scalaxy.reified">reified</a></p>
-        <h1>CaptureConversions</h1>
+        <img src="../../../lib/object_big.png" />
+        <p id="owner"><a href="../../package.html" class="extype" name="scalaxy">scalaxy</a>.<a href="../package.html" class="extype" name="scalaxy.reified">reified</a>.<a href="package.html" class="extype" name="scalaxy.reified.impl">impl</a></p>
+        <h1>CaptureTag</h1>
       </div>
 
       <h4 id="signature" class="signature">
@@ -35,11 +35,12 @@
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <span class="name">CaptureConversions</span>
+        <span class="name">CaptureTag</span>
       </span>
       </h4>
       
-          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Conversions for captured references of common types.
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Object that enables tagging of values captured by <code> scalaxy.reified.ReifiedValue</code>'s ASTs.
+Provides creation and extraction of capture tagging calls.
 </p></div><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
@@ -60,7 +61,7 @@
                 <span class="filtertype">Inherited<br />
                 </span>
                 <ol id="linearization">
-                  <li class="in" name="scalaxy.reified.CaptureConversions"><span>CaptureConversions</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                  <li class="in" name="scalaxy.reified.impl.CaptureTag"><span>CaptureTag</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
                 </ol>
               </div><div id="ancestors">
             <span class="filtertype"></span>
@@ -80,23 +81,7 @@
         <div id="allMembers">
         
 
-        <div id="types" class="types members">
-              <h3>Type Members</h3>
-              <ol><li name="scalaxy.reified.CaptureConversions.Conversion" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="Conversion=PartialFunction[(Any,reflect.runtime.universe.Type,Any),reflect.runtime.universe.Tree]"></a>
-      <a id="Conversion:Conversion"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">type</span>
-      </span>
-      <span class="symbol">
-        <span class="name">Conversion</span><span class="result"> = <span class="extype" name="scala.PartialFunction">PartialFunction</span>[(<span class="extype" name="scala.Any">Any</span>, <span class="extype" name="scala.reflect.api.Types.Type">scala.reflect.api.JavaUniverse.Type</span>, <span class="extype" name="scala.Any">Any</span>), <span class="extype" name="scala.reflect.api.Trees.Tree">scala.reflect.api.JavaUniverse.Tree</span>]</span>
-      </span>
-      </h4>
-      
-    </li></ol>
-            </div>
+        
 
         
 
@@ -167,83 +152,21 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li name="scalaxy.reified.CaptureConversions#ARRAY" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="ARRAY:scalaxy.reified.CaptureConversions.Conversion"></a>
-      <a id="ARRAY:Conversion"></a>
+    </li><li name="scalaxy.reified.impl.CaptureTag#apply" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="apply[T](ref:T,captureIndex:Int):T"></a>
+      <a id="apply[T](T,Int):T"></a>
       <h4 class="signature">
       <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">lazy val</span>
+        <span class="modifier"></span>
+        <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">ARRAY</span><span class="result">: <a href="#Conversion=PartialFunction[(Any,reflect.runtime.universe.Type,Any),reflect.runtime.universe.Tree]" class="extmbr" name="scalaxy.reified.CaptureConversions.Conversion">Conversion</a></span>
+        <span class="name">apply</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="ref">ref: <span class="extype" name="scalaxy.reified.impl.CaptureTag.apply.T">T</span></span>, <span name="captureIndex">captureIndex: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scalaxy.reified.impl.CaptureTag.apply.T">T</span></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">Converts arrays to an AST that represents a call to Array.</p><div class="fullcomment"><div class="comment cmt"><p>Converts arrays to an AST that represents a call to Array.apply with a 'best guess' component
- type, and all values converted.
-</p></div></div>
-    </li><li name="scalaxy.reified.CaptureConversions#CONSTANT" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="CONSTANT:scalaxy.reified.CaptureConversions.Conversion"></a>
-      <a id="CONSTANT:Conversion"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">lazy val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">CONSTANT</span><span class="result">: <a href="#Conversion=PartialFunction[(Any,reflect.runtime.universe.Type,Any),reflect.runtime.universe.Tree]" class="extmbr" name="scalaxy.reified.CaptureConversions.Conversion">Conversion</a></span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">Converts captured constants (AnyVal, String) to their corresponding AST</p>
-    </li><li name="scalaxy.reified.CaptureConversions#DEFAULT" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="DEFAULT:scalaxy.reified.CaptureConversions.Conversion"></a>
-      <a id="DEFAULT:Conversion"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">lazy val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">DEFAULT</span><span class="result">: <a href="#Conversion=PartialFunction[(Any,reflect.runtime.universe.Type,Any),reflect.runtime.universe.Tree]" class="extmbr" name="scalaxy.reified.CaptureConversions.Conversion">Conversion</a></span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">Default conversion function that handles constants, reified values, arrays and immutable
-collections.</p><div class="fullcomment"><div class="comment cmt"><p>Default conversion function that handles constants, reified values, arrays and immutable
-collections.
-Other conversion functions can be composed with this default (or with a subset of its
-components) with the standard PartialFunction methods (orElse...).
-</p></div></div>
-    </li><li name="scalaxy.reified.CaptureConversions#IMMUTABLE_COLLECTION" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="IMMUTABLE_COLLECTION:scalaxy.reified.CaptureConversions.Conversion"></a>
-      <a id="IMMUTABLE_COLLECTION:Conversion"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">lazy val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">IMMUTABLE_COLLECTION</span><span class="result">: <a href="#Conversion=PartialFunction[(Any,reflect.runtime.universe.Type,Any),reflect.runtime.universe.Tree]" class="extmbr" name="scalaxy.reified.CaptureConversions.Conversion">Conversion</a></span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">Converts immutable collections to an AST that represents a call to a constructor for that
- collection type with a 'best guess' component type, and all values converted.</p><div class="fullcomment"><div class="comment cmt"><p>Converts immutable collections to an AST that represents a call to a constructor for that
- collection type with a 'best guess' component type, and all values converted.
- Types supported are HashSet, Set, List, Vector, Stack, Queue, Seq.
-</p></div></div>
-    </li><li name="scalaxy.reified.CaptureConversions#REIFIED_VALUE" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="REIFIED_VALUE:scalaxy.reified.CaptureConversions.Conversion"></a>
-      <a id="REIFIED_VALUE:Conversion"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">lazy val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">REIFIED_VALUE</span><span class="result">: <a href="#Conversion=PartialFunction[(Any,reflect.runtime.universe.Type,Any),reflect.runtime.universe.Tree]" class="extmbr" name="scalaxy.reified.CaptureConversions.Conversion">Conversion</a></span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">Inlines reified values' ASTs
-</p>
+      <p class="shortcomment cmt">Used to tag captures of external constants or reified values / functions in ASTs.</p><div class="fullcomment"><div class="comment cmt"><p>Used to tag captures of external constants or reified values / functions in ASTs.
+This is not meant to be called at runtime, it just exists to put a matchable call in the AST.</p></div><dl class="paramcmts block"><dt class="param">ref</dt><dd class="cmt"><p>original reference to the captured value, kept in the AST for correct typing by the toolbox at runtime.</p></dd><dt class="param">captureIndex</dt><dd class="cmt"><p>index in the captures array of the runtime value of the captured reference
+</p></dd></dl></div>
     </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
       <a id="asInstanceOf[T0]:T0"></a>
@@ -269,13 +192,27 @@ components) with the standard PartialFunction methods (orElse...).
         <span class="name">clone</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.AnyRef">AnyRef</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
       <span class="defval" name="classOf[java.lang.CloneNotSupportedException]">...</span>
     </span>)</span>
               
         </dd></dl></div>
+    </li><li name="scalaxy.reified.impl.CaptureTag#construct" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="construct(tpe:reflect.runtime.universe.Type,reference:reflect.runtime.universe.Tree,captureIndex:Int):reflect.runtime.universe.Tree"></a>
+      <a id="construct(scala.reflect.api.JavaUniverse.Type,scala.reflect.api.JavaUniverse.Tree,Int):scala.reflect.api.JavaUniverse.Tree"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">construct</span><span class="params">(<span name="tpe">tpe: <span class="extype" name="scala.reflect.api.Types.Type">scala.reflect.api.JavaUniverse.Type</span></span>, <span name="reference">reference: <span class="extype" name="scala.reflect.api.Trees.Tree">scala.reflect.api.JavaUniverse.Tree</span></span>, <span name="captureIndex">captureIndex: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.reflect.api.Trees.Tree">scala.reflect.api.JavaUniverse.Tree</span></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Construct the AST for the capture tagging call that corresponds to these params.</p><div class="fullcomment"><div class="comment cmt"><p>Construct the AST for the capture tagging call that corresponds to these params.</p></div><dl class="paramcmts block"><dt class="param">tpe</dt><dd class="cmt"><p>static type of the captured value</p></dd><dt class="param">reference</dt><dd class="cmt"><p>original reference that was captured</p></dd><dt class="param">captureIndex</dt><dd class="cmt"><p>index of the runtime value of the capture in <code> scalaxy.reified.ReifiedValue#capturedTerms</code>
+</p></dd></dl></div>
     </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="eq(x$1:AnyRef):Boolean"></a>
       <a id="eq(AnyRef):Boolean"></a>
@@ -314,7 +251,7 @@ components) with the standard PartialFunction methods (orElse...).
         <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
       <span class="symbol">classOf[java.lang.Throwable]</span>
@@ -425,6 +362,20 @@ components) with the standard PartialFunction methods (orElse...).
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scalaxy.reified.impl.CaptureTag#unapply" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="unapply(tree:reflect.runtime.universe.Tree):Option[(reflect.runtime.universe.Type,reflect.runtime.universe.Tree,Int)]"></a>
+      <a id="unapply(scala.reflect.api.JavaUniverse.Tree):Option[(scala.reflect.api.JavaUniverse.Type,scala.reflect.api.JavaUniverse.Tree,Int)]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">unapply</span><span class="params">(<span name="tree">tree: <span class="extype" name="scala.reflect.api.Trees.Tree">scala.reflect.api.JavaUniverse.Tree</span></span>)</span><span class="result">: <span class="extype" name="scala.Option">Option</span>[(<span class="extype" name="scala.reflect.api.Types.Type">scala.reflect.api.JavaUniverse.Type</span>, <span class="extype" name="scala.reflect.api.Trees.Tree">scala.reflect.api.JavaUniverse.Tree</span>, <span class="extype" name="scala.Int">Int</span>)]</span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Deconstructor for <code> scalaxy.impl.CaptureTag#apply</code> calls in ASTs.</p><div class="fullcomment"><div class="comment cmt"><p>Deconstructor for <code> scalaxy.impl.CaptureTag#apply</code> calls in ASTs.</p></div><dl class="paramcmts block"><dt>returns</dt><dd class="cmt"><p>if a <code> scalaxy.impl.CaptureTag#apply</code> call was matched, return some tuple made of the static type of the captured value, the original reference that was captured, and the index of the runtime value of the capture in <code> scalaxy.reified.ReifiedValue#capturedTerms</code>. Otherwise, return <code> scala.None</code>.
+</p></dd></dl></div>
     </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
       <a id="wait():Unit"></a>
@@ -511,6 +462,6 @@ components) with the standard PartialFunction methods (orElse...).
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-      <script defer="defer" type="text/javascript" id="jquery-js" src="../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../lib/template.js"></script>
+      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../lib/template.js"></script>
     </body>
       </html>

@@ -2,9 +2,9 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
         <head>
-          <title>ReifiedValue - scalaxy-reified-doc: scalaxy-reified-doc 0.3-SNAPSHOT - scalaxy.reified.ReifiedValue</title>
-          <meta name="description" content="ReifiedValue - scalaxy - reified - doc scalaxy - reified - doc 0.3 - SNAPSHOT - scalaxy.reified.ReifiedValue" />
-          <meta name="keywords" content="ReifiedValue scalaxy reified doc scalaxy reified doc 0.3 SNAPSHOT scalaxy.reified.ReifiedValue" />
+          <title>CaptureConversions - scalaxy-reified-doc: scalaxy-reified-doc 0.3-SNAPSHOT - scalaxy.reified.CaptureConversions</title>
+          <meta name="description" content="CaptureConversions - scalaxy - reified - doc scalaxy - reified - doc 0.3 - SNAPSHOT - scalaxy.reified.CaptureConversions" />
+          <meta name="keywords" content="CaptureConversions scalaxy reified doc scalaxy reified doc 0.3 SNAPSHOT scalaxy.reified.CaptureConversions" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
       <link href="../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
@@ -12,7 +12,7 @@
       <script type="text/javascript">
          if(top === self) {
             var url = '../../index.html';
-            var hash = 'scalaxy.reified.ReifiedValue';
+            var hash = 'scalaxy.reified.CaptureConversions$';
             var anchor = window.location.hash;
             var anchor_opt = '';
             if (anchor.length >= 1)
@@ -22,32 +22,27 @@
    	  </script>
     
         </head>
-        <body class="type">
+        <body class="value">
       <div id="definition">
-        <img src="../../lib/class_big.png" />
+        <img src="../../lib/object_big.png" />
         <p id="owner"><a href="../package.html" class="extype" name="scalaxy">scalaxy</a>.<a href="package.html" class="extype" name="scalaxy.reified">reified</a></p>
-        <h1>ReifiedValue</h1>
+        <h1>CaptureConversions</h1>
       </div>
 
       <h4 id="signature" class="signature">
       <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">case class</span>
+        <span class="modifier"></span>
+        <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <span class="name">ReifiedValue</span><span class="tparams">[<span name="A">A</span>]</span><span class="result"> extends <span class="extype" name="scalaxy.reified.HasReifiedValue">HasReifiedValue</span>[<span class="extype" name="scalaxy.reified.ReifiedValue.A">A</span>] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+        <span class="name">CaptureConversions</span>
       </span>
       </h4>
       
-          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Reified value which can be created by <a href="package.html#reify[A](v:A)(implicitevidence$1:reflect.runtime.universe.TypeTag[A]):scalaxy.reified.ReifiedValue[A]" class="extmbr" name="scalaxy.reified#reify">scalaxy.reified.reify</a>.
-This object retains the runtime value passed to <a href="package.html#reify[A](v:A)(implicitevidence$1:reflect.runtime.universe.TypeTag[A]):scalaxy.reified.ReifiedValue[A]" class="extmbr" name="scalaxy.reified#reify">scalaxy.reified.reify</a> as well as its
-compile-time AST.
-It also keeps track of the values captured by the AST in its scope, which are identified in the
-AST by calls to <a href="internal/CaptureTag$.html" class="extype" name="scalaxy.reified.internal.CaptureTag">scalaxy.reified.internal.CaptureTag</a> (which contain the index of the captured value
-in the capturedTerms field of this reified value).
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Conversions for captured references of common types.
 </p></div><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
-          <div class="superTypes hiddenContent"><span class="extype" name="scala.Serializable">Serializable</span>, <span class="extype" name="java.io.Serializable">Serializable</span>, <span class="extype" name="scala.Product">Product</span>, <span class="extype" name="scala.Equals">Equals</span>, <span class="extype" name="scalaxy.reified.HasReifiedValue">HasReifiedValue</span>[<span class="extype" name="scalaxy.reified.ReifiedValue.A">A</span>], <span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
+          <div class="superTypes hiddenContent"><span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
         </div></div>
         
 
@@ -65,7 +60,7 @@ in the capturedTerms field of this reified value).
                 <span class="filtertype">Inherited<br />
                 </span>
                 <ol id="linearization">
-                  <li class="in" name="scalaxy.reified.ReifiedValue"><span>ReifiedValue</span></li><li class="in" name="scala.Serializable"><span>Serializable</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.Product"><span>Product</span></li><li class="in" name="scala.Equals"><span>Equals</span></li><li class="in" name="scalaxy.reified.HasReifiedValue"><span>HasReifiedValue</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                  <li class="in" name="scalaxy.reified.CaptureConversions"><span>CaptureConversions</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
                 </ol>
               </div><div id="ancestors">
             <span class="filtertype"></span>
@@ -85,7 +80,23 @@ in the capturedTerms field of this reified value).
         <div id="allMembers">
         
 
-        
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="scalaxy.reified.CaptureConversions.Conversion" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Conversion=PartialFunction[(Any,reflect.runtime.universe.Type,Any),reflect.runtime.universe.Tree]"></a>
+      <a id="Conversion:Conversion"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Conversion</span><span class="result"> = <span class="extype" name="scala.PartialFunction">PartialFunction</span>[(<span class="extype" name="scala.Any">Any</span>, <span class="extype" name="scala.reflect.api.Types.Type">scala.reflect.api.JavaUniverse.Type</span>, <span class="extype" name="scala.Any">Any</span>), <span class="extype" name="scala.reflect.api.Trees.Tree">scala.reflect.api.JavaUniverse.Tree</span>]</span>
+      </span>
+      </h4>
+      
+    </li></ol>
+            </div>
 
         
 
@@ -156,6 +167,82 @@ in the capturedTerms field of this reified value).
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="scalaxy.reified.CaptureConversions#ARRAY" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ARRAY:scalaxy.reified.CaptureConversions.Conversion"></a>
+      <a id="ARRAY:Conversion"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">lazy val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ARRAY</span><span class="result">: <a href="#Conversion=PartialFunction[(Any,reflect.runtime.universe.Type,Any),reflect.runtime.universe.Tree]" class="extmbr" name="scalaxy.reified.CaptureConversions.Conversion">Conversion</a></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Convert an array an AST that represents a call to Array.</p><div class="fullcomment"><div class="comment cmt"><p>Convert an array an AST that represents a call to Array.apply with a 'best guess' component
+ type, and all values converted.
+</p></div></div>
+    </li><li name="scalaxy.reified.CaptureConversions#CONSTANT" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="CONSTANT:scalaxy.reified.CaptureConversions.Conversion"></a>
+      <a id="CONSTANT:Conversion"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">lazy val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">CONSTANT</span><span class="result">: <a href="#Conversion=PartialFunction[(Any,reflect.runtime.universe.Type,Any),reflect.runtime.universe.Tree]" class="extmbr" name="scalaxy.reified.CaptureConversions.Conversion">Conversion</a></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Converts captured constants (AnyVal, String) to their corresponding AST</p>
+    </li><li name="scalaxy.reified.CaptureConversions#DEFAULT" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="DEFAULT:scalaxy.reified.CaptureConversions.Conversion"></a>
+      <a id="DEFAULT:Conversion"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">lazy val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">DEFAULT</span><span class="result">: <a href="#Conversion=PartialFunction[(Any,reflect.runtime.universe.Type,Any),reflect.runtime.universe.Tree]" class="extmbr" name="scalaxy.reified.CaptureConversions.Conversion">Conversion</a></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Default conversion function that handles constants, reified values, arrays and immutable
+collections.</p><div class="fullcomment"><div class="comment cmt"><p>Default conversion function that handles constants, reified values, arrays and immutable
+collections.
+Other conversion functions can be composed with this default (or with a subset of its
+components) with the standard PartialFunction methods (orElse...).
+</p></div></div>
+    </li><li name="scalaxy.reified.CaptureConversions#IMMUTABLE_COLLECTION" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="IMMUTABLE_COLLECTION:scalaxy.reified.CaptureConversions.Conversion"></a>
+      <a id="IMMUTABLE_COLLECTION:Conversion"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">lazy val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">IMMUTABLE_COLLECTION</span><span class="result">: <a href="#Conversion=PartialFunction[(Any,reflect.runtime.universe.Type,Any),reflect.runtime.universe.Tree]" class="extmbr" name="scalaxy.reified.CaptureConversions.Conversion">Conversion</a></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Convert an immutable collection to an AST that represents a call to a constructor for that
+ collection type with a 'best guess' component type, and all values converted.</p><div class="fullcomment"><div class="comment cmt"><p>Convert an immutable collection to an AST that represents a call to a constructor for that
+ collection type with a 'best guess' component type, and all values converted.
+ Types supported are HashSet, Set, List, Vector, Stack, Queue, Seq.
+</p></div></div>
+    </li><li name="scalaxy.reified.CaptureConversions#REIFIED_VALUE" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="REIFIED_VALUE:scalaxy.reified.CaptureConversions.Conversion"></a>
+      <a id="REIFIED_VALUE:Conversion"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">lazy val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">REIFIED_VALUE</span><span class="result">: <a href="#Conversion=PartialFunction[(Any,reflect.runtime.universe.Type,Any),reflect.runtime.universe.Tree]" class="extmbr" name="scalaxy.reified.CaptureConversions.Conversion">Conversion</a></span>
+      </span>
+      </h4>
+      <p class="shortcomment cmt">Inlines a reified value's AST</p>
     </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
       <a id="asInstanceOf[T0]:T0"></a>
@@ -169,20 +256,6 @@ in the capturedTerms field of this reified value).
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li name="scalaxy.reified.ReifiedValue#capturedTerms" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="capturedTerms:Seq[(AnyRef,reflect.runtime.universe.Type)]"></a>
-      <a id="capturedTerms:Seq[(AnyRef,scala.reflect.api.JavaUniverse.Type)]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">capturedTerms</span><span class="result">: <span class="extype" name="scala.Seq">Seq</span>[(<span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.reflect.api.Types.Type">scala.reflect.api.JavaUniverse.Type</span>)]</span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">runtime values of the references captured by the AST, along with their static type at the site of the capture.</p><div class="fullcomment"><div class="comment cmt"><p>runtime values of the references captured by the AST, along with their static type at the site of the capture. The order of captures matches captureIndex in  <a href="internal/CaptureTag$.html#apply[T](ref:T,captureIndex:Int):T" class="extmbr" name="scalaxy.reified.internal.CaptureTag#apply">scalaxy.reified.internal.CaptureTag.apply</a>.
-</p></div></div>
     </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="clone():Object"></a>
       <a id="clone():AnyRef"></a>
@@ -202,21 +275,6 @@ in the capturedTerms field of this reified value).
     </span>)</span>
               
         </dd></dl></div>
-    </li><li name="scalaxy.reified.ReifiedValue#compile" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="compile(conversion:scalaxy.reified.CaptureConversions.Conversion,toolbox:scala.tools.reflect.ToolBox[reflect.runtime.universe.type]):()=&gt;A"></a>
-      <a id="compile(Conversion,ToolBox[universe.type]):()⇒A"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">compile</span><span class="params">(<span name="conversion">conversion: <a href="CaptureConversions$.html#Conversion=PartialFunction[(Any,reflect.runtime.universe.Type,Any),reflect.runtime.universe.Tree]" class="extmbr" name="scalaxy.reified.CaptureConversions.Conversion">Conversion</a> = <span class="symbol"><span class="name"><a href="CaptureConversions$.html">CaptureConversions.DEFAULT</a></span></span></span>, <span name="toolbox">toolbox: <span class="extype" name="scala.tools.reflect.ToolBox">ToolBox</span>[<span class="extype" name="scala.reflect.runtime.universe">universe</span>.type] = <span class="symbol"><span class="name"><a href="internal/package.html">internal.Utils.optimisingToolbox</a></span></span></span>)</span><span class="result">: () ⇒ <span class="extype" name="scalaxy.reified.ReifiedValue.A">A</span></span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">Compile the AST (using the provided conversion to convert captured values to ASTs).</p><div class="fullcomment"><div class="comment cmt"><p>Compile the AST (using the provided conversion to convert captured values to ASTs).
-Requires scala-compiler.jar to be in the classpath.
-Note: with Sbt, you can put scala-compiler.jar in the classpath with the following setting:</p><pre>libraryDependencies &lt;+= scalaVersion(<span class="lit">"org.scala-lang"</span> % <span class="lit">"scala-compiler"</span> % _)</pre></div></div>
     </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="eq(x$1:AnyRef):Boolean"></a>
       <a id="eq(AnyRef):Boolean"></a>
@@ -230,20 +288,19 @@ Note: with Sbt, you can put scala-compiler.jar in the classpath with the followi
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scalaxy.reified.ReifiedValue#expr" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="expr(conversion:scalaxy.reified.CaptureConversions.Conversion):reflect.runtime.universe.Expr[A]"></a>
-      <a id="expr(Conversion):scala.reflect.api.JavaUniverse.Expr[A]"></a>
+    </li><li name="scala.AnyRef#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="equals(x$1:Any):Boolean"></a>
+      <a id="equals(Any):Boolean"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">expr</span><span class="params">(<span name="conversion">conversion: <a href="CaptureConversions$.html#Conversion=PartialFunction[(Any,reflect.runtime.universe.Type,Any),reflect.runtime.universe.Tree]" class="extmbr" name="scalaxy.reified.CaptureConversions.Conversion">Conversion</a> = <span class="symbol"><span class="name"><a href="CaptureConversions$.html">CaptureConversions.DEFAULT</a></span></span></span>)</span><span class="result">: <span class="extype" name="scala.reflect.api.Exprs.Expr">scala.reflect.api.JavaUniverse.Expr</span>[<span class="extype" name="scalaxy.reified.ReifiedValue.A">A</span>]</span>
+        <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">Get the AST of this reified value, using the specified conversion function for any
-value that was captured by the expression.</p>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
       <a id="finalize():Unit"></a>
@@ -273,6 +330,19 @@ value that was captured by the expression.</p>
       </span>
       <span class="symbol">
         <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hashCode():Int"></a>
+      <a id="hashCode():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
@@ -328,19 +398,6 @@ value that was captured by the expression.</p>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scalaxy.reified.ReifiedValue#reifiedValue" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="reifiedValue:scalaxy.reified.ReifiedValue[A]"></a>
-      <a id="reifiedValue:ReifiedValue[A]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">reifiedValue</span><span class="result">: <a href="" class="extype" name="scalaxy.reified.ReifiedValue">ReifiedValue</a>[<span class="extype" name="scalaxy.reified.ReifiedValue.A">A</span>]</span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">Underlying reified value of this object</p><div class="fullcomment"><div class="comment cmt"><p>Underlying reified value of this object</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="scalaxy.reified.ReifiedValue">ReifiedValue</a> → HasReifiedValue</dd></dl></div>
     </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
       <a id="synchronized[T0](⇒T0):T0"></a>
@@ -354,20 +411,7 @@ value that was captured by the expression.</p>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scalaxy.reified.ReifiedValue#taggedExpr" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="taggedExpr:reflect.runtime.universe.Expr[A]"></a>
-      <a id="taggedExpr:scala.reflect.api.JavaUniverse.Expr[A]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">taggedExpr</span><span class="result">: <span class="extype" name="scala.reflect.api.Exprs.Expr">scala.reflect.api.JavaUniverse.Expr</span>[<span class="extype" name="scalaxy.reified.ReifiedValue.A">A</span>]</span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">AST of the value, with <a href="internal/CaptureTag$.html" class="extype" name="scalaxy.reified.internal.CaptureTag">scalaxy.reified.internal.CaptureTag</a> calls wherever an external value reference was captured.</p>
-    </li><li name="scalaxy.reified.HasReifiedValue#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+    </li><li name="scala.AnyRef#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="toString():String"></a>
       <a id="toString():String"></a>
       <h4 class="signature">
@@ -376,36 +420,10 @@ value that was captured by the expression.</p>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+        <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">String representation of this object, mainly for debugging purposes</p><div class="fullcomment"><div class="comment cmt"><p>String representation of this object, mainly for debugging purposes</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd>HasReifiedValue → AnyRef → Any</dd></dl></div>
-    </li><li name="scalaxy.reified.ReifiedValue#value" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="value:A"></a>
-      <a id="value:A"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">value</span><span class="result">: <span class="extype" name="scalaxy.reified.ReifiedValue.A">A</span></span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">original value passed to <a href="package.html#reify[A](v:A)(implicitevidence$1:reflect.runtime.universe.TypeTag[A]):scalaxy.reified.ReifiedValue[A]" class="extmbr" name="scalaxy.reified#reify">scalaxy.reified.reify</a></p>
-    </li><li name="scalaxy.reified.ReifiedValue#valueTag" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="valueTag:reflect.runtime.universe.TypeTag[A]"></a>
-      <a id="valueTag:scala.reflect.api.JavaUniverse.TypeTag[A]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">valueTag</span><span class="result">: <span class="extype" name="scala.reflect.api.TypeTags.TypeTag">scala.reflect.api.JavaUniverse.TypeTag</span>[<span class="extype" name="scalaxy.reified.ReifiedValue.A">A</span>]</span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">Type tag of the reified value</p><div class="fullcomment"><div class="comment cmt"><p>Type tag of the reified value</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="scalaxy.reified.ReifiedValue">ReifiedValue</a> → HasReifiedValue</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
     </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
       <a id="wait():Unit"></a>
@@ -472,17 +490,7 @@ value that was captured by the expression.</p>
         </div>
 
         <div id="inheritedMembers">
-        <div class="parent" name="scala.Serializable">
-              <h3>Inherited from <span class="extype" name="scala.Serializable">Serializable</span></h3>
-            </div><div class="parent" name="java.io.Serializable">
-              <h3>Inherited from <span class="extype" name="java.io.Serializable">Serializable</span></h3>
-            </div><div class="parent" name="scala.Product">
-              <h3>Inherited from <span class="extype" name="scala.Product">Product</span></h3>
-            </div><div class="parent" name="scala.Equals">
-              <h3>Inherited from <span class="extype" name="scala.Equals">Equals</span></h3>
-            </div><div class="parent" name="scalaxy.reified.HasReifiedValue">
-              <h3>Inherited from <span class="extype" name="scalaxy.reified.HasReifiedValue">HasReifiedValue</span>[<span class="extype" name="scalaxy.reified.ReifiedValue.A">A</span>]</h3>
-            </div><div class="parent" name="scala.AnyRef">
+        <div class="parent" name="scala.AnyRef">
               <h3>Inherited from <span class="extype" name="scala.AnyRef">AnyRef</span></h3>
             </div><div class="parent" name="scala.Any">
               <h3>Inherited from <span class="extype" name="scala.Any">Any</span></h3>

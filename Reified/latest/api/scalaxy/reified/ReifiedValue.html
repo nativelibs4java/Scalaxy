@@ -2,17 +2,17 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
         <head>
-          <title>CaptureTag - scalaxy-reified-doc: scalaxy-reified-doc 0.3-SNAPSHOT - scalaxy.reified.internal.CaptureTag</title>
-          <meta name="description" content="CaptureTag - scalaxy - reified - doc scalaxy - reified - doc 0.3 - SNAPSHOT - scalaxy.reified.internal.CaptureTag" />
-          <meta name="keywords" content="CaptureTag scalaxy reified doc scalaxy reified doc 0.3 SNAPSHOT scalaxy.reified.internal.CaptureTag" />
+          <title>ReifiedValue - scalaxy-reified-doc: scalaxy-reified-doc 0.3-SNAPSHOT - scalaxy.reified.ReifiedValue</title>
+          <meta name="description" content="ReifiedValue - scalaxy - reified - doc scalaxy - reified - doc 0.3 - SNAPSHOT - scalaxy.reified.ReifiedValue" />
+          <meta name="keywords" content="ReifiedValue scalaxy reified doc scalaxy reified doc 0.3 SNAPSHOT scalaxy.reified.ReifiedValue" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
-      <link href="../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
-      <link href="../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <link href="../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
       <script type="text/javascript">
          if(top === self) {
-            var url = '../../../index.html';
-            var hash = 'scalaxy.reified.internal.CaptureTag$';
+            var url = '../../index.html';
+            var hash = 'scalaxy.reified.ReifiedValue';
             var anchor = window.location.hash;
             var anchor_opt = '';
             if (anchor.length >= 1)
@@ -22,28 +22,32 @@
    	  </script>
     
         </head>
-        <body class="value">
+        <body class="type">
       <div id="definition">
-        <img src="../../../lib/object_big.png" />
-        <p id="owner"><a href="../../package.html" class="extype" name="scalaxy">scalaxy</a>.<a href="../package.html" class="extype" name="scalaxy.reified">reified</a>.<a href="package.html" class="extype" name="scalaxy.reified.internal">internal</a></p>
-        <h1>CaptureTag</h1>
+        <img src="../../lib/class_big.png" />
+        <p id="owner"><a href="../package.html" class="extype" name="scalaxy">scalaxy</a>.<a href="package.html" class="extype" name="scalaxy.reified">reified</a></p>
+        <h1>ReifiedValue</h1>
       </div>
 
       <h4 id="signature" class="signature">
       <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">object</span>
+        <span class="modifier">final </span>
+        <span class="kind">case class</span>
       </span>
       <span class="symbol">
-        <span class="name">CaptureTag</span>
+        <span class="name">ReifiedValue</span><span class="tparams">[<span name="A">A</span>]</span><span class="result"> extends <span class="extype" name="scalaxy.reified.HasReifiedValue">HasReifiedValue</span>[<span class="extype" name="scalaxy.reified.ReifiedValue.A">A</span>] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
       
-          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Object that enables tagging of values captured by <a href="../ReifiedValue.html" class="extype" name="scalaxy.reified.ReifiedValue">scalaxy.reified.ReifiedValue</a>'s ASTs.
-Provides creation and extraction of capture tagging calls.
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Reified value which can be created by <code> scalaxy.reified.reify</code>.
+This object retains the runtime value passed to <code> scalaxy.reified.reify</code> as well as its
+compile-time AST.
+It also keeps track of the values captured by the AST in its scope, which are identified in the
+AST by calls to <code> scalaxy.impl.CaptureTag</code> (which contain the index of the captured value
+in the capturedTerms field of this reified value).
 </p></div><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
-          <div class="superTypes hiddenContent"><span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
+          <div class="superTypes hiddenContent"><span class="extype" name="scala.Serializable">Serializable</span>, <span class="extype" name="java.io.Serializable">Serializable</span>, <span class="extype" name="scala.Product">Product</span>, <span class="extype" name="scala.Equals">Equals</span>, <span class="extype" name="scalaxy.reified.HasReifiedValue">HasReifiedValue</span>[<span class="extype" name="scalaxy.reified.ReifiedValue.A">A</span>], <span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
         </div></div>
         
 
@@ -61,7 +65,7 @@ Provides creation and extraction of capture tagging calls.
                 <span class="filtertype">Inherited<br />
                 </span>
                 <ol id="linearization">
-                  <li class="in" name="scalaxy.reified.internal.CaptureTag"><span>CaptureTag</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                  <li class="in" name="scalaxy.reified.ReifiedValue"><span>ReifiedValue</span></li><li class="in" name="scala.Serializable"><span>Serializable</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.Product"><span>Product</span></li><li class="in" name="scala.Equals"><span>Equals</span></li><li class="in" name="scalaxy.reified.HasReifiedValue"><span>HasReifiedValue</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
                 </ol>
               </div><div id="ancestors">
             <span class="filtertype"></span>
@@ -152,21 +156,6 @@ Provides creation and extraction of capture tagging calls.
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li name="scalaxy.reified.internal.CaptureTag#apply" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="apply[T](ref:T,captureIndex:Int):T"></a>
-      <a id="apply[T](T,Int):T"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">apply</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="ref">ref: <span class="extype" name="scalaxy.reified.internal.CaptureTag.apply.T">T</span></span>, <span name="captureIndex">captureIndex: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scalaxy.reified.internal.CaptureTag.apply.T">T</span></span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">Used to tag captures of external constants or reified values / functions in ASTs.</p><div class="fullcomment"><div class="comment cmt"><p>Used to tag captures of external constants or reified values / functions in ASTs.
-This is not meant to be called at runtime, it just exists to put a matchable call in the AST.</p></div><dl class="paramcmts block"><dt class="param">ref</dt><dd class="cmt"><p>original reference to the captured value, kept in the AST for correct typing by the toolbox at runtime.</p></dd><dt class="param">captureIndex</dt><dd class="cmt"><p>index in the captures array of the runtime value of the captured reference
-</p></dd></dl></div>
     </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
       <a id="asInstanceOf[T0]:T0"></a>
@@ -180,6 +169,19 @@ This is not meant to be called at runtime, it just exists to put a matchable cal
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="scalaxy.reified.ReifiedValue#capturedTerms" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="capturedTerms:Seq[(AnyRef,reflect.runtime.universe.Type)]"></a>
+      <a id="capturedTerms:Seq[(AnyRef,scala.reflect.api.JavaUniverse.Type)]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">capturedTerms</span><span class="result">: <span class="extype" name="scala.Seq">Seq</span>[(<span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.reflect.api.Types.Type">scala.reflect.api.JavaUniverse.Type</span>)]</span>
+      </span>
+      </h4>
+      
     </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="clone():Object"></a>
       <a id="clone():AnyRef"></a>
@@ -192,27 +194,34 @@ This is not meant to be called at runtime, it just exists to put a matchable cal
         <span class="name">clone</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.AnyRef">AnyRef</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
       <span class="defval" name="classOf[java.lang.CloneNotSupportedException]">...</span>
     </span>)</span>
               
         </dd></dl></div>
-    </li><li name="scalaxy.reified.internal.CaptureTag#construct" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="construct(tpe:reflect.runtime.universe.Type,reference:reflect.runtime.universe.Tree,captureIndex:Int):reflect.runtime.universe.Tree"></a>
-      <a id="construct(scala.reflect.api.JavaUniverse.Type,scala.reflect.api.JavaUniverse.Tree,Int):scala.reflect.api.JavaUniverse.Tree"></a>
+    </li><li name="scalaxy.reified.ReifiedValue#compile" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="compile(conversion:scalaxy.reified.CaptureConversions.Conversion,toolbox:scala.tools.reflect.ToolBox[reflect.runtime.universe.type]):()=&gt;A"></a>
+      <a id="compile(Conversion,ToolBox[universe.type]):()⇒A"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">construct</span><span class="params">(<span name="tpe">tpe: <span class="extype" name="scala.reflect.api.Types.Type">scala.reflect.api.JavaUniverse.Type</span></span>, <span name="reference">reference: <span class="extype" name="scala.reflect.api.Trees.Tree">scala.reflect.api.JavaUniverse.Tree</span></span>, <span name="captureIndex">captureIndex: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.reflect.api.Trees.Tree">scala.reflect.api.JavaUniverse.Tree</span></span>
+        <span class="name">compile</span><span class="params">(<span name="conversion">conversion: <a href="CaptureConversions$.html#Conversion=PartialFunction[(Any,reflect.runtime.universe.Type,Any),reflect.runtime.universe.Tree]" class="extmbr" name="scalaxy.reified.CaptureConversions.Conversion">Conversion</a> = <span class="symbol"><span class="name"><a href="CaptureConversions$.html">CaptureConversions.DEFAULT</a></span></span></span>, <span name="toolbox">toolbox: <span class="extype" name="scala.tools.reflect.ToolBox">ToolBox</span>[<span class="extype" name="scala.reflect.runtime.universe">universe</span>.type] = <span class="symbol"><span class="name"><a href="impl/package.html">impl.Utils.optimisingToolbox</a></span></span></span>)</span><span class="result">: () ⇒ <span class="extype" name="scalaxy.reified.ReifiedValue.A">A</span></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">Construct the AST for the capture tagging call that corresponds to these params.</p><div class="fullcomment"><div class="comment cmt"><p>Construct the AST for the capture tagging call that corresponds to these params.</p></div><dl class="paramcmts block"><dt class="param">tpe</dt><dd class="cmt"><p>static type of the captured value</p></dd><dt class="param">reference</dt><dd class="cmt"><p>original reference that was captured</p></dd><dt class="param">captureIndex</dt><dd class="cmt"><p>index of the runtime value of the capture in <a href="../ReifiedValue.html#capturedTerms:Seq[(AnyRef,reflect.runtime.universe.Type)]" class="extmbr" name="scalaxy.reified.ReifiedValue#capturedTerms">scalaxy.reified.ReifiedValue.capturedTerms</a>
-</p></dd></dl></div>
+      <p class="shortcomment cmt">Compile the AST (using the provided conversion to convert captured values to ASTs).</p><div class="fullcomment"><div class="comment cmt"><p>Compile the AST (using the provided conversion to convert captured values to ASTs).
+Requires scala-compiler.jar to be in the classpath.
+Note: with Sbt, you can put scala-compiler.jar in the classpath with the following setting:
+<pre>
+<code>
+  libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-compiler" % _)
+</code>
+</pre>
+</p></div></div>
     </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="eq(x$1:AnyRef):Boolean"></a>
       <a id="eq(AnyRef):Boolean"></a>
@@ -226,19 +235,20 @@ This is not meant to be called at runtime, it just exists to put a matchable cal
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.AnyRef#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="equals(x$1:Any):Boolean"></a>
-      <a id="equals(Any):Boolean"></a>
+    </li><li name="scalaxy.reified.ReifiedValue#expr" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="expr(conversion:scalaxy.reified.CaptureConversions.Conversion):reflect.runtime.universe.Expr[A]"></a>
+      <a id="expr(Conversion):scala.reflect.api.JavaUniverse.Expr[A]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+        <span class="name">expr</span><span class="params">(<span name="conversion">conversion: <a href="CaptureConversions$.html#Conversion=PartialFunction[(Any,reflect.runtime.universe.Type,Any),reflect.runtime.universe.Tree]" class="extmbr" name="scalaxy.reified.CaptureConversions.Conversion">Conversion</a> = <span class="symbol"><span class="name"><a href="CaptureConversions$.html">CaptureConversions.DEFAULT</a></span></span></span>)</span><span class="result">: <span class="extype" name="scala.reflect.api.Exprs.Expr">scala.reflect.api.JavaUniverse.Expr</span>[<span class="extype" name="scalaxy.reified.ReifiedValue.A">A</span>]</span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+      <p class="shortcomment cmt">Get the AST of this reified value, using the specified conversion function for any
+value that was captured by the expression.</p>
     </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
       <a id="finalize():Unit"></a>
@@ -251,7 +261,7 @@ This is not meant to be called at runtime, it just exists to put a matchable cal
         <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
       <span class="symbol">classOf[java.lang.Throwable]</span>
@@ -268,19 +278,6 @@ This is not meant to be called at runtime, it just exists to put a matchable cal
       </span>
       <span class="symbol">
         <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
-      </span>
-      </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li name="scala.AnyRef#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="hashCode():Int"></a>
-      <a id="hashCode():Int"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
@@ -336,6 +333,19 @@ This is not meant to be called at runtime, it just exists to put a matchable cal
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scalaxy.reified.ReifiedValue#reifiedValue" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="reifiedValue:scalaxy.reified.ReifiedValue[A]"></a>
+      <a id="reifiedValue:ReifiedValue[A]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">reifiedValue</span><span class="result">: <a href="" class="extype" name="scalaxy.reified.ReifiedValue">ReifiedValue</a>[<span class="extype" name="scalaxy.reified.ReifiedValue.A">A</span>]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="scalaxy.reified.ReifiedValue">ReifiedValue</a> → HasReifiedValue</dd></dl></div>
     </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
       <a id="synchronized[T0](⇒T0):T0"></a>
@@ -349,7 +359,20 @@ This is not meant to be called at runtime, it just exists to put a matchable cal
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.AnyRef#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+    </li><li name="scalaxy.reified.ReifiedValue#taggedExpr" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="taggedExpr:reflect.runtime.universe.Expr[A]"></a>
+      <a id="taggedExpr:scala.reflect.api.JavaUniverse.Expr[A]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">taggedExpr</span><span class="result">: <span class="extype" name="scala.reflect.api.Exprs.Expr">scala.reflect.api.JavaUniverse.Expr</span>[<span class="extype" name="scalaxy.reified.ReifiedValue.A">A</span>]</span>
+      </span>
+      </h4>
+      
+    </li><li name="scalaxy.reified.HasReifiedValue#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="toString():String"></a>
       <a id="toString():String"></a>
       <h4 class="signature">
@@ -358,24 +381,36 @@ This is not meant to be called at runtime, it just exists to put a matchable cal
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
+        <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
       </h4>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li name="scalaxy.reified.internal.CaptureTag#unapply" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="unapply(tree:reflect.runtime.universe.Tree):Option[(reflect.runtime.universe.Type,reflect.runtime.universe.Tree,Int)]"></a>
-      <a id="unapply(scala.reflect.api.JavaUniverse.Tree):Option[(scala.reflect.api.JavaUniverse.Type,scala.reflect.api.JavaUniverse.Tree,Int)]"></a>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>HasReifiedValue → AnyRef → Any</dd></dl></div>
+    </li><li name="scalaxy.reified.ReifiedValue#value" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="value:A"></a>
+      <a id="value:A"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">value</span><span class="result">: <span class="extype" name="scalaxy.reified.ReifiedValue.A">A</span></span>
+      </span>
+      </h4>
+      
+    </li><li name="scalaxy.reified.ReifiedValue#valueTag" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="valueTag:reflect.runtime.universe.TypeTag[A]"></a>
+      <a id="valueTag:scala.reflect.api.JavaUniverse.TypeTag[A]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">unapply</span><span class="params">(<span name="tree">tree: <span class="extype" name="scala.reflect.api.Trees.Tree">scala.reflect.api.JavaUniverse.Tree</span></span>)</span><span class="result">: <span class="extype" name="scala.Option">Option</span>[(<span class="extype" name="scala.reflect.api.Types.Type">scala.reflect.api.JavaUniverse.Type</span>, <span class="extype" name="scala.reflect.api.Trees.Tree">scala.reflect.api.JavaUniverse.Tree</span>, <span class="extype" name="scala.Int">Int</span>)]</span>
+        <span class="name">valueTag</span><span class="result">: <span class="extype" name="scala.reflect.api.TypeTags.TypeTag">scala.reflect.api.JavaUniverse.TypeTag</span>[<span class="extype" name="scalaxy.reified.ReifiedValue.A">A</span>]</span>
       </span>
       </h4>
-      <p class="shortcomment cmt">Deconstructor for <a href="#apply[T](ref:T,captureIndex:Int):T" class="extmbr" name="scalaxy.reified.internal.CaptureTag#apply">scalaxy.reified.internal.CaptureTag.apply</a> tagging calls in ASTs.</p><div class="fullcomment"><div class="comment cmt"><p>Deconstructor for <a href="#apply[T](ref:T,captureIndex:Int):T" class="extmbr" name="scalaxy.reified.internal.CaptureTag#apply">scalaxy.reified.internal.CaptureTag.apply</a> tagging calls in ASTs.</p></div><dl class="paramcmts block"><dt>returns</dt><dd class="cmt"><p>if a <a href="#apply[T](ref:T,captureIndex:Int):T" class="extmbr" name="scalaxy.reified.internal.CaptureTag#apply">scalaxy.reified.internal.CaptureTag.apply</a> tagging call was matched, return some tuple made of the static type of the captured value, the original reference that was captured, and the index of the runtime value of the capture in <a href="../ReifiedValue.html#capturedTerms:Seq[(AnyRef,reflect.runtime.universe.Type)]" class="extmbr" name="scalaxy.reified.ReifiedValue#capturedTerms">scalaxy.reified.ReifiedValue#capturedTerms</a>. Otherwise, return None.
-</p></dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="scalaxy.reified.ReifiedValue">ReifiedValue</a> → HasReifiedValue</dd></dl></div>
     </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="wait():Unit"></a>
       <a id="wait():Unit"></a>
@@ -442,7 +477,17 @@ This is not meant to be called at runtime, it just exists to put a matchable cal
         </div>
 
         <div id="inheritedMembers">
-        <div class="parent" name="scala.AnyRef">
+        <div class="parent" name="scala.Serializable">
+              <h3>Inherited from <span class="extype" name="scala.Serializable">Serializable</span></h3>
+            </div><div class="parent" name="java.io.Serializable">
+              <h3>Inherited from <span class="extype" name="java.io.Serializable">Serializable</span></h3>
+            </div><div class="parent" name="scala.Product">
+              <h3>Inherited from <span class="extype" name="scala.Product">Product</span></h3>
+            </div><div class="parent" name="scala.Equals">
+              <h3>Inherited from <span class="extype" name="scala.Equals">Equals</span></h3>
+            </div><div class="parent" name="scalaxy.reified.HasReifiedValue">
+              <h3>Inherited from <span class="extype" name="scalaxy.reified.HasReifiedValue">HasReifiedValue</span>[<span class="extype" name="scalaxy.reified.ReifiedValue.A">A</span>]</h3>
+            </div><div class="parent" name="scala.AnyRef">
               <h3>Inherited from <span class="extype" name="scala.AnyRef">AnyRef</span></h3>
             </div><div class="parent" name="scala.Any">
               <h3>Inherited from <span class="extype" name="scala.Any">Any</span></h3>
@@ -462,6 +507,6 @@ This is not meant to be called at runtime, it just exists to put a matchable cal
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-      <script defer="defer" type="text/javascript" id="jquery-js" src="../../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../../lib/template.js"></script>
+      <script defer="defer" type="text/javascript" id="jquery-js" src="../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../lib/template.js"></script>
     </body>
       </html>

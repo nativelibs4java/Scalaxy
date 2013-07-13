@@ -2,9 +2,9 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
         <head>
-          <title>internal - scalaxy-reified-doc: scalaxy-reified-doc 0.3-SNAPSHOT - scalaxy.reified.internal</title>
-          <meta name="description" content="internal - scalaxy - reified - doc scalaxy - reified - doc 0.3 - SNAPSHOT - scalaxy.reified.internal" />
-          <meta name="keywords" content="internal scalaxy reified doc scalaxy reified doc 0.3 SNAPSHOT scalaxy.reified.internal" />
+          <title>impl - scalaxy-reified-doc: scalaxy-reified-doc 0.3-SNAPSHOT - scalaxy.reified.impl</title>
+          <meta name="description" content="impl - scalaxy - reified - doc scalaxy - reified - doc 0.3 - SNAPSHOT - scalaxy.reified.impl" />
+          <meta name="keywords" content="impl scalaxy reified doc scalaxy reified doc 0.3 SNAPSHOT scalaxy.reified.impl" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
       <link href="../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
@@ -12,7 +12,7 @@
       <script type="text/javascript">
          if(top === self) {
             var url = '../../../index.html';
-            var hash = 'scalaxy.reified.internal.package';
+            var hash = 'scalaxy.reified.impl.package';
             var anchor = window.location.hash;
             var anchor_opt = '';
             if (anchor.length >= 1)
@@ -26,7 +26,7 @@
       <div id="definition">
         <img src="../../../lib/package_big.png" />
         <p id="owner"><a href="../../package.html" class="extype" name="scalaxy">scalaxy</a>.<a href="../package.html" class="extype" name="scalaxy.reified">reified</a></p>
-        <h1>internal</h1>
+        <h1>impl</h1>
       </div>
 
       <h4 id="signature" class="signature">
@@ -35,12 +35,11 @@
         <span class="kind">package</span>
       </span>
       <span class="symbol">
-        <span class="name">internal</span>
+        <span class="name">impl</span>
       </span>
       </h4>
       
-          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Internal methods and classes used by Scalaxy/Reified's implementation
-</p></div><div class="toggleContainer block">
+          <div id="comment" class="fullcommenttop"><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
         </div></div>
@@ -60,7 +59,7 @@
                 <span class="filtertype">Inherited<br />
                 </span>
                 <ol id="linearization">
-                  <li class="in" name="scalaxy.reified.internal"><span>internal</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                  <li class="in" name="scalaxy.reified.impl"><span>impl</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
                 </ol>
               </div><div id="ancestors">
             <span class="filtertype"></span>
@@ -86,7 +85,7 @@
 
         <div id="values" class="values members">
               <h3>Value Members</h3>
-              <ol><li name="scalaxy.reified.internal.CaptureTag" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+              <ol><li name="scalaxy.reified.impl.CaptureTag" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="CaptureTag"></a>
       <a id="CaptureTag:CaptureTag"></a>
       <h4 class="signature">
@@ -98,8 +97,8 @@
         <a href="CaptureTag$.html"><span class="name">CaptureTag</span></a>
       </span>
       </h4>
-      <p class="comment cmt">Object that enables tagging of values captured by <a href="../ReifiedValue.html" class="extype" name="scalaxy.reified.ReifiedValue">scalaxy.reified.ReifiedValue</a>'s ASTs.</p>
-    </li><li name="scalaxy.reified.internal.Utils" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <p class="comment cmt">Object that enables tagging of values captured by <code> scalaxy.reified.ReifiedValue</code>'s ASTs.</p>
+    </li><li name="scalaxy.reified.impl.Utils" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="Utils"></a>
       <a id="Utils:Utils"></a>
       <h4 class="signature">
@@ -111,8 +110,8 @@
         <a href="Utils$.html"><span class="name">Utils</span></a>
       </span>
       </h4>
-      <p class="comment cmt">Internal utility methods used by Scalaxy/Reified's implementation.</p>
-    </li><li name="scalaxy.reified.internal.package#reifyImpl" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      
+    </li><li name="scalaxy.reified.impl.package#reifyImpl" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="reifyImpl[A](c:scala.reflect.macros.Context)(v:c.Expr[A])(tt:c.Expr[reflect.runtime.universe.TypeTag[A]])(implicitevidence$2:c.WeakTypeTag[A]):c.Expr[scalaxy.reified.ReifiedValue[A]]"></a>
       <a id="reifyImpl[A](Context)(scala.reflect.macros.Context.Expr[A])(scala.reflect.macros.Context.Expr[scala.reflect.api.JavaUniverse.TypeTag[A]])(scala.reflect.macros.Context.WeakTypeTag[A]):scala.reflect.macros.Context.Expr[ReifiedValue[A]]"></a>
       <h4 class="signature">
@@ -121,7 +120,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">reifyImpl</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="c">c: <span class="extype" name="scala.reflect.macros.Context">Context</span></span>)</span><span class="params">(<span name="v">v: <span class="extype" name="scala.reflect.macros.Aliases.Expr">scala.reflect.macros.Context.Expr</span>[<span class="extype" name="scalaxy.reified.internal.reifyImpl.A">A</span>]</span>)</span><span class="params">(<span name="tt">tt: <span class="extype" name="scala.reflect.macros.Aliases.Expr">scala.reflect.macros.Context.Expr</span>[<span class="extype" name="scala.reflect.api.TypeTags.TypeTag">scala.reflect.api.JavaUniverse.TypeTag</span>[<span class="extype" name="scalaxy.reified.internal.reifyImpl.A">A</span>]]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <span class="extype" name="scala.reflect.macros.Aliases.WeakTypeTag">scala.reflect.macros.Context.WeakTypeTag</span>[<span class="extype" name="scalaxy.reified.internal.reifyImpl.A">A</span>]</span>)</span><span class="result">: <span class="extype" name="scala.reflect.macros.Aliases.Expr">scala.reflect.macros.Context.Expr</span>[<a href="../ReifiedValue.html" class="extype" name="scalaxy.reified.ReifiedValue">ReifiedValue</a>[<span class="extype" name="scalaxy.reified.internal.reifyImpl.A">A</span>]]</span>
+        <span class="name">reifyImpl</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="c">c: <span class="extype" name="scala.reflect.macros.Context">Context</span></span>)</span><span class="params">(<span name="v">v: <span class="extype" name="scala.reflect.macros.Aliases.Expr">scala.reflect.macros.Context.Expr</span>[<span class="extype" name="scalaxy.reified.impl.reifyImpl.A">A</span>]</span>)</span><span class="params">(<span name="tt">tt: <span class="extype" name="scala.reflect.macros.Aliases.Expr">scala.reflect.macros.Context.Expr</span>[<span class="extype" name="scala.reflect.api.TypeTags.TypeTag">scala.reflect.api.JavaUniverse.TypeTag</span>[<span class="extype" name="scalaxy.reified.impl.reifyImpl.A">A</span>]]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <span class="extype" name="scala.reflect.macros.Aliases.WeakTypeTag">scala.reflect.macros.Context.WeakTypeTag</span>[<span class="extype" name="scalaxy.reified.impl.reifyImpl.A">A</span>]</span>)</span><span class="result">: <span class="extype" name="scala.reflect.macros.Aliases.Expr">scala.reflect.macros.Context.Expr</span>[<a href="../ReifiedValue.html" class="extype" name="scalaxy.reified.ReifiedValue">ReifiedValue</a>[<span class="extype" name="scalaxy.reified.impl.reifyImpl.A">A</span>]]</span>
       </span>
       </h4>
       

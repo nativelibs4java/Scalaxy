@@ -121,7 +121,7 @@ allowing / preserving values captured outside its expression.
         <a href="ReifiedValue.html"><span class="name">ReifiedValue</span></a><span class="tparams">[<span name="A">A</span>]</span><span class="result"> extends <span class="extype" name="scalaxy.reified.HasReifiedValue">HasReifiedValue</span>[<span class="extype" name="scalaxy.reified.ReifiedValue.A">A</span>] with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
-      <p class="comment cmt">Reified value which can be created by <a href="#reify[A](v:A)(implicitevidence$1:reflect.runtime.universe.TypeTag[A]):scalaxy.reified.ReifiedValue[A]" class="extmbr" name="scalaxy.reified#reify">scalaxy.reified.reify</a>.</p>
+      <p class="comment cmt">Reified value which can be created by <code> scalaxy.reified.reify</code>.</p>
     </li></ol>
             </div>
 
@@ -154,8 +154,7 @@ allowing / preserving values captured outside its expression.
         <span class="name">hasReifiedValueToReifiedValue</span><span class="tparams">[<span name="A">A</span>]</span><span class="params">(<span name="r">r: <span class="extype" name="scalaxy.reified.HasReifiedValue">HasReifiedValue</span>[<span class="extype" name="scalaxy.reified.hasReifiedValueToReifiedValue.A">A</span>]</span>)</span><span class="result">: <a href="ReifiedValue.html" class="extype" name="scalaxy.reified.ReifiedValue">ReifiedValue</a>[<span class="extype" name="scalaxy.reified.hasReifiedValueToReifiedValue.A">A</span>]</span>
       </span>
       </h4>
-      <p class="shortcomment cmt">Implicitly extract the reified value out of one of its wrappers (such as
-<a href="package$$ReifiedFunction1.html" class="extype" name="scalaxy.reified.ReifiedFunction1">scalaxy.reified.ReifiedFunction1</a> and <a href="package$$ReifiedFunction2.html" class="extype" name="scalaxy.reified.ReifiedFunction2">scalaxy.reified.ReifiedFunction2</a>).</p>
+      <p class="shortcomment cmt">Implicitly extract reified value from its wrappers (such as ReifiedFunction1, ReifiedFunction2).</p>
     </li><li name="scalaxy.reified.package#hasReifiedValueToValue" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="hasReifiedValueToValue[A](r:scalaxy.reified.HasReifiedValue[A]):A"></a>
       <a id="hasReifiedValueToValue[A](HasReifiedValue[A]):A"></a>
@@ -169,20 +168,19 @@ allowing / preserving values captured outside its expression.
       </span>
       </h4>
       <p class="shortcomment cmt">Implicitly convert reified value to their original non-reified value.</p>
-    </li><li name="scalaxy.reified.internal" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="internal"></a>
-      <a id="internal:internal"></a>
+    </li><li name="scalaxy.reified.impl" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="impl"></a>
+      <a id="impl:impl"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">package</span>
       </span>
       <span class="symbol">
-        <a href="internal/package.html"><span class="name">internal</span></a>
+        <a href="impl/package.html"><span class="name">impl</span></a>
       </span>
       </h4>
-      <p class="comment cmt">Internal methods and classes used by Scalaxy/Reified's implementation
-</p>
+      
     </li><li name="scalaxy.reified.package#reify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="reify[A](v:A)(implicitevidence$1:reflect.runtime.universe.TypeTag[A]):scalaxy.reified.ReifiedValue[A]"></a>
       <a id="reify[A](A)(scala.reflect.api.JavaUniverse.TypeTag[A]):ReifiedValue[A]"></a>
@@ -198,14 +196,16 @@ allowing / preserving values captured outside its expression.
       <p class="shortcomment cmt">Reify a value (including functions), preserving the original value and keeping track of the
 values it captures from the scope of its expression.</p><div class="fullcomment"><div class="comment cmt"><p>Reify a value (including functions), preserving the original value and keeping track of the
 values it captures from the scope of its expression.
-This allows for runtime processing of the value's AST (being able to capture external values makes this method more flexible than Universe.reify).</p><p>Compile-time error are raised when an external reference cannot be captured safely (vars and
-lazy vals are not considered safe, for instance).</p><p>Captured values are inlined in the reified value's AST with a conversion function (see
-<a href="CaptureConversions$.html" class="extype" name="scalaxy.reified.CaptureConversions">scalaxy.reified.CaptureConversions</a>), which can be customized (by default, it handles
-constants, arrays, immutable collections, reified values and their wrappers).
+This allows for runtime processing of the value's AST (being able to capture external values makes this method more flexible than Universe.reify).
+Compile-time error are raised when an external reference cannot be captured safely (vars and
+lazy vals are not considered safe, for instance).
+Captured values are inlined in the reified value's AST with a conversion function,
+which can be customized (by default, it handles constants, arrays, immutable collections,
+reified values and their wrappers).
 </p></div><dl class="attributes block"> <dt>Annotations</dt><dd>
                 <span class="name">@macroImpl</span><span class="args">(<span>
       
-      <span class="defval" name="`macro`(&quot;versionFormat&quot; = 1, &quot;className&quot; = &quot;scalaxy.reified.internal.package&quot;, &quot;methodName&quot; = &quot;reifyImpl&quot;, &quot;signature&quot; = List(-1, -1, -1, 0))[A]">...</span>
+      <span class="defval" name="`macro`(&quot;versionFormat&quot; = 1, &quot;className&quot; = &quot;scalaxy.reified.impl.package&quot;, &quot;methodName&quot; = &quot;reifyImpl&quot;, &quot;signature&quot; = List(-1, -1, -1, 0))[A]">...</span>
     </span>)</span>
               
         </dd></dl></div>
