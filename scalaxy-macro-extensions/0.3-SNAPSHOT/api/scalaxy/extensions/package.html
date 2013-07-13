@@ -1,0 +1,163 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html>
+        <head>
+          <title>extensions - scalaxy-macro-extensions: scalaxy-macro-extensions 0.3-SNAPSHOT - scalaxy.extensions</title>
+          <meta name="description" content="extensions - scalaxy - macro - extensions scalaxy - macro - extensions 0.3 - SNAPSHOT - scalaxy.extensions" />
+          <meta name="keywords" content="extensions scalaxy macro extensions scalaxy macro extensions 0.3 SNAPSHOT scalaxy.extensions" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../index.html';
+            var hash = 'scalaxy.extensions.package';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="value">
+      <div id="definition">
+        <img src="../../lib/package_big.png" />
+        <p id="owner"><a href="../package.html" class="extype" name="scalaxy">scalaxy</a></p>
+        <h1>extensions</h1>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">extensions</span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        
+        
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="scalaxy.extensions.Extensions" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="ExtensionsextendsAnyRef"></a>
+      <a id="Extensions:Extensions"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Extensions.html"><span class="name">Extensions</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4>
+      
+    </li><li name="scalaxy.extensions.MacroExtensionsComponent" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="MacroExtensionsComponentextendsPluginComponentwithTypingTransformerswithTreeReifyingTransformerswithExtensions"></a>
+      <a id="MacroExtensionsComponent:MacroExtensionsComponent"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="MacroExtensionsComponent.html"><span class="name">MacroExtensionsComponent</span></a><span class="result"> extends <span class="extype" name="scala.tools.nsc.plugins.PluginComponent">PluginComponent</span> with <span class="extype" name="scala.tools.nsc.transform.TypingTransformers">TypingTransformers</span> with <a href="TreeReifyingTransformers.html" class="extype" name="scalaxy.extensions.TreeReifyingTransformers">TreeReifyingTransformers</a> with <a href="Extensions.html" class="extype" name="scalaxy.extensions.Extensions">Extensions</a></span>
+      </span>
+      </h4>
+      <p class="comment cmt"> To understand / reproduce this, you should use paulp's :power mode in the scala console:</p>
+    </li><li name="scalaxy.extensions.MacroExtensionsPlugin" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="MacroExtensionsPluginextendsPlugin"></a>
+      <a id="MacroExtensionsPlugin:MacroExtensionsPlugin"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="MacroExtensionsPlugin.html"><span class="name">MacroExtensionsPlugin</span></a><span class="result"> extends <span class="extype" name="scala.tools.nsc.plugins.Plugin">Plugin</span></span>
+      </span>
+      </h4>
+      <p class="comment cmt"> To use this, just write the following in <code>src/main/resources/scalac-plugin.xml</code>:
+ &lt;plugin&gt;
+   &lt;name&gt;scalaxy-macro-extensions&lt;/name&gt;
+   &lt;classname&gt;scalaxy.</p>
+    </li><li name="scalaxy.extensions.TreeReifyingTransformers" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="TreeReifyingTransformersextendsExtensions"></a>
+      <a id="TreeReifyingTransformers:TreeReifyingTransformers"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="TreeReifyingTransformers.html"><span class="name">TreeReifyingTransformers</span></a><span class="result"> extends <a href="Extensions.html" class="extype" name="scalaxy.extensions.Extensions">Extensions</a></span>
+      </span>
+      </h4>
+      
+    </li></ol>
+            </div>
+
+        
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="scalaxy.extensions.MacroExtensionsCompiler" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="MacroExtensionsCompiler"></a>
+      <a id="MacroExtensionsCompiler:MacroExtensionsCompiler"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="MacroExtensionsCompiler$.html"><span class="name">MacroExtensionsCompiler</span></a>
+      </span>
+      </h4>
+      <p class="comment cmt"> This compiler plugin demonstrates how to do &quot;useful&quot; stuff before the typer phase.</p>
+    </li></ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+      <script defer="defer" type="text/javascript" id="jquery-js" src="../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../lib/template.js"></script>
+    </body>
+      </html>

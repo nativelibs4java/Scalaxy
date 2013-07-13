@@ -1,0 +1,970 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html>
+        <head>
+          <title>MacroExtensionsComponent - scalaxy-macro-extensions: scalaxy-macro-extensions 0.3-SNAPSHOT - scalaxy.extensions.MacroExtensionsComponent</title>
+          <meta name="description" content="MacroExtensionsComponent - scalaxy - macro - extensions scalaxy - macro - extensions 0.3 - SNAPSHOT - scalaxy.extensions.MacroExtensionsComponent" />
+          <meta name="keywords" content="MacroExtensionsComponent scalaxy macro extensions scalaxy macro extensions 0.3 SNAPSHOT scalaxy.extensions.MacroExtensionsComponent" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../index.html';
+            var hash = 'scalaxy.extensions.MacroExtensionsComponent';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="type">
+      <div id="definition">
+        <img src="../../lib/class_big.png" />
+        <p id="owner"><a href="../package.html" class="extype" name="scalaxy">scalaxy</a>.<a href="package.html" class="extype" name="scalaxy.extensions">extensions</a></p>
+        <h1>MacroExtensionsComponent</h1>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <span class="name">MacroExtensionsComponent</span><span class="result"> extends <span class="extype" name="scala.tools.nsc.plugins.PluginComponent">PluginComponent</span> with <span class="extype" name="scala.tools.nsc.transform.TypingTransformers">TypingTransformers</span> with <a href="TreeReifyingTransformers.html" class="extype" name="scalaxy.extensions.TreeReifyingTransformers">TreeReifyingTransformers</a> with <a href="Extensions.html" class="extype" name="scalaxy.extensions.Extensions">Extensions</a></span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p> To understand / reproduce this, you should use paulp's :power mode in the scala console:</p><p> scala
+ &gt; :power
+ &gt; :phase parser // will show us ASTs just after parsing
+ &gt; val Some(List(ast)) = intp.parse(&quot;@scalaxy.extension[Int] def str = self.toString&quot;)
+ &gt; nodeToString(ast)
+ &gt; val DefDef(mods, name, tparams, vparamss, tpt, rhs) = ast // play with extractors to explore the tree and its properties.
+</p></div><div class="toggleContainer block">
+          <span class="toggle">Linear Supertypes</span>
+          <div class="superTypes hiddenContent"><a href="TreeReifyingTransformers.html" class="extype" name="scalaxy.extensions.TreeReifyingTransformers">TreeReifyingTransformers</a>, <a href="Extensions.html" class="extype" name="scalaxy.extensions.Extensions">Extensions</a>, <span class="extype" name="scala.tools.nsc.transform.TypingTransformers">TypingTransformers</span>, <span class="extype" name="scala.tools.nsc.plugins.PluginComponent">PluginComponent</span>, <span class="extype" name="scala.tools.nsc.SubComponent">SubComponent</span>, <span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
+        </div></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        <div id="order">
+              <span class="filtertype">Ordering</span>
+              <ol>
+                
+                <li class="alpha in"><span>Alphabetic</span></li>
+                <li class="inherit out"><span>By inheritance</span></li>
+              </ol>
+            </div>
+        <div id="ancestors">
+                <span class="filtertype">Inherited<br />
+                </span>
+                <ol id="linearization">
+                  <li class="in" name="scalaxy.extensions.MacroExtensionsComponent"><span>MacroExtensionsComponent</span></li><li class="in" name="scalaxy.extensions.TreeReifyingTransformers"><span>TreeReifyingTransformers</span></li><li class="in" name="scalaxy.extensions.Extensions"><span>Extensions</span></li><li class="in" name="scala.tools.nsc.transform.TypingTransformers"><span>TypingTransformers</span></li><li class="in" name="scala.tools.nsc.plugins.PluginComponent"><span>PluginComponent</span></li><li class="in" name="scala.tools.nsc.SubComponent"><span>SubComponent</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                </ol>
+              </div><div id="ancestors">
+            <span class="filtertype"></span>
+            <ol>
+              <li class="hideall out"><span>Hide All</span></li>
+              <li class="showall in"><span>Show all</span></li>
+            </ol>
+            <a href="http://docs.scala-lang.org/overviews/scaladoc/usage.html#members" target="_blank">Learn more about member selection</a>
+          </div>
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        <div id="constructors" class="members">
+              <h3>Instance Constructors</h3>
+              <ol><li name="scalaxy.extensions.MacroExtensionsComponent#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="&lt;init&gt;(global:scala.tools.nsc.Global,macroExtensions:Boolean,runtimeExtensions:Boolean,useThisForSelf:Boolean,useUntypedReify:Boolean):scalaxy.extensions.MacroExtensionsComponent"></a>
+      <a id="&lt;init&gt;:MacroExtensionsComponent"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">new</span>
+      </span>
+      <span class="symbol">
+        <span class="name">MacroExtensionsComponent</span><span class="params">(<span name="global">global: <span class="extype" name="scala.tools.nsc.Global">Global</span></span>, <span name="macroExtensions">macroExtensions: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">true</span></span>, <span name="runtimeExtensions">runtimeExtensions: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>, <span name="useThisForSelf">useThisForSelf: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">true</span></span>, <span name="useUntypedReify">useUntypedReify: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>)</span>
+      </span>
+      </h4>
+      
+    </li></ol>
+            </div>
+
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="scalaxy.extensions.Extensions.DefsTransformer" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="DefsTransformerextendsExtensions.this.global.Transformer"></a>
+      <a id="DefsTransformer:DefsTransformer"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="Extensions$DefsTransformer.html"><span class="name">DefsTransformer</span></a><span class="result"> extends <span class="extype" name="scala.tools.nsc.ast.Trees.Transformer">scala.tools.nsc.Global.Transformer</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Extensions.html" class="extype" name="scalaxy.extensions.Extensions">Extensions</a></dd></dl></div>
+    </li><li name="scalaxy.extensions.Extensions.DefsTraverser" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="DefsTraverserextendsExtensions.this.global.Traverser"></a>
+      <a id="DefsTraverser:DefsTraverser"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="Extensions$DefsTraverser.html"><span class="name">DefsTraverser</span></a><span class="result"> extends <span class="extype" name="scala.reflect.api.Trees.Traverser">scala.tools.nsc.Global.Traverser</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Extensions.html" class="extype" name="scalaxy.extensions.Extensions">Extensions</a></dd></dl></div>
+    </li><li name="scalaxy.extensions.Extensions.FlagOps2" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="FlagOps2extendsAnyRef"></a>
+      <a id="FlagOps2:FlagOps2"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="Extensions$FlagOps2.html"><span class="name">FlagOps2</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Extensions.html" class="extype" name="scalaxy.extensions.Extensions">Extensions</a></dd></dl></div>
+    </li><li name="scala.tools.nsc.SubComponent.StdPhase" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="StdPhaseextendsSubComponent.this.global.GlobalPhase"></a>
+      <a id="StdPhase:StdPhase"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <span class="name">StdPhase</span><span class="result"> extends <span class="extype" name="scala.tools.nsc.Global.GlobalPhase">GlobalPhase</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>SubComponent</dd></dl></div>
+    </li><li name="scalaxy.extensions.TreeReifyingTransformers.TreeReifyingTransformer" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="TreeReifyingTransformerextendsTreeReifyingTransformers.this.global.Transformer"></a>
+      <a id="TreeReifyingTransformer:TreeReifyingTransformer"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="TreeReifyingTransformers$TreeReifyingTransformer.html"><span class="name">TreeReifyingTransformer</span></a><span class="result"> extends <span class="extype" name="scala.tools.nsc.ast.Trees.Transformer">scala.tools.nsc.Global.Transformer</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TreeReifyingTransformers.html" class="extype" name="scalaxy.extensions.TreeReifyingTransformers">TreeReifyingTransformers</a></dd></dl></div>
+    </li><li name="scala.tools.nsc.transform.TypingTransformers.TypingTransformer" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="TypingTransformerextendsTypingTransformers.this.global.Transformer"></a>
+      <a id="TypingTransformer:TypingTransformer"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <span class="name">TypingTransformer</span><span class="result"> extends <span class="extype" name="scala.tools.nsc.ast.Trees.Transformer">scala.tools.nsc.Global.Transformer</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>TypingTransformers</dd></dl></div>
+    </li></ol>
+            </div>
+
+        
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="!=(x$1:AnyRef):Boolean"></a>
+      <a id="!=(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.AnyRef">AnyRef</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.Any#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="!=(x$1:Any):Boolean"></a>
+      <a id="!=(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="##():Int"></a>
+      <a id="##():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="==(x$1:AnyRef):Boolean"></a>
+      <a id="==(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.AnyRef">AnyRef</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.Any#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="==(x$1:Any):Boolean"></a>
+      <a id="==(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="scala.tools.nsc.SubComponent#afterOwnPhase" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="afterOwnPhase[T&lt;:&lt;?&gt;](op:&lt;?&gt;):T"></a>
+      <a id="afterOwnPhase[T](⇒T):T"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">afterOwnPhase</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="op">op: ⇒ <span class="extype" name="scala.tools.nsc.SubComponent.afterOwnPhase.T">T</span></span>)</span><span class="result">: <span class="extype" name="scala.tools.nsc.SubComponent.afterOwnPhase.T">T</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>SubComponent</dd><dt>Annotations</dt><dd>
+                <span class="name">@inline</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="scalaxy.extensions.Extensions#anyValTypeNames" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="anyValTypeNames:scala.collection.immutable.Set[String]"></a>
+      <a id="anyValTypeNames:Set[String]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">lazy val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">anyValTypeNames</span><span class="result">: <span class="extype" name="scala.collection.immutable.Set">Set</span>[<span class="extype" name="java.lang.String">String</span>]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Extensions.html" class="extype" name="scalaxy.extensions.Extensions">Extensions</a></dd></dl></div>
+    </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="asInstanceOf[T0]:T0"></a>
+      <a id="asInstanceOf[T0]:T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="scala.tools.nsc.SubComponent#beforeOwnPhase" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="beforeOwnPhase[T&lt;:&lt;?&gt;](op:&lt;?&gt;):T"></a>
+      <a id="beforeOwnPhase[T](⇒T):T"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">beforeOwnPhase</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="op">op: ⇒ <span class="extype" name="scala.tools.nsc.SubComponent.beforeOwnPhase.T">T</span></span>)</span><span class="result">: <span class="extype" name="scala.tools.nsc.SubComponent.beforeOwnPhase.T">T</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>SubComponent</dd><dt>Annotations</dt><dd>
+                <span class="name">@inline</span><span class="args">()</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="clone():Object"></a>
+      <a id="clone():AnyRef"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">clone</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.CloneNotSupportedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="eq(x$1:AnyRef):Boolean"></a>
+      <a id="eq(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.AnyRef">AnyRef</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="equals(x$1:Any):Boolean"></a>
+      <a id="equals(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="finalize():Unit"></a>
+      <a id="finalize():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.lang.Throwable]</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scalaxy.extensions.Extensions#genParamAccessorsAndConstructor" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="genParamAccessorsAndConstructor(namesAndTypeTrees:List[(String,Extensions.this.global.Tree)]):List[Extensions.this.global.Tree]"></a>
+      <a id="genParamAccessorsAndConstructor(List[(String,scala.tools.nsc.Global.Tree)]):List[scala.tools.nsc.Global.Tree]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">genParamAccessorsAndConstructor</span><span class="params">(<span name="namesAndTypeTrees">namesAndTypeTrees: <span class="extype" name="scala.List">List</span>[(<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.reflect.internal.Trees.Tree">scala.tools.nsc.Global.Tree</span>)]</span>)</span><span class="result">: <span class="extype" name="scala.List">List</span>[<span class="extype" name="scala.reflect.internal.Trees.Tree">scala.tools.nsc.Global.Tree</span>]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Extensions.html" class="extype" name="scalaxy.extensions.Extensions">Extensions</a></dd></dl></div>
+    </li><li name="scala.AnyRef#getClass" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getClass():Class[_]"></a>
+      <a id="getClass():Class[_]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scalaxy.extensions.Extensions#getTypeNames" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getTypeNames(tpt:Extensions.this.global.Tree):Seq[Extensions.this.global.TypeName]"></a>
+      <a id="getTypeNames(scala.tools.nsc.Global.Tree):Seq[scala.tools.nsc.Global.TypeName]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getTypeNames</span><span class="params">(<span name="tpt">tpt: <span class="extype" name="scala.reflect.internal.Trees.Tree">scala.tools.nsc.Global.Tree</span></span>)</span><span class="result">: <span class="extype" name="scala.Seq">Seq</span>[<span class="extype" name="scala.reflect.internal.Names.TypeName">scala.tools.nsc.Global.TypeName</span>]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Extensions.html" class="extype" name="scalaxy.extensions.Extensions">Extensions</a></dd></dl></div>
+    </li><li name="scalaxy.extensions.MacroExtensionsComponent#global" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="global:scala.tools.nsc.Global"></a>
+      <a id="global:Global"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">global</span><span class="result">: <span class="extype" name="scala.tools.nsc.Global">Global</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="scalaxy.extensions.MacroExtensionsComponent">MacroExtensionsComponent</a> → <a href="TreeReifyingTransformers.html" class="extype" name="scalaxy.extensions.TreeReifyingTransformers">TreeReifyingTransformers</a> → <a href="Extensions.html" class="extype" name="scalaxy.extensions.Extensions">Extensions</a> → TypingTransformers → SubComponent</dd></dl></div>
+    </li><li name="scala.tools.nsc.SubComponent#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hashCode():Int"></a>
+      <a id="hashCode():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>SubComponent → AnyRef → Any</dd></dl></div>
+    </li><li name="scala.tools.nsc.plugins.PluginComponent#internal" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="internal:Boolean(false)"></a>
+      <a id="internal:Boolean(false)"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">internal</span><span class="result">: Boolean(false)</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>PluginComponent → SubComponent</dd></dl></div>
+    </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ne(x$1:AnyRef):Boolean"></a>
+      <a id="ne(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.AnyRef">AnyRef</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scalaxy.extensions.TreeReifyingTransformers#newApply" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="newApply(target:TreeReifyingTransformers.this.global.Tree,args:TreeReifyingTransformers.this.global.Tree*):TreeReifyingTransformers.this.global.Tree"></a>
+      <a id="newApply(scala.tools.nsc.Global.Tree,scala.tools.nsc.Global.Tree*):scala.tools.nsc.Global.Tree"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">newApply</span><span class="params">(<span name="target">target: <span class="extype" name="scala.reflect.internal.Trees.Tree">scala.tools.nsc.Global.Tree</span></span>, <span name="args">args: <span class="extype" name="scala.reflect.internal.Trees.Tree">scala.tools.nsc.Global.Tree</span>*</span>)</span><span class="result">: <span class="extype" name="scala.reflect.internal.Trees.Tree">scala.tools.nsc.Global.Tree</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TreeReifyingTransformers.html" class="extype" name="scalaxy.extensions.TreeReifyingTransformers">TreeReifyingTransformers</a></dd></dl></div>
+    </li><li name="scalaxy.extensions.TreeReifyingTransformers#newApply" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="newApply(f:String,args:TreeReifyingTransformers.this.global.Tree*):TreeReifyingTransformers.this.global.Tree"></a>
+      <a id="newApply(String,scala.tools.nsc.Global.Tree*):scala.tools.nsc.Global.Tree"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">newApply</span><span class="params">(<span name="f">f: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="args">args: <span class="extype" name="scala.reflect.internal.Trees.Tree">scala.tools.nsc.Global.Tree</span>*</span>)</span><span class="result">: <span class="extype" name="scala.reflect.internal.Trees.Tree">scala.tools.nsc.Global.Tree</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TreeReifyingTransformers.html" class="extype" name="scalaxy.extensions.TreeReifyingTransformers">TreeReifyingTransformers</a></dd></dl></div>
+    </li><li name="scalaxy.extensions.TreeReifyingTransformers#newApplyList" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="newApplyList(args:List[TreeReifyingTransformers.this.global.Tree]):TreeReifyingTransformers.this.global.Tree"></a>
+      <a id="newApplyList(List[scala.tools.nsc.Global.Tree]):scala.tools.nsc.Global.Tree"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">newApplyList</span><span class="params">(<span name="args">args: <span class="extype" name="scala.List">List</span>[<span class="extype" name="scala.reflect.internal.Trees.Tree">scala.tools.nsc.Global.Tree</span>]</span>)</span><span class="result">: <span class="extype" name="scala.reflect.internal.Trees.Tree">scala.tools.nsc.Global.Tree</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TreeReifyingTransformers.html" class="extype" name="scalaxy.extensions.TreeReifyingTransformers">TreeReifyingTransformers</a></dd></dl></div>
+    </li><li name="scalaxy.extensions.TreeReifyingTransformers#newConstant" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="newConstant(v:Any):TreeReifyingTransformers.this.global.Literal"></a>
+      <a id="newConstant(Any):scala.tools.nsc.Global.Literal"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">newConstant</span><span class="params">(<span name="v">v: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.reflect.internal.Trees.Literal">scala.tools.nsc.Global.Literal</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TreeReifyingTransformers.html" class="extype" name="scalaxy.extensions.TreeReifyingTransformers">TreeReifyingTransformers</a></dd></dl></div>
+    </li><li name="scalaxy.extensions.Extensions#newEmptyTpt" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="newEmptyTpt():Extensions.this.global.TypeTree"></a>
+      <a id="newEmptyTpt():scala.tools.nsc.Global.TypeTree"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">newEmptyTpt</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.reflect.internal.Trees.TypeTree">scala.tools.nsc.Global.TypeTree</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Extensions.html" class="extype" name="scalaxy.extensions.Extensions">Extensions</a></dd></dl></div>
+    </li><li name="scalaxy.extensions.Extensions#newExpr" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="newExpr(contextName:Extensions.this.global.TermName,tpt:Extensions.this.global.Tree,value:Extensions.this.global.Tree):Extensions.this.global.Apply"></a>
+      <a id="newExpr(scala.tools.nsc.Global.TermName,scala.tools.nsc.Global.Tree,scala.tools.nsc.Global.Tree):scala.tools.nsc.Global.Apply"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">newExpr</span><span class="params">(<span name="contextName">contextName: <span class="extype" name="scala.reflect.internal.Names.TermName">scala.tools.nsc.Global.TermName</span></span>, <span name="tpt">tpt: <span class="extype" name="scala.reflect.internal.Trees.Tree">scala.tools.nsc.Global.Tree</span></span>, <span name="value">value: <span class="extype" name="scala.reflect.internal.Trees.Tree">scala.tools.nsc.Global.Tree</span></span>)</span><span class="result">: <span class="extype" name="scala.reflect.internal.Trees.Apply">scala.tools.nsc.Global.Apply</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Extensions.html" class="extype" name="scalaxy.extensions.Extensions">Extensions</a></dd></dl></div>
+    </li><li name="scalaxy.extensions.Extensions#newExprType" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="newExprType(contextName:Extensions.this.global.TermName,tpt:Extensions.this.global.Tree):Extensions.this.global.AppliedTypeTree"></a>
+      <a id="newExprType(scala.tools.nsc.Global.TermName,scala.tools.nsc.Global.Tree):scala.tools.nsc.Global.AppliedTypeTree"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">newExprType</span><span class="params">(<span name="contextName">contextName: <span class="extype" name="scala.reflect.internal.Names.TermName">scala.tools.nsc.Global.TermName</span></span>, <span name="tpt">tpt: <span class="extype" name="scala.reflect.internal.Trees.Tree">scala.tools.nsc.Global.Tree</span></span>)</span><span class="result">: <span class="extype" name="scala.reflect.internal.Trees.AppliedTypeTree">scala.tools.nsc.Global.AppliedTypeTree</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Extensions.html" class="extype" name="scalaxy.extensions.Extensions">Extensions</a></dd></dl></div>
+    </li><li name="scalaxy.extensions.Extensions#newImportAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="newImportAll(tpt:Extensions.this.global.Tree,pos:Extensions.this.global.Position):Extensions.this.global.Import"></a>
+      <a id="newImportAll(scala.tools.nsc.Global.Tree,scala.tools.nsc.Global.Position):scala.tools.nsc.Global.Import"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">newImportAll</span><span class="params">(<span name="tpt">tpt: <span class="extype" name="scala.reflect.internal.Trees.Tree">scala.tools.nsc.Global.Tree</span></span>, <span name="pos">pos: <span class="extype" name="scala.reflect.internal.Positions.Position">scala.tools.nsc.Global.Position</span></span>)</span><span class="result">: <span class="extype" name="scala.reflect.internal.Trees.Import">scala.tools.nsc.Global.Import</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Extensions.html" class="extype" name="scalaxy.extensions.Extensions">Extensions</a></dd></dl></div>
+    </li><li name="scalaxy.extensions.Extensions#newImportMacros" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="newImportMacros(pos:Extensions.this.global.Position):Extensions.this.global.Import"></a>
+      <a id="newImportMacros(scala.tools.nsc.Global.Position):scala.tools.nsc.Global.Import"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">newImportMacros</span><span class="params">(<span name="pos">pos: <span class="extype" name="scala.reflect.internal.Positions.Position">scala.tools.nsc.Global.Position</span></span>)</span><span class="result">: <span class="extype" name="scala.reflect.internal.Trees.Import">scala.tools.nsc.Global.Import</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Extensions.html" class="extype" name="scalaxy.extensions.Extensions">Extensions</a></dd></dl></div>
+    </li><li name="scalaxy.extensions.MacroExtensionsComponent#newPhase" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="newPhase(prev:tools.nsc.Phase):MacroExtensionsComponent.this.StdPhase"></a>
+      <a id="newPhase(Phase):StdPhase"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">newPhase</span><span class="params">(<span name="prev">prev: <span class="extype" name="scala.tools.nsc.Phase">Phase</span></span>)</span><span class="result">: <a href="#StdPhaseextendsSubComponent.this.global.GlobalPhase" class="extmbr" name="scalaxy.extensions.MacroExtensionsComponent.StdPhase">StdPhase</a></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="scalaxy.extensions.MacroExtensionsComponent">MacroExtensionsComponent</a> → SubComponent</dd></dl></div>
+    </li><li name="scalaxy.extensions.TreeReifyingTransformers#newSelect" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="newSelect(target:TreeReifyingTransformers.this.global.Tree,name:String):TreeReifyingTransformers.this.global.Tree"></a>
+      <a id="newSelect(scala.tools.nsc.Global.Tree,String):scala.tools.nsc.Global.Tree"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">newSelect</span><span class="params">(<span name="target">target: <span class="extype" name="scala.reflect.internal.Trees.Tree">scala.tools.nsc.Global.Tree</span></span>, <span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.reflect.internal.Trees.Tree">scala.tools.nsc.Global.Tree</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="TreeReifyingTransformers.html" class="extype" name="scalaxy.extensions.TreeReifyingTransformers">TreeReifyingTransformers</a></dd></dl></div>
+    </li><li name="scalaxy.extensions.Extensions#newSelfValDef" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="newSelfValDef():Extensions.this.global.ValDef"></a>
+      <a id="newSelfValDef():scala.tools.nsc.Global.ValDef"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">newSelfValDef</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.reflect.internal.Trees.ValDef">scala.tools.nsc.Global.ValDef</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Extensions.html" class="extype" name="scalaxy.extensions.Extensions">Extensions</a></dd></dl></div>
+    </li><li name="scalaxy.extensions.Extensions#newSplice" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="newSplice(name:String):Extensions.this.global.Select"></a>
+      <a id="newSplice(String):scala.tools.nsc.Global.Select"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">newSplice</span><span class="params">(<span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.reflect.internal.Trees.Select">scala.tools.nsc.Global.Select</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Extensions.html" class="extype" name="scalaxy.extensions.Extensions">Extensions</a></dd></dl></div>
+    </li><li name="scalaxy.extensions.Extensions#newSuperInitConstructorBody" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="newSuperInitConstructorBody():Extensions.this.global.Tree"></a>
+      <a id="newSuperInitConstructorBody():scala.tools.nsc.Global.Tree"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">newSuperInitConstructorBody</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.reflect.internal.Trees.Tree">scala.tools.nsc.Global.Tree</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Extensions.html" class="extype" name="scalaxy.extensions.Extensions">Extensions</a></dd></dl></div>
+    </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notify():Unit"></a>
+      <a id="notify():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notifyAll():Unit"></a>
+      <a id="notifyAll():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.tools.nsc.SubComponent#ownPhase" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ownPhase:scala.tools.nsc.Phase"></a>
+      <a id="ownPhase:Phase"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ownPhase</span><span class="result">: <span class="extype" name="scala.tools.nsc.Phase">Phase</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>SubComponent</dd></dl></div>
+    </li><li name="scalaxy.extensions.Extensions#parentTypeTreeForImplicitWrapper" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="parentTypeTreeForImplicitWrapper(typeName:Extensions.this.global.Name):Extensions.this.global.Tree"></a>
+      <a id="parentTypeTreeForImplicitWrapper(scala.tools.nsc.Global.Name):scala.tools.nsc.Global.Tree"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">parentTypeTreeForImplicitWrapper</span><span class="params">(<span name="typeName">typeName: <span class="extype" name="scala.reflect.internal.Names.Name">scala.tools.nsc.Global.Name</span></span>)</span><span class="result">: <span class="extype" name="scala.reflect.internal.Trees.Tree">scala.tools.nsc.Global.Tree</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Extensions.html" class="extype" name="scalaxy.extensions.Extensions">Extensions</a></dd></dl></div>
+    </li><li name="scalaxy.extensions.MacroExtensionsComponent#phaseName" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="phaseName:String"></a>
+      <a id="phaseName:String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">phaseName</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="scalaxy.extensions.MacroExtensionsComponent">MacroExtensionsComponent</a> → SubComponent</dd></dl></div>
+    </li><li name="scala.tools.nsc.SubComponent#phaseNewFlags" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="phaseNewFlags:Long"></a>
+      <a id="phaseNewFlags:Long"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">phaseNewFlags</span><span class="result">: <span class="extype" name="scala.Long">Long</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>SubComponent</dd></dl></div>
+    </li><li name="scala.tools.nsc.SubComponent#phaseNextFlags" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="phaseNextFlags:Long"></a>
+      <a id="phaseNextFlags:Long"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">phaseNextFlags</span><span class="result">: <span class="extype" name="scala.Long">Long</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>SubComponent</dd></dl></div>
+    </li><li name="scalaxy.extensions.MacroExtensionsComponent#runsAfter" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="runsAfter:List[String]"></a>
+      <a id="runsAfter:List[String]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">runsAfter</span><span class="result">: <span class="extype" name="scala.List">List</span>[<span class="extype" name="java.lang.String">String</span>]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="scalaxy.extensions.MacroExtensionsComponent">MacroExtensionsComponent</a> → SubComponent</dd></dl></div>
+    </li><li name="scalaxy.extensions.MacroExtensionsComponent#runsBefore" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="runsBefore:List[String]"></a>
+      <a id="runsBefore:List[String]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">runsBefore</span><span class="result">: <span class="extype" name="scala.collection.immutable.List">List</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="scalaxy.extensions.MacroExtensionsComponent">MacroExtensionsComponent</a> → SubComponent</dd></dl></div>
+    </li><li name="scalaxy.extensions.MacroExtensionsComponent#runsRightAfter" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="runsRightAfter:Some[String]"></a>
+      <a id="runsRightAfter:Some[String]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">runsRightAfter</span><span class="result">: <span class="extype" name="scala.Some">Some</span>[<span class="extype" name="java.lang.String">String</span>]</span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="scalaxy.extensions.MacroExtensionsComponent">MacroExtensionsComponent</a> → PluginComponent → SubComponent</dd></dl></div>
+    </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
+      <a id="synchronized[T0](⇒T0):T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scalaxy.extensions.Extensions#termPath" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="termPath(root:Extensions.this.global.Tree,path:String):Extensions.this.global.Tree"></a>
+      <a id="termPath(scala.tools.nsc.Global.Tree,String):scala.tools.nsc.Global.Tree"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">termPath</span><span class="params">(<span name="root">root: <span class="extype" name="scala.reflect.internal.Trees.Tree">scala.tools.nsc.Global.Tree</span></span>, <span name="path">path: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.reflect.internal.Trees.Tree">scala.tools.nsc.Global.Tree</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Extensions.html" class="extype" name="scalaxy.extensions.Extensions">Extensions</a></dd></dl></div>
+    </li><li name="scalaxy.extensions.Extensions#termPath" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="termPath(components:List[String]):Extensions.this.global.Tree"></a>
+      <a id="termPath(List[String]):scala.tools.nsc.Global.Tree"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">termPath</span><span class="params">(<span name="components">components: <span class="extype" name="scala.List">List</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>)</span><span class="result">: <span class="extype" name="scala.reflect.internal.Trees.Tree">scala.tools.nsc.Global.Tree</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Extensions.html" class="extype" name="scalaxy.extensions.Extensions">Extensions</a></dd></dl></div>
+    </li><li name="scalaxy.extensions.Extensions#termPath" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="termPath(path:String):Extensions.this.global.Tree"></a>
+      <a id="termPath(String):scala.tools.nsc.Global.Tree"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">termPath</span><span class="params">(<span name="path">path: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.reflect.internal.Trees.Tree">scala.tools.nsc.Global.Tree</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Extensions.html" class="extype" name="scalaxy.extensions.Extensions">Extensions</a></dd></dl></div>
+    </li><li name="scala.AnyRef#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="toString():String"></a>
+      <a id="toString():String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scalaxy.extensions.Extensions#typePath" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="typePath(path:String):Extensions.this.global.Tree"></a>
+      <a id="typePath(String):scala.tools.nsc.Global.Tree"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">typePath</span><span class="params">(<span name="path">path: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.reflect.internal.Trees.Tree">scala.tools.nsc.Global.Tree</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Extensions.html" class="extype" name="scalaxy.extensions.Extensions">Extensions</a></dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait():Unit"></a>
+      <a id="wait():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long,x$2:Int):Unit"></a>
+      <a id="wait(Long,Int):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long):Unit"></a>
+      <a id="wait(Long):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li></ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        <div class="parent" name="scalaxy.extensions.TreeReifyingTransformers">
+              <h3>Inherited from <a href="TreeReifyingTransformers.html" class="extype" name="scalaxy.extensions.TreeReifyingTransformers">TreeReifyingTransformers</a></h3>
+            </div><div class="parent" name="scalaxy.extensions.Extensions">
+              <h3>Inherited from <a href="Extensions.html" class="extype" name="scalaxy.extensions.Extensions">Extensions</a></h3>
+            </div><div class="parent" name="scala.tools.nsc.transform.TypingTransformers">
+              <h3>Inherited from <span class="extype" name="scala.tools.nsc.transform.TypingTransformers">TypingTransformers</span></h3>
+            </div><div class="parent" name="scala.tools.nsc.plugins.PluginComponent">
+              <h3>Inherited from <span class="extype" name="scala.tools.nsc.plugins.PluginComponent">PluginComponent</span></h3>
+            </div><div class="parent" name="scala.tools.nsc.SubComponent">
+              <h3>Inherited from <span class="extype" name="scala.tools.nsc.SubComponent">SubComponent</span></h3>
+            </div><div class="parent" name="scala.AnyRef">
+              <h3>Inherited from <span class="extype" name="scala.AnyRef">AnyRef</span></h3>
+            </div><div class="parent" name="scala.Any">
+              <h3>Inherited from <span class="extype" name="scala.Any">Any</span></h3>
+            </div>
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+      <script defer="defer" type="text/javascript" id="jquery-js" src="../../lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="../../lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="../../lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="../../lib/template.js"></script>
+    </body>
+      </html>

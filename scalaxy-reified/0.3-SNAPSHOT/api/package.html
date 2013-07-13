@@ -1,0 +1,127 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html>
+        <head>
+          <title>root - scalaxy-reified-doc: scalaxy-reified-doc 0.3-SNAPSHOT - _root_</title>
+          <meta name="description" content="root - scalaxy - reified - doc scalaxy - reified - doc 0.3 - SNAPSHOT - root " />
+          <meta name="keywords" content="root scalaxy reified doc scalaxy reified doc 0.3 SNAPSHOT root " />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript">
+         if(top === self) {
+            var url = 'index.html';
+            var hash = 'package';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="value">
+      <div id="definition">
+        <img src="lib/package_big.png" />
+        
+        <h1>root package</h1>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">root</span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Scalaxy/Reify provides a powerful reified values mechanism that deals well with composition and captures of runtime values, allowing for complex ASTs to be generated during runtime for re-compilation or transformation purposes.</p><p>It preserves the original value that was reified, allowing for flexible mixed usage of runtime value and compile-time AST.</p><p>Please look at documentation of <a href="scalaxy/reified/package.html#reify[A](v:A)(implicitevidence$1:reflect.runtime.universe.TypeTag[A]):scalaxy.reified.ReifiedValue[A]" class="extmbr" name="scalaxy.reified#reify">scalaxy.reified.reify</a> and <a href="scalaxy/reified/ReifiedValue.html" class="extype" name="scalaxy.reified.ReifiedValue">scalaxy.reified.ReifiedValue</a> first.</p><pre><span class="kw">import</span> scalaxy.reified._
+
+<span class="kw">def</span> comp(capture1: <span class="std">Int</span>): ReifiedFunction1[<span class="std">Int</span>, <span class="std">Int</span>] = {
+  <span class="kw">val</span> capture2 = <span class="std">Seq</span>(<span class="num">10</span>, <span class="num">20</span>, <span class="num">30</span>)
+  <span class="kw">val</span> f = reify((x: <span class="std">Int</span>) <span class="kw">=&gt;</span> capture1 + capture2(x))
+  <span class="kw">val</span> g = reify((x: <span class="std">Int</span>) <span class="kw">=&gt;</span> x * x)
+
+  g.compose(f)
+}
+
+<span class="kw">val</span> f = comp(<span class="num">10</span>)
+<span class="cmt">// Normal evaluation, using regular function:</span>
+println(f(<span class="num">1</span>))
+
+<span class="cmt">// Get the function's AST, inlining all captured values and captured reified values:</span>
+<span class="kw">val</span> ast = f.expr().tree
+println(ast)
+
+<span class="cmt">// Compile the AST at runtime (needs scala-compiler.jar in the classpath).</span>
+<span class="cmt">// This is an optimized compilation by default, soon with extra optimizing AST transforms taken from Scalaxy.</span>
+<span class="kw">val</span> compiledF = ast.compile()()
+<span class="cmt">// Evaluation, using the freshly-compiled function:</span>
+println(compiledF(<span class="num">1</span>))</pre></div></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        
+        
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        
+
+        
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="_root_.scalaxy" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="scalaxy"></a>
+      <a id="scalaxy:scalaxy"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a href="scalaxy/package.html"><span class="name">scalaxy</span></a>
+      </span>
+      </h4>
+      
+    </li></ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+      <script defer="defer" type="text/javascript" id="jquery-js" src="lib/jquery.js"></script><script defer="defer" type="text/javascript" id="jquery-ui-js" src="lib/jquery-ui.js"></script><script defer="defer" type="text/javascript" id="tools-tooltip-js" src="lib/tools.tooltip.js"></script><script defer="defer" type="text/javascript" id="template-js" src="lib/template.js"></script>
+    </body>
+      </html>
