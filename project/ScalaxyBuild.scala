@@ -6,6 +6,10 @@ import ls.Plugin._
 import scalariform.formatter.preferences._
 import com.typesafe.sbt.SbtScalariform.scalariformSettings
 import com.typesafe.sbt.SbtScalariform._
+import com.typesafe.sbt.SbtGit.GitKeys._
+import com.typesafe.sbt.SbtSite._
+import com.typesafe.sbt.SbtSite.SiteKeys._
+import com.typesafe.sbt.SbtGhPages._
 
 object Scalaxy extends Build {
   // See https://github.com/mdr/scalariform
@@ -28,6 +32,7 @@ object Scalaxy extends Build {
     version := "0.3-SNAPSHOT",
     licenses := Seq("BSD-3-Clause" -> url("http://www.opensource.org/licenses/BSD-3-Clause")),
     homepage := Some(url("https://github.com/ochafik/Scalaxy")),
+    gitRemoteRepo := "git@github.com:ochafik/Scalaxy.git",
     pomIncludeRepository := { _ => false },
     pomExtra := (
       <scm>
@@ -50,10 +55,22 @@ object Scalaxy extends Build {
     LsKeys.ghUser := Some("ochafik"),
     LsKeys.ghRepo := Some("Scalaxy"))
 
+  lazy val docSettings = 
+    Seq(
+      scalacOptions in (Compile, doc) <++= (name, baseDirectory, description, version, sourceDirectory) map {
+        case (name, base, description, version, sourceDirectory) =>
+          Opts.doc.title(name + ": " + description) ++ 
+          Opts.doc.version(version) ++ 
+          //Seq("-doc-source-url", "https://github.com/ochafik/Scalaxy/blob/master/Reified/Base/src/main/scala") ++
+          Seq("-doc-root-content", (sourceDirectory / "main" / "rootdoc.txt").getAbsolutePath)
+      }
+    )
+    
   lazy val standardSettings =
     Defaults.defaultSettings ++
     infoSettings ++
     sonatypeSettings ++
+    docSettings ++
     seq(lsSettings: _*) ++
     Seq(
       javacOptions ++= Seq("-Xlint:unchecked"),
@@ -141,6 +158,43 @@ object Scalaxy extends Build {
         Seq(publish := { }))
     .aggregate(compilets, fx, beans, components, debug, extensions, reified)
 
+  lazy val docProjects = Seq(compilets, fx, beans, components, debug, extensions, reifiedDoc)
+  lazy val scalaxyDoc = 
+    Project(
+      id = "scalaxy-doc", 
+      base = file("Reified/Doc"), 
+      settings = 
+        reflectSettings ++
+        site.settings ++ 
+        ghpages.settings ++
+        Seq(
+          scalacOptions in (Compile, doc) <++= (name, baseDirectory, description, version, sourceDirectory) map {
+            case (name, base, description, version, sourceDirectory) =>
+              Opts.doc.title(name + ": " + description) ++ 
+              Opts.doc.version(version) ++ 
+              //Seq("-doc-source-url", "https://github.com/ochafik/Scalaxy/blob/master/Reified/Base/src/main/scala") ++
+              Seq("-doc-root-content", (sourceDirectory / "main" / "rootdoc.txt").getAbsolutePath)
+          }
+        ) ++
+        //site.includeScaladoc() ++//"alternative/directory") ++
+        docProjects.flatMap(project => {
+          Seq(
+            siteMappings <++= (mappings in packageDoc in project in Compile, name in project, version in project, baseDirectory in project).map({
+              case (mappings, id, version, base) =>
+                val artifactSuffixToRemove = "-doc"
+                for((f, d) <- mappings) yield {
+                  val name = 
+                    if (id.endsWith(artifactSuffixToRemove)) 
+                      id.substring(0, id.length - artifactSuffixToRemove.length) 
+                    else 
+                      id
+                  (f, name + "/" + version + "/api/" + d)
+                }
+            })
+          )
+        })
+    ).dependsOn(docProjects.map(p => p: ClasspathDep[ProjectReference]): _*)
+  
   lazy val compilets =
     Project(
       id = "scalaxy-compilets",
@@ -216,6 +270,23 @@ object Scalaxy extends Build {
     Project(id = "scalaxy-reified", base = file("Reified"), settings = reflectSettings ++ scalariformSettings)
     .dependsOn(reifiedBase)
     .aggregate(reifiedBase)
+
+  lazy val reifiedDoc = Project(
+    id = "scalaxy-reified-doc", 
+    base = file("Reified/Doc"), 
+    settings = 
+      reflectSettings ++ 
+      Seq(
+        publish := { },
+        (skip in compile) := true,
+        //site.siteMappings <++= Seq(file1 -> "location.html", file2 -> "image.png"),
+        unmanagedSourceDirectories in Compile <<= (
+          (Seq(reified, reifiedBase) map (unmanagedSourceDirectories in _ in Compile)).join.apply {
+            (s) => s.flatten.toSeq
+          }
+        )
+      )
+  ).dependsOn(reified, reifiedBase)
 
   lazy val fxSettings = reflectSettings ++ Seq(
     unmanagedJars in Compile ++= Seq(
