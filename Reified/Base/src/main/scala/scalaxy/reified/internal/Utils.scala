@@ -54,19 +54,16 @@ object Utils {
     }.transform(root)
   }
 
-  private[reified] def typeCheck(tree: Tree, pt: Type = WildcardType): Tree = {
-    val ttree = tree.asInstanceOf[optimisingToolbox.u.Tree]
-    if (ttree.tpe != null && ttree.tpe != NoType)
+  private def typeCheck(tree: Tree, pt: Type = WildcardType): Tree = {
+    if (tree.tpe != null && tree.tpe != NoType)
       tree
     else {
       try {
-        optimisingToolbox.typeCheck(
-          ttree,
-          pt.asInstanceOf[optimisingToolbox.u.Type])
+        optimisingToolbox.typeCheck(tree, pt)
       } catch {
         case ex: Throwable =>
           throw new RuntimeException(s"Failed to typeCheck($tree, $pt): $ex", ex)
       }
-    }.asInstanceOf[Tree]
+    }
   }
 }
