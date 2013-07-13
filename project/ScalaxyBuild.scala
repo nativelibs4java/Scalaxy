@@ -176,7 +176,12 @@ object Scalaxy extends Build {
         site.settings ++
         site.publishSite ++
         ghpages.settings ++
+        site.jekyllSupport() ++
         Seq(
+          com.typesafe.sbt.site.JekyllSupport.RequiredGems := Map(
+            "jekyll" -> "0.11.2",
+            "liquid" -> "2.3.0"
+          ),
           siteMappings ++= {
             val rd = "README.md"
             val target = "index.md"
