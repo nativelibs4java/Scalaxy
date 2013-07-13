@@ -1,0 +1,17 @@
+{
+  "organization" : "com.nativelibs4java",
+  "name" : "scalaxy",
+  "version" : "0.3-SNAPSHOT",
+  "description" : "scalaxy",
+  "site" : "https://github.com/ochafik/Scalaxy",
+  "tags" : [ ],
+  "docs" : "",
+  "resolvers" : [ "https://oss.sonatype.org/content/repositories/releases" ],
+  "dependencies" : [ ],
+  "scalas" : [ "2.10.0-RC1" ],
+  "licenses" : [ {
+    "name" : "BSD-3-Clause",
+    "url" : "http://www.opensource.org/licenses/BSD-3-Clause"
+  } ],
+  "sbt" : false
+}

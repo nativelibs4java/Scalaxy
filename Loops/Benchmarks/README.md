@@ -1,0 +1,3 @@
+Run with :
+
+        sbt run
