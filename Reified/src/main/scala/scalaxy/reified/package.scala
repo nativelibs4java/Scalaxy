@@ -21,11 +21,13 @@ package object reified {
    * Reify a value (including functions), preserving the original value and keeping track of the
    * values it captures from the scope of its expression.
    * This allows for runtime processing of the value's AST (being able to capture external values makes this method more flexible than Universe.reify).
+   *
    * Compile-time error are raised when an external reference cannot be captured safely (vars and
    * lazy vals are not considered safe, for instance).
-   * Captured values are inlined in the reified value's AST with a conversion function,
-   * which can be customized (by default, it handles constants, arrays, immutable collections,
-   * reified values and their wrappers).
+   *
+   * Captured values are inlined in the reified value's AST with a conversion function (see
+   * [[scalaxy.reified.CaptureConversions]]), which can be customized (by default, it handles
+   * constants, arrays, immutable collections, reified values and their wrappers).
    */
   def reify[A: TypeTag](v: A): ReifiedValue[A] = macro internal.reifyImpl[A]
 
@@ -101,7 +103,8 @@ package object reified {
   }
 
   /**
-   * Implicitly extract reified value from its wrappers (such as ReifiedFunction1, ReifiedFunction2).
+   * Implicitly extract the reified value out of one of its wrappers (such as
+   * [[scalaxy.reified.ReifiedFunction1]] and [[scalaxy.reified.ReifiedFunction2]]).
    */
   implicit def hasReifiedValueToReifiedValue[A](r: HasReifiedValue[A]): ReifiedValue[A] = {
     r.reifiedValue

@@ -8,7 +8,7 @@ import scala.tools.reflect.ToolBox
 import scalaxy.reified.ReifiedValue
 
 /**
- * Utility methods used by Scalaxy/Reified's implementation.
+ * Internal utility methods used by Scalaxy/Reified's implementation.
  * Should not be called by users of the library, API might change even in minor / patch versions.
  */
 object Utils {
@@ -19,6 +19,12 @@ object Utils {
       CurrentMirrorTreeCreator(tree))
   }
 
+  /**
+   * Internal method to type-check a runtime AST (API might change at any future version).
+   * This might transform the AST's structure (e.g. introduce TypeApply nodes), and might prevent
+   * toolboxes from compiling it (requiring a call to `scala.tools.ToolBox.resetAllAttrs` prior
+   * to compiling with `scala.tools.ToolBox.compile`).
+   */
   def typeCheck[A](expr: Expr[A]): Expr[A] = {
     newExpr[A](typeCheck(expr.tree))
   }
