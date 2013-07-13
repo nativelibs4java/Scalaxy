@@ -87,6 +87,10 @@ package object reified {
     }
     */
 
+    /**
+     * Creates a tupled version of this reified function: instead of 2 arguments, it accepts a
+     * single `scala.Tuple2` argument.
+     */
     def tupled: ReifiedFunction1[(T1, T2), R] = {
       val f = this
       internal.reifyMacro((p: (T1, T2)) => {
