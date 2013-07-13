@@ -1,5 +1,13 @@
 resolvers += Resolver.url("artifactory", url("http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases"))(Resolver.ivyStylePatterns)
 
+resolvers += "jgit-repo" at "http://download.eclipse.org/jgit/maven"
+
+addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "0.6.2")
+     
+addSbtPlugin("com.typesafe.sbt" % "sbt-ghpages" % "0.5.1")
+
+addSbtPlugin("com.typesafe.sbt" % "sbt-site" % "0.6.2")
+
 addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.8.4")
 
 //addSbtPlugin("com.jsuereth" % "xsbt-gpg-plugin" % "0.6")
