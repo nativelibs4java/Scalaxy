@@ -156,18 +156,36 @@ object Scalaxy extends Build {
       settings =
         standardSettings ++
         Seq(publish := { }))
-    .aggregate(compilets, fx, beans, components, debug, extensions, reified)
+    .aggregate(compilets, fx, beans, components, debug, extensions, reified, scalaxyDoc)
 
-  lazy val docProjects = Seq(compilets, fx, beans, components, debug, extensions, reifiedDoc)
+  lazy val docProjects = Map(
+    "Compilets" -> compilets,
+    "Fx" -> fx, 
+    "Beans" -> beans, 
+    "Components" -> components, 
+    "Debug" -> debug, 
+    "MacroExtensions" -> extensions,
+    "Reified" -> reifiedDoc)
+    
   lazy val scalaxyDoc = 
     Project(
       id = "scalaxy-doc", 
-      base = file("Reified/Doc"), 
+      base = file("Doc"), 
       settings = 
         reflectSettings ++
-        site.settings ++ 
+        site.settings ++
+        site.publishSite ++
         ghpages.settings ++
         Seq(
+          siteMappings ++= {
+            val rd = "README.md"
+            val target = "index.md"
+            (
+              docProjects.keys.map(dirName => 
+                file(dirName + "/" + rd) -> (dirName + "/" + target)) ++ 
+              Set(file(rd) -> target)
+            ).filter(_._1.exists).toSeq
+          },
           scalacOptions in (Compile, doc) <++= (name, baseDirectory, description, version, sourceDirectory) map {
             case (name, base, description, version, sourceDirectory) =>
               Opts.doc.title(name + ": " + description) ++ 
@@ -177,23 +195,18 @@ object Scalaxy extends Build {
           }
         ) ++
         //site.includeScaladoc() ++//"alternative/directory") ++
-        docProjects.flatMap(project => {
+        docProjects.flatMap({ case (dirName, project) =>
           Seq(
             siteMappings <++= (mappings in packageDoc in project in Compile, name in project, version in project, baseDirectory in project).map({
               case (mappings, id, version, base) =>
-                val artifactSuffixToRemove = "-doc"
                 for((f, d) <- mappings) yield {
-                  val name = 
-                    if (id.endsWith(artifactSuffixToRemove)) 
-                      id.substring(0, id.length - artifactSuffixToRemove.length) 
-                    else 
-                      id
-                  (f, name + "/" + version + "/api/" + d)
+                  val versionString = if (version.endsWith("-SNAPSHOT")) "latest" else version
+                  (f, dirName + "/" + versionString + "/api/" + d)
                 }
             })
           )
         })
-    ).dependsOn(docProjects.map(p => p: ClasspathDep[ProjectReference]): _*)
+    ).dependsOn(docProjects.values.map(p => p: ClasspathDep[ProjectReference]).toSeq: _*)
   
   lazy val compilets =
     Project(
@@ -271,11 +284,8 @@ object Scalaxy extends Build {
     .dependsOn(reifiedBase)
     .aggregate(reifiedBase)
 
-  lazy val reifiedDoc = Project(
-    id = "scalaxy-reified-doc", 
-    base = file("Reified/Doc"), 
-    settings = 
-      reflectSettings ++ 
+  lazy val reifiedDoc = 
+    Project(id = "scalaxy-reified-doc", base = file("Reified/Doc"), settings = reflectSettings ++ 
       Seq(
         publish := { },
         (skip in compile) := true,
