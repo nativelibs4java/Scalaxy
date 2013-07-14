@@ -9,7 +9,7 @@ import scala.reflect.runtime
 import scala.reflect.runtime.universe
 import scala.reflect.runtime.universe.{ typeTag, TypeTag }
 
-import scalaxy.reified.impl
+import scalaxy.reified.internal
 
 /**
  * Scalaxy/Reified: the reify method in this package captures it's compile-time argument's AST,
@@ -27,7 +27,7 @@ package object reified {
    * which can be customized (by default, it handles constants, arrays, immutable collections,
    * reified values and their wrappers).
    */
-  def reify[A: TypeTag](v: A): ReifiedValue[A] = macro impl.reifyImpl[A]
+  def reify[A: TypeTag](v: A): ReifiedValue[A] = macro internal.reifyImpl[A]
 
   /**
    * Wrapper that provides Function1-like methods to a reified Function1 value.
@@ -45,12 +45,12 @@ package object reified {
 
     def compose[A: TypeTag](g: ReifiedFunction1[A, T1]): ReifiedFunction1[A, R] = {
       val f = this
-      impl.reifyMacro((c: A) => f(g(c)))
+      internal.reifyMacro((c: A) => f(g(c)))
     }
 
     def andThen[A: TypeTag](g: ReifiedFunction1[R, A]): ReifiedFunction1[T1, A] = {
       val f = this
-      impl.reifyMacro((a: T1) => g(f(a)))
+      internal.reifyMacro((a: T1) => g(f(a)))
     }
   }
 
@@ -83,7 +83,7 @@ package object reified {
 
     def tupled: ReifiedFunction1[(T1, T2), R] = {
       val f = this
-      impl.reifyMacro((p: (T1, T2)) => {
+      internal.reifyMacro((p: (T1, T2)) => {
         val (v1, v2) = p
         f(v1, v2)
       })

@@ -1,6 +1,6 @@
 package scalaxy.reified
 
-import scalaxy.reified.impl.Utils._
+import scalaxy.reified.internal.Utils._
 
 import scala.reflect.runtime.universe
 import scala.reflect.runtime.universe._

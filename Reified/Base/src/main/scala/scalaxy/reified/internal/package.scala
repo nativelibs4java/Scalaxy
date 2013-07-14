@@ -6,9 +6,9 @@ import scala.reflect._
 import scala.reflect.macros.Context
 import scala.reflect.runtime.universe
 
-import scalaxy.reified.impl.Utils._
+import scalaxy.reified.internal.Utils._
 
-package object impl {
+package object internal {
 
   private def runtimeExpr[A](c: Context)(tree: c.universe.Tree): c.Expr[universe.Expr[A]] = {
     c.Expr[universe.Expr[A]](
@@ -128,7 +128,7 @@ package object impl {
             val tpe = t.tpe.normalize.widen
             // Abuse reify to get correct reference to `capture`.
             val Apply(TypeApply(f, List(_)), _) = {
-              reify(scalaxy.reified.impl.CaptureTag[Int](10, 1)).tree
+              reify(scalaxy.reified.internal.CaptureTag[Int](10, 1)).tree
             }
             c.typeCheck(
               Apply(

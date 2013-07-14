@@ -1,4 +1,4 @@
-package scalaxy.reified.impl
+package scalaxy.reified.internal
 
 import scala.reflect.runtime.universe
 import scala.reflect.runtime.universe._
