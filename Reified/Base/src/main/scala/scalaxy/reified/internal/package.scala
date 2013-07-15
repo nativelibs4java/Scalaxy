@@ -63,6 +63,7 @@ package object internal {
 
     val localDefSyms = collection.mutable.HashSet[Symbol]()
     def isDefLike(t: Tree) = t match {
+      case Template(_, _, _) => true
       case Function(_, _) => true
       case _ if t.isDef => true
       case _ => false
@@ -84,6 +85,7 @@ package object internal {
     val transformer = new Transformer {
       override def transform(t: Tree): Tree = {
         // TODO check which types can be captured
+        /*
         if (t.tpe != null && t.tpe != NoType && t.symbol != null) { // && t.symbol.isTerm) {
           def visitType(tpe: Type) {
             val sym = tpe.typeSymbol
@@ -112,6 +114,7 @@ package object internal {
           visitType(tpe)
           //tpe.foreach(visitType(_))
         }
+        */
         val sym = t.symbol
         if (sym != null && !isDefLike(t) && sym.isTerm && !localDefSyms.contains(sym)) {
           val tsym = sym.asTerm
@@ -132,6 +135,8 @@ package object internal {
                   lastCaptureIndex += 1
                   capturedSymbols += tsym -> lastCaptureIndex
                   capturedTerms += Ident(tsym) -> t.tpe
+
+                  println("Capturing " + t + " (symbol: " + tsym + ": " + tsym.getClass.getName + ")")
 
                   lastCaptureIndex
               }
