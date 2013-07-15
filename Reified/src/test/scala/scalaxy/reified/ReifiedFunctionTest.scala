@@ -5,7 +5,6 @@ import org.junit.Assert._
 
 import scala.reflect.runtime.universe
 import scala.reflect.runtime.currentMirror
-import scala.tools.reflect.ToolBox
 
 import scalaxy.reified._
 
