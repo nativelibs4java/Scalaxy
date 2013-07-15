@@ -33,24 +33,49 @@ package object reified {
    * Wrapper that provides Function1-like methods to a reified Function1 value.
    */
   implicit class ReifiedFunction1[T1: TypeTag, R: TypeTag](
-    val value: ReifiedValue[T1 => R])
+    override val reifiedValue: ReifiedValue[T1 => R])
       extends HasReifiedValue[T1 => R] {
 
-    assert(value != null)
-
-    override def reifiedValue = value
     override def valueTag = typeTag[T1 => R]
 
-    def apply(a: T1): R = value.value(a)
+    /**
+     * Apply the body of this function to the argument.
+     *  @return   the result of function application.
+     */
+    def apply(a: T1): R = reifiedValue.value(a)
 
+    /**
+     * Composes two instances of ReifiedFunction1 in a new ReifiedFunction1, with this
+     * reified function applied last.
+     *
+     *  @tparam   A   the type to which function `g` can be applied
+     *  @param    g   a reified function A => T1
+     *  @return       a new reified function `f` such that `f(x) == apply(g(x))`
+     */
+    @annotation.unspecialized
     def compose[A: TypeTag](g: ReifiedFunction1[A, T1]): ReifiedFunction1[A, R] = {
       val f = this
-      internal.reifyMacro((c: A) => f(g(c)))
+      internal.reifyWithDifferentRuntimeValue[A => R](
+        (c: A) => f(g(c)),
+        f.reifiedValue.value.compose(g.reifiedValue.value)
+      )
     }
 
+    /**
+     * Composes two instances of ReifiedFunction1 in a new ReifiedFunction1, with this
+     * reified function applied first.
+     *
+     *  @tparam   A   the result type of function `g`
+     *  @param    g   a reified function R => A
+     *  @return       a new reified function `f` such that `f(x) == g(apply(x))`
+     */
+    @annotation.unspecialized
     def andThen[A: TypeTag](g: ReifiedFunction1[R, A]): ReifiedFunction1[T1, A] = {
       val f = this
-      internal.reifyMacro((a: T1) => g(f(a)))
+      internal.reifyWithDifferentRuntimeValue[T1 => A](
+        (a: T1) => g(f(a)),
+        f.reifiedValue.value.andThen(g.reifiedValue.value)
+      )
     }
   }
 
@@ -58,35 +83,46 @@ package object reified {
    * Wrapper that provides Function2-like methods to a reified Function2 value.
    */
   implicit class ReifiedFunction2[T1: TypeTag, T2: TypeTag, R: TypeTag](
-    val value: ReifiedValue[Function2[T1, T2, R]])
+    override val reifiedValue: ReifiedValue[Function2[T1, T2, R]])
       extends HasReifiedValue[Function2[T1, T2, R]] {
 
-    assert(value != null)
-
-    override def reifiedValue = value
     override def valueTag = typeTag[Function2[T1, T2, R]]
 
-    def apply(v1: T1, v2: T2): R = value.value(v1, v2)
+    def apply(v1: T1, v2: T2): R = reifiedValue.value(v1, v2)
 
+    /**
+     * Creates a curried version of this reified function.
+     *
+     *  @return   a reified function `f` such that `f(x1)(x2) == apply(x1, x2)`
+     */
     /*
     // TODO fix this:
     def curried: ReifiedFunction1[T1, ReifiedFunction1[T2, R]] = {
       val f = this
-      def finish(v1: T1) = {
-        base.reify((v2: T2) => {
-          f(v1, v2)
-        })
-      }
-      base.reify((v1: T1) => finish(v1))
+      internal.reifyWithDifferentRuntimeValue[T1 => ReifiedFunction1[T2, R]](
+        (v1: T1) => {
+          internal.reifyMacro((v2: T2) => f(v1, v2))
+        },
+        f.curried
+      )
     }
     */
 
+    /**
+     * Creates a tupled version of this reified function: instead of 2 arguments,
+     *  it accepts a single [[scala.Tuple2]] argument.
+     *
+     *  @return   a reified function `f` such that `f((x1, x2)) == f(Tuple2(x1, x2)) == apply(x1, x2)`
+     */
     def tupled: ReifiedFunction1[(T1, T2), R] = {
       val f = this
-      internal.reifyMacro((p: (T1, T2)) => {
-        val (v1, v2) = p
-        f(v1, v2)
-      })
+      internal.reifyWithDifferentRuntimeValue[((T1, T2)) => R](
+        (p: (T1, T2)) => {
+          val (v1, v2) = p
+          f(v1, v2)
+        },
+        f.reifiedValue.value.tupled
+      )
     }
   }
 

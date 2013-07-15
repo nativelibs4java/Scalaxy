@@ -21,16 +21,31 @@ package object internal {
   }
 
   private[reified] def reifyMacro[A: universe.TypeTag](v: A): ReifiedValue[A] = macro reifyImpl[A]
+  private[reified] def reifyWithDifferentRuntimeValue[A: universe.TypeTag](v: A, runtimeValue: A): ReifiedValue[A] = macro reifyWithDifferentRuntimeValueImpl[A]
 
   def reifyImpl[A: c.WeakTypeTag](c: Context)(v: c.Expr[A])(tt: c.Expr[universe.TypeTag[A]]): c.Expr[ReifiedValue[A]] = {
 
     import c.universe._
 
     val (expr, capturesExpr) = transformReifiedRefs(c)(v)
-    c.universe.reify({
+    reify({
       implicit val valueTag = tt.splice
       new ReifiedValue[A](
         v.splice,
+        Utils.typeCheck(expr.splice),
+        capturesExpr.splice)
+    })
+  }
+
+  def reifyWithDifferentRuntimeValueImpl[A: c.WeakTypeTag](c: Context)(v: c.Expr[A], runtimeValue: c.Expr[A])(tt: c.Expr[universe.TypeTag[A]]): c.Expr[ReifiedValue[A]] = {
+
+    import c.universe._
+
+    val (expr, capturesExpr) = transformReifiedRefs(c)(v)
+    reify({
+      implicit val valueTag = tt.splice
+      new ReifiedValue[A](
+        runtimeValue.splice,
         Utils.typeCheck(expr.splice),
         capturesExpr.splice)
     })
