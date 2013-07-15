@@ -15,8 +15,8 @@ object Utils {
       CurrentMirrorTreeCreator(tree))
   }
 
-  def typeCheck[A](expr: Expr[A]): Expr[A] = {
-    newExpr[A](typeCheck(expr.tree))
+  def typeCheck[A](expr: Expr[A], pt: Type = WildcardType): Expr[A] = {
+    newExpr[A](typeCheckTree(expr.tree, pt))
   }
 
   private[reified] val optimisingToolbox = currentMirror.mkToolBox(options = "-optimise")
@@ -43,16 +43,12 @@ object Utils {
     }.transform(root)
   }
 
-  private[reified] def typeCheck(tree: Tree, pt: Type = WildcardType): Tree = {
-    if (tree.tpe != null && tree.tpe != NoType)
-      tree
-    else {
-      try {
-        optimisingToolbox.typeCheck(tree, pt)
-      } catch {
-        case ex: Throwable =>
-          throw new RuntimeException(s"Failed to typeCheck($tree, $pt): $ex", ex)
-      }
+  private[reified] def typeCheckTree(tree: Tree, pt: Type = WildcardType): Tree = {
+    try {
+      optimisingToolbox.typeCheck(tree, pt)
+    } catch {
+      case ex: Throwable =>
+        throw new RuntimeException(s"Failed to typeCheck($tree, $pt): $ex", ex)
     }
   }
 }
