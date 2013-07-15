@@ -132,19 +132,20 @@ final case class ReifiedValue[A: TypeTag] private[reified] (
         captureMap(i) = offset + capturedTrees.size
         capturedTrees += (conversion((value, valueType, conversion)) -> valueType)
     }
+    (transformCaptureIndices(captureMap), capturedTrees.toList)
+  }
 
-    val captureIndexShifter = new Transformer {
+  private[reified] def transformCaptureIndices(f: Int => Int): Tree = {
+    (new Transformer {
       override def transform(tree: Tree): Tree = {
         tree match {
           case CaptureTag(tpe, ref, captureIndex) =>
-            CaptureTag.construct(tpe, ref, captureMap(captureIndex))
+            CaptureTag.construct(tpe, ref, f(captureIndex))
           case _ =>
             super.transform(tree)
         }
       }
-    }
-
-    (captureIndexShifter.transform(taggedExpr.tree), capturedTrees.toList)
+    }).transform(taggedExpr.tree)
   }
 
   /**
