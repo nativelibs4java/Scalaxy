@@ -32,7 +32,7 @@ package object internal {
       implicit val valueTag = tt.splice
       new ReifiedValue[A](
         v.splice,
-        Utils.typeCheck(expr.splice),
+        Utils.typeCheck(expr.splice, valueTag.tpe),
         capturesExpr.splice)
     })
   }
@@ -46,7 +46,7 @@ package object internal {
       implicit val valueTag = tt.splice
       new ReifiedValue[A](
         runtimeValue.splice,
-        Utils.typeCheck(expr.splice),
+        Utils.typeCheck(expr.splice, valueTag.tpe),
         capturesExpr.splice)
     })
   }
@@ -85,36 +85,6 @@ package object internal {
     val transformer = new Transformer {
       override def transform(t: Tree): Tree = {
         // TODO check which types can be captured
-        /*
-        if (t.tpe != null && t.tpe != NoType && t.symbol != null) { // && t.symbol.isTerm) {
-          def visitType(tpe: Type) {
-            val sym = tpe.typeSymbol
-            if (sym != NoSymbol) {
-              val tsym = sym.asType
-              if (tsym.isParameter) {
-                val name = tsym.name.toString
-                if (!capturedTypeTags.contains(name)) {
-                  capturedTypeTags += name
-                  val inferredTypeTag = {
-                    c.inferImplicitValue(for (t <- typeOf[universe.TypeTag[Int]]) yield {
-                      if (t == typeOf[Int])
-                        tpe
-                      else
-                        t
-                    })
-                  }
-                  if (inferredTypeTag == EmptyTree) {
-                    c.error(t.pos, "Failed to find evidence for type variable " + name)
-                  }
-                }
-              }
-            }
-          }
-          val tpe = t.tpe.normalize.widen
-          visitType(tpe)
-          //tpe.foreach(visitType(_))
-        }
-        */
         val sym = t.symbol
         if (sym != null && !isDefLike(t) && sym.isTerm && !localDefSyms.contains(sym)) {
           val tsym = sym.asTerm
@@ -136,7 +106,7 @@ package object internal {
                   capturedSymbols += tsym -> lastCaptureIndex
                   capturedTerms += Ident(tsym) -> t.tpe
 
-                  println("Capturing " + t + " (symbol: " + tsym + ": " + tsym.getClass.getName + ")")
+                  //println("Capturing " + t + " (symbol: " + tsym + ": " + tsym.getClass.getName + ")")
 
                   lastCaptureIndex
               }
