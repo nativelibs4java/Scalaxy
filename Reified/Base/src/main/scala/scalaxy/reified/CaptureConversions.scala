@@ -55,11 +55,9 @@ object CaptureConversions {
     val (moduleSym, methodSym) = syms
     val (elementType, castToAnyRef) = (tpe, col) match {
       case (TypeRef(_, _, elementType :: _), _) if tpe <:< typeOf[Traversable[_]] =>
-        //println(s"GOT ELEMENT TYPE $elementType")
         elementType -> false
       case (_, wa: collection.mutable.WrappedArray[_]) =>
         val elementManifest = wa.elemTag.asInstanceOf[Manifest[_]]
-        // case _: Array[_] => ClassManifestFactory.classType(col.getClass.getComponentType)
         manifestToTypeTag(currentMirror, elementManifest).tpe.asInstanceOf[Type] -> false
       case _ =>
         typeOf[AnyRef] -> true

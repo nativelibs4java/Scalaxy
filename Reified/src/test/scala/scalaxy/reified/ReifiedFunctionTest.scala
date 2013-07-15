@@ -52,6 +52,7 @@ class ReifiedFunctionTest extends TestUtils {
     }
 
     val comp10 = compose(10)
+    //assertEquals(Seq(666, 10, 1234), comp10.flatten().capturedValues)
     //assertEquals(Seq(10, 1234, 666), comp10.capturedValues)
     assertSameEvals(comp10, -1, 0, 1, 2)
 
@@ -73,7 +74,7 @@ class ReifiedFunctionTest extends TestUtils {
       g.compose(f)
     }
     val comp10 = test(10)
-    println(comp10)
+    //println(comp10)
     assertSameEvals(comp10, 0, 1, 2)
 
     val comp100 = test(100)

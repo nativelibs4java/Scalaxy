@@ -3,6 +3,7 @@ package scalaxy.reified
 import scala.reflect.runtime.universe
 import scala.reflect.runtime.universe._
 
+import scalaxy.reified.CaptureConversions.Conversion
 import scalaxy.reified.internal.CaptureTag
 import scalaxy.reified.internal.Utils
 import scalaxy.reified.internal.Utils._
@@ -64,12 +65,13 @@ final case class ReifiedValue[A: TypeTag] private[reified] (
       try {
         toolbox.compile(toolbox.resetAllAttrs(ast))
       } catch {
-        case _: Throwable =>
+        case ex1: Throwable =>
           try {
             toolbox.compile(ast)
           } catch {
-            case ex: Throwable =>
-              throw new RuntimeException("Compilation failed: " + ex + "\nSource:\n\t" + ast, ex)
+            case ex2: Throwable =>
+              ex1.printStackTrace()
+              throw new RuntimeException("Compilation failed: " + ex1 + "\nSource:\n\t" + ast, ex1)
           }
       }
     }
@@ -81,47 +83,8 @@ final case class ReifiedValue[A: TypeTag] private[reified] (
    * value that was captured by the expression.
    */
   def expr(conversion: CaptureConversions.Conversion = CaptureConversions.DEFAULT): Expr[A] = {
-    // TODO debug optimized conversion and use it!
-    stableExpr(conversion)
-    //optimizedExpr(conversion)
-  }
-
-  /**
-   * Flatten the reified values captured by this reified value's AST, and return an equivalent
-   * reified value which does not contain any captured reified value.
-   * All the other captures are shifted / retagged appropriately.
-   */
-  private[reified] def flatten(capturesOffset: Int = 0): ReifiedValue[A] = {
-    val flatCapturedTerms = collection.mutable.ArrayBuffer[(AnyRef, Type)]()
-    flatCapturedTerms ++= capturedTerms
-
-    val transformer = new Transformer {
-      override def transform(tree: Tree): Tree = {
-        tree match {
-          case CaptureTag(tpe, ref, captureIndex) =>
-            capturedTerms(captureIndex) match {
-              case (value: ReifiedValue[_], _) =>
-                val sub = value.flatten(capturesOffset + capturedTerms.size)
-                val subTree = sub.taggedExpr.tree
-
-                flatCapturedTerms ++= sub.capturedTerms
-                subTree /*
-                if (value.taggedExpr.tree eq subTree)
-                  subTree.duplicate
-                else
-                  subTree*/
-              case _ =>
-                CaptureTag.construct(tpe, ref, captureIndex + capturesOffset)
-            }
-          case _ =>
-            super.transform(tree)
-        }
-      }
-    }
-    new ReifiedValue[A](
-      value,
-      newExpr[A](transformer.transform(taggedExpr.tree)),
-      flatCapturedTerms.toList)
+    //stableExpr(conversion)
+    optimizedExpr(conversion)
   }
 
   /**
@@ -149,59 +112,84 @@ final case class ReifiedValue[A: TypeTag] private[reified] (
   }
 
   /**
-   * Return a block which starts by declaring all the captured values, and ends with a value that
-   * only contains references to these declarations.
+   * Flatten the reified values captured by this reified value's AST, and return an equivalent
+   * reified value which does not contain any captured reified value.
+   * All the other captures are shifted / retagged appropriately.
    */
-  private def optimizedExpr(conversion: CaptureConversions.Conversion = CaptureConversions.DEFAULT): Expr[A] = {
-    val flatCaptures = new collection.mutable.ArrayBuffer[(AnyRef, Type)]()
-    flatCaptures ++= capturedTerms
-    val captureValueTrees = new collection.mutable.HashMap[Int, Tree]()
-    def captureRefName(captureIndex: Int): TermName = "scalaxy$capture$" + captureIndex
+  private def flattenCaptures(conversion: CaptureConversions.Conversion, offset: Int = 0): (Tree, Seq[(Tree, Type)]) = {
+    val capturedTrees = collection.mutable.ArrayBuffer[(Tree, Type)]()
+    val captureMap = collection.mutable.HashMap[Int, Int]()
+    capturedTerms.zipWithIndex.foreach {
+      case ((value: HasReifiedValue[_], valueType), i) =>
+        val (subTree, subCaptures) = value.reifiedValue.flattenCaptures(
+          conversion,
+          offset + capturedTrees.size
+        )
+        capturedTrees ++= subCaptures
+        captureMap(i) = offset + capturedTrees.size
+        capturedTrees += (subTree -> NoType) // valueType is ReifiedSomething...
+      case ((value, valueType), i) =>
+        captureMap(i) = offset + capturedTrees.size
+        capturedTrees += (conversion((value, valueType, conversion)) -> valueType)
+    }
 
-    // TODO predeclare the captures in a block that returns the function
-    val function = (new Transformer {
+    val captureIndexShifter = new Transformer {
       override def transform(tree: Tree): Tree = {
         tree match {
-          case CaptureTag(_, _, captureIndex) =>
-            val (capturedValue, valueType) = capturedTerms(captureIndex)
-            capturedValue match {
-              case hr: HasReifiedValue[_] =>
-                val flatRef = hr.reifiedValue.flatten(flatCaptures.size)
-                flatCaptures ++= flatRef.capturedTerms
-                // TODO maybe no need to duplicate if tree was unchanged (when no capture)
-                super.transform(hr.reifiedValue.taggedExpr.tree) //.duplicate)
-              case _ =>
-                val converter: CaptureConversions.Conversion = conversion.orElse({
-                  case _ =>
-                    sys.error(s"This type of captured value is not supported: $capturedValue")
-                })
-                captureValueTrees(captureIndex) = converter((capturedValue, valueType, converter))
-                Ident(captureRefName(captureIndex))
-            }
+          case CaptureTag(tpe, ref, captureIndex) =>
+            CaptureTag.construct(tpe, ref, captureMap(captureIndex))
           case _ =>
             super.transform(tree)
         }
       }
-    }).transform(taggedExpr.tree)
+    }
 
-    val res = newExpr[A](
-      if (flatCaptures.isEmpty)
+    (captureIndexShifter.transform(taggedExpr.tree), capturedTrees.toList)
+  }
+
+  /**
+   * Return a block which starts by declaring all the captured values, and ends with a value that
+   * only contains references to these declarations.
+   */
+  private def optimizedExpr(conversion: CaptureConversions.Conversion = CaptureConversions.DEFAULT): Expr[A] = {
+    val capturedValueTrees = new collection.mutable.HashMap[Int, Tree]()
+    def capturedRefName(captureIndex: Int): TermName = "scalaxy$capture$" + captureIndex
+
+    val (flatTaggedExpr, flatCapturedTrees) = flattenCaptures(conversion.orElse({
+      case (value, tpe: Type, conversion: Conversion) =>
+        sys.error(s"This type of captured value is not supported: $value")
+    }))
+
+    val replacer = new Transformer {
+      override def transform(tree: Tree): Tree = {
+        tree match {
+          case CaptureTag(_, _, captureIndex) =>
+            Ident(capturedRefName(captureIndex))
+          case _ =>
+            super.transform(tree)
+        }
+      }
+    }
+
+    val function = replacer.transform(flatTaggedExpr)
+    newExpr[A](
+      if (flatCapturedTrees.isEmpty)
         function
       else
         Block(
           (
-            for {
-              ((_, tpe), captureIndex) <- flatCaptures.zipWithIndex
-              tree = captureValueTrees(captureIndex)
-            } yield {
-              ValDef(Modifiers(Flag.LOCAL), captureRefName(captureIndex), TypeTree(if (tpe == null) NoType else tpe), tree)
+            for (((capturedTree, tpe), captureIndex) <- flatCapturedTrees.zipWithIndex) yield {
+              val transformedCapture = replacer.transform(capturedTree)
+              ValDef(
+                Modifiers(Flag.LOCAL),
+                capturedRefName(captureIndex),
+                TypeTree(if (tpe eq null) NoType else tpe),
+                transformedCapture)
             }
           ).toList,
           function
         )
     )
-    //println(s"res = $res")
-    res //typeCheck(res)
   }
 }
 

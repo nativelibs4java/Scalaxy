@@ -34,6 +34,5 @@ class ReifiedValueTest extends TestUtils {
     assertEquals(Seq(y, a), b.capturedValues)
 
     assertEquals(b.value, b.compile()())
-    //println(b.taggedExpr)
   }
 }

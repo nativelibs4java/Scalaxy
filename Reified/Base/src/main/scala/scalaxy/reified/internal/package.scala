@@ -41,7 +41,6 @@ package object internal {
    *  return their ordered list along with the resulting tree.
    */
   private def transformReifiedRefs[A](c: Context)(expr: c.Expr[A]): (c.Expr[universe.Expr[A]], c.Expr[Seq[(AnyRef, universe.Type)]]) = {
-    //c.Expr[Reification[A]] = {
     import c.universe._
     import definitions._
 
@@ -89,7 +88,6 @@ package object internal {
                   }
                   if (inferredTypeTag == EmptyTree) {
                     c.error(t.pos, "Failed to find evidence for type variable " + name)
-                    //println("Failed to find evidence for type variable " + name)
                   }
                 }
               }
@@ -119,7 +117,6 @@ package object internal {
                   lastCaptureIndex += 1
                   capturedSymbols += tsym -> lastCaptureIndex
                   capturedTerms += Ident(tsym) -> t.tpe
-                  //println("Capture: " + t + " (" + tsym + ")")
 
                   lastCaptureIndex
               }
@@ -147,9 +144,7 @@ package object internal {
       }
     }
 
-    //println(s"Transforming $tree")
     val transformed = transformer.transform(tree)
-    //println(s"Transformed to $transformed")
     val transformedExpr = runtimeExpr[A](c)(transformed)
     val capturesArrayExpr = {
       // Abuse reify to get correct seq constructor.
@@ -172,7 +167,6 @@ package object internal {
                     tpe.normalize.widen
                   )
                 )
-                //println("REIFIED TYPE of " + tpe + " is " + typeExpr)
                 reify({
                   (
                     termExpr.splice.asInstanceOf[AnyRef],

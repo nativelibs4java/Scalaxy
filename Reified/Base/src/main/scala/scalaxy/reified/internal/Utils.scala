@@ -36,7 +36,6 @@ object Utils {
     new Transformer {
       override def transform(tree: Tree) = tree match {
         case Ident() if tree.symbol != null && tree.symbol.isModule =>
-          //println("REPLACING " + tree + " BY MODULE PATH")
           getModulePath(u)(tree.symbol.asModule)
         case _ =>
           super.transform(tree)
@@ -45,18 +44,15 @@ object Utils {
   }
 
   private[reified] def typeCheck(tree: Tree, pt: Type = WildcardType): Tree = {
-    val ttree = tree.asInstanceOf[optimisingToolbox.u.Tree]
-    if (ttree.tpe != null && ttree.tpe != NoType)
+    if (tree.tpe != null && tree.tpe != NoType)
       tree
     else {
       try {
-        optimisingToolbox.typeCheck(
-          ttree,
-          pt.asInstanceOf[optimisingToolbox.u.Type])
+        optimisingToolbox.typeCheck(tree, pt)
       } catch {
         case ex: Throwable =>
           throw new RuntimeException(s"Failed to typeCheck($tree, $pt): $ex", ex)
       }
-    }.asInstanceOf[Tree]
+    }
   }
 }

@@ -1,7 +1,10 @@
 package scalaxy.reified.internal
 
+import scala.reflect.runtime.universe
 import scala.reflect.runtime.universe._
 import scala.reflect.runtime.currentMirror
+
+import scalaxy.reified.internal.Utils._
 
 /**
  * Object that enables tagging of values captured by {@link scalaxy.reified.ReifiedValue}'s ASTs.
@@ -25,7 +28,16 @@ object CaptureTag {
    */
   def construct(tpe: Type, reference: Tree, captureIndex: Int): Tree = {
     Apply(
-      TypeApply(Ident(captureSymbol), List(TypeTree(tpe))),
+      Select(getModulePath(universe)(captureTagModule), "apply": TermName),
+      //TypeApply(Ident(captureTagApplyMethod), List(TypeTree(tpe))),
+      /*TypeApply(
+        Select(
+          Ident(captureTagModule), //getModulePath(universe)(captureTagModule),
+          "apply"),
+        //Ident(captureSymbol), 
+        List(TypeTree(tpe))), //tpe))),
+      //List(EmptyTree)),
+      */
       List(
         reference,
         Literal(
@@ -43,18 +55,31 @@ object CaptureTag {
         List(
           value,
           Literal(
-            Constant(captureIndex: Int)))) if f.symbol == captureSymbol =>
+            Constant(captureIndex: Int)))) if f.symbol == captureTagApplyMethod =>
         Some((tpt.tpe, value, captureIndex))
+      case Apply(
+        Select(Select(Select(Select(scalaxyName, reifiedName), internalName), captureTagName), applyName),
+        List(
+          value,
+          Literal(
+            Constant(captureIndex: Int)))) if List(scalaxyName, reifiedName, internalName, captureTagName).mkString(".") == captureTagFullName &&
+        applyName.toString == "apply" =>
+        Some((NoType, value, captureIndex))
       case _ =>
         None
     }
   }
 
-  /**
-   * Symbol of CaptureTag.apply method
-   */
-  private lazy val captureSymbol = {
-    val captureModule = currentMirror.staticModule("scalaxy.reified.internal.CaptureTag")
-    captureModule.moduleClass.typeSignature.member("apply": TermName)
+  val captureTagFullName = "scalaxy.reified.internal.CaptureTag"
+  private lazy val captureTagModule = {
+    val s = currentMirror.staticModule(captureTagFullName)
+    assert(s != null && s != NoSymbol)
+    s
+  }
+
+  private lazy val captureTagApplyMethod = {
+    val s = captureTagModule.moduleClass.typeSignature.member("apply": TermName)
+    assert(s != null && s != NoSymbol)
+    s
   }
 }
