@@ -286,7 +286,9 @@ object Scalaxy extends Build {
     .dependsOn(debug)
 
   lazy val reified =
-    Project(id = "scalaxy-reified", base = file("Reified"), settings = reflectSettings ++ scalariformSettings)
+    Project(id = "scalaxy-reified", base = file("Reified"), settings = reflectSettings ++ scalariformSettings ++ Seq(
+      fork in Test := true
+    ))
     .dependsOn(reifiedBase)
     .aggregate(reifiedBase)
 

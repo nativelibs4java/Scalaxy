@@ -5,6 +5,7 @@ import scala.reflect.runtime.universe._
 
 import scalaxy.reified.CaptureConversions.Conversion
 import scalaxy.reified.internal.CaptureTag
+import scalaxy.reified.internal.Optimizer
 import scalaxy.reified.internal.Utils
 import scalaxy.reified.internal.Utils._
 import scala.tools.reflect.ToolBox
@@ -57,17 +58,25 @@ final case class ReifiedValue[A: TypeTag] private[reified] (
    */
   def compile(
     conversion: CaptureConversions.Conversion = CaptureConversions.DEFAULT,
-    toolbox: ToolBox[universe.type] = internal.Utils.optimisingToolbox): () => A = {
+    toolbox: ToolBox[universe.type] = internal.Utils.optimisingToolbox,
+    optimizeAST: Boolean = true): () => A = {
 
     val ast = expr(conversion).tree
+    val finalAST = {
+      if (optimizeAST) {
+        Optimizer.optimize(ast, toolbox)
+      } else {
+        ast
+      }
+    }
 
     val result = {
       try {
-        toolbox.compile(toolbox.resetAllAttrs(ast))
+        toolbox.compile(toolbox.resetAllAttrs(finalAST))
       } catch {
         case ex1: Throwable =>
           try {
-            toolbox.compile(ast)
+            toolbox.compile(finalAST)
           } catch {
             case ex2: Throwable =>
               ex1.printStackTrace()
