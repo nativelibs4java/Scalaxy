@@ -23,6 +23,7 @@ object Scalaxy extends Build {
   lazy val scalaSettings = Seq(
     //exportJars := true, // use jars in classpath
     scalaVersion := "2.10.2",
+    //scalaVersion := "2.11.0-M4",
     //scalaVersion := "2.11.0-SNAPSHOT",
     crossScalaVersions := Seq(
       "2.11.0-SNAPSHOT"))
