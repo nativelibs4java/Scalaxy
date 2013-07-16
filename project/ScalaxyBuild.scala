@@ -163,9 +163,9 @@ object Scalaxy extends Build {
     "Compilets" -> compilets,
     "Fx" -> fx, 
     "Beans" -> beans, 
-    "Components" -> components, 
+    //"Components" -> components, 
     "Debug" -> debug, 
-    "MacroExtensions" -> extensions,
+    //"MacroExtensions" -> extensions,
     "Reified" -> reifiedDoc)
     
   lazy val scalaxyDoc = 
@@ -287,7 +287,12 @@ object Scalaxy extends Build {
 
   lazy val reified =
     Project(id = "scalaxy-reified", base = file("Reified"), settings = reflectSettings ++ scalariformSettings ++ Seq(
-      fork in Test := true
+      fork in Test := true,
+      scalacOptions in Test ++= Seq(
+        "-optimise",
+        "-Yclosure-elim",
+        "-Yinline"
+      )
     ))
     .dependsOn(reifiedBase)
     .aggregate(reifiedBase)

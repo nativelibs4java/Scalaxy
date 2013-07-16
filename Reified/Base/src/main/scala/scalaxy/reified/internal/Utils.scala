@@ -19,7 +19,10 @@ object Utils {
     newExpr[A](typeCheckTree(expr.tree, pt))
   }
 
-  private[reified] val optimisingToolbox = currentMirror.mkToolBox(options = "-optimise")
+  private[reified] val optimisingOptions = "-optimise -Yclosure-elim -Yinline"
+  private[reified] val optimisingToolbox = {
+    currentMirror.mkToolBox(options = optimisingOptions)
+  }
 
   private[reified] def getModulePath(u: scala.reflect.api.Universe)(moduleSym: u.ModuleSymbol): u.Tree = {
     import u._

@@ -55,6 +55,7 @@ package object reified {
     @annotation.unspecialized
     def compose[A: TypeTag](g: ReifiedFunction1[A, T1]): ReifiedFunction1[A, R] = {
       val f = this
+      //reify((c: A) => f(g(c)))
       internal.reifyWithDifferentRuntimeValue[A => R](
         (c: A) => f(g(c)),
         f.reifiedValue.value.compose(g.reifiedValue.value)
@@ -72,6 +73,7 @@ package object reified {
     @annotation.unspecialized
     def andThen[A: TypeTag](g: ReifiedFunction1[R, A]): ReifiedFunction1[T1, A] = {
       val f = this
+      //reify((a: T1) => g(f(a)))
       internal.reifyWithDifferentRuntimeValue[T1 => A](
         (a: T1) => g(f(a)),
         f.reifiedValue.value.andThen(g.reifiedValue.value)
