@@ -24,8 +24,11 @@ object Optimizer {
   }
 
   def optimize(rawTree: Tree, toolbox: ToolBox[universe.type]): Tree = {
-    //optimizeLoops(optimizeFunctionVals(rawTree, toolbox), toolbox)
-    optimizeFunctionVals(rawTree, toolbox)
+    val result = optimizeLoops(optimizeFunctionVals(rawTree, toolbox), toolbox)
+    //val result = optimizeFunctionVals(rawTree, toolbox)
+    //val result = reset(rawTree, toolbox)
+    //println("Optimized tree:\n" + result)
+    result
   }
 
   def optimizeFunctionVals(rawTree: Tree, toolbox: ToolBox[universe.type]): Tree = {
@@ -239,7 +242,7 @@ object Optimizer {
     (base: String) => {
       var i = 1;
       var name: String = null
-      while ({ name = "scalaxy$reified$ " + base + "$" + i; names.contains(name) }) {
+      while ({ name = "scalaxy$reified$" + base + "$" + i; names.contains(name) }) {
         i += 1
       }
       names.add(name)
@@ -266,9 +269,11 @@ object Optimizer {
     val transformer = new Transformer {
       override def transform(tree: Tree) = tree match {
         case Apply(
-          Select(
-            IntRange(start, end, Step(step), isInclusive, filters),
-            foreachName()),
+          TypeApply(
+            Select(
+              IntRange(start, end, Step(step), isInclusive, filters),
+              foreachName()),
+            List(u)),
           List(Function(List(param), body))) =>
 
           def newIntVal(name: TermName, rhs: Tree) =
