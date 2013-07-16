@@ -86,22 +86,24 @@ Now what does `reify` do? It preserves the AST of its argument and its captured 
 In the case of `f`, here's the AST in `f.taggedExpr`:
 ```scala
 Expr[A](
-  (c: Int) => CaptureTag(f, 0).apply(CaptureTag(g, 1).apply(c))
+  (c: Int) => CaptureTag(square, 0).apply(CaptureTag(getter, 1).apply(c))
 )
 ```
 Which refers to two captured values, present in `f.capturedTerms`:
 ```scala
 List(
   (
+    // AST from square:
     ReifiedFunction1(
-      <function1>, 
+      <function1>, // the original pure-Scala `square` function object
       taggedExpr = ((x: Int) => x * x),
       capturedTerms = Nil)
     -> typeOf[ReifiedFunction1[Int,Int]]
   ),
   (
+    // AST from getter:
     ReifiedFunction1(
-      <function1>,
+      <function1>, // the original pure-Scala `getter` function object
       taggedExpr = ((index: Int) => CaptureTag(offset, 0) + CaptureTag(values, 1).apply(index))),
       capturedTerms = List(
         10 -> typeOf[Int],
@@ -110,9 +112,9 @@ List(
   )
 )
 ```
-As you can see, these captured values are reified functions which also have an AST and also capture values.
+As you can see, these captured values are themselves reified values which also have an AST and captured values.
 
-When we want to compile `f` into `ff`, Scalaxy/Reified first flattens the hierarchy of captured reified values, which gives the following AST:
+When we want to compile `f` into `ff`, Scalaxy/Reified first flattens the hierarchy of captured reified values, which gives the following AST (order of captures is reshuffled):
 ```scala
 {
   val capture$0 = ((x: Int) => x.*(x));
@@ -122,11 +124,11 @@ When we want to compile `f` into `ff`, Scalaxy/Reified first flattens the hierar
   ((c: Int) => capture$0.apply(capture$3.apply(c)))
 }
 ```
-You can see that captured values are inlined in the code (they have been converted from runtime value to AST representations of runtime values, like `Array(10, 20, 30)`), so that this AST has no external dependency apart from classes, stable objects and methods.
+You can see that captured constants (ints, arrays, and functions) are inlined in the code. They have been converted from runtime value to AST representations amenable for compilation, so that this AST has no external dependency apart from classes, stable objects and methods.
 
 Now comes the magic: Scalaxy/Reified performs some optimizations on the AST. 
 
-First, we have function values that are always used as methods (i.e. nobody calls their `hashCode` or `compose` methods). After a quick static analysis, Scalaxy/Reified produces the following equivalent AST:
+First, you can see in that previous AST that function values are always used as methods (i.e. nobody calls their `hashCode` or `compose` methods). After a quick static analysis, Scalaxy/Reified produces the following equivalent AST:
 ```scala
 {
   def capture$0(x: Int): Int = x.*(x);
