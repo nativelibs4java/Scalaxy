@@ -52,7 +52,7 @@ final case class ReifiedValue[A: TypeTag] private[reified] (
    * Compile the AST (using the provided conversion to convert captured values to ASTs).
    * @param conversion how to convert captured values
    * @param toolbox toolbox used to perform the compilation. By default, using a toolbox configured with all stable optimization flags available.
-   * @param optimizeAST whether to apply Scalaxy AST optimizations or not (optimizations range from transforming function value objects into defs when possible, to transforming some foreach loops into equivalent while loops).
+   * @param optimizeAST whether to apply Scalaxy AST optimizations or not (optimizations range from transforming function value objects into defs when possible, to (TODO:) transforming some foreach loops into equivalent while loops).
    */
   def compile(
     conversion: CaptureConversions.Conversion = CaptureConversions.DEFAULT,
