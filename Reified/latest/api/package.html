@@ -39,7 +39,30 @@
       </span>
       </h4>
       
-          <div id="comment" class="fullcommenttop"></div>
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Scalaxy/Reify provides a powerful reified values mechanism that deals well with composition and captures of runtime values, allowing for complex ASTs to be generated during runtime for re-compilation or transformation purposes.</p><p>It preserves the original value that was reified, allowing for flexible mixed usage of runtime value and compile-time AST.</p><p>Please look at documentation of <a href="scalaxy/reified/package.html#reify[A](v:A)(implicitevidence$1:reflect.runtime.universe.TypeTag[A]):scalaxy.reified.ReifiedValue[A]" class="extmbr" name="scalaxy.reified#reify">scalaxy.reified.reify</a> and <a href="scalaxy/reified/ReifiedValue.html" class="extype" name="scalaxy.reified.ReifiedValue">scalaxy.reified.ReifiedValue</a> first.</p><pre><span class="kw">import</span> scalaxy.reified._
+
+<span class="kw">def</span> comp(capture1: <span class="std">Int</span>): ReifiedFunction1[<span class="std">Int</span>, <span class="std">Int</span>] = {
+  <span class="kw">val</span> capture2 = <span class="std">Seq</span>(<span class="num">10</span>, <span class="num">20</span>, <span class="num">30</span>)
+  <span class="kw">val</span> f = reify((x: <span class="std">Int</span>) <span class="kw">=&gt;</span> capture1 + capture2(x))
+  <span class="kw">val</span> g = reify((x: <span class="std">Int</span>) <span class="kw">=&gt;</span> x * x)
+
+  <span class="cmt">// Same as reify((x: Int) => g(f(x))):</span>
+  g.compose(f)
+}
+
+<span class="kw">val</span> f = comp(<span class="num">10</span>)
+<span class="cmt">// Normal evaluation, using regular function:</span>
+println(f(<span class="num">1</span>))
+
+<span class="cmt">// Get the function's AST, inlining all captured values and captured reified values:</span>
+<span class="kw">val</span> ast = f.expr().tree
+println(ast)
+
+<span class="cmt">// Compile the AST at runtime.</span>
+<span class="cmt">// This is an optimized compilation by default, with some Scalaxy/Reified-specific AST rewrites and soon other optimizations taken from Scalaxy.</span>
+<span class="kw">val</span> compiledF = ast.compile()()
+<span class="cmt">// Evaluation, using the freshly-compiled function:</span>
+println(compiledF(<span class="num">1</span>))</pre></div></div>
         
 
       <div id="mbrsel">

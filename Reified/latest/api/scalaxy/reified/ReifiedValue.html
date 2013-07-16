@@ -43,7 +43,7 @@
 This object retains the runtime value passed to <code> scalaxy.reified.reify</code> as well as its
 compile-time AST.
 It also keeps track of the values captured by the AST in its scope, which are identified in the
-AST by calls to <code> scalaxy.impl.CaptureTag</code> (which contain the index of the captured value
+AST by calls to <code> scalaxy.internal.CaptureTag</code> (which contain the index of the captured value
 in the capturedTerms field of this reified value).
 </p></div><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
@@ -202,26 +202,19 @@ in the capturedTerms field of this reified value).
               
         </dd></dl></div>
     </li><li name="scalaxy.reified.ReifiedValue#compile" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="compile(conversion:scalaxy.reified.CaptureConversions.Conversion,toolbox:scala.tools.reflect.ToolBox[reflect.runtime.universe.type]):()=&gt;A"></a>
-      <a id="compile(Conversion,ToolBox[universe.type]):()⇒A"></a>
+      <a id="compile(conversion:scalaxy.reified.CaptureConversions.Conversion,toolbox:scala.tools.reflect.ToolBox[reflect.runtime.universe.type],optimizeAST:Boolean):()=&gt;A"></a>
+      <a id="compile(Conversion,ToolBox[universe.type],Boolean):()⇒A"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">compile</span><span class="params">(<span name="conversion">conversion: <a href="CaptureConversions$.html#Conversion=PartialFunction[(Any,reflect.runtime.universe.Type,Any),reflect.runtime.universe.Tree]" class="extmbr" name="scalaxy.reified.CaptureConversions.Conversion">Conversion</a> = <span class="symbol"><span class="name"><a href="CaptureConversions$.html">CaptureConversions.DEFAULT</a></span></span></span>, <span name="toolbox">toolbox: <span class="extype" name="scala.tools.reflect.ToolBox">ToolBox</span>[<span class="extype" name="scala.reflect.runtime.universe">universe</span>.type] = <span class="symbol"><span class="name"><a href="impl/package.html">impl.Utils.optimisingToolbox</a></span></span></span>)</span><span class="result">: () ⇒ <span class="extype" name="scalaxy.reified.ReifiedValue.A">A</span></span>
+        <span class="name">compile</span><span class="params">(<span name="conversion">conversion: <a href="CaptureConversions$.html#Conversion=PartialFunction[(Any,reflect.runtime.universe.Type,Any),reflect.runtime.universe.Tree]" class="extmbr" name="scalaxy.reified.CaptureConversions.Conversion">Conversion</a> = <span class="symbol"><span class="name"><a href="CaptureConversions$.html">CaptureConversions.DEFAULT</a></span></span></span>, <span name="toolbox">toolbox: <span class="extype" name="scala.tools.reflect.ToolBox">ToolBox</span>[<span class="extype" name="scala.reflect.runtime.universe">universe</span>.type] = <span class="symbol"><span class="name"><a href="internal/package.html">internal.Utils.optimisingToolbox</a></span></span></span>, <span name="optimizeAST">optimizeAST: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">true</span></span>)</span><span class="result">: () ⇒ <span class="extype" name="scalaxy.reified.ReifiedValue.A">A</span></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">Compile the AST (using the provided conversion to convert captured values to ASTs).</p><div class="fullcomment"><div class="comment cmt"><p>Compile the AST (using the provided conversion to convert captured values to ASTs).
-Requires scala-compiler.jar to be in the classpath.
-Note: with Sbt, you can put scala-compiler.jar in the classpath with the following setting:
-<pre>
-<code>
-  libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-compiler" % _)
-</code>
-</pre>
-</p></div></div>
+      <p class="shortcomment cmt">Compile the AST (using the provided conversion to convert captured values to ASTs).</p><div class="fullcomment"><div class="comment cmt"><p>Compile the AST (using the provided conversion to convert captured values to ASTs).</p></div><dl class="paramcmts block"><dt class="param">conversion</dt><dd class="cmt"><p>how to convert captured values</p></dd><dt class="param">toolbox</dt><dd class="cmt"><p>toolbox used to perform the compilation. By default, using a toolbox configured with all stable optimization flags available.</p></dd><dt class="param">optimizeAST</dt><dd class="cmt"><p>whether to apply Scalaxy AST optimizations or not (optimizations range from transforming function value objects into defs when possible, to (TODO:) transforming some foreach loops into equivalent while loops).
+</p></dd></dl></div>
     </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="eq(x$1:AnyRef):Boolean"></a>
       <a id="eq(AnyRef):Boolean"></a>

@@ -1,5 +1,5 @@
 Collection of Scala Macro goodies ([BSD-licensed](https://github.com/ochafik/Scalaxy/blob/master/LICENSE))
-- *[Loops](https://github.com/ochafik/Scalaxy/tree/master/Loops)* ([ScalaDoc](http://ochafik.github.io/Scalaxy/Loops/latest/api/index.html)) provide a macro that optimizes simple foreach loops by rewriting them to an equivalent while loop:
+- *[Loops](https://github.com/ochafik/Scalaxy/tree/master/Loops)* provide a macro that optimizes simple foreach loops by rewriting them to an equivalent while loop:
 
     ```scala
     import scalaxy.loops._
@@ -23,7 +23,7 @@ Collection of Scala Macro goodies ([BSD-licensed](https://github.com/ochafik/Sca
     ```
 
 - *[Debug](https://github.com/ochafik/Scalaxy/tree/master/Debug)* ([ScalaDoc](http://ochafik.github.io/Scalaxy/Debug/latest/api/index.html)) provides `assert`, `require` and `assume` macros that automatically add a useful message to the regular [Predef](http://www.scala-lang.org/api/current/index.html#scala.Predef$) calls.
-- *[MacroExtensions](https://github.com/ochafik/Scalaxy/tree/master/MacroExtensions)* ([ScalaDoc](http://ochafik.github.io/Scalaxy/MacroExtensions/latest/api/index.html)) provides an extremely simple (and *experimental*) syntax to define extensions methods as macros:
+- *[MacroExtensions](https://github.com/ochafik/Scalaxy/tree/master/MacroExtensions)* provides an extremely simple (and *experimental*) syntax to define extensions methods as macros:
 
     ```scala
     @scalaxy.extension[Any] 
@@ -42,7 +42,7 @@ Collection of Scala Macro goodies ([BSD-licensed](https://github.com/ochafik/Sca
     // macro-expanded to `Array.fill(3)(new Entity)`
     ```
 
-- *[Compilets](https://github.com/ochafik/Scalaxy/tree/master/Compilets)* ([ScalaDoc](http://ochafik.github.io/Scalaxy/Compilets/latest/api/index.html)) provide an easy way to express AST rewrites, backed by a compiler plugin and an sbt plugin.
+- *[Compilets](https://github.com/ochafik/Scalaxy/tree/master/Compilets)* provide an easy way to express AST rewrites, backed by a compiler plugin and an sbt plugin.
 - *[Beans](https://github.com/ochafik/Scalaxy/tree/master/Beans)* ([ScalaDoc](http://ochafik.github.io/Scalaxy/Beans/latest/api/index.html)) are a nifty combination of Dynamics and macros that provide a type-safe eye-candy syntax to set fields of regular Java Beans in a Scala way (without any runtime dependency at all!):
 
     ```scala
