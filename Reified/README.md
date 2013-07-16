@@ -58,7 +58,11 @@ More detailed examples will hopefully come soon...
 
 # How can it be faster?
 
-First off, re-compiling and evaluating reified functions is only faster if you indent to evaluate them enough times to overcome the overhead of firing the compiler (expect around 70 ms to compile one of the example ASTs below).
+## Caveat: compilation overhead
+
+First off, re-compiling and evaluating reified functions is only faster if you indent to evaluate them enough times to overcome the overhead of firing the compiler (expect around 70 ms to compile one of the example ASTs below on a MacBook Pro 2012 with Scala 2.10.2).
+
+## A silly example
 
 That said, take the following example:
 ```scala
@@ -145,6 +149,8 @@ The advantage of this form is that the Scala runtime compiler (a [ToolBox](http:
 This alone can produce 10x speed improvements if your functions have a small payload!
 
 And this isn't it! Scalaxy/Reified also optimizes inlined Range.foreach loops away, akin to what Scalaxy/Loops does but without the need to write the pesky `optimized` suffix.
+
+## An almost useful example
 
 The following integrator code:
 ```scala
