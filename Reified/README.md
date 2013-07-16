@@ -144,7 +144,7 @@ First, you can see in that previous AST that function values are always used as 
   ((c: Int) => capture$0(capture$3(c)))
 }
 ```
-The advantage of this form is that the Scala runtime compiler (a [ToolBox](http://www.scala-lang.org/archives/downloads/distrib/files/nightly/docs-2.10.2/compiler/index.html#scala.tools.reflect.ToolBox) with optimization flags like `-inline`) will be able to inline `capture$0(capture$3)` (it wasn't able to inline `capture$0.apply(capture$3.apply(c))`).
+The advantage of this form is that the Scala runtime compiler (a [ToolBox](http://www.scala-lang.org/archives/downloads/distrib/files/nightly/docs-2.10.2/compiler/index.html#scala.tools.reflect.ToolBox) with optimization flags like `-inline`) will be able to inline `capture$0(capture$3(c))` (it wasn't able to inline `capture$0.apply(capture$3.apply(c))`).
 
 This alone can produce 10x speed improvements if your functions have a small payload!
 
