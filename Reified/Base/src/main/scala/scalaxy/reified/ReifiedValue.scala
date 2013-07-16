@@ -155,6 +155,29 @@ final case class ReifiedValue[A: TypeTag] private[reified] (
     }).transform(taggedExpr.tree)
   }
 
+  private def isReifiedValue(tpe: Type) = {
+    tpe != null && tpe <:< typeOf[ReifiedValue[_]]
+  }
+
+  private def isHasReifiedValue(tpe: Type) = {
+    tpe != null && tpe <:< typeOf[HasReifiedValue[_]]
+  }
+
+  private object HasReifiedValueWrapperTree {
+    def unapply(tree: Tree): Option[(Name, Tree)] = {
+      val tpe = tree.tpe
+      if (isHasReifiedValue(tpe) && !isReifiedValue(tpe)) {
+        Option(tree) collect {
+          case Apply(Apply(TypeApply(builder, targs), List(value)), implicits) =>
+            builder.symbol.name -> value
+        }
+      } else {
+        None
+      }
+
+    }
+  }
+
   /**
    * Return a block which starts by declaring all the captured values, and ends with a value that
    * only contains references to these declarations.
@@ -171,6 +194,14 @@ final case class ReifiedValue[A: TypeTag] private[reified] (
     val replacer = new Transformer {
       override def transform(tree: Tree): Tree = {
         tree match {
+          case Apply(
+            Select(
+              HasReifiedValueWrapperTree(
+                builderName,
+                CaptureTag(_, _, captureIndex)),
+              methodName),
+            args) =>
+            Apply(Select(Ident(capturedRefName(captureIndex)), methodName), args)
           case CaptureTag(_, _, captureIndex) =>
             Ident(capturedRefName(captureIndex))
           case _ =>
