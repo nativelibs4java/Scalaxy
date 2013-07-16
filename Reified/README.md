@@ -58,7 +58,9 @@ More detailed examples will hopefully come soon...
 
 # How can it be faster?
 
-Take the following example:
+First off, re-compiling and evaluating reified functions is only faster if you indent to evaluate them enough times to overcome the overhead of firing the compiler (expect around 70 ms to compile one of the example ASTs below).
+
+That said, take the following example:
 ```scala
 import scalaxy.reified._
 def comp(offset: Int) = {
