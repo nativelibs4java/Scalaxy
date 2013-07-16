@@ -28,6 +28,13 @@ class ReifiedValueTest extends TestUtils {
   }
 
   @Test
+  def testCaptureMap {
+    val x = Map("a" -> 10, "b" -> 20)
+    val r = reify((s: String) => 100 * x(s))
+    assertSameEvals(r, "a", "b")
+  }
+
+  @Test
   def testCaptureMath {
     val x = 10
     import scala.math._

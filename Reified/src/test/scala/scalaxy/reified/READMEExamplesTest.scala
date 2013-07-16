@@ -13,7 +13,7 @@ import scalaxy.debug._
  * Examples from the README
  */
 class READMEExamplesTest extends TestUtils {
-  
+
   @Test
   def testReified {
     import scalaxy.reified._
@@ -26,7 +26,7 @@ class READMEExamplesTest extends TestUtils {
     val f: ReifiedValue[Int => Int] = comp(10)
     println(f.taggedExpr)
     println(f.capturedTerms)
-    
+
     val ff = f.compile()()
     for (index <- Seq(0, 1, 2)) {
       assert(f(index) == ff(index))
@@ -48,16 +48,17 @@ class READMEExamplesTest extends TestUtils {
     val fIntegrator = createDiscreteIntegrator(reify(v => {
       cos(v / Pi) * exp(v)
     }))
-    
+
     val f = fIntegrator
     println(f.taggedExpr)
     println(f.capturedTerms)
-    
+
     val ff = f.compile()()
     for ((start, end) <- Seq((0, 1), (0, 10))) {
       assert(f(start, end) == ff(start, end))
     }
-    
+
     println(fIntegrator(0, 1))
     println(fIntegrator(0, 10))
   }
+}

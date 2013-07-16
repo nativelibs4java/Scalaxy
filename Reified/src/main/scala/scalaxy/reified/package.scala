@@ -27,7 +27,7 @@ package object reified {
    * which can be customized (by default, it handles constants, arrays, immutable collections,
    * tuples and options).
    */
-  def reify[A: TypeTag](v: A): ReifiedValue[A] = macro internal.reifyImpl[A]
+  implicit def reify[A: TypeTag](v: A): ReifiedValue[A] = macro internal.reifyImpl[A]
 
   /**
    * Wrapper that provides Function1-like methods to a reified Function1 value.

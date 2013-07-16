@@ -44,11 +44,12 @@ object CaptureConversions {
     lazy val Stack_syms = symsOf("Stack", immutablePackage)
     lazy val Queue_syms = symsOf("Queue", immutablePackage)
     lazy val Seq_syms = symsOf("Seq", immutablePackage)
+    lazy val Map_syms = symsOf("Map", immutablePackage)
 
     lazy val Some_syms = symsOf("Some", "scala")
     lazy val None_sym = currentMirror.staticModule("scala.None")
 
-    // TODO: Map, BitSet, TreeSet, SortedSet
+    // TODO: BitSet, TreeSet, SortedSet
     {
       // Convert constants.
       case (value @ (
@@ -98,6 +99,8 @@ object CaptureConversions {
         collectionApply(Queue_syms, col, col.toList, tpe, 1, conversion)._1
       case (col: immutable.Seq[_], tpe: Type, conversion: Conversion) =>
         collectionApply(Seq_syms, col, col.toList, tpe, 1, conversion)._1
+      case (col: immutable.Map[_, _], tpe: Type, conversion: Conversion) =>
+        collectionApply(Map_syms, col, col.toList, tpe, 2, conversion)._1
       // TODO inject ordering and support TreeSet, SortedSet if tpe != AnyRef
 
       // Convert options.      
@@ -121,7 +124,6 @@ object CaptureConversions {
    * @return collection creation tree + list of element types (of size 1 for collections
    * bigger for tuples
    */
-  // returns collection.apply + element types
   private def collectionApply(
     syms: (ModuleSymbol, TermSymbol),
     col: AnyRef,
@@ -130,25 +132,41 @@ object CaptureConversions {
     tpeArity: Int,
     conversion: Conversion): (Tree, List[Type]) = {
 
+    def nTimes[V](n: Int)(v: V): List[V] = (0 until n).map(_ => v).toList
+
     val (moduleSym, methodSym) = syms
-    val (elementTypes, castToAnyRef) = (tpe, col) match {
+    val (builderTArgs, elementTypes, castToAnyRef) = (tpe, col) match {
+      case (TypeRef(_, _, targs), _) if tpe <:< typeOf[Map[_, _]] && targs.size == tpeArity =>
+        val builderTArgs @ List(keyTpe, valueTpe) = targs.take(tpeArity)
+
+        val elementType = for (t <- typeOf[(Int, Float)]) yield {
+          if (t == typeOf[Int]) keyTpe
+          else if (t == typeOf[Float]) valueTpe
+          else t
+        }
+        (builderTArgs, List(elementType), false)
       case (TypeRef(_, _, targs), _) if (tpe <:< typeOf[Iterable[_]] || tpe <:< typeOf[Product]) && targs.size >= tpeArity =>
-        targs.take(tpeArity) -> false
+        val elementTypes = targs.take(tpeArity)
+        (elementTypes, elementTypes, false) //elementTypes.exists(_ <:< typeOf[AnyRef]))
       case (_, wa: collection.mutable.WrappedArray[_]) =>
         assert(tpeArity == 1)
         val elementManifest = wa.elemTag.asInstanceOf[Manifest[_]]
-        List(manifestToTypeTag(currentMirror, elementManifest).tpe.asInstanceOf[Type]) -> false
+        val elementType = manifestToTypeTag(currentMirror, elementManifest).tpe.asInstanceOf[Type]
+        (List(elementType), List(elementType), false)
+      case (_, _: immutable.Map[_, _]) =>
+        (nTimes(tpeArity)(typeOf[AnyRef]), List(typeOf[AnyRef]), false)
       case _ =>
-        (0 until tpeArity).map(_ => typeOf[AnyRef]).toList -> true
+        val elementTypes = nTimes(tpeArity)(typeOf[AnyRef])
+        (elementTypes, elementTypes, true)
     }
 
-    (
+    val tree = {
       Apply(
         TypeApply(
           Select(
             getModulePath(universe)(moduleSym), //Ident(moduleSym),
             methodSym),
-          elementTypes.map(TypeTree(_))),
+          builderTArgs.map(TypeTree(_))),
         elements.zipWithIndex.map({
           case (value, i) =>
             val convertedValue = conversion((value, if (elementTypes.size == 1) elementTypes(0) else elementTypes(i), conversion))
@@ -160,9 +178,10 @@ object CaptureConversions {
             } else {
               convertedValue
             }
-        })
-      ),
-        elementTypes
-    )
+        }))
+    }
+    //println(s"col = $col, builderTArgs = $builderTArgs, elementTypes = $elementTypes")
+    //println(s"tree = $tree")
+    (tree, elementTypes)
   }
 }
