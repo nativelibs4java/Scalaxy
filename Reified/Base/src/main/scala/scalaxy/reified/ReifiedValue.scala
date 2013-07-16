@@ -50,11 +50,9 @@ final case class ReifiedValue[A: TypeTag] private[reified] (
 
   /**
    * Compile the AST (using the provided conversion to convert captured values to ASTs).
-   * Requires scala-compiler.jar to be in the classpath.
-   * Note: with Sbt, you can put scala-compiler.jar in the classpath with the following setting:
-   * <pre><code>
-   *   libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-compiler" % _)
-   * </code></pre>
+   * @param conversion how to convert captured values
+   * @param toolbox toolbox used to perform the compilation. By default, using a toolbox configured with all stable optimization flags available.
+   * @param optimizeAST whether to apply Scalaxy AST optimizations or not (optimizations range from transforming function value objects into defs when possible, to transforming some foreach loops into equivalent while loops).
    */
   def compile(
     conversion: CaptureConversions.Conversion = CaptureConversions.DEFAULT,

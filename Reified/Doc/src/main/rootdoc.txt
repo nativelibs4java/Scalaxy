@@ -1,0 +1,32 @@
+Scalaxy/Reify provides a powerful reified values mechanism that deals well with composition and captures of runtime values, allowing for complex ASTs to be generated during runtime for re-compilation or transformation purposes. 
+
+It preserves the original value that was reified, allowing for flexible mixed usage of runtime value and compile-time AST.
+
+Please look at documentation of [[scalaxy.reified.reify]] and [[scalaxy.reified.ReifiedValue]] first.
+
+{{{
+import scalaxy.reified._
+
+def comp(capture1: Int): ReifiedFunction1[Int, Int] = {
+  val capture2 = Seq(10, 20, 30)
+  val f = reify((x: Int) => capture1 + capture2(x))
+  val g = reify((x: Int) => x * x)
+  
+  // Same as reify((x: Int) => g(f(x))):
+  g.compose(f)
+}
+
+val f = comp(10)
+// Normal evaluation, using regular function:
+println(f(1))
+
+// Get the function's AST, inlining all captured values and captured reified values:
+val ast = f.expr().tree
+println(ast) 
+
+// Compile the AST at runtime.
+// This is an optimized compilation by default, with some Scalaxy/Reified-specific AST rewrites and soon other optimizations taken from Scalaxy.
+val compiledF = ast.compile()()
+// Evaluation, using the freshly-compiled function:
+println(compiledF(1))
+}}}
