@@ -221,6 +221,7 @@ object Scalaxy extends Build {
           )
         })
     ).dependsOn(docProjects.values.map(p => p: ClasspathDep[ProjectReference]).toSeq: _*)
+    .aggregate(docProjects.values.toSeq.map(p => p: sbt.ProjectReference): _*)
   
   lazy val compilets =
     Project(
