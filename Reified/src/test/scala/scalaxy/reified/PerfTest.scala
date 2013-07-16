@@ -13,10 +13,23 @@ class PerfTest extends TestUtils {
   def time1[V](body: => V): (V, Double) = {
     val start = System.nanoTime
     val v = body
-    val res = (System.nanoTime - start) / 1000000L
+    val res = (System.nanoTime - start)
     (v, res)
   }
 
+  def benef(normal: Double, recompiled: Double): Double =
+    oneDecimal(normal / recompiled)
+
+  def oneDecimal(v: Double): Double = (v * 10).toInt / 10.0
+
+  def formatNanos(n: Double): String = {
+    val (v, u) =
+      if (n < 1000) n -> "nanosec"
+      else if (n < 1000000) n / 1000 -> "microsec"
+      else if (n < 1000000000) n / 1000000 -> "millisec"
+      else n / 1000000000 -> "sec"
+    oneDecimal(v) + " " + u
+  }
   def times(n: Int, title: String)(body: => Unit): Double = {
     val (_, t) = time1 {
       var i = 0
@@ -25,8 +38,9 @@ class PerfTest extends TestUtils {
         i += 1
       }
     }
-    println(title + ": " + t)
-    t / n.toDouble
+    val div = t / n.toDouble
+    println(s"$title: ${formatNanos(div)}")
+    div
   }
 
   @Test
@@ -54,7 +68,7 @@ class PerfTest extends TestUtils {
     val results = for (i <- 0 until its) yield {
       val normal = times(n, "NORMAL")(f(0) + f(1) + f(2))
       val recompiled = times(n, "RECOMPILED")(compiledF(0) + compiledF(1) + compiledF(2))
-      println("BENEFIT: " + (normal / recompiled) + " x")
+      println("BENEFIT: " + benef(normal, recompiled) + " x")
       println()
       (normal, recompiled)
     }
@@ -65,9 +79,9 @@ class PerfTest extends TestUtils {
     val normalAvg = normal.sum / normal.size.toFloat * n
     val recompiledAvg = recompiled.sum / normal.size.toFloat * n
 
-    println("NORMAL average: " + normalAvg)
-    println("RECOMPILED average: " + recompiledAvg)
-    println("BENEFIT average: " + (normalAvg / recompiledAvg) + " x")
+    println("NORMAL average: " + formatNanos(normalAvg))
+    println("RECOMPILED average: " + formatNanos(recompiledAvg))
+    println("BENEFIT average: " + benef(normalAvg, recompiledAvg) + " x")
 
   }
 
