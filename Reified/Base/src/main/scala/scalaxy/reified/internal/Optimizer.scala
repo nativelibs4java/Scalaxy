@@ -32,6 +32,14 @@ object Optimizer {
     result
   }
 
+  private def newInlineAnnotation = {
+    Apply(
+      Select(
+        New(Ident(typeOf[scala.inline].typeSymbol)),
+        nme.CONSTRUCTOR),
+      Nil)
+  }
+
   def optimizeFunctionVals(rawTree: Tree, toolbox: ToolBox[universe.type]): Tree = {
     val tree = reset(rawTree, toolbox)
 
@@ -56,11 +64,20 @@ object Optimizer {
     //println(s"optimizableFunctions = $optimizableFunctions")
     val functionsPromoter = new Transformer {
       override def transform(tree: Tree) = tree match {
-        case ValDef(mods, name, tpt, Function(vparams, body)) if optimizableFunctions.contains(tree.symbol) =>
+
+        case ValDef(mods, name, tpt, Function(vparams, body)) if optimizableFunctions(tree.symbol) =>
           //println(s"optimizing " + tree.symbol + " = " + tree)
-          DefDef(mods, name, Nil, List(vparams), TypeTree(NoType), transform(body))
+          DefDef(
+            mods.mapAnnotations(list => newInlineAnnotation :: list),
+            name,
+            Nil,
+            List(vparams),
+            TypeTree(NoType),
+            transform(body))
+
         case Apply(Select(t, m), args) if optimizableFunctions.contains(t.symbol) && m.toString == "apply" =>
           Apply(t, args.map(transform(_)))
+
         case _ =>
           super.transform(tree)
       }
