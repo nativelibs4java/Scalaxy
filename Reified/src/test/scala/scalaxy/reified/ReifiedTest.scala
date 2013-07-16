@@ -17,7 +17,7 @@ class ReifiedTest extends TestUtils {
 
     val v = 2
     val r = reify(10 + v)
-    val i: Int = r
+    val i: Int = r.value
     assertEquals(12, i)
   }
 
@@ -28,9 +28,9 @@ class ReifiedTest extends TestUtils {
     val v = 2
     val r = reify((x: Int) => x + v)
 
-    val f: Int => Int = r
+    val f: Int => Int = r.value
     val rf: ReifiedFunction1[Int, Int] = r
-    val ff: Int => Int = rf
+    val ff: Int => Int = rf.value
 
     val rr = r.compose(r)
     val rrf: ReifiedFunction1[Int, Int] = rr
