@@ -25,7 +25,8 @@ val ast = f.expr().tree
 println(ast) 
 
 // Compile the AST at runtime.
-// This is an optimized compilation by default, with some Scalaxy/Reified-specific AST rewrites and soon other optimizations taken from Scalaxy.
+// This is an optimized compilation by default, with some Scalaxy/Reified-specific AST rewrites
+// and soon other optimizations taken from Scalaxy.
 val compiledF = ast.compile()()
 // Evaluation, using the freshly-compiled function:
 println(compiledF(1))

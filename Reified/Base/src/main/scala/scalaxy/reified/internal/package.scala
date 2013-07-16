@@ -106,7 +106,7 @@ package object internal {
                   capturedSymbols += tsym -> lastCaptureIndex
                   capturedTerms += Ident(tsym) -> t.tpe
 
-                  //println("Capturing " + t + " (symbol: " + tsym + ": " + tsym.getClass.getName + ")")
+                  println("Capturing " + t) // + " (symbol: " + tsym + ": " + tsym.getClass.getName + ")")
 
                   lastCaptureIndex
               }
