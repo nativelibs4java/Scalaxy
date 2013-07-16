@@ -2,6 +2,8 @@
 
 Simple reified values / functions framework (leverages Scala 2.10 macros).
 
+[Scaladoc](http://ochafik.github.io/Scalaxy/Reified/latest/api/index.html)
+
 Package `scalaxy.reified` provides a `reify` method that goes beyond the stock `Universe.reify` method, by taking care of captured values and allowing composition of reified functions for improved flexibility of dynamic usage of ASTs. 
 The original expression is also available at runtime, without having to compile it with `ToolBox.eval`.
 
