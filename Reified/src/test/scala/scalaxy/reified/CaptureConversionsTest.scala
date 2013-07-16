@@ -16,7 +16,9 @@ class CaptureConversionsTest extends TestUtils {
     try {
       val value = r.compile()()
       if (v.getClass.isArray) {
-        val meth = classOf[Assert].getMethod("assertArrayEquals", v.getClass, v.getClass)
+        assertTrue("Compiled value not an array: " + value + ": " + value.getClass.getName, value.getClass.isArray)
+        assertEquals("Mismatching classes: " + v.getClass.getName + " vs. " + value.getClass.getName, v.getClass, value.getClass)
+        val meth = classOf[Assert].getMethod("assertArrayEquals", v.getClass, v.getClass) //classOf[Object], classOf[Object])
         meth.invoke(null, v.asInstanceOf[AnyRef], value.asInstanceOf[AnyRef])
       } else {
         assertEquals("Got " + value + ": " + value.getClass.getName, v, value)
@@ -71,7 +73,18 @@ class CaptureConversionsTest extends TestUtils {
     testValue(1 until 10, predicate = _.isInstanceOf[Range])
     testValue(1 until 10 by 2, predicate = _.isInstanceOf[Range])
     testValue(10 until 1 by -2, predicate = _.isInstanceOf[Range])
-
     //testValue(Map('a' -> 1, 'b' -> 2))
+  }
+
+  @Test
+  def testOptions {
+    testValue(Some(1))
+    testValue(None)
+  }
+
+  @Test
+  def testTuples {
+    testValue((1, 2))
+    testValue((1, "2", (3.0, None)))
   }
 }

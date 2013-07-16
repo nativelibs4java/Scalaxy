@@ -25,7 +25,7 @@ package object reified {
    * lazy vals are not considered safe, for instance).
    * Captured values are inlined in the reified value's AST with a conversion function,
    * which can be customized (by default, it handles constants, arrays, immutable collections,
-   * reified values and their wrappers).
+   * tuples and options).
    */
   def reify[A: TypeTag](v: A): ReifiedValue[A] = macro internal.reifyImpl[A]
 
