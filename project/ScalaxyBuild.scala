@@ -157,8 +157,17 @@ object Scalaxy extends Build {
       settings =
         standardSettings ++
         Seq(publish := { }))
-    .aggregate(compilets, fx, beans, components, debug, extensions, reified, scalaxyDoc)
+    .aggregate(integration, loops, compilets, fx, beans, components, debug, extensions, reified, scalaxyDoc)
 
+  lazy val integration =
+    Project(
+      id = "scalaxy-integration",
+      base = file("Integration"),
+      settings =
+        standardSettings ++
+        Seq(publish := { }))
+    .dependsOn(loops, compilets, fx, beans, components, debug, extensions, reified)
+    
   lazy val docProjects = Map(
     "Compilets" -> compilets,
     "Fx" -> fx, 

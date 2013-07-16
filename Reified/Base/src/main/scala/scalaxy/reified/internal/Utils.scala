@@ -26,12 +26,16 @@ object Utils {
 
   private[reified] def getModulePath(u: scala.reflect.api.Universe)(moduleSym: u.ModuleSymbol): u.Tree = {
     import u._
-    val elements = moduleSym.fullName.split("\\.").toList
-    def rec(root: Tree, sub: List[String]): Tree = sub match {
-      case Nil => root
-      case name :: rest => rec(Select(root, name: TermName), rest)
+    def rec(relements: List[String]): Tree = relements match {
+      case name :: Nil =>
+        Ident(name: TermName)
+      case ("`package`") :: rest =>
+        //rec(rest)
+        Select(rec(rest), "package": TermName)
+      case name :: rest =>
+        Select(rec(rest), name: TermName)
     }
-    rec(Ident(elements.head: TermName), elements.tail)
+    rec(moduleSym.fullName.split("\\.").reverse.toList)
   }
 
   private[reified] def resolveModulePaths(u: scala.reflect.api.Universe)(root: u.Tree): u.Tree = {

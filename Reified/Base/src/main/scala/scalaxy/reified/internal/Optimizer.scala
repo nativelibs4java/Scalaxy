@@ -27,6 +27,7 @@ object Optimizer {
     val result = optimizeLoops(optimizeFunctionVals(rawTree, toolbox), toolbox)
     //val result = optimizeFunctionVals(rawTree, toolbox)
     //val result = reset(rawTree, toolbox)
+    //println("Raw tree:\n" + rawTree)
     //println("Optimized tree:\n" + result)
     result
   }
@@ -242,7 +243,7 @@ object Optimizer {
     (base: String) => {
       var i = 1;
       var name: String = null
-      while ({ name = "scalaxy$reified$" + base + "$" + i; names.contains(name) }) {
+      while ({ name = syntheticVariableNamePrefix + base + "$" + i; names.contains(name) }) {
         i += 1
       }
       names.add(name)

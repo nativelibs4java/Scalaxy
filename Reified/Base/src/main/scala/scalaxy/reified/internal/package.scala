@@ -10,6 +10,8 @@ import scalaxy.reified.internal.Utils._
 
 package object internal {
 
+  private[reified] val syntheticVariableNamePrefix = "scalaxy$reified$"
+
   private def runtimeExpr[A](c: Context)(tree: c.universe.Tree): c.Expr[universe.Expr[A]] = {
     c.Expr[universe.Expr[A]](
       c.reifyTree(

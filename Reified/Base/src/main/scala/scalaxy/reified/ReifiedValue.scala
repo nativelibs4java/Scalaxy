@@ -27,7 +27,7 @@ private[reified] trait HasReifiedValue[A] {
  * AST by calls to {@link scalaxy.internal.CaptureTag} (which contain the index of the captured value
  * in the capturedTerms field of this reified value).
  */
-final case class ReifiedValue[A: TypeTag] private[reified] (
+final case class ReifiedValue[A: TypeTag](
   /**
    * Original value passed to {@link scalaxy.reified.reify}
    */
@@ -184,7 +184,7 @@ final case class ReifiedValue[A: TypeTag] private[reified] (
    */
   private def optimizedExpr(conversion: CaptureConversions.Conversion = CaptureConversions.DEFAULT): Expr[A] = {
     val capturedValueTrees = new collection.mutable.HashMap[Int, Tree]()
-    def capturedRefName(captureIndex: Int): TermName = "scalaxy$capture$" + captureIndex
+    def capturedRefName(captureIndex: Int): TermName = internal.syntheticVariableNamePrefix + "capture$" + captureIndex
 
     val (flatTaggedExpr, flatCapturedTrees) = flattenCaptures(conversion.orElse({
       case (value, tpe: Type, conversion: Conversion) =>
