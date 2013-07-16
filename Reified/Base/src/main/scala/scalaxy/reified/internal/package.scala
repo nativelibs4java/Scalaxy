@@ -102,11 +102,11 @@ package object internal {
                 case Some(i) =>
                   i
                 case None =>
+                  c.info(t.pos, "Reified value will capture " + tsym, false)
+
                   lastCaptureIndex += 1
                   capturedSymbols += tsym -> lastCaptureIndex
                   capturedTerms += Ident(tsym) -> t.tpe
-
-                  println("Capturing " + t) // + " (symbol: " + tsym + ": " + tsym.getClass.getName + ")")
 
                   lastCaptureIndex
               }
