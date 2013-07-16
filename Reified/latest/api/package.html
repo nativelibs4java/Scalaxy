@@ -59,7 +59,8 @@ println(f(<span class="num">1</span>))
 println(ast)
 
 <span class="cmt">// Compile the AST at runtime.</span>
-<span class="cmt">// This is an optimized compilation by default, with some Scalaxy/Reified-specific AST rewrites and soon other optimizations taken from Scalaxy.</span>
+<span class="cmt">// This is an optimized compilation by default, with some Scalaxy/Reified-specific AST rewrites</span>
+<span class="cmt">// and soon other optimizations taken from Scalaxy.</span>
 <span class="kw">val</span> compiledF = ast.compile()()
 <span class="cmt">// Evaluation, using the freshly-compiled function:</span>
 println(compiledF(<span class="num">1</span>))</pre></div></div>

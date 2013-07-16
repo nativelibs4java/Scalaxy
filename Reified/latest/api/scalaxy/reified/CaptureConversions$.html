@@ -167,34 +167,6 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li name="scalaxy.reified.CaptureConversions#ARRAY" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="ARRAY:scalaxy.reified.CaptureConversions.Conversion"></a>
-      <a id="ARRAY:Conversion"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">lazy val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">ARRAY</span><span class="result">: <a href="#Conversion=PartialFunction[(Any,reflect.runtime.universe.Type,Any),reflect.runtime.universe.Tree]" class="extmbr" name="scalaxy.reified.CaptureConversions.Conversion">Conversion</a></span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">Convert an array an AST that represents a call to Array.</p><div class="fullcomment"><div class="comment cmt"><p>Convert an array an AST that represents a call to Array.apply with a 'best guess' component
- type, and all values converted.
-</p></div></div>
-    </li><li name="scalaxy.reified.CaptureConversions#CONSTANT" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="CONSTANT:scalaxy.reified.CaptureConversions.Conversion"></a>
-      <a id="CONSTANT:Conversion"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">lazy val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">CONSTANT</span><span class="result">: <a href="#Conversion=PartialFunction[(Any,reflect.runtime.universe.Type,Any),reflect.runtime.universe.Tree]" class="extmbr" name="scalaxy.reified.CaptureConversions.Conversion">Conversion</a></span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">Converts captured constants (AnyVal, String) to their corresponding AST</p>
     </li><li name="scalaxy.reified.CaptureConversions#DEFAULT" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="DEFAULT:scalaxy.reified.CaptureConversions.Conversion"></a>
       <a id="DEFAULT:Conversion"></a>
@@ -207,42 +179,11 @@
         <span class="name">DEFAULT</span><span class="result">: <a href="#Conversion=PartialFunction[(Any,reflect.runtime.universe.Type,Any),reflect.runtime.universe.Tree]" class="extmbr" name="scalaxy.reified.CaptureConversions.Conversion">Conversion</a></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">Default conversion function that handles constants, reified values, arrays and immutable
-collections.</p><div class="fullcomment"><div class="comment cmt"><p>Default conversion function that handles constants, reified values, arrays and immutable
-collections.
-Other conversion functions can be composed with this default (or with a subset of its
-components) with the standard PartialFunction methods (orElse...).
+      <p class="shortcomment cmt">Default conversion function that handles constants, arrays, immutable collections,
+tuples and options.</p><div class="fullcomment"><div class="comment cmt"><p>Default conversion function that handles constants, arrays, immutable collections,
+tuples and options.
+Other conversion functions can be composed with this default using <code>orElse</code>.
 </p></div></div>
-    </li><li name="scalaxy.reified.CaptureConversions#IMMUTABLE_COLLECTION" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="IMMUTABLE_COLLECTION:scalaxy.reified.CaptureConversions.Conversion"></a>
-      <a id="IMMUTABLE_COLLECTION:Conversion"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">lazy val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">IMMUTABLE_COLLECTION</span><span class="result">: <a href="#Conversion=PartialFunction[(Any,reflect.runtime.universe.Type,Any),reflect.runtime.universe.Tree]" class="extmbr" name="scalaxy.reified.CaptureConversions.Conversion">Conversion</a></span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">Convert an immutable collection to an AST that represents a call to a constructor for that
- collection type with a 'best guess' component type, and all values converted.</p><div class="fullcomment"><div class="comment cmt"><p>Convert an immutable collection to an AST that represents a call to a constructor for that
- collection type with a 'best guess' component type, and all values converted.
- Types supported are HashSet, Set, List, Vector, Stack, Queue, Seq.
-</p></div></div>
-    </li><li name="scalaxy.reified.CaptureConversions#REIFIED_VALUE" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="REIFIED_VALUE:scalaxy.reified.CaptureConversions.Conversion"></a>
-      <a id="REIFIED_VALUE:Conversion"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">lazy val</span>
-      </span>
-      <span class="symbol">
-        <span class="name">REIFIED_VALUE</span><span class="result">: <a href="#Conversion=PartialFunction[(Any,reflect.runtime.universe.Type,Any),reflect.runtime.universe.Tree]" class="extmbr" name="scalaxy.reified.CaptureConversions.Conversion">Conversion</a></span>
-      </span>
-      </h4>
-      <p class="shortcomment cmt">Inlines a reified value's AST</p>
     </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
       <a id="asInstanceOf[T0]:T0"></a>
