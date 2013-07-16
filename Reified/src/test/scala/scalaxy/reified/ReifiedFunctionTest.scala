@@ -41,7 +41,7 @@ class ReifiedFunctionTest extends TestUtils {
 
   @Test
   def testFunctionComposition {
-    def compose(capture1: Int): ReifiedFunction1[Int, Int] = {
+    def compose(capture1: Int): ReifiedValue[Int => Int] = {
       val capture2 = 666
       val f = reify((x: Int) => x * x + capture2)
       val capture3 = 1234
