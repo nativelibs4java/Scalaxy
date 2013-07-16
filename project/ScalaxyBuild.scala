@@ -171,7 +171,8 @@ object Scalaxy extends Build {
   lazy val docProjects = Map(
     "Compilets" -> compilets,
     "Fx" -> fx, 
-    "Beans" -> beans, 
+    "Beans" -> beans,
+    "Loops" -> loops,
     //"Components" -> components, 
     "Debug" -> debug, 
     //"MacroExtensions" -> extensions,
@@ -188,6 +189,7 @@ object Scalaxy extends Build {
         ghpages.settings ++
         //site.jekyllSupport() ++
         Seq(
+          //aggregate in ghpages-push-site := true,
           //com.typesafe.sbt.site.JekyllSupport.RequiredGems := Map(
           //  "jekyll" -> "1.0.3",
           //  "liquid" -> "2.5.0"),
