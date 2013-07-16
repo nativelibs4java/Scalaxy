@@ -1,5 +1,5 @@
 Collection of Scala Macro goodies ([BSD-licensed](https://github.com/ochafik/Scalaxy/blob/master/LICENSE))
-- *[Loops](https://github.com/ochafik/Scalaxy/tree/master/Loops)* ([ScalaDoc](http://ochafik.github.io/Scalaxy/Loops/latest/api/index.html)) provide a macro that optimizes simple foreach loops by rewriting them to an equivalent while loop:
+- *[Loops](https://github.com/ochafik/Scalaxy/tree/master/Loops)* provide a macro that optimizes simple foreach loops by rewriting them to an equivalent while loop:
 
     ```scala
     import scalaxy.loops._
