@@ -10,6 +10,8 @@ addSbtPlugin("com.typesafe.sbt" % "sbt-site" % "0.6.2")
 
 addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.8.4")
 
+addSbtPlugin("org.ensime" % "ensime-sbt-cmd" % "0.1.1")
+
 //addSbtPlugin("com.jsuereth" % "xsbt-gpg-plugin" % "0.6")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-scalariform" % "1.0.1")

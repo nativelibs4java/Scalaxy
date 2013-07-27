@@ -13,7 +13,7 @@ project/target
 .classpath
 *.class
 *.marks
-
+.ensime*
 Macros/.cache
 
 Compiler/.cache

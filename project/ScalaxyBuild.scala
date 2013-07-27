@@ -11,6 +11,15 @@ import com.typesafe.sbt.SbtSite._
 import com.typesafe.sbt.SbtSite.SiteKeys._
 import com.typesafe.sbt.SbtGhPages._
 
+/*
+Scalaxy/Reified:
+  - Normal tests:
+    sbt 'project scalaxy-reified' ~test
+  
+  - Remote-debug tests on port 5005:
+    sbt 'project scalaxy-reified' 'set javaOptions in Test ++= Seq("-Xdebug", "-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005")' ~test
+
+*/
 object Scalaxy extends Build {
   // See https://github.com/mdr/scalariform
   ScalariformKeys.preferences := FormattingPreferences()
@@ -100,7 +109,10 @@ object Scalaxy extends Build {
     Seq(
       //scalacOptions ++= Seq("-language:experimental.macros"),
       libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-compiler" % _),
-      libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-reflect" % _))
+      //libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-reflect" % _)
+      //libraryDependencies <+= scalaVersion("org.scala-lang.macro-paradise" % "scala-reflect" % _)
+      libraryDependencies += "org.scala-lang.macro-paradise" % "scala-reflect" % "2.10.3-SNAPSHOT"
+    )
 
   lazy val sonatypeSettings = Seq(
     publishMavenStyle := true,
@@ -299,6 +311,7 @@ object Scalaxy extends Build {
   lazy val reified =
     Project(id = "scalaxy-reified", base = file("Reified"), settings = reflectSettings ++ scalariformSettings ++ Seq(
       fork in Test := true,
+      //javaOptions in Test ++= Seq("-Xdebug", "-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"),
       scalacOptions in Test ++= Seq(
         "-optimise",
         "-Yclosure-elim",

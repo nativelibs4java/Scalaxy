@@ -8,7 +8,7 @@ import scala.reflect.runtime.currentMirror
 
 import scalaxy.reified._
 
-@Ignore
+//@Ignore
 class PerfTest extends TestUtils with PerfTestUtils {
 
   def comp2(capture1: Int) = {
