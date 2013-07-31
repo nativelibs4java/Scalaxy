@@ -19,7 +19,7 @@ import scalaxy.reified.internal.Utils._
  */
 object Optimizer {
 
-  def reset(tree: Tree, toolbox: ToolBox[universe.type]): Tree = {
+  private def reset(tree: Tree, toolbox: ToolBox[universe.type]): Tree = {
     typeCheckTree(toolbox.resetAllAttrs(resolveModulePaths(universe)(tree)))
   }
 
@@ -27,8 +27,10 @@ object Optimizer {
     val result = optimizeLoops(optimizeFunctionVals(rawTree, toolbox), toolbox)
     //val result = optimizeFunctionVals(rawTree, toolbox)
     //val result = reset(rawTree, toolbox)
-    //println("Raw tree:\n" + rawTree)
-    //println("Optimized tree:\n" + result)
+    if (verbose) {
+      println("Raw tree:\n" + rawTree)
+      println("Optimized tree:\n" + result)
+    }
     result
   }
 
@@ -40,7 +42,7 @@ object Optimizer {
       Nil)
   }
 
-  def optimizeFunctionVals(rawTree: Tree, toolbox: ToolBox[universe.type]): Tree = {
+  private def optimizeFunctionVals(rawTree: Tree, toolbox: ToolBox[universe.type]): Tree = {
     val tree = reset(rawTree, toolbox)
 
     val functionSymbols = tree collect {
@@ -89,7 +91,7 @@ object Optimizer {
     optimized
   }
 
-  object CommonScalaNames {
+  private object CommonScalaNames {
     import definitions._
 
     class N(val s: String) {
@@ -201,13 +203,13 @@ object Optimizer {
     lazy val SetBuilderClass = C("scala.collection.mutable.SetBuilder")
   }
 
-  object Predef {
+  private object Predef {
     import CommonScalaNames._
 
     def unapply(tree: Tree): Boolean = tree.symbol == PredefModule
   }
 
-  object IntRange {
+  private object IntRange {
     import CommonScalaNames._
 
     def apply(from: Tree, to: Tree, by: Option[Tree], isInclusive: Boolean, filters: List[Tree]) = sys.error("not implemented")
@@ -268,7 +270,7 @@ object Optimizer {
     }
   }
 
-  object Step {
+  private object Step {
     def unapply(treeOpt: Option[Tree]): Option[Int] = Option(treeOpt) collect {
       case Some(Literal(Constant(step: Int))) =>
         step
@@ -277,7 +279,7 @@ object Optimizer {
     }
   }
 
-  def optimizeLoops(rawTree: Tree, toolbox: ToolBox[universe.type]): Tree = {
+  private def optimizeLoops(rawTree: Tree, toolbox: ToolBox[universe.type]): Tree = {
     import toolbox.resetAllAttrs
     import CommonScalaNames._
 

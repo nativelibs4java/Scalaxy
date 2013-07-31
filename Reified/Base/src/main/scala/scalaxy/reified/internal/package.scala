@@ -10,6 +10,10 @@ import scalaxy.reified.internal.Utils._
 
 package object internal {
 
+  private[reified] lazy val verbose =
+    System.getProperty("scalaxy.reified.verbose") == "true" ||
+      System.getenv("SCALAXY_REIFIED_VERBOSE") == "1"
+
   private[reified] val syntheticVariableNamePrefix = "scalaxy$reified$"
 
   private def runtimeExpr[A](c: Context)(tree: c.universe.Tree): c.Expr[universe.Expr[A]] = {
