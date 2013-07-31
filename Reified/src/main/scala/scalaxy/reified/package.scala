@@ -134,5 +134,10 @@ package object reified {
   implicit def hasReifiedValueToReifiedValue[A](r: HasReifiedValue[A]): ReifiedValue[A] = {
     r.reifiedValue
   }
+
+  /**
+   * Implicitly convert reified value to their original non-reified value.
+   */
+  implicit def hasReifiedValueToValue[A](r: HasReifiedValue[A]): A = r.reifiedValue.value
 }
 

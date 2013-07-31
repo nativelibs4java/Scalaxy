@@ -202,6 +202,19 @@ final case class ReifiedValue[A: TypeTag](
               methodName),
             args) =>
             Apply(Select(Ident(capturedRefName(captureIndex)), methodName), args)
+          case Apply(
+            Select(
+              wrapped @ Apply(
+                TypeApply(
+                  Select(
+                    _,
+                    converterName),
+                  List(tpt)),
+                List(CaptureTag(tpe, _, captureIndex))),
+              methodName),
+            args) if converterName.toString == "hasReifiedValueToValue" =>
+            //println(s"tpt = $tpt, $tpe = $tpe, (tpt.tpe =:= tpe) = ${tpt.tpe =:= tpe}")
+            Apply(Select(Ident(capturedRefName(captureIndex)), methodName), args)
           case CaptureTag(_, _, captureIndex) =>
             Ident(capturedRefName(captureIndex))
           case _ =>
@@ -220,7 +233,7 @@ final case class ReifiedValue[A: TypeTag](
             for (((capturedTree, tpe), captureIndex) <- flatCapturedTrees.zipWithIndex) yield {
               val transformedCapture = replacer.transform(capturedTree)
               ValDef(
-                Modifiers(Flag.LOCAL),
+                Modifiers(Flag.LOCAL | Flag.FINAL | Flag.PRIVATE),
                 capturedRefName(captureIndex),
                 TypeTree(if (tpe eq null) NoType else tpe),
                 transformedCapture)
