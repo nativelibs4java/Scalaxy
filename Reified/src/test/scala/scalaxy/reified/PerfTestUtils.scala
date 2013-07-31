@@ -10,8 +10,13 @@ import scalaxy.reified._
 
 trait PerfTestUtils {
 
-  def benef(normal: Double, recompiled: Double): Double =
-    twoDecimals(normal / recompiled)
+  def benef(normal: Double, recompiled: Double): String = {
+    val factor = twoDecimals(normal / recompiled)
+    val sign = if (normal > recompiled) "-" else "+"
+    val percent = math.abs(oneDecimal((recompiled - normal) / normal * 100))
+
+    s"$factor x ($sign $percent %)"
+  }
 
   def oneDecimal(v: Double): Double = (v * 10).toInt / 10.0
   def twoDecimals(v: Double): Double = (v * 100).toInt / 100.0
@@ -49,8 +54,8 @@ trait PerfTestUtils {
     val (compiledF, compilationTime) = nanoTime { r.compile()() }
 
     val pref = s"[$title] "
-    //println(s"First Compilation Time = $compilationTime ms")
-    nanoTimeAvg(100, pref + "compilation") { r.compile()() }
+    println(pref + s"compilation: ${formatNanos(compilationTime)}")
+    //nanoTimeAvg(100, pref + "compilation") { r.compile()() }
     println()
 
     assertEquals("Mismatching results", f(), compiledF())
@@ -58,7 +63,7 @@ trait PerfTestUtils {
     val results = for (i <- 0 until its) yield {
       val normal = nanoTimeAvg(n, pref + "normal")(f())
       val recompiled = nanoTimeAvg(n, pref + "recompiled")(compiledF())
-      println(pref + "benefit: " + benef(normal, recompiled) + " x")
+      println(pref + "benefit: " + benef(normal, recompiled))
       println()
       (normal, recompiled)
     }
@@ -71,7 +76,7 @@ trait PerfTestUtils {
     println(pref + "TOTAL:")
     println(pref + "NORMAL avg: " + formatNanos(normalAvg))
     println(pref + "RECOMPILED avg: " + formatNanos(recompiledAvg))
-    println(pref + "BENEFIT avg: " + benef(normalAvg, recompiledAvg) + " x")
+    println(pref + "BENEFIT avg: " + benef(normalAvg, recompiledAvg))
     println()
   }
 
