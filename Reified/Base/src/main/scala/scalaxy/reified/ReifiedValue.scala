@@ -106,7 +106,12 @@ final case class ReifiedValue[A: TypeTag](
         capturedTrees += (subTree -> NoType) // valueType is ReifiedSomething...
       case ((value, valueType), i) =>
         captureMap(i) = offset + capturedTrees.size
-        capturedTrees += (lifter.lift(value, valueType, true).get -> valueType)
+        try {
+          capturedTrees += (lifter.lift(value, valueType, true).get -> valueType)
+        } catch {
+          case ex: Throwable =>
+            throw new RuntimeException("Failed to lift capture: " + ex + "\n" + this, ex)
+        }
     }
     (transformCaptureIndices(captureMap), capturedTrees.toList)
   }
