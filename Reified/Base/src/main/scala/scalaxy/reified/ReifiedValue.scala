@@ -3,7 +3,6 @@ package scalaxy.reified
 import scala.reflect.runtime.universe
 import scala.reflect.runtime.universe._
 
-import scalaxy.reified.CaptureConversions.Conversion
 import scalaxy.reified.internal.CaptureTag
 import scalaxy.reified.internal.Optimizer
 import scalaxy.reified.internal.Utils
@@ -49,17 +48,20 @@ final case class ReifiedValue[A: TypeTag](
   override def valueTag = typeTag[A]
 
   /**
-   * Compile the AST (using the provided conversion to convert captured values to ASTs).
-   * @param conversion how to convert captured values
-   * @param toolbox toolbox used to perform the compilation. By default, using a toolbox configured with all stable optimization flags available.
-   * @param optimizeAST whether to apply Scalaxy AST optimizations or not (optimizations range from transforming function value objects into defs when possible, to (TODO:) transforming some foreach loops into equivalent while loops).
+   * Compile the AST (using the provided lifter to convert captured values to ASTs).
+   * @param lifter how to convert captured values
+   * @param toolbox toolbox used to perform the compilation. By default, using a toolbox configured
+   *     with all stable optimization flags available.
+   * @param optimizeAST whether to apply Scalaxy AST optimizations or not
+   *     (optimizations range from transforming function value objects into defs when possible,
+   *     to transforming some foreach loops into equivalent while loops).
    */
   def compile(
-    conversion: CaptureConversions.Conversion = CaptureConversions.DEFAULT,
+    lifter: Lifter = Lifter.DEFAULT,
     toolbox: ToolBox[universe.type] = internal.Utils.optimisingToolbox,
     optimizeAST: Boolean = true): () => A = {
 
-    val ast = expr(conversion).tree
+    val ast = expr(lifter).tree
     val finalAST = {
       if (optimizeAST) {
         Optimizer.optimize(ast, toolbox)
@@ -86,50 +88,17 @@ final case class ReifiedValue[A: TypeTag](
   }
 
   /**
-   * Get the AST of this reified value, using the specified conversion function for any
-   * value that was captured by the expression.
-   */
-  def expr(conversion: CaptureConversions.Conversion = CaptureConversions.DEFAULT): Expr[A] = {
-    //stableExpr(conversion)
-    optimizedExpr(conversion)
-  }
-
-  /**
-   * Naive AST resolution that inlines captured values in their reference site.
-   * As this might instantiate captured collections more than needed, this should be dropped as
-   * soon as optimizedExpr is stable.
-   */
-  private def stableExpr(conversion: CaptureConversions.Conversion = CaptureConversions.DEFAULT): Expr[A] = {
-    val transformer = new Transformer {
-      override def transform(tree: Tree): Tree = {
-        tree match {
-          case CaptureTag(_, _, captureIndex) =>
-            val (capturedValue, valueType) = capturedTerms(captureIndex)
-            val converter: CaptureConversions.Conversion = conversion.orElse({
-              case _ =>
-                sys.error(s"This type of captured value is not supported: $capturedValue")
-            })
-            converter((capturedValue, valueType, converter))
-          case _ =>
-            super.transform(tree)
-        }
-      }
-    }
-    newExpr[A](transformer.transform(taggedExpr.tree))
-  }
-
-  /**
    * Flatten the reified values captured by this reified value's AST, and return an equivalent
    * reified value which does not contain any captured reified value.
    * All the other captures are shifted / retagged appropriately.
    */
-  private def flattenCaptures(conversion: CaptureConversions.Conversion, offset: Int = 0): (Tree, Seq[(Tree, Type)]) = {
+  private def flattenCaptures(lifter: Lifter, offset: Int = 0): (Tree, Seq[(Tree, Type)]) = {
     val capturedTrees = collection.mutable.ArrayBuffer[(Tree, Type)]()
     val captureMap = collection.mutable.HashMap[Int, Int]()
     capturedTerms.zipWithIndex.foreach {
       case ((value: HasReifiedValue[_], valueType), i) =>
         val (subTree, subCaptures) = value.reifiedValue.flattenCaptures(
-          conversion,
+          lifter,
           offset + capturedTrees.size
         )
         capturedTrees ++= subCaptures
@@ -137,7 +106,7 @@ final case class ReifiedValue[A: TypeTag](
         capturedTrees += (subTree -> NoType) // valueType is ReifiedSomething...
       case ((value, valueType), i) =>
         captureMap(i) = offset + capturedTrees.size
-        capturedTrees += (conversion((value, valueType, conversion)) -> valueType)
+        capturedTrees += (lifter.lift(value, valueType, true).get -> valueType)
     }
     (transformCaptureIndices(captureMap), capturedTrees.toList)
   }
@@ -179,17 +148,16 @@ final case class ReifiedValue[A: TypeTag](
   }
 
   /**
-   * Return a block which starts by declaring all the captured values, and ends with a value that
+   * Get the AST of this reified value, using the specified lifter for any
+   * value that was captured by the expression.
+   * @return a block which starts by declaring all the captured values, and ends with a value that
    * only contains references to these declarations.
    */
-  private def optimizedExpr(conversion: CaptureConversions.Conversion = CaptureConversions.DEFAULT): Expr[A] = {
+  def expr(lifter: Lifter = Lifter.DEFAULT): Expr[A] = {
     val capturedValueTrees = new collection.mutable.HashMap[Int, Tree]()
     def capturedRefName(captureIndex: Int): TermName = internal.syntheticVariableNamePrefix + "capture$" + captureIndex
 
-    val (flatTaggedExpr, flatCapturedTrees) = flattenCaptures(conversion.orElse({
-      case (value, tpe: Type, conversion: Conversion) =>
-        sys.error(s"This type of captured value is not supported: $value")
-    }))
+    val (flatTaggedExpr, flatCapturedTrees) = flattenCaptures(lifter)
 
     val replacer = new Transformer {
       override def transform(tree: Tree): Tree = {

@@ -15,7 +15,7 @@ import com.typesafe.sbt.SbtGhPages._
 Scalaxy/Reified:
   - Normal tests:
     sbt 'project scalaxy-reified' ~test
-  
+
   - Remote-debug tests on port 5005:
     sbt 'project scalaxy-reified' 'set javaOptions in Test ++= Seq("-Xdebug", "-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005")' ~test
 
@@ -65,17 +65,17 @@ object Scalaxy extends Build {
     LsKeys.ghUser := Some("ochafik"),
     LsKeys.ghRepo := Some("Scalaxy"))
 
-  lazy val docSettings = 
+  lazy val docSettings =
     Seq(
       scalacOptions in (Compile, doc) <++= (name, baseDirectory, description, version, sourceDirectory) map {
         case (name, base, description, version, sourceDirectory) =>
-          Opts.doc.title(name + ": " + description) ++ 
-          Opts.doc.version(version) ++ 
+          Opts.doc.title(name + ": " + description) ++
+          Opts.doc.version(version) ++
           //Seq("-doc-source-url", "https://github.com/ochafik/Scalaxy/blob/master/Reified/Base/src/main/scala") ++
           Seq("-doc-root-content", (sourceDirectory / "main" / "rootdoc.txt").getAbsolutePath)
       }
     )
-    
+
   lazy val standardSettings =
     Defaults.defaultSettings ++
     infoSettings ++
@@ -86,7 +86,7 @@ object Scalaxy extends Build {
       javacOptions ++= Seq("-Xlint:unchecked"),
       scalacOptions ++= Seq(
         "-encoding", "UTF-8",
-        "-optimise", 
+        "-optimise",
         "-deprecation",
         //"-Xlog-implicits",
         //"-Ymacro-debug-lite", "-Ydebug",
@@ -179,22 +179,22 @@ object Scalaxy extends Build {
         standardSettings ++
         Seq(publish := { }))
     .dependsOn(loops, compilets, fx, beans, components, debug, extensions, reified)
-    
+
   lazy val docProjects = Map(
     "Compilets" -> compilets,
-    "Fx" -> fx, 
+    "Fx" -> fx,
     "Beans" -> beans,
     "Loops" -> loops,
-    //"Components" -> components, 
-    "Debug" -> debug, 
+    //"Components" -> components,
+    "Debug" -> debug,
     //"MacroExtensions" -> extensions,
     "Reified" -> reifiedDoc)
-    
-  lazy val scalaxyDoc = 
+
+  lazy val scalaxyDoc =
     Project(
-      id = "scalaxy-doc", 
-      base = file("Doc"), 
-      settings = 
+      id = "scalaxy-doc",
+      base = file("Doc"),
+      settings =
         reflectSettings ++
         site.settings ++
         site.publishSite ++
@@ -209,15 +209,15 @@ object Scalaxy extends Build {
             val rd = "README.md"
             val target = "index.md"
             (
-              docProjects.keys.map(dirName => 
-                file(dirName + "/" + rd) -> (dirName + "/" + target)) ++ 
+              docProjects.keys.map(dirName =>
+                file(dirName + "/" + rd) -> (dirName + "/" + target)) ++
               Set(file(rd) -> target)
             ).filter(_._1.exists).toSeq
           },
           scalacOptions in (Compile, doc) <++= (name, baseDirectory, description, version, sourceDirectory) map {
             case (name, base, description, version, sourceDirectory) =>
-              Opts.doc.title(name + ": " + description) ++ 
-              Opts.doc.version(version) ++ 
+              Opts.doc.title(name + ": " + description) ++
+              Opts.doc.version(version) ++
               //Seq("-doc-source-url", "https://github.com/ochafik/Scalaxy/blob/master/Reified/Base/src/main/scala") ++
               Seq("-doc-root-content", (sourceDirectory / "main" / "rootdoc.txt").getAbsolutePath)
           }
@@ -236,7 +236,7 @@ object Scalaxy extends Build {
         })
     ).dependsOn(docProjects.values.map(p => p: ClasspathDep[ProjectReference]).toSeq: _*)
     .aggregate(docProjects.values.toSeq.map(p => p: sbt.ProjectReference): _*)
-  
+
   lazy val compilets =
     Project(
       id = "scalaxy-compilets",
@@ -272,7 +272,7 @@ object Scalaxy extends Build {
     Project(
       id = "scalaxy-compilets-plugin",
       base = file("Compilets/Plugin"),
-      settings = 
+      settings =
         reflectSettings ++
         shadeSettings ++
         Seq(
@@ -321,8 +321,8 @@ object Scalaxy extends Build {
     .dependsOn(reifiedBase)
     .aggregate(reifiedBase)
 
-  lazy val reifiedDoc = 
-    Project(id = "scalaxy-reified-doc", base = file("Reified/Doc"), settings = reflectSettings ++ 
+  lazy val reifiedDoc =
+    Project(id = "scalaxy-reified-doc", base = file("Reified/Doc"), settings = reflectSettings ++
       Seq(
         publish := { },
         (skip in compile) := true,

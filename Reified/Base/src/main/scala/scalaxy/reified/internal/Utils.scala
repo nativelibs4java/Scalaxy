@@ -19,7 +19,7 @@ object Utils {
     newExpr[A](typeCheckTree(expr.tree, pt))
   }
 
-  private[reified] val optimisingOptions = "-optimise -Yclosure-elim -Yinline"
+  private[reified] val optimisingOptions = "-optimise -Yclosure-elim -Yinline" // -Xprint:lambdalift"
   private[reified] val optimisingToolbox = {
     currentMirror.mkToolBox(options = optimisingOptions)
   }
@@ -58,4 +58,5 @@ object Utils {
         throw new RuntimeException(s"Failed to typeCheck($tree, $pt): $ex", ex)
     }
   }
+
 }
