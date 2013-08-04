@@ -14,27 +14,26 @@ package generic {
   /**
    * Type used to model constraint alternatives in Generic
    */
-  trait |[A, B]
+  // trait |[A, B]
+
+  sealed class Generic[A](val numeric: Option[Numeric[A]] = None)
 }
 
 package object generic {
 
-  type NumericType = Byte | Short | Int | Long | Float | Double
+  // type NumericType = Byte | Short | Int | Long | Float | Double
 
-  type Numeric[A] = Generic[A, NumericType]
+  implicit def genericNumericInstance[A <: AnyVal: Numeric]: Generic[A] = new Generic[A](Some(implicitly[Numeric[A]]))
+  implicit def genericInstance[A <: AnyRef]: Generic[A] = new Generic[A]()
 
-  object Numeric {
-    implicit def apply[N: math.Numeric](value: N) = new generic.Numeric(value)
-  }
+  def numeric[A: Generic] = implicitly[Generic[A]].numeric.getOrElse(sys.error("This generic has no associated numeric"))
 
-  def zero[N: math.Numeric]: generic.Numeric[N] = generic.Numeric(implicitly[math.Numeric[N]].zero)
+  def zero[A: Generic]: A = numeric[A].zero
+  def one[A: Generic]: A = numeric[A].one
+  def number[A: Generic](value: Int): A = numeric[A].fromInt(value)
 
-  implicit def apply[A](value: A, implicitConversions: Any*) = new Generic[A, Any](value, implicitConversions)
-  implicit def apply(value: Byte) = new generic.Numeric(value)
-  implicit def apply(value: Short) = new generic.Numeric(value)
-  implicit def apply(value: Int) = new generic.Numeric(value)
-  implicit def apply(value: Long) = new generic.Numeric(value)
-  implicit def apply(value: Float) = new generic.Numeric(value)
-  implicit def apply(value: Double) = new generic.Numeric(value)
+  implicit def mkGenericOps[A: Generic](value: GenericOps[_]): GenericOps[A] = new GenericOps[A](value.value.asInstanceOf[A])
+  implicit def mkGenericOps[A: Generic](value: A): GenericOps[A] = new GenericOps[A](value)
 
+  def generic[A: Generic](value: A, implicitConversions: Any*) = new GenericOps[A](value, implicitConversions)
 }

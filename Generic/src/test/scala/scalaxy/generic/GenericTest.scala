@@ -1,4 +1,4 @@
-package scalaxy.reified.test
+package scalaxy.generic.test
 
 import org.junit._
 import org.junit.Assert._
@@ -7,7 +7,7 @@ import scala.reflect.runtime.universe
 import scala.reflect.runtime.universe.TypeTag
 import scala.reflect.runtime.currentMirror
 
-import scalaxy.reified._
+import scalaxy.generic._
 import scala.language.implicitConversions
 import scala.language.dynamics
 
@@ -20,7 +20,7 @@ class GenericTest {
   }
   @Test
   def testGenericClass {
-    val value = Generic(new A(10))
+    val value = generic(new A(10))
     assertEquals(100, value.square1)
     assertEquals(100, value.square2)
     assertEquals(20, value.mul(2))
@@ -31,7 +31,7 @@ class GenericTest {
   @Ignore
   @Test
   def testUpdate {
-    val value = Generic(new A(10))
+    val value = generic(new A(10))
     // TODO: Fix compilation of this ("macros cannot be partially applied"):
     // value.a = 11
     // assertEquals(11, value.a)
@@ -39,7 +39,7 @@ class GenericTest {
 
   @Test
   def testNumerics {
-    val a = Generic(10)
+    val a = generic(10)
     assertEquals(12, a + 2)
     assertEquals(8, a - 2)
     assertEquals(20, a * 2)
@@ -49,29 +49,33 @@ class GenericTest {
 
   @Test
   def testAlternatives {
-    def test[N](a: Generic.Numeric[N]) {
+    def test[N: TypeTag: Generic](a: N) {
       assertEquals(12, a.toInt)
     }
-    test(Generic(12: Byte))
-    test(Generic(12: Short))
-    test(Generic(12))
-    test(Generic(12L))
-    test(Generic(12.0))
-    test(Generic(12.0f))
+    test(generic(12: Byte))
+    test(generic(12: Short))
+    test(generic(12))
+    test(generic(12L))
+    test(generic(12.0))
+    test(generic(12.0f))
 
     // TODO
   }
 
-  // implicit def gimmeAliases[A, B]: A | B = ???
+  def genericLimit[N: Generic](target: N, f: N => N): Int = {
+    var v = one[N]
+    var n = 0
+    while (v < target) {
+      v = f(v)
+      n += 1
+    }
+    n
+  }
 
-  // import Generic._
-  // def genericAlgo[N : Numeric : (Int | Float)](seed: ~[N], f: ReifiedValue[~[N] => ~[N]]): ReifiedValue[~[N] => ~[N]] = {
-  //   reify((targetValue: ~[N]) => {
-  //     var v = Generic.zero[N]
-  //     while (v * v < targetValue) {
-  //       v += f(v)
-  //     }
-  //     v
-  //   })
-  // }
+  @Test
+  def testGenericLimit {
+    assertEquals(4, genericLimit[Int](10, _ * 2))
+    assertEquals(3, genericLimit[Int](10, _ * 3))
+    assertEquals(3, genericLimit[Double](10.0, _ * 3.0))
+  }
 }
