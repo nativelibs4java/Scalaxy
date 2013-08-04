@@ -11,12 +11,10 @@ import scala.reflect.runtime.universe._
 /**
  * A dynamic wrapper for generic values that can be optimized away in reified ASTs, and can verify basic union-style static type constraints.
  */
-class GenericOps[+A: Generic](value_ : A, implicitConversions: Any*) extends Dynamic {
+class GenericOps[+A: Generic](value_ : A, implicitConversions: Any*) extends Dynamic with NumberOps[A] {
   import GenericOps._
 
   val value = peel_(value_)
-  // checkStaticConstraint_()
-  // private def checkStaticConstraint_() = macro Generic.checkStaticConstraint[A]
 
   private lazy val targets_ = value :: implicitConversions.toList ++ (value match {
     case (v: java.lang.Byte) => numOps_(v.byteValue)
@@ -45,7 +43,12 @@ class GenericOps[+A: Generic](value_ : A, implicitConversions: Any*) extends Dyn
   def selectDynamic(name: String): Any = macro internal.selectDynamic[A]
   def updateDynamic(name: String)(value: Any): Unit = macro internal.updateDynamic[A]
 
-  // Special case for numeric operations, to stay in callee's type
+  override def equals(other: Any) = value.equals(other)
+  override def hashCode() = value.hashCode()
+  override def toString() = "GenericOps(" + value + ")"
+}
+
+trait NumberOps[+A] {
   def +(rhs: A): A = macro internal.methodHomogeneous[A, A]
   def -(rhs: A): A = macro internal.methodHomogeneous[A, A]
   def *(rhs: A): A = macro internal.methodHomogeneous[A, A]
@@ -63,10 +66,6 @@ class GenericOps[+A: Generic](value_ : A, implicitConversions: Any*) extends Dyn
   def toLong: Long = macro internal.method0[A, Long]
   def toFloat: Float = macro internal.method0[A, Float]
   def toDouble: Double = macro internal.method0[A, Double]
-
-  override def equals(other: Any) = value.equals(other)
-  override def hashCode() = value.hashCode()
-  override def toString() = "GenericOps(" + value + ")"
 }
 
 object GenericOps {

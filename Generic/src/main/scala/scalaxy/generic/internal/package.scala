@@ -8,11 +8,6 @@ import scala.reflect.runtime.universe
 
 package object internal {
 
-  def checkStaticConstraint[A: c.WeakTypeTag](c: Context)(): c.Expr[Unit] = {
-    // println(s"ConstraintOnA: ${weakTypeTag[ConstraintOnA].tpe}")
-    c.literalUnit
-  }
-
   def applyDynamic[A: c.WeakTypeTag](c: Context)(name: c.Expr[String])(args: c.Expr[Any]*): c.Expr[Any] = {
     applyDynamicImpl(c)(c.prefix.asInstanceOf[c.Expr[GenericOps[A]]], name, args: _*)
   }

@@ -7,7 +7,7 @@ import scala.language.implicitConversions
 import scala.language.dynamics
 
 import scala.reflect.ClassTag
-import scala.reflect.runtime.universe._
+// import scala.reflect.runtime.universe.TypeTag
 
 // import scalaxy.union._ //`|`
 package generic {
@@ -16,17 +16,40 @@ package generic {
    */
   // trait |[A, B]
 
-  sealed class Generic[A](val numeric: Option[Numeric[A]] = None)
+  sealed class Generic[A: TypeTag] {
+    def typeTag = implicitly[TypeTag[A]]
+    def numeric: Option[Numeric[A]] = implicitly[Option[Numeric[A]]]
+  }
 }
 
 package object generic {
+  type TypeTag[T] = scala.reflect.runtime.universe.TypeTag[T]
 
-  // type NumericType = Byte | Short | Int | Long | Float | Double
+  private val typeTagsToNumerics: Map[scala.reflect.runtime.universe.TypeTag[_], Numeric[_]] = {
+    import scala.reflect.runtime.universe._
+    import Numeric._
+    Map(
+      TypeTag.Byte -> implicitly[Numeric[Byte]],
+      TypeTag.Short -> implicitly[Numeric[Short]],
+      TypeTag.Int -> implicitly[Numeric[Int]],
+      TypeTag.Long -> implicitly[Numeric[Long]],
+      TypeTag.Float -> implicitly[Numeric[Float]],
+      TypeTag.Double -> implicitly[Numeric[Double]],
+      TypeTag.Char -> implicitly[Numeric[Char]],
+      typeTag[math.BigInt] -> implicitly[Numeric[math.BigInt]],
+      typeTag[math.BigDecimal] -> implicitly[Numeric[math.BigDecimal]]
+    )
+  }
 
-  implicit def genericNumericInstance[A <: AnyVal: Numeric]: Generic[A] = new Generic[A](Some(implicitly[Numeric[A]]))
-  implicit def genericInstance[A <: AnyRef]: Generic[A] = new Generic[A]()
+  implicit def mkNumeric[A: TypeTag]: Option[Numeric[A]] = {
+    // println(typeTagsToNumerics)
+    val numOpt = typeTagsToNumerics.get(implicitly[TypeTag[A]])
+    numOpt.map(_.asInstanceOf[Numeric[A]])
+  }
 
-  def numeric[A: Generic] = implicitly[Generic[A]].numeric.getOrElse(sys.error("This generic has no associated numeric"))
+  implicit def mkGeneric[A: TypeTag]: Generic[A] = new Generic[A]
+
+  implicit def numeric[A: Generic] = implicitly[Generic[A]].numeric.getOrElse(sys.error("This generic has no associated numeric"))
 
   def zero[A: Generic]: A = numeric[A].zero
   def one[A: Generic]: A = numeric[A].one

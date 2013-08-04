@@ -3,13 +3,13 @@ package scalaxy.generic.test
 import org.junit._
 import org.junit.Assert._
 
-import scala.reflect.runtime.universe
-import scala.reflect.runtime.universe.TypeTag
-import scala.reflect.runtime.currentMirror
+// import scala.reflect.runtime.universe
+// import scala.reflect.runtime.universe.TypeTag
+// import scala.reflect.runtime.currentMirror
 
 import scalaxy.generic._
 import scala.language.implicitConversions
-import scala.language.dynamics
+// import scala.language.dynamics
 
 class GenericTest {
   class A(var a: Int) {
@@ -66,7 +66,7 @@ class GenericTest {
     var v = one[N]
     var n = 0
     while (v < target) {
-      v = f(v)
+      v = f(v) * number[N](3) / number[N](2)
       n += 1
     }
     n
@@ -74,8 +74,8 @@ class GenericTest {
 
   @Test
   def testGenericLimit {
-    assertEquals(4, genericLimit[Int](10, _ * 2))
-    assertEquals(3, genericLimit[Int](10, _ * 3))
-    assertEquals(3, genericLimit[Double](10.0, _ * 3.0))
+    assertEquals(3, genericLimit[Int](10, _ * 2))
+    assertEquals(2, genericLimit[Int](10, _ * 3))
+    assertEquals(2, genericLimit[Double](10.0, _ * 3.0))
   }
 }
