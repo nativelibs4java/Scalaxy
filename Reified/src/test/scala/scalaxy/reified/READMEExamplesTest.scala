@@ -25,8 +25,8 @@ class READMEExamplesTest extends TestUtils with PerfTestUtils {
       square.compose(getter)
     }
     val f: ReifiedValue[Int => Int] = comp(10)
-    println(f.taggedExpr)
-    println(f.capturedTerms)
+    //println(f.taggedExpr)
+    //println(f.capturedTerms)
 
     val ff = f.compile()()
     for (index <- Seq(0, 1, 2)) {
@@ -79,12 +79,12 @@ class READMEExamplesTest extends TestUtils with PerfTestUtils {
     val f = reify((x: Double, y: Double) => {
       cos(x * factor) - sin(y / factor)
     })
-    val fIntegrator = createDiscreteIntegrator2D(f, 0.01)
+    val fIntegrator = createDiscreteIntegrator2D(f, 0.1)
     //val fIntegrator = createDiscreteIntegrator2D((v: Double) => f(shift(v)))
     //val fIntegrator = createDiscreteIntegrator2D(f)
 
-    println("fIntegrator.taggedExpr = " + fIntegrator.taggedExpr)
-    println("fIntegrator.capturedTerms = " + fIntegrator.capturedTerms)
+    //println("fIntegrator.taggedExpr = " + fIntegrator.taggedExpr)
+    //println("fIntegrator.capturedTerms = " + fIntegrator.capturedTerms)
 
     val fasterIntegrator = fIntegrator.compile()()
     val areas = Seq(((0, 1), (0, 1)), ((5, 6), (2, 3)))
@@ -95,11 +95,11 @@ class READMEExamplesTest extends TestUtils with PerfTestUtils {
     //println(fIntegrator(0, 1))
     //println(fIntegrator(0, 10))
 
-    val n = 1000
+    val n = 3000
     val iterations = 3
 
     compare("testDiscreteIntegrator", n, iterations)(reify(() => {
-      fIntegrator(0, 1, 0, 1) + fIntegrator(0, 10, 0, 10)
+      fIntegrator(0, 1, 0, 1) + fIntegrator(2, 5, 3, 4)
     }))
   }
 
@@ -132,8 +132,8 @@ class READMEExamplesTest extends TestUtils with PerfTestUtils {
     val g = reify(sin(_))
     val fgConvolver = createDiscreteConvolver1D(f, g)
 
-    println("fgConvolver.taggedExpr = " + fgConvolver.taggedExpr)
-    println("fgConvolver.capturedTerms = " + fgConvolver.capturedTerms)
+    //println("fgConvolver.taggedExpr = " + fgConvolver.taggedExpr)
+    //println("fgConvolver.capturedTerms = " + fgConvolver.capturedTerms)
 
     val fasterConvolver = fgConvolver.compile()()
     for ((start, end) <- Seq((0, 1), (0, 10))) {

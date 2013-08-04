@@ -62,28 +62,28 @@ class Generic[A, ConstraintOnA: TypeTag](val value: A, implicitConversions: Any*
       value.getClass.getName
   }
 
-  def applyDynamic(name: String)(args: Any*): Any = macro internal.genericApplyDynamic[A, ConstraintOnA]
-  def selectDynamic(name: String): Any = macro internal.genericSelectDynamic[A, ConstraintOnA]
-  def updateDynamic(name: String)(value: Any): Unit = macro internal.genericUpdateDynamic[A, ConstraintOnA]
+  def applyDynamic(name: String)(args: Any*): Any = macro internal.generic.applyDynamic[A, ConstraintOnA]
+  def selectDynamic(name: String): Any = macro internal.generic.selectDynamic[A, ConstraintOnA]
+  def updateDynamic(name: String)(value: Any): Unit = macro internal.generic.updateDynamic[A, ConstraintOnA]
 
   // Special case for numeric operations, to stay in callee's type
-  def +(rhs: Generic[A, ConstraintOnA]): A = macro internal.genericMethodHomogeneous[A, ConstraintOnA, A]
-  def -(rhs: Generic[A, ConstraintOnA]): A = macro internal.genericMethodHomogeneous[A, ConstraintOnA, A]
-  def *(rhs: Generic[A, ConstraintOnA]): A = macro internal.genericMethodHomogeneous[A, ConstraintOnA, A]
-  def /(rhs: Generic[A, ConstraintOnA]): A = macro internal.genericMethodHomogeneous[A, ConstraintOnA, A]
-  def /%(rhs: Generic[A, ConstraintOnA]): (A, A) = macro internal.genericMethodHomogeneous[A, ConstraintOnA, (A, A)]
-  def ==(rhs: Generic[A, ConstraintOnA]): Boolean = macro internal.genericMethodHomogeneous[A, ConstraintOnA, Boolean]
-  def !=(rhs: Generic[A, ConstraintOnA]): Boolean = macro internal.genericMethodHomogeneous[A, ConstraintOnA, Boolean]
-  def <=(rhs: Generic[A, ConstraintOnA]): Boolean = macro internal.genericMethodHomogeneous[A, ConstraintOnA, Boolean]
-  def <(rhs: Generic[A, ConstraintOnA]): Boolean = macro internal.genericMethodHomogeneous[A, ConstraintOnA, Boolean]
-  def >=(rhs: Generic[A, ConstraintOnA]): Boolean = macro internal.genericMethodHomogeneous[A, ConstraintOnA, Boolean]
-  def >(rhs: Generic[A, ConstraintOnA]): Boolean = macro internal.genericMethodHomogeneous[A, ConstraintOnA, Boolean]
-  def abs: A = macro internal.genericMethod0[A, ConstraintOnA, A]
-  def signum: Int = macro internal.genericMethod0[A, ConstraintOnA, Int]
-  def toInt: Int = macro internal.genericMethod0[A, ConstraintOnA, Int]
-  def toLong: Long = macro internal.genericMethod0[A, ConstraintOnA, Long]
-  def toFloat: Float = macro internal.genericMethod0[A, ConstraintOnA, Float]
-  def toDouble: Double = macro internal.genericMethod0[A, ConstraintOnA, Double]
+  def +(rhs: Generic[A, ConstraintOnA]): A = macro internal.generic.methodHomogeneous[A, ConstraintOnA, A]
+  def -(rhs: Generic[A, ConstraintOnA]): A = macro internal.generic.methodHomogeneous[A, ConstraintOnA, A]
+  def *(rhs: Generic[A, ConstraintOnA]): A = macro internal.generic.methodHomogeneous[A, ConstraintOnA, A]
+  def /(rhs: Generic[A, ConstraintOnA]): A = macro internal.generic.methodHomogeneous[A, ConstraintOnA, A]
+  def /%(rhs: Generic[A, ConstraintOnA]): (A, A) = macro internal.generic.methodHomogeneous[A, ConstraintOnA, (A, A)]
+  def ==(rhs: Generic[A, ConstraintOnA]): Boolean = macro internal.generic.methodHomogeneous[A, ConstraintOnA, Boolean]
+  def !=(rhs: Generic[A, ConstraintOnA]): Boolean = macro internal.generic.methodHomogeneous[A, ConstraintOnA, Boolean]
+  def <=(rhs: Generic[A, ConstraintOnA]): Boolean = macro internal.generic.methodHomogeneous[A, ConstraintOnA, Boolean]
+  def <(rhs: Generic[A, ConstraintOnA]): Boolean = macro internal.generic.methodHomogeneous[A, ConstraintOnA, Boolean]
+  def >=(rhs: Generic[A, ConstraintOnA]): Boolean = macro internal.generic.methodHomogeneous[A, ConstraintOnA, Boolean]
+  def >(rhs: Generic[A, ConstraintOnA]): Boolean = macro internal.generic.methodHomogeneous[A, ConstraintOnA, Boolean]
+  def abs: A = macro internal.generic.method0[A, ConstraintOnA, A]
+  def signum: Int = macro internal.generic.method0[A, ConstraintOnA, Int]
+  def toInt: Int = macro internal.generic.method0[A, ConstraintOnA, Int]
+  def toLong: Long = macro internal.generic.method0[A, ConstraintOnA, Long]
+  def toFloat: Float = macro internal.generic.method0[A, ConstraintOnA, Float]
+  def toDouble: Double = macro internal.generic.method0[A, ConstraintOnA, Double]
 
   override def equals(other: Any) = value.equals(other)
   override def hashCode() = value.hashCode()
