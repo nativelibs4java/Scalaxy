@@ -85,24 +85,6 @@ class Generic[A, ConstraintOnA: TypeTag](val value: A, implicitConversions: Any*
   def toFloat: Float = macro internal.genericMethod0[A, ConstraintOnA, Float]
   def toDouble: Double = macro internal.genericMethod0[A, ConstraintOnA, Double]
 
-  // def +(rhs: Generic[A, ConstraintOnA]): A = applyDynamic("+")(rhs).asInstanceOf[A]
-  // def -(rhs: Generic[A, ConstraintOnA]): A = applyDynamic("-")(rhs).asInstanceOf[A]
-  // def *(rhs: Generic[A, ConstraintOnA]): A = applyDynamic("*")(rhs).asInstanceOf[A]
-  // def /(rhs: Generic[A, ConstraintOnA]): A = applyDynamic("/")(rhs).asInstanceOf[A]
-  // def /%(rhs: Generic[A, ConstraintOnA]): (A, A) = applyDynamic("/%")(rhs).asInstanceOf[(A, A)]
-  // def ==(rhs: Generic[A, ConstraintOnA]): Boolean = applyDynamic("==")(rhs).asInstanceOf[Boolean]
-  // def !=(rhs: Generic[A, ConstraintOnA]): Boolean = applyDynamic("!=")(rhs).asInstanceOf[Boolean]
-  // def <=(rhs: Generic[A, ConstraintOnA]): Boolean = applyDynamic("<=")(rhs).asInstanceOf[Boolean]
-  // def <(rhs: Generic[A, ConstraintOnA]): Boolean = applyDynamic("<")(rhs).asInstanceOf[Boolean]
-  // def >=(rhs: Generic[A, ConstraintOnA]): Boolean = applyDynamic(">=")(rhs).asInstanceOf[Boolean]
-  // def >(rhs: Generic[A, ConstraintOnA]): Boolean = applyDynamic(">")(rhs).asInstanceOf[Boolean]
-  // def abs: A = applyDynamic("abs")().asInstanceOf[A]
-  // def signum: Int = applyDynamic("signum")().asInstanceOf[Int]
-  // def toInt: Int = applyDynamic("toInt")().asInstanceOf[Int]
-  // def toLong: Long = applyDynamic("toLong")().asInstanceOf[Long]
-  // def toFloat: Float = applyDynamic("toFloat")().asInstanceOf[Float]
-  // def toDouble: Double = applyDynamic("toDouble")().asInstanceOf[Double]
-
   override def equals(other: Any) = value.equals(other)
   override def hashCode() = value.hashCode()
   override def toString() = value.toString()
