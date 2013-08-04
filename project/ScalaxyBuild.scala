@@ -88,6 +88,7 @@ object Scalaxy extends Build {
         "-encoding", "UTF-8",
         "-optimise",
         "-deprecation",
+        // "-Yinfer-debug",
         //"-Xlog-implicits",
         //"-Ymacro-debug-lite", "-Ydebug",
         "-feature",
@@ -304,9 +305,15 @@ object Scalaxy extends Build {
   lazy val debug =
     Project(id = "scalaxy-debug", base = file("Debug"), settings = reflectSettings)
 
+  lazy val union =
+    Project(id = "scalaxy-union", base = file("Union"), settings = reflectSettings ++ scalariformSettings)
+
+  lazy val generic =
+    Project(id = "scalaxy-generic", base = file("Generic"), settings = reflectSettings ++ scalariformSettings)
+
   lazy val reifiedBase =
     Project(id = "scalaxy-reified-base", base = file("Reified/Base"), settings = reflectSettings ++ scalariformSettings)
-    .dependsOn(debug)
+    .dependsOn(debug, union, generic)
 
   lazy val reified =
     Project(id = "scalaxy-reified", base = file("Reified"), settings = reflectSettings ++ scalariformSettings ++ Seq(
@@ -319,7 +326,7 @@ object Scalaxy extends Build {
       )
     ))
     .dependsOn(reifiedBase)
-    .aggregate(reifiedBase)
+    .aggregate(reifiedBase, union, generic)
 
   lazy val reifiedDoc =
     Project(id = "scalaxy-reified-doc", base = file("Reified/Doc"), settings = reflectSettings ++

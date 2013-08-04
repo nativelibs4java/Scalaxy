@@ -8,11 +8,10 @@ import scala.reflect.runtime.universe.TypeTag
 import scala.reflect.runtime.currentMirror
 
 import scalaxy.reified._
-import scalaxy.debug._
 import scala.language.implicitConversions
 import scala.language.dynamics
 
-class GenericTest extends TestUtils {
+class GenericTest {
   class A(var a: Int) {
     def square1 = a * a
     def square2() = a * a
@@ -62,4 +61,17 @@ class GenericTest extends TestUtils {
 
     // TODO
   }
+
+  // implicit def gimmeAliases[A, B]: A | B = ???
+
+  // import Generic._
+  // def genericAlgo[N : Numeric : (Int | Float)](seed: ~[N], f: ReifiedValue[~[N] => ~[N]]): ReifiedValue[~[N] => ~[N]] = {
+  //   reify((targetValue: ~[N]) => {
+  //     var v = Generic.zero[N]
+  //     while (v * v < targetValue) {
+  //       v += f(v)
+  //     }
+  //     v
+  //   })
+  // }
 }

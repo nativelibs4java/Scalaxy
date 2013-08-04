@@ -1,4 +1,4 @@
-package scalaxy.reified
+package scalaxy.generic
 
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
@@ -20,17 +20,12 @@ import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 
 /**
- * Type used to model constraint alternatives in Generic
- */
-trait |[A, B]
-
-/**
  * A dynamic wrapper for generic values that can be optimized away in reified ASTs, and can verify basic union-style static type constraints.
  */
 class Generic[A, ConstraintOnA: TypeTag](val value: A, implicitConversions: Any*) extends Dynamic {
 
-  private def numOps_[N: Numeric](v: N): Seq[Any] = {
-    val n = implicitly[Numeric[N]]
+  private def numOps_[N: math.Numeric](v: N): Seq[Any] = {
+    val n = implicitly[math.Numeric[N]]
     List(v, n.mkNumericOps(v), n.mkOrderingOps(v))
   }
 
@@ -50,40 +45,40 @@ class Generic[A, ConstraintOnA: TypeTag](val value: A, implicitConversions: Any*
 
   // println("Implementations for " + value + ": " + targets_.mkString(", "))
 
-  private[reified] lazy val targetMirrors_ = targets_.map(implementation => {
+  private[generic] lazy val targetMirrors_ = targets_.map(implementation => {
     val mirror = runtimeMirror(Thread.currentThread.getContextClassLoader)
     mirror.reflect(implementation)(ClassTag(implementation.getClass))
   })
 
-  private[reified] def valueClassName_ = {
+  private[generic] def valueClassName_ = {
     if (value == null)
       null
     else
       value.getClass.getName
   }
 
-  def applyDynamic(name: String)(args: Any*): Any = macro internal.generic.applyDynamic[A, ConstraintOnA]
-  def selectDynamic(name: String): Any = macro internal.generic.selectDynamic[A, ConstraintOnA]
-  def updateDynamic(name: String)(value: Any): Unit = macro internal.generic.updateDynamic[A, ConstraintOnA]
+  def applyDynamic(name: String)(args: Any*): Any = macro internal.applyDynamic[A, ConstraintOnA]
+  def selectDynamic(name: String): Any = macro internal.selectDynamic[A, ConstraintOnA]
+  def updateDynamic(name: String)(value: Any): Unit = macro internal.updateDynamic[A, ConstraintOnA]
 
   // Special case for numeric operations, to stay in callee's type
-  def +(rhs: Generic[A, ConstraintOnA]): A = macro internal.generic.methodHomogeneous[A, ConstraintOnA, A]
-  def -(rhs: Generic[A, ConstraintOnA]): A = macro internal.generic.methodHomogeneous[A, ConstraintOnA, A]
-  def *(rhs: Generic[A, ConstraintOnA]): A = macro internal.generic.methodHomogeneous[A, ConstraintOnA, A]
-  def /(rhs: Generic[A, ConstraintOnA]): A = macro internal.generic.methodHomogeneous[A, ConstraintOnA, A]
-  def /%(rhs: Generic[A, ConstraintOnA]): (A, A) = macro internal.generic.methodHomogeneous[A, ConstraintOnA, (A, A)]
-  def ==(rhs: Generic[A, ConstraintOnA]): Boolean = macro internal.generic.methodHomogeneous[A, ConstraintOnA, Boolean]
-  def !=(rhs: Generic[A, ConstraintOnA]): Boolean = macro internal.generic.methodHomogeneous[A, ConstraintOnA, Boolean]
-  def <=(rhs: Generic[A, ConstraintOnA]): Boolean = macro internal.generic.methodHomogeneous[A, ConstraintOnA, Boolean]
-  def <(rhs: Generic[A, ConstraintOnA]): Boolean = macro internal.generic.methodHomogeneous[A, ConstraintOnA, Boolean]
-  def >=(rhs: Generic[A, ConstraintOnA]): Boolean = macro internal.generic.methodHomogeneous[A, ConstraintOnA, Boolean]
-  def >(rhs: Generic[A, ConstraintOnA]): Boolean = macro internal.generic.methodHomogeneous[A, ConstraintOnA, Boolean]
-  def abs: A = macro internal.generic.method0[A, ConstraintOnA, A]
-  def signum: Int = macro internal.generic.method0[A, ConstraintOnA, Int]
-  def toInt: Int = macro internal.generic.method0[A, ConstraintOnA, Int]
-  def toLong: Long = macro internal.generic.method0[A, ConstraintOnA, Long]
-  def toFloat: Float = macro internal.generic.method0[A, ConstraintOnA, Float]
-  def toDouble: Double = macro internal.generic.method0[A, ConstraintOnA, Double]
+  def +(rhs: Generic[A, ConstraintOnA]): A = macro internal.methodHomogeneous[A, ConstraintOnA, A]
+  def -(rhs: Generic[A, ConstraintOnA]): A = macro internal.methodHomogeneous[A, ConstraintOnA, A]
+  def *(rhs: Generic[A, ConstraintOnA]): A = macro internal.methodHomogeneous[A, ConstraintOnA, A]
+  def /(rhs: Generic[A, ConstraintOnA]): A = macro internal.methodHomogeneous[A, ConstraintOnA, A]
+  def /%(rhs: Generic[A, ConstraintOnA]): (A, A) = macro internal.methodHomogeneous[A, ConstraintOnA, (A, A)]
+  def ==(rhs: Generic[A, ConstraintOnA]): Boolean = macro internal.methodHomogeneous[A, ConstraintOnA, Boolean]
+  def !=(rhs: Generic[A, ConstraintOnA]): Boolean = macro internal.methodHomogeneous[A, ConstraintOnA, Boolean]
+  def <=(rhs: Generic[A, ConstraintOnA]): Boolean = macro internal.methodHomogeneous[A, ConstraintOnA, Boolean]
+  def <(rhs: Generic[A, ConstraintOnA]): Boolean = macro internal.methodHomogeneous[A, ConstraintOnA, Boolean]
+  def >=(rhs: Generic[A, ConstraintOnA]): Boolean = macro internal.methodHomogeneous[A, ConstraintOnA, Boolean]
+  def >(rhs: Generic[A, ConstraintOnA]): Boolean = macro internal.methodHomogeneous[A, ConstraintOnA, Boolean]
+  def abs: A = macro internal.method0[A, ConstraintOnA, A]
+  def signum: Int = macro internal.method0[A, ConstraintOnA, Int]
+  def toInt: Int = macro internal.method0[A, ConstraintOnA, Int]
+  def toLong: Long = macro internal.method0[A, ConstraintOnA, Long]
+  def toFloat: Float = macro internal.method0[A, ConstraintOnA, Float]
+  def toDouble: Double = macro internal.method0[A, ConstraintOnA, Double]
 
   override def equals(other: Any) = value.equals(other)
   override def hashCode() = value.hashCode()
@@ -91,23 +86,6 @@ class Generic[A, ConstraintOnA: TypeTag](val value: A, implicitConversions: Any*
 }
 
 object Generic {
-  import scala.reflect.macros.Context
-
-  type NumericTypes = Byte | Short | Int | Long | Float | Double
-
-  type Numeric[A] = Generic[A, NumericTypes]
-
-  object Numeric {
-    def apply[N: Numeric](value: N) = new Generic.Numeric(value)
-  }
-
-  implicit def apply[A](value: A, implicitConversions: Any*) = new Generic[A, Any](value, implicitConversions)
-  implicit def apply(value: Byte) = new Generic.Numeric(value)
-  implicit def apply(value: Short) = new Generic.Numeric(value)
-  implicit def apply(value: Int) = new Generic.Numeric(value)
-  implicit def apply(value: Long) = new Generic.Numeric(value)
-  implicit def apply(value: Float) = new Generic.Numeric(value)
-  implicit def apply(value: Double) = new Generic.Numeric(value)
 
   private def findDecl(g: Generic[_, _])(name: String) = {
     def sub(mirrors: List[InstanceMirror]): Option[(Symbol, InstanceMirror)] = mirrors match {

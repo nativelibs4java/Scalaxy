@@ -38,4 +38,27 @@ class ReifiedTest extends TestUtils {
     assertEquals(12, f(10))
   }
 
+  // case class Polynomial[A : Numeric : scala.reflect.runtime.TypeTag](coefficients: A*) {
+  //   lazy val function: ReifiedValue[A => A] = compute(coefficients.toList)
+  //   implicit val n = implicitly[Numeric[A]]
+  //   def compute(coefficients: List[A]): ReifiedValue[A => A] = coefficients match {
+  //     case Nil => reify((x: A) => n.zero)
+  //     case c :: others =>
+  //       val sub = compute(others)
+  //       import n._
+  //       reify((x: A) => c + x * sub(x))
+  //   }
+  // }
+
+  // @Test
+  // def testPoly {
+  //   val p = Polynomial[Double](1, 2, 3, 4)
+  //   val r = p.function
+  //   val f = r.value
+  //   val fc = r.compile()()
+  //   for (x <- 0 until 10) {
+  //     assertEquals(f(x), fc(x))
+  //   }
+  // }
+
 }
