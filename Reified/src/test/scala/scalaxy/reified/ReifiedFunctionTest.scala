@@ -14,7 +14,7 @@ class ReifiedFunctionTest extends TestUtils {
   def testDummyFunction {
     try {
       val r = reify((v: Int) => v * v)
-      assertEquals("((v: Int) => v.*(v))", r.expr().tree.toString)
+      assertEquals("((v: Int) => v.*(v))", r.expr()._1.tree.toString)
       assertSameEvals(r, 0, 1, 2)
     } catch {
       case th: Throwable =>

@@ -1,6 +1,8 @@
 package scalaxy.reified
 
 import scalaxy.reified.internal.Utils._
+import scalaxy.reified.internal.CommonExtractors._
+import scalaxy.generic._
 
 import scala.reflect.runtime.universe
 import scala.reflect.runtime.universe._
@@ -8,6 +10,7 @@ import scala.reflect.runtime.universe.definitions._
 import scala.reflect.runtime.currentMirror
 import scala.collection.immutable
 import scala.reflect.{ ClassTag, Manifest, ClassManifestFactory }
+import scala.tools.reflect.ToolBox
 
 class DefaultLifter extends Lifter {
 
@@ -20,6 +23,8 @@ class DefaultLifter extends Lifter {
     (moduleSym, methodSym)
   }
 
+  def reifyType[A: TypeTag]: Expr[TypeTag[A]] = reify(typeTag[A])
+
   /**
    * @return collection creation tree + list of element types (of size 1 for collections
    * bigger for tuples
@@ -30,7 +35,7 @@ class DefaultLifter extends Lifter {
     elements: List[_],
     tpe: Type,
     tpeArity: Int,
-    forceConversion: Boolean): Option[(Tree, List[Type])] = {
+    forceConversion: Boolean): Option[LiftResult] = { // Option[(Tree, List[Type])] = {
 
     def nTimes[V](n: Int)(v: V): List[V] = (0 until n).map(_ => v).toList
 
@@ -62,7 +67,8 @@ class DefaultLifter extends Lifter {
 
     val optValues = elements.zipWithIndex.map({
       case (value, i) =>
-        for (convertedValue <- lift(value, if (elementTypes.size == 1) elementTypes(0) else elementTypes(i), forceConversion)) yield {
+        val valueType = if (elementTypes.size == 1) elementTypes(0) else elementTypes(i)
+        for (LiftResult(convertedValue, inlinable) <- lift(value, valueType, forceConversion)) yield {
           if (castToAnyRef) {
             val convertedValueExpr = newExpr[Any](convertedValue)
             universe.reify(
@@ -86,21 +92,10 @@ class DefaultLifter extends Lifter {
       }
       //println(s"col = $col, builderTArgs = $builderTArgs, elementTypes = $elementTypes")
       //println(s"tree = $tree")
-      Some(tree, elementTypes)
+      // Some(tree, elementTypes)
+      Some(LiftResult(tree, false))
     } else {
       None
-    }
-  }
-
-  object ProductAndClassName {
-    val rx = """scala\.(Tuple(\d+))(?:\$.*)?""".r
-    def unapply(v: Any): Option[(AnyRef with Product, String, Int)] = v match {
-      case p: AnyRef with Product =>
-        Option(p.getClass.getName) collect {
-          case rx(name, arity) => (p, name, arity.toInt)
-        }
-      case _ =>
-        None
     }
   }
 
@@ -119,74 +114,98 @@ class DefaultLifter extends Lifter {
   private lazy val Some_syms = symsOf("Some", "scala")
   private lazy val None_sym = currentMirror.staticModule("scala.None")
 
-  override def lift(value: Any, tpe: Type, forceConversion: Boolean): Option[Tree] = {
+  override def lift(value: Any, tpe: Type, forceConversion: Boolean)(implicit tb: ToolBox[universe.type] = currentMirror.mkToolBox()): Option[LiftResult] = {
 
     // TODO: BitSet, TreeSet, SortedSet
     value match {
       // Convert constants.
       case (_: Number) | (_: java.lang.Boolean) | (_: java.lang.Character) =>
-        Some(Literal(Constant(value)))
+        Some(LiftResult(Literal(Constant(value)), true))
+
+      case col @ None =>
+        Some(LiftResult(getModulePath(universe)(None_sym), true))
+
+      case _: String =>
+        Some(LiftResult(Literal(Constant(value)), true))
+
+      case col: immutable.Range =>
+        val start = newExpr[Int](Literal(Constant(col.start)))
+        val end = newExpr[Int](Literal(Constant(col.end)))
+        val step = newExpr[Int](Literal(Constant(col.step)))
+        Some(
+          LiftResult(
+            if (col.isInclusive)
+              universe.reify(start.splice to end.splice by step.splice).tree
+            else
+              universe.reify(start.splice until end.splice by step.splice).tree,
+            true
+          )
+        )
 
       case _ =>
         if (forceConversion) {
           value match {
-            case _: String =>
-              Some(Literal(Constant(value)))
 
             // Convert arrays.
-            case array: Array[_] =>
-              for ((conv, List(elementType)) <- collectionApply(Array_syms, array: Traversable[_], array.toList, tpe, 1, forceConversion)) yield {
-                val classTagType = for (t <- typeOf[ClassTag[Int]]) yield {
-                  if (t == typeOf[Int]) elementType
-                  else t
-                }
-                Apply(
-                  conv,
-                  List(
-                    resolveModulePaths(universe)(optimisingToolbox.inferImplicitValue(classTagType))))
-              }
+            // case array: Array[_] =>
+            //   for ((conv, List(elementType)) <- collectionApply(Array_syms, array: Traversable[_], array.toList, tpe, 1, forceConversion)) yield {
+            //     val classTagType = for (t <- typeOf[ClassTag[Int]]) yield {
+            //       if (t == typeOf[Int]) elementType
+            //       else t
+            //     }
+            //     LiftResult(
+            //       Apply(
+            //         conv,
+            //         List(
+            //           resolveModulePaths(universe)(optimisingToolbox.inferImplicitValue(classTagType)))),
+            //       false)
+            //   }
 
             // Convert tuples.
             case ProductAndClassName(prod, className, arity) =>
               val syms = symsOf(className, "scala")
-              collectionApply(syms, prod, prod.productIterator.toList, tpe, arity, forceConversion).map(_._1)
+              collectionApply(syms, prod, prod.productIterator.toList, tpe, arity, forceConversion)
 
             // Convert immutable collections.
-            case col: immutable.Range =>
-              val start = newExpr[Int](Literal(Constant(col.start)))
-              val end = newExpr[Int](Literal(Constant(col.end)))
-              val step = newExpr[Int](Literal(Constant(col.step)))
-              Some(
-                if (col.isInclusive)
-                  universe.reify(start.splice to end.splice by step.splice).tree
-                else
-                  universe.reify(start.splice until end.splice by step.splice).tree
-              )
             case col: immutable.HashSet[_] =>
-              collectionApply(HashSet_syms, col, col.toList, tpe, 1, forceConversion).map(_._1)
+              collectionApply(HashSet_syms, col, col.toList, tpe, 1, forceConversion)
+
             case col: immutable.Set[_] =>
-              collectionApply(Set_syms, col, col.toList, tpe, 1, forceConversion).map(_._1)
+              collectionApply(Set_syms, col, col.toList, tpe, 1, forceConversion)
+
             case col: immutable.List[_] =>
-              collectionApply(List_syms, col, col.toList, tpe, 1, forceConversion).map(_._1)
+              collectionApply(List_syms, col, col.toList, tpe, 1, forceConversion)
+
             case col: immutable.Vector[_] =>
-              collectionApply(Vector_syms, col, col.toList, tpe, 1, forceConversion).map(_._1)
+              collectionApply(Vector_syms, col, col.toList, tpe, 1, forceConversion)
+
             case col: immutable.Stack[_] =>
-              collectionApply(Stack_syms, col, col.toList, tpe, 1, forceConversion).map(_._1)
+              collectionApply(Stack_syms, col, col.toList, tpe, 1, forceConversion)
+
             case col: immutable.Queue[_] =>
-              collectionApply(Queue_syms, col, col.toList, tpe, 1, forceConversion).map(_._1)
+              collectionApply(Queue_syms, col, col.toList, tpe, 1, forceConversion)
+
             case col: immutable.Seq[_] =>
-              collectionApply(Seq_syms, col, col.toList, tpe, 1, forceConversion).map(_._1)
+              collectionApply(Seq_syms, col, col.toList, tpe, 1, forceConversion)
+
             case col: immutable.Map[_, _] =>
-              collectionApply(Map_syms, col, col.toList, tpe, 2, forceConversion).map(_._1)
+              collectionApply(Map_syms, col, col.toList, tpe, 2, forceConversion)
             // TODO inject ordering and support TreeSet, SortedSet if tpe != AnyRef
 
             // Convert options.
             case col @ Some(v) =>
-              collectionApply(Some_syms, col, List(v), tpe, 1, forceConversion).map(_._1)
-            case col @ None =>
-              Some(getModulePath(universe)(None_sym))
+              collectionApply(Some_syms, col, List(v), tpe, 1, forceConversion)
+
+            // case g: Generic[Any] =>
+            //   implicit val ttag = reifyType[Any](g.typeTag)
+            //   Some(universe.reify(Generic.mkGeneric[Any](ttag.splice)).tree)
+
+            // case t: TypeTag[Any] =>
+            //   Some(reifyType[Any](t).tree)
+
             case _ =>
-              sys.error(s"This type of value is not supported: $value (static type: $tpe)")
+              None
+            //sys.error(s"This type of value is not supported: $value (static type: $tpe)")
           }
         } else {
           None

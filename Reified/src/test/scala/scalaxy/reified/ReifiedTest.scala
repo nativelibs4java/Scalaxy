@@ -5,6 +5,7 @@ import org.junit.Assert._
 
 import scala.reflect.runtime.universe
 import scala.reflect.runtime.currentMirror
+import scala.reflect.runtime.universe.TypeTag
 
 import scalaxy.reified._
 
@@ -38,27 +39,29 @@ class ReifiedTest extends TestUtils {
     assertEquals(12, f(10))
   }
 
-  // case class Polynomial[A : Numeric : scala.reflect.runtime.TypeTag](coefficients: A*) {
-  //   lazy val function: ReifiedValue[A => A] = compute(coefficients.toList)
-  //   implicit val n = implicitly[Numeric[A]]
-  //   def compute(coefficients: List[A]): ReifiedValue[A => A] = coefficients match {
-  //     case Nil => reify((x: A) => n.zero)
-  //     case c :: others =>
-  //       val sub = compute(others)
-  //       import n._
-  //       reify((x: A) => c + x * sub(x))
-  //   }
-  // }
+  import scalaxy.generic._
 
-  // @Test
-  // def testPoly {
-  //   val p = Polynomial[Double](1, 2, 3, 4)
-  //   val r = p.function
-  //   val f = r.value
-  //   val fc = r.compile()()
-  //   for (x <- 0 until 10) {
-  //     assertEquals(f(x), fc(x))
-  //   }
-  // }
+  def computePolynomial[A: Generic: TypeTag](coefficients: List[A]): ReifiedValue[A => A] = coefficients match {
+    case Nil =>
+      reify((x: A) => zero[A])
+    case c :: others =>
+      val sub = computePolynomial(others)
+      reify((x: A) => c + x * sub(x))
+  }
+  case class Polynomial[A: Generic: TypeTag](coefficients: A*) {
+    lazy val function: ReifiedValue[A => A] = computePolynomial(coefficients.toList)
+  }
+
+  @Ignore
+  @Test
+  def testPoly {
+    val p = Polynomial[Double](1, 2, 3, 4)
+    val r = p.function
+    val f = r.value
+    val fc = r.compile()()
+    for (x <- 0 until 10) {
+      assertEquals(f(x), fc(x))
+    }
+  }
 
 }

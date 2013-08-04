@@ -306,10 +306,12 @@ object Scalaxy extends Build {
     Project(id = "scalaxy-debug", base = file("Debug"), settings = reflectSettings)
 
   lazy val union =
-    Project(id = "scalaxy-union", base = file("Union"), settings = reflectSettings ++ scalariformSettings)
+    Project(id = "scalaxylaxy-union", base = file("Union"), settings = reflectSettings ++ scalariformSettings)
+    .dependsOn(debug)
 
   lazy val generic =
     Project(id = "scalaxy-generic", base = file("Generic"), settings = reflectSettings ++ scalariformSettings)
+    .dependsOn(debug)
 
   lazy val reifiedBase =
     Project(id = "scalaxy-reified-base", base = file("Reified/Base"), settings = reflectSettings ++ scalariformSettings)

@@ -5,9 +5,12 @@ import scala.reflect.runtime.universe._
 
 import scalaxy.reified.internal.CaptureTag
 import scalaxy.reified.internal.Optimizer
+import scalaxy.reified.internal.CommonExtractors._
 import scalaxy.reified.internal.Utils
 import scalaxy.reified.internal.Utils._
 import scala.tools.reflect.ToolBox
+
+import scalaxy.generic._
 
 /**
  * Reified value wrapper.
@@ -61,7 +64,22 @@ final case class ReifiedValue[A: TypeTag](
     toolbox: ToolBox[universe.type] = internal.Utils.optimisingToolbox,
     optimizeAST: Boolean = true): () => A = {
 
-    val ast = expr(lifter).tree
+    val (rawAst, topLevelCaptures) = expr(lifter)
+    val ast: Tree = {
+      if (topLevelCaptures.isEmpty)
+        rawAst.tree
+      else
+        Function(
+          for ((name, InjectedCapture(value, tpe)) <- topLevelCaptures.toList) yield {
+            ValDef(
+              Modifiers(Flag.LOCAL | Flag.PARAM | Flag.FINAL),
+              name,
+              TypeTree(if (tpe eq null) NoType else tpe),
+              EmptyTree)
+          },
+          rawAst.tree
+        )
+    }
     val finalAST = {
       if (optimizeAST) {
         Optimizer.optimize(ast, toolbox)
@@ -84,7 +102,30 @@ final case class ReifiedValue[A: TypeTag](
           }
       }
     }
-    () => result().asInstanceOf[A]
+
+    if (topLevelCaptures.isEmpty) {
+      // No values to inject.
+      () => result().asInstanceOf[A]
+    } else {
+      () =>
+        {
+          val instance = result()
+          if (instance == null)
+            null.asInstanceOf[A]
+          else {
+            val classLoader = Option(instance.getClass.getClassLoader)
+              .getOrElse(Thread.currentThread.getContextClassLoader)
+            val instanceMirror = runtimeMirror(classLoader).reflect(instance)
+            val instanceType = instanceMirror.symbol.asType.toType
+            val method = instanceType.member("apply": TermName)
+
+            val args = topLevelCaptures.map(_._2.value)
+            // println("METHOD: " + method + " (alternative: " + method.asTerm.alternatives.head)
+            // println("ARGS: " + args.mkString(", "))
+            instanceMirror.reflectMethod(method.asTerm.alternatives.head.asMethod)(args: _*).asInstanceOf[A]
+          }
+        }
+    }
   }
 
   /**
@@ -92,35 +133,48 @@ final case class ReifiedValue[A: TypeTag](
    * reified value which does not contain any captured reified value.
    * All the other captures are shifted / retagged appropriately.
    */
-  private def flattenCaptures(lifter: Lifter, offset: Int = 0): (Tree, Seq[(Tree, Type)]) = {
-    val capturedTrees = collection.mutable.ArrayBuffer[(Tree, Type)]()
+  private def flattenCaptures(lifter: Lifter, offset: Int = 0, forceConversion: Boolean = false): (Tree, Seq[Capture]) = {
+    val captures = collection.mutable.ArrayBuffer[Capture]()
     val captureMap = collection.mutable.HashMap[Int, Int]()
     capturedTerms.zipWithIndex.foreach {
       case ((value: HasReifiedValue[_], valueType), i) =>
         val (subTree, subCaptures) = value.reifiedValue.flattenCaptures(
           lifter,
-          offset + capturedTrees.size
+          offset + captures.size
         )
-        capturedTrees ++= subCaptures
-        captureMap(i) = offset + capturedTrees.size
-        capturedTrees += (subTree -> NoType) // valueType is ReifiedSomething...
+        captures ++= subCaptures
+        captureMap(i) = offset + captures.size
+        captures += LiftedCapture(subTree, NoType) // valueType is ReifiedSomething...
       case ((value, valueType), i) =>
-        captureMap(i) = offset + capturedTrees.size
-        try {
-          capturedTrees += (lifter.lift(value, valueType, true).get -> valueType)
-        } catch {
-          case ex: Throwable =>
-            throw new RuntimeException("Failed to lift capture: " + ex + "\n" + this, ex)
-        }
+        captureMap(i) = offset + captures.size
+        captures += (lifter.lift(value, valueType, forceConversion) match {
+          case Some(LiftResult(tree, inlinable)) =>
+            if (inlinable) {
+              InlinableLiftedCapture(tree, valueType)
+            } else {
+              LiftedCapture(tree, valueType)
+            }
+          case None =>
+            if (forceConversion) {
+              sys.error(s"Failed to lift this value: $value (static type: $valueType)")
+            }
+            InjectedCapture(value, valueType)
+        })
     }
-    (transformCaptureIndices(captureMap), capturedTrees.toList)
+    // println("TAGGED EXPR: " + taggedExpr)
+    // println("CAPTURES: " + captures)
+    // println("CAPTURE MAP: " + captureMap + " (offset = " + offset + ")")
+
+    (transformCaptureIndices(captureMap, captures.size), captures.toList)
   }
 
-  private[reified] def transformCaptureIndices(f: Int => Int): Tree = {
+  private[reified] def transformCaptureIndices(f: Int => Int, captureCount: Int): Tree = {
     (new Transformer {
       override def transform(tree: Tree): Tree = {
         tree match {
           case CaptureTag(tpe, ref, captureIndex) =>
+            // val newCaptureIndex = f(captureIndex)
+            // assert(newCaptureIndex < captureCount, s"Invalid capture index: before transform = $captureIndex, after = $newCaptureIndex, count = $captureCount")
             CaptureTag.construct(tpe, ref, f(captureIndex))
           case _ =>
             super.transform(tree)
@@ -129,40 +183,20 @@ final case class ReifiedValue[A: TypeTag](
     }).transform(taggedExpr.tree)
   }
 
-  private def isReifiedValue(tpe: Type) = {
-    tpe != null && tpe <:< typeOf[ReifiedValue[_]]
-  }
-
-  private def isHasReifiedValue(tpe: Type) = {
-    tpe != null && tpe <:< typeOf[HasReifiedValue[_]]
-  }
-
-  private object HasReifiedValueWrapperTree {
-    def unapply(tree: Tree): Option[(Name, Tree)] = {
-      val tpe = tree.tpe
-      if (isHasReifiedValue(tpe) && !isReifiedValue(tpe)) {
-        Option(tree) collect {
-          case Apply(Apply(TypeApply(builder, targs), List(value)), implicits) =>
-            builder.symbol.name -> value
-        }
-      } else {
-        None
-      }
-
-    }
-  }
-
   /**
    * Get the AST of this reified value, using the specified lifter for any
    * value that was captured by the expression.
    * @return a block which starts by declaring all the captured values, and ends with a value that
    * only contains references to these declarations.
    */
-  def expr(lifter: Lifter = Lifter.DEFAULT): Expr[A] = {
-    val capturedValueTrees = new collection.mutable.HashMap[Int, Tree]()
-    def capturedRefName(captureIndex: Int): TermName = internal.syntheticVariableNamePrefix + "capture$" + captureIndex
+  def expr(lifter: Lifter = Lifter.DEFAULT): (Expr[A], Seq[(String, InjectedCapture)]) = {
+    def capturedRefName(captureIndex: Int) = internal.syntheticVariableNamePrefix + "capture$" + captureIndex
 
-    val (flatTaggedExpr, flatCapturedTrees) = flattenCaptures(lifter)
+    val (flatTaggedExpr, captures) = flattenCaptures(lifter)
+
+    // println("TAGGED EXPR: " + taggedExpr)
+    // println("FLAT EXPR: " + flatTaggedExpr)
+    // println("CAPTURES:\n\t" + captures.mkString("\n\t"))
 
     val replacer = new Transformer {
       override def transform(tree: Tree): Tree = {
@@ -174,7 +208,7 @@ final case class ReifiedValue[A: TypeTag](
                 CaptureTag(_, _, captureIndex)),
               methodName),
             args) =>
-            Apply(Select(Ident(capturedRefName(captureIndex)), methodName), args)
+            Apply(Select(Ident(capturedRefName(captureIndex): TermName), methodName), args)
           case Apply(
             Select(
               wrapped @ Apply(
@@ -187,34 +221,48 @@ final case class ReifiedValue[A: TypeTag](
               methodName),
             args) if converterName.toString == "hasReifiedValueToValue" =>
             //println(s"tpt = $tpt, $tpe = $tpe, (tpt.tpe =:= tpe) = ${tpt.tpe =:= tpe}")
-            Apply(Select(Ident(capturedRefName(captureIndex)), methodName), args)
+            Apply(Select(Ident(capturedRefName(captureIndex): TermName), methodName), args)
           case CaptureTag(_, _, captureIndex) =>
-            Ident(capturedRefName(captureIndex))
+            captures(captureIndex) match {
+              case InlinableLiftedCapture(tree, tpe) =>
+                tree.duplicate
+              case _ =>
+                Ident(capturedRefName(captureIndex): TermName)
+            }
           case _ =>
             super.transform(tree)
         }
       }
     }
 
-    val function = replacer.transform(flatTaggedExpr)
-    newExpr[A](
-      if (flatCapturedTrees.isEmpty)
+    val function = replacer.transform(simplifyGenerics(flatTaggedExpr))
+    val topLevelCaptures = captures.zipWithIndex.collect({
+      case (capture @ InjectedCapture(_, _), captureIndex) =>
+        capturedRefName(captureIndex) -> capture
+    })
+    val expr = newExpr[A](
+      if (captures.isEmpty)
         function
       else
         Block(
-          (
-            for (((capturedTree, tpe), captureIndex) <- flatCapturedTrees.zipWithIndex) yield {
+          captures.zipWithIndex.collect({
+            case (LiftedCapture(capturedTree, tpe), captureIndex) =>
               val transformedCapture = replacer.transform(capturedTree)
               ValDef(
                 Modifiers(Flag.LOCAL | Flag.FINAL | Flag.PRIVATE),
                 capturedRefName(captureIndex),
                 TypeTree(if (tpe eq null) NoType else tpe),
                 transformedCapture)
-            }
-          ).toList,
+          }).toList,
           function
         )
     )
+    (expr, topLevelCaptures)
   }
 }
+
+sealed trait Capture
+case class LiftedCapture(tree: Tree, tpe: Type) extends Capture
+case class InlinableLiftedCapture(tree: Tree, tpe: Type) extends Capture
+case class InjectedCapture(value: Any, tpe: Type) extends Capture
 

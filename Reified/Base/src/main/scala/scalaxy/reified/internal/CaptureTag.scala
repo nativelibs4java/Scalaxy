@@ -29,15 +29,6 @@ object CaptureTag {
   def construct(tpe: Type, reference: Tree, captureIndex: Int): Tree = {
     Apply(
       Select(getModulePath(universe)(captureTagModule), "apply": TermName),
-      //TypeApply(Ident(captureTagApplyMethod), List(TypeTree(tpe))),
-      /*TypeApply(
-        Select(
-          Ident(captureTagModule), //getModulePath(universe)(captureTagModule),
-          "apply"),
-        //Ident(captureSymbol), 
-        List(TypeTree(tpe))), //tpe))),
-      //List(EmptyTree)),
-      */
       List(
         reference,
         Literal(

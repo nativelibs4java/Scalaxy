@@ -7,10 +7,12 @@ import scala.reflect.runtime.universe._
 import scala.reflect.runtime.universe.definitions._
 import scala.reflect.runtime.currentMirror
 import scala.collection.immutable
-import scala.reflect.{ ClassTag, Manifest, ClassManifestFactory }
+import scala.tools.reflect.ToolBox
+
+case class LiftResult(tree: Tree, inlinable: Boolean)
 
 trait Lifter {
-  def lift(value: Any, valueType: Type, force: Boolean): Option[Tree]
+  def lift(value: Any, valueType: Type, force: Boolean)(implicit tb: ToolBox[universe.type] = currentMirror.mkToolBox()): Option[LiftResult]
 }
 
 object Lifter {

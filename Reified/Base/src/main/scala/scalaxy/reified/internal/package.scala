@@ -7,6 +7,7 @@ import scala.reflect.macros.Context
 import scala.reflect.runtime.universe
 
 import scalaxy.reified.internal.Utils._
+import scalaxy.generic.Generic
 
 package object internal {
 
@@ -33,14 +34,18 @@ package object internal {
 
     import c.universe._
 
+    // println("REIFYING: " + v)
+
     val (expr, capturesExpr) = transformReifiedRefs(c)(v)
-    reify({
+    val res = reify({
       implicit val valueTag = tt.splice
       new ReifiedValue[A](
         v.splice,
         Utils.typeCheck(expr.splice, valueTag.tpe),
         capturesExpr.splice)
     })
+    // println("RESULT: " + res)
+    res
   }
 
   def reifyWithDifferentRuntimeValueImpl[A: c.WeakTypeTag](c: Context)(v: c.Expr[A], runtimeValue: c.Expr[A])(tt: c.Expr[universe.TypeTag[A]]): c.Expr[ReifiedValue[A]] = {
@@ -92,6 +97,9 @@ package object internal {
       override def transform(t: Tree): Tree = {
         // TODO check which types can be captured
         val sym = t.symbol
+        // if (t.toString == "c") {
+        //   println(s"FOUND c: localDefSyms = $localDefSyms")
+        // }
         if (sym != null && !isDefLike(t) && sym.isTerm && !localDefSyms.contains(sym)) {
           val tsym = sym.asTerm
           if (tsym.isVar) {
@@ -103,33 +111,39 @@ package object internal {
           } else if (tsym.isMethod || tsym.isModule && tsym.isStable) {
             super.transform(t)
           } else if (tsym.isVal || tsym.isAccessor) {
-            val captureIndexExpr = c.literal(
-              capturedSymbols.get(tsym) match {
-                case Some(i) =>
-                  i
-                case None =>
-                  c.info(t.pos, "Reified value will capture " + tsym, false)
+            val tpe = t.tpe.normalize.widen // if (tpe <:< typeOf[Generic[_]]) {
 
-                  lastCaptureIndex += 1
-                  capturedSymbols += tsym -> lastCaptureIndex
-                  capturedTerms += Ident(tsym) -> t.tpe
+            //   Literal(Constant(null))
+            // } else 
+            {
+              val captureIndexExpr = c.literal(
+                capturedSymbols.get(tsym) match {
+                  case Some(i) =>
+                    // println("FOUND SYMBOL ALREADY CAPTURED: " + tsym + ", tree = " + t)
+                    i
+                  case None =>
+                    c.info(t.pos, "Reified value will capture " + tsym + " (type: " + tpe + ")", false)
 
-                  lastCaptureIndex
+                    lastCaptureIndex += 1
+                    capturedSymbols += tsym -> lastCaptureIndex
+                    capturedTerms += Ident(tsym) -> t.tpe
+
+                    lastCaptureIndex
+                }
+              )
+
+              // Abuse reify to get correct reference to `capture`.
+              val Apply(TypeApply(f, List(_)), _) = {
+                reify(scalaxy.reified.internal.CaptureTag[Int](10, 1)).tree
               }
-            )
-
-            val tpe = t.tpe.normalize.widen
-            // Abuse reify to get correct reference to `capture`.
-            val Apply(TypeApply(f, List(_)), _) = {
-              reify(scalaxy.reified.internal.CaptureTag[Int](10, 1)).tree
+              c.typeCheck(
+                Apply(
+                  TypeApply(
+                    f,
+                    List(TypeTree(tpe))),
+                  List(t, captureIndexExpr.tree)),
+                tpe)
             }
-            c.typeCheck(
-              Apply(
-                TypeApply(
-                  f,
-                  List(TypeTree(tpe))),
-                List(t, captureIndexExpr.tree)),
-              tpe)
           } else {
             c.error(t.pos, s"Cannot capture this type of expression (symbol = $tsym): " + tsym)
             t

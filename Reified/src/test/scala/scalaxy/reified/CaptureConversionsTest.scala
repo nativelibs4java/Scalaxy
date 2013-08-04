@@ -10,7 +10,7 @@ import scalaxy.reified.reify
 
 class CaptureConversionsTest extends TestUtils {
 
-  def testValue(v: Any, str: String = null, predicate: Any => Boolean = null) = {
+  def testValue(v: Object, str: String = null, predicate: Any => Boolean = null) = {
     val r = reify(if (true) v else 0)
     assertEquals(Seq(v), r.capturedValues)
     try {
@@ -37,15 +37,15 @@ class CaptureConversionsTest extends TestUtils {
 
   @Test
   def testConstants {
-    testValue(true)
-    testValue(false)
-    testValue(10: Byte)
-    testValue(10: Short)
-    testValue('1', "'1'")
-    testValue(10)
-    testValue(10L, "10L")
-    testValue(10f)
-    testValue(10.0)
+    testValue(java.lang.Boolean.FALSE)
+    testValue(java.lang.Boolean.TRUE)
+    testValue(10: java.lang.Integer)
+    testValue(10L: java.lang.Long, "10L")
+    testValue('1': java.lang.Character, "'1'")
+    testValue((10: Byte): java.lang.Byte)
+    testValue((10: Short): java.lang.Short)
+    testValue(10f: java.lang.Float)
+    testValue(10.0: java.lang.Double)
     testValue("10", "\"10\"")
   }
 

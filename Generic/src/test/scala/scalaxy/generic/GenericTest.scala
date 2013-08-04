@@ -4,7 +4,7 @@ import org.junit._
 import org.junit.Assert._
 
 // import scala.reflect.runtime.universe
-// import scala.reflect.runtime.universe.TypeTag
+import scala.reflect.runtime.universe.TypeTag
 // import scala.reflect.runtime.currentMirror
 
 import scalaxy.generic._
@@ -47,6 +47,8 @@ class GenericTest {
     assertEquals(10.0, a.toDouble, 0)
   }
 
+  def generic[A: Generic](value: A) = new GenericOps[A](value)
+
   @Test
   def testAlternatives {
     def test[N: TypeTag: Generic](a: N) {
@@ -77,5 +79,33 @@ class GenericTest {
     assertEquals(3, genericLimit[Int](10, _ * 2))
     assertEquals(2, genericLimit[Int](10, _ * 3))
     assertEquals(2, genericLimit[Double](10.0, _ * 3.0))
+  }
+
+  @Test
+  def testTreeRewrite {
+    import scala.reflect.runtime.universe._
+    import scala.reflect.runtime.currentMirror
+    import scala.tools.reflect.ToolBox
+
+    val tb = currentMirror.mkToolBox()
+
+    def genericOpTree[A: Generic: TypeTag]: Tree = {
+      reify({
+        var a = one[A]
+        a = a + number[A](10)
+        a = a * number[A](2)
+        a = a / number[A](3)
+        a.toDouble
+      }).tree
+    }
+    val genericDoubleTree = genericOpTree[Double]
+    val doubleTree = reify({
+      var a = 1.0
+      a = (a + 10.0).asInstanceOf[Double]
+      a = (a * 2.0).asInstanceOf[Double]
+      a = (a / 3.0).asInstanceOf[Double]
+      a.toDouble.asInstanceOf[Double]
+    }).tree
+    assertEquals(tb.typeCheck(doubleTree).toString, simplifyGenerics(tb.typeCheck(genericDoubleTree)).toString)
   }
 }
