@@ -29,4 +29,5 @@ package object internal {
     // val res = applyDynamicImpl(c)(c.prefix.asInstanceOf[c.Expr[GenericOps[A]]], c.literal(name.toString))
     // c.universe.reify(res.splice.asInstanceOf[B])
   }
+
 }

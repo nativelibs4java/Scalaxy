@@ -10,7 +10,7 @@ import scalaxy.reified.internal.Utils
 import scalaxy.reified.internal.Utils._
 import scala.tools.reflect.ToolBox
 
-import scalaxy.generic._
+import scalaxy.generic.trees._
 
 /**
  * Reified value wrapper.
@@ -175,6 +175,7 @@ final case class ReifiedValue[A: TypeTag](
           case CaptureTag(tpe, ref, captureIndex) =>
             // val newCaptureIndex = f(captureIndex)
             // assert(newCaptureIndex < captureCount, s"Invalid capture index: before transform = $captureIndex, after = $newCaptureIndex, count = $captureCount")
+            // println("REPLACING CAPTURE TAG: " + tree)
             CaptureTag.construct(tpe, ref, f(captureIndex))
           case _ =>
             super.transform(tree)
@@ -192,9 +193,10 @@ final case class ReifiedValue[A: TypeTag](
   def expr(lifter: Lifter = Lifter.DEFAULT): (Expr[A], Seq[(String, InjectedCapture)]) = {
     def capturedRefName(captureIndex: Int) = internal.syntheticVariableNamePrefix + "capture$" + captureIndex
 
+    // println("TAGGED EXPR: " + taggedExpr)
+
     val (flatTaggedExpr, captures) = flattenCaptures(lifter)
 
-    // println("TAGGED EXPR: " + taggedExpr)
     // println("FLAT EXPR: " + flatTaggedExpr)
     // println("CAPTURES:\n\t" + captures.mkString("\n\t"))
 
@@ -224,8 +226,8 @@ final case class ReifiedValue[A: TypeTag](
             Apply(Select(Ident(capturedRefName(captureIndex): TermName), methodName), args)
           case CaptureTag(_, _, captureIndex) =>
             captures(captureIndex) match {
-              case InlinableLiftedCapture(tree, tpe) =>
-                tree.duplicate
+              case InlinableLiftedCapture(tree2, tpe) =>
+                tree2.duplicate
               case _ =>
                 Ident(capturedRefName(captureIndex): TermName)
             }
@@ -235,7 +237,7 @@ final case class ReifiedValue[A: TypeTag](
       }
     }
 
-    val function = replacer.transform(simplifyGenerics(flatTaggedExpr))
+    val function = replacer.transform(simplifyGenericTree(flatTaggedExpr))
     val topLevelCaptures = captures.zipWithIndex.collect({
       case (capture @ InjectedCapture(_, _), captureIndex) =>
         capturedRefName(captureIndex) -> capture

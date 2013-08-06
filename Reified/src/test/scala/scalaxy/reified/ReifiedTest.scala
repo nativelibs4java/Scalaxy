@@ -39,28 +39,52 @@ class ReifiedTest extends TestUtils {
     assertEquals(12, f(10))
   }
 
-  import scalaxy.generic._
+  import scalaxy.generic.Generic
 
-  def computePolynomial[A: Generic: TypeTag](coefficients: List[A]): ReifiedValue[A => A] = coefficients match {
+  // case class GenericPolynomial[A: Generic: TypeTag](coefficients: A*) {
+  //   import scalaxy.generic._
+  //   def computeGenericPolynomial(coefficients: List[A]): ReifiedValue[A => A] = coefficients match {
+  //     case Nil =>
+  //       reify((x: A) => zero[A])
+  //     case c :: others =>
+  //       val sub = computeGenericPolynomial(others)
+  //       reify((x: A) => c + x * sub(x))
+  //   }
+  //   lazy val function: ReifiedValue[A => A] = computeGenericPolynomial(coefficients.toList)
+  // }
+
+  def computeNumericPolynomial[A: Numeric: TypeTag](coefficients: List[A]): ReifiedValue[A => A] = coefficients match {
     case Nil =>
-      reify((x: A) => zero[A])
+      reify((x: A) => implicitly[Numeric[A]].zero)
     case c :: others =>
-      val sub = computePolynomial(others)
+      import Numeric.Implicits._
+      val sub = computeNumericPolynomial(others)
       reify((x: A) => c + x * sub(x))
   }
-  case class Polynomial[A: Generic: TypeTag](coefficients: A*) {
-    lazy val function: ReifiedValue[A => A] = computePolynomial(coefficients.toList)
+  case class NumericPolynomial[A: Numeric: TypeTag](coefficients: A*) {
+    lazy val function: ReifiedValue[A => A] = computeNumericPolynomial(coefficients.toList)
   }
 
-  @Ignore
+  // @Ignore
+  // @Test
+  // def testGenericPolynomial {
+  //   val p = GenericPolynomial[Double](1, 2, 3, 4)
+  //   val r = p.function
+  //   val f = r.value
+  //   val fc = r.compile()()
+  //   for (x <- 0 until 10) {
+  //     assertEquals(f(x), fc(x))
+  //   }
+  // }
+
   @Test
-  def testPoly {
-    val p = Polynomial[Double](1, 2, 3, 4)
+  def testNumericPolynomial {
+    val p = NumericPolynomial[Double](1, 2, 3, 4)
     val r = p.function
     val f = r.value
     val fc = r.compile()()
     for (x <- 0 until 10) {
-      assertEquals(f(x), fc(x))
+      assertEquals(f(x), fc(x), 0)
     }
   }
 

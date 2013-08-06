@@ -18,6 +18,15 @@ package object internal {
   private[reified] val syntheticVariableNamePrefix = "scalaxy$reified$"
 
   private def runtimeExpr[A](c: Context)(tree: c.universe.Tree): c.Expr[universe.Expr[A]] = {
+    import c.universe._
+    // (new Traverser {
+    //   override def traverse(tree: Tree) {
+    //     println("TREE: " + tree)
+    //     println("\tsymbol: " + tree.symbol + ", tpe = " + tree.tpe)
+    //     super.traverse(tree)
+    //   }
+    // }).traverse(tree)
+
     c.Expr[universe.Expr[A]](
       c.reifyTree(
         c.universe.treeBuild.mkRuntimeUniverseRef,
@@ -31,10 +40,7 @@ package object internal {
   private[reified] def reifyWithDifferentRuntimeValue[A: universe.TypeTag](v: A, runtimeValue: A): ReifiedValue[A] = macro reifyWithDifferentRuntimeValueImpl[A]
 
   def reifyImpl[A: c.WeakTypeTag](c: Context)(v: c.Expr[A])(tt: c.Expr[universe.TypeTag[A]]): c.Expr[ReifiedValue[A]] = {
-
     import c.universe._
-
-    // println("REIFYING: " + v)
 
     val (expr, capturesExpr) = transformReifiedRefs(c)(v)
     val res = reify({
@@ -44,7 +50,6 @@ package object internal {
         Utils.typeCheck(expr.splice, valueTag.tpe),
         capturesExpr.splice)
     })
-    // println("RESULT: " + res)
     res
   }
 
@@ -93,9 +98,12 @@ package object internal {
     val capturedSymbols = collection.mutable.HashMap[TermSymbol, Int]()
     val capturedTypeTags = collection.mutable.Set[String]()
 
+    val captureTagModule = rootMirror.staticModule("scalaxy.reified.internal.CaptureTag")
+
     val transformer = new Transformer {
       override def transform(t: Tree): Tree = {
         // TODO check which types can be captured
+        // println(s"Visiting '$t'")
         val sym = t.symbol
         // if (t.toString == "c") {
         //   println(s"FOUND c: localDefSyms = $localDefSyms")
@@ -116,32 +124,43 @@ package object internal {
             //   Literal(Constant(null))
             // } else 
             {
-              val captureIndexExpr = c.literal(
-                capturedSymbols.get(tsym) match {
-                  case Some(i) =>
-                    // println("FOUND SYMBOL ALREADY CAPTURED: " + tsym + ", tree = " + t)
-                    i
-                  case None =>
-                    c.info(t.pos, "Reified value will capture " + tsym + " (type: " + tpe + ")", false)
+              val captureIndexExpr = c.literal({
+                // val captureIndexExpr = c.literal(
+                //   capturedSymbols.get(tsym) match {
+                //     case Some(i) =>
+                //       // println("FOUND SYMBOL ALREADY CAPTURED: " + tsym + ", tree = " + t)
+                //       i
+                //     case None =>
+                c.info(t.pos, "Reified value will capture " + tsym + " (type: " + tpe + ")", false)
 
-                    lastCaptureIndex += 1
-                    capturedSymbols += tsym -> lastCaptureIndex
-                    capturedTerms += Ident(tsym) -> t.tpe
+                lastCaptureIndex += 1
+                capturedSymbols += tsym -> lastCaptureIndex
+                capturedTerms += Ident(tsym) -> t.tpe
 
-                    lastCaptureIndex
-                }
+                lastCaptureIndex
+              }
               )
 
               // Abuse reify to get correct reference to `capture`.
-              val Apply(TypeApply(f, List(_)), _) = {
-                reify(scalaxy.reified.internal.CaptureTag[Int](10, 1)).tree
-              }
+              // val Apply(TypeApply(f, List(_)), _) = {
+              //   reify(scalaxy.reified.internal.CaptureTag[Int](10, 1)).tree
+              // }
+              // println("CAP: " + cap)
+              // val x = c.Expr[Any](cap)
+              // println("\tREIFIED CAP: " + reify(x.splice))
+
               c.typeCheck(
+                // c.resetAllAttrs(
                 Apply(
                   TypeApply(
-                    f,
+                    Select(
+                      getModulePath(c.universe)(captureTagModule),
+                      "apply": TermName),
                     List(TypeTree(tpe))),
-                  List(t, captureIndexExpr.tree)),
+                  List(
+                    t,
+                    captureIndexExpr.tree)),
+                // ),
                 tpe)
             }
           } else {
@@ -163,7 +182,7 @@ package object internal {
       c.Expr[Seq[(AnyRef, universe.Type)]](
         c.typeCheck(
           Apply(
-            seqConstructor,
+            resolveModulePaths(c.universe)(seqConstructor),
             capturedTerms.map({
               case (term, tpe) =>
                 val termExpr = c.Expr[Any](term)
