@@ -16,7 +16,13 @@ class UnionTest {
 
   lazy val tb = currentMirror.mkToolBox()
 
-  def compile(code: String, expectSuccess: Boolean = true, prefix: String = "import scalaxy.union._\n"): () => Any = {
+  def compile(
+    code: String,
+    expectSuccess: Boolean = true,
+    prefix: String = """
+        import scalaxy.union._
+        import scalaxy.union.test.UnionTest._
+      """): () => Any = {
     val fullCode = prefix + code
     try {
       val res = tb.compile(tb.parse(fullCode))
@@ -73,30 +79,48 @@ class UnionTest {
     type TC[T] = T <|< (Int | Float)
     implicitly[TC[Int]]
 
-    val d = "import scalaxy.union.test.UnionTest._\n"
-    compile(d + """serialize("blah")""")
-    compile(d + """serialize(10.0)""")
-    compile(d + """serialize(10)""", false)
-    compile(d + """serialize(Map("a" -> 10.0))""")
-    compile(d + """serialize(Map(10.0 -> "a"))""", false)
-    compile(d + """serialize(Array("a", 10.0))""")
-    compile(d + """serialize(Array('a', 10.0))""", false)
-    compile(d + """serialize(Array(10))""", false)
-    compile(d + """serialize(Array())""")
+    compile("""serialize("blah")""")
+    compile("""serialize(10.0)""")
+    compile("""serialize(10)""", false)
+    compile("""serialize(Map[String, JSONValue]("a" -> 10.0.as[JSONValue]))""")
+    compile("""serialize(Map[Double, JSONValue](10.0 -> "a".as[JSONValue]))""", false)
+    // compile("""serialize(Array("a", 10.0))""")
+    // compile("""serialize(Array('a', 10.0))""", false)
+    compile("""serialize(Array[JSONValue]())""")
+    compile("""serialize(Array[JSONValue](10))""", false)
+  }
+
+  import UnionTest._
+
+  @Test
+  def testCast {
+    assertEquals(10.0, 10.0.as[JSONValue].value)
+    assertEquals("1", "1".as[JSONValue].value)
+
+    compile("""'1'.as[JSONValue]""", false)
+    compile("""10.as[JSONValue]""", false)
+    compile("""Map("a" -> 10.0).as[JSONValue]""")
+    compile("""Map("a" -> 10).as[JSONValue]""", false)
   }
 }
 
 object UnionTest {
-  //   import scala.language.experimental.macros
-  //   @scala.annotation.implicitNotFound(msg = "${T} is not a valid JSON type.")
-  //   sealed trait JSONType[T] extends (T <|< (String | Double | Array[JSONType[_]] | Map[String, JSONType[_]]))
+  import scala.language.experimental.macros
+  import scala.language.implicitConversions
+
+  // @scala.annotation.implicitNotFound(msg = "${T} is not a valid JSON type.") //   sealed trait JSONType[T] extends (T <|< (String | Double | Array[JSONType[_]] | Map[String, JSONType[_]]))
   //   object JSONType {
   //     implicit def apply[T]: JSONType[T] = macro prove[T, JSONType[T]]
   //   }
   //   def serialize[T: JSONType](value: T): String = ""
   // import scala.language.experimental.macros
-  trait JSONType extends (String | Double | Array[JSONType] | Map[String, JSONType])
+  abstract class JSONValue extends (String | Double | Array[JSONValue] | Map[String, JSONValue])
+  object JSONValue {
+    implicit def apply[A](value: A): JSONValue = macro wrap[A, JSONValue]
+  }
 
-  def serialize[T: JSONType#Union](value: T): String = "..."
+  trait JSONScalar extends (String | Double)
+
+  def serialize[T: JSONValue#Union](value: T): String = "..."
 
 }
