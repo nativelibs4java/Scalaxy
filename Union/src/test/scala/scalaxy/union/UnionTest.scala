@@ -7,7 +7,7 @@ import scala.reflect.runtime.universe
 import scala.reflect.runtime.currentMirror
 import scala.tools.reflect.ToolBox
 
-import scala.reflect.runtime.currentMirror
+import scala.annotation.implicitNotFound
 
 import scalaxy.union._
 
@@ -39,16 +39,18 @@ class UnionTest {
     }
   }
 
+  import UnionTest._
+
   @Test
   def testUnionTypeClasses {
     type TC[T] = T <|< (Int | Float)
     implicitly[TC[Int]]
 
-    implicitly[Number[Int]]
-    compile("implicitly[Number[Int]]")
-    compile("implicitly[Number[Char]]", false)
+    implicitly[IsNumber[Int]]
+    compile("implicitly[IsNumber[Int]]")
+    compile("implicitly[IsNumber[Char]]", false)
 
-    val f = "def f[N: Number](n: N) = n \n"
+    val f = "def f[N: IsNumber](n: N) = n \n"
     compile(f + "f(10)")
     compile(f + "f('10')", false)
   }
@@ -90,10 +92,10 @@ class UnionTest {
     compile("""serialize(Array[JSONValue](10))""", false)
   }
 
-  import UnionTest._
-
   @Test
   def testCast {
+    assertEquals(10, 10.as[Int | Double].value)
+
     assertEquals(10.0, 10.0.as[JSONValue].value)
     assertEquals("1", "1".as[JSONValue].value)
 
@@ -107,6 +109,12 @@ class UnionTest {
 object UnionTest {
   import scala.language.experimental.macros
   import scala.language.implicitConversions
+
+  /**
+   * Type-class alias to prove that `A` is a number.
+   */
+  @implicitNotFound(msg = "Cannot prove that ${A} is a number.")
+  type IsNumber[A] = A =|= (Byte | Short | Int | Long | Float | Double)
 
   // @scala.annotation.implicitNotFound(msg = "${T} is not a valid JSON type.") //   sealed trait JSONType[T] extends (T <|< (String | Double | Array[JSONType[_]] | Map[String, JSONType[_]]))
   //   object JSONType {
