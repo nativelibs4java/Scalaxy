@@ -25,7 +25,7 @@ object Optimizer {
     typeCheckTree(toolbox.resetAllAttrs(resolveModulePaths(universe)(tree)))
   }
 
-  def optimize(rawTree: Tree, toolbox: ToolBox[universe.type]): Tree = {
+  def optimize(rawTree: Tree, toolbox: ToolBox[universe.type] = Utils.optimisingToolbox): Tree = {
     val result = optimizeLoops(optimizeFunctionVals(rawTree, toolbox), toolbox)
     //val result = optimizeFunctionVals(rawTree, toolbox)
     //val result = reset(rawTree, toolbox)

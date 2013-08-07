@@ -306,7 +306,7 @@ object Scalaxy extends Build {
     Project(id = "scalaxy-debug", base = file("Debug"), settings = reflectSettings)
 
   lazy val union =
-    Project(id = "scalaxylaxy-union", base = file("Union"), settings = reflectSettings ++ scalariformSettings)
+    Project(id = "scalaxy-union", base = file("Union"), settings = reflectSettings ++ scalariformSettings)
     .dependsOn(debug)
 
   lazy val generic =

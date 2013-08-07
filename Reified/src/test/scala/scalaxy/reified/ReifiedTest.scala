@@ -8,6 +8,7 @@ import scala.reflect.runtime.currentMirror
 import scala.reflect.runtime.universe.TypeTag
 
 import scalaxy.reified._
+import scalaxy.reified.internal.Optimizer
 
 class ReifiedTest extends TestUtils {
 
@@ -82,6 +83,7 @@ class ReifiedTest extends TestUtils {
     val p = NumericPolynomial[Double](1, 2, 3, 4)
     val r = p.function
     val f = r.value
+    println("testNumericPolynomial: " + Optimizer.optimize(r.expr()._1.tree))
     val fc = r.compile()()
     for (x <- 0 until 10) {
       assertEquals(f(x), fc(x), 0)
