@@ -1,13 +1,10 @@
 package scalaxy.union
 
 import scala.language.experimental.macros
-import scala.language.implicitConversions
 import scala.language.dynamics
 
 import scala.reflect._
 import scala.reflect.macros.Context
-
-import scala.annotation.implicitNotFound
 
 /**
  * Union type.
@@ -25,9 +22,6 @@ abstract class |[+A, +B] extends Dynamic {
 
 object | {
 
-  //implicit def wrap[T <: (_ | _): runtime.universe.TypeTag](value: Any): T = macro wrap[T]
-  // implicit def |[A, B, C <: A | B](value: Any): C = macro internal.wrap3[A, B, C]
-
   def doApplyDynamic(target: Any, name: String, args: Any*): Any = {
     // TODO: implement Generic-style dynamic methods and check with macro they belong to one of the types.
     ???
@@ -42,16 +36,11 @@ object | {
       case tree =>
         Select(tree, "value": TermName)
     }
-    //val prefix = c.prefix.asInstanceOf[c.Expr[_ <: (_ | _)]]
-    // val value = 
-    val unionModule = rootMirror.staticModule("scalaxy.union.|")
-
     c.Expr[Any](
       Apply(
-        Ident(unionModule), //reify(|).tree,
+        reify(|).tree,
         target :: name.tree :: args.map(_.tree).toList
       )
     )
-    // reify(doApplyDynamic(prefix.splice)(name.splice)(args))
   }
 }
