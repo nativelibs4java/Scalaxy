@@ -23,7 +23,7 @@ class DefaultLifter extends Lifter {
     (moduleSym, methodSym)
   }
 
-  def reifyType[A: TypeTag]: Expr[TypeTag[A]] = reify(typeTag[A])
+  // def reifyType[A: TypeTag]: Expr[TypeTag[A]] = reify(typeTag[A])
 
   /**
    * @return collection creation tree + list of element types (of size 1 for collections
