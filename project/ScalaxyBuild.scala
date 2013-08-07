@@ -110,9 +110,9 @@ object Scalaxy extends Build {
     Seq(
       //scalacOptions ++= Seq("-language:experimental.macros"),
       libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-compiler" % _),
-      //libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-reflect" % _)
+      libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-reflect" % _)
       //libraryDependencies <+= scalaVersion("org.scala-lang.macro-paradise" % "scala-reflect" % _)
-      libraryDependencies += "org.scala-lang.macro-paradise" % "scala-reflect" % "2.10.3-SNAPSHOT"
+      // libraryDependencies += "org.scala-lang.macro-paradise" % "scala-reflect" % "2.10.3-SNAPSHOT"
     )
 
   lazy val sonatypeSettings = Seq(

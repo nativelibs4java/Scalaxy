@@ -6,7 +6,7 @@ import scala.language.postfixOps
 import scala.reflect.api.Universe
 import scala.reflect.NameTransformer
 
-private[internal] trait CommonScalaNames {
+private[components] trait CommonScalaNames {
   val global: Universe
   import global._
   import definitions._
