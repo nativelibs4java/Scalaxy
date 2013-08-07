@@ -1,12 +1,11 @@
-Scalaxy/Union provides a typeclass which implicit instances prove that a type belongs to an union.
+Scalaxy/Union provides a type-class-based type union mechanism.
 ```scala
 trait JSONType extends (String | Double | Array[JSONType] | Map[String, JSONType])
 
 def serialize[T: JSONType#union](value: T) = "..."
 ```
 
-
-# Whazza mean?
+# Whazzat mean?
 
 Scalaxy/Union lets you define and type-check type unions.
 
@@ -39,7 +38,7 @@ import scalaxy.union._
 
 trait JSONType extends (String | Double | Array[JSONType] | Map[String, JSONType])
 
-def serialize[T: JSONType#union](value: T) = "..."
+def serialize[T: JSONType#Union](value: T) = "..."
 
 serialize("blah") // OK
 serialize(10.0) // OK
@@ -48,7 +47,7 @@ serialize('a') // FAILS
 serialize(Array(Map("a" -> 10.0), "foo")) // OK
 serialize(Array("a", 10)) // FAILS (10 is an Int) 
 ```
-In this previous example, you might have noticed the `JSONType#union` thingie. It's a dependent type defined on trait `|[A, B]` that makes that `serialize` declaration above equivalent to the following:
+In this previous example, you might have noticed the `JSONType#Union` thingie. It's a dependent type defined on trait `|[A, B]` that makes this `serialize` declaration above equivalent to the following:
 ```scala
 def serialize[T](value: T)
                 (implicit ev: T =|= (String | Double | Array[JSONType] | Map[String, JSONType])) = "..."
