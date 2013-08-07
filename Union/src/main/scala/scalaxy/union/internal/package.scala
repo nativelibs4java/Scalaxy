@@ -113,13 +113,7 @@ package object internal {
       if (tpe <:< typeOf[_ | _]) {
         val TypeRef(_, _, List(a, b)) = ntpe.baseType(typeOf[|[_, _]].typeSymbol)
         sub(a) ++ sub(b)
-      } /* else if (tpe <:< typeOf[_ <|< _]) {
-        val TypeRef(_, _, List(a, b)) = ntpe.baseType(typeOf[<|<[_, _]].typeSymbol)
-        sub(b)
-      } else if (tpe <:< typeOf[_ =|= _]) {
-        val TypeRef(_, _, List(a, b)) = ntpe.baseType(typeOf[=|=[_, _]].typeSymbol)
-        sub(b)
-      }*/ else {
+      } else {
         List(tpe)
       }
     }
