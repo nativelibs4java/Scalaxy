@@ -24,11 +24,34 @@ package object union {
         val value: Any = valueExpr.splice
       }
     }
-    c.Expr[B](
-      expr.tree.substituteSymbols(
-        List(typeOf[Trait].typeSymbol),
-        List(weakTypeTag[B].tpe.typeSymbol)
-      )
+
+    val t = typeOf[Trait]
+    val b = weakTypeTag[B].tpe // .normalize.widen
+    var tree = expr.tree
+
+    // Manual replace of base class Trait.
+    // substituteSymbols would replace Trait with |, not |[A, B] (type params lost when calling tpe.typeSymbol).
+    tree = (new Transformer() {
+      override def transform(tree: Tree) = tree match {
+        case Template(parents, self, body) =>
+          Template(
+            parents.map(t => {
+              if (t.symbol == typeOf[Trait].typeSymbol)
+                TypeTree(b)
+              else
+                transform(t)
+            }),
+            transform(self).asInstanceOf[ValDef],
+            body.map(transform(_))
+          )
+        case _ =>
+          super.transform(tree)
+      }
+    }).transform(tree)
+    tree = tree.substituteSymbols(
+      List(typeOf[Trait].typeSymbol),
+      List(b.typeSymbol)
     )
+    c.Expr[B](tree)
   }
 }

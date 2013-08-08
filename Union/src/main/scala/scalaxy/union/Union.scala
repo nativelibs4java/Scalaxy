@@ -9,7 +9,7 @@ import scala.reflect.macros.Context
 /**
  * Union type.
  */
-abstract class |[+A, +B] extends Dynamic {
+trait |[+A, +B] extends Dynamic {
   /**
    * Type-class definition, handy to ask for a proof that `T` matches this union type.
    */
@@ -18,6 +18,8 @@ abstract class |[+A, +B] extends Dynamic {
   def value: Any
 
   def applyDynamic(name: String)(args: Any*): Any = macro |.applyDynamic[A | B]
+
+  // def `match`[R](f: PartialFunction[Any, R]): R = macro |.`match`[A | B, R]
 }
 
 object | {
@@ -43,4 +45,10 @@ object | {
       )
     )
   }
+
+  // def `match`[T: c.WeakTypeTag, R: c.WeakTypeTag](c: Context)(f: c.Expr[PartialFunction[Any, R]]): c.Expr[R] = {
+  //   import c.universe._
+
+  //   c.literalNull.asInstanceOf[c.Expr[R]]
+  // }
 }

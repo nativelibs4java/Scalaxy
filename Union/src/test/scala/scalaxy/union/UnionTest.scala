@@ -83,13 +83,16 @@ class UnionTest {
 
     compile("""serialize("blah")""")
     compile("""serialize(10.0)""")
+    compile("""serialize(true)""")
     compile("""serialize(10)""", false)
     compile("""serialize(Map[String, JSONValue]("a" -> 10.0.as[JSONValue]))""")
     compile("""serialize(Map[Double, JSONValue](10.0 -> "a".as[JSONValue]))""", false)
-    // compile("""serialize(Array("a", 10.0))""")
+    compile("""serialize(Array[JSONValue]("a", 10.0, true))""")
     // compile("""serialize(Array('a', 10.0))""", false)
     compile("""serialize(Array[JSONValue]())""")
     compile("""serialize(Array[JSONValue](10))""", false)
+
+    compile("""serialize(Map[String, JSONValue]("a" -> 10.0))""")
   }
 
   @Test
@@ -122,7 +125,7 @@ object UnionTest {
   //   }
   //   def serialize[T: JSONType](value: T): String = ""
   // import scala.language.experimental.macros
-  abstract class JSONValue extends (String | Double | Array[JSONValue] | Map[String, JSONValue])
+  abstract class JSONValue extends (String | Double | Boolean | Array[JSONValue] | Map[String, JSONValue])
   object JSONValue {
     implicit def apply[A](value: A): JSONValue = macro wrap[A, JSONValue]
   }
