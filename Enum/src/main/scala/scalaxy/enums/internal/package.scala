@@ -10,24 +10,15 @@ package object internal {
   private def getNames(c: Context): List[String] = {
     import c.universe._
 
-    val valueType = typeOf[enum#value]//weakTypeTag[V].tpe
+    val valueType = typeOf[enum#value]
     def isEnumValue(s: Symbol) = {
-      if (s.isModule) {
-        println("valueType = " + valueType + ", object = " + s)
-        val t = s.asModule.moduleClass.asType.toType
-        println("s.asModule.moduleClass.asType.toType = " + t)
-        println("\t" + (t <:< valueType))
-      }
       s.isModule &&
         s.asModule.moduleClass.asType.toType <:< valueType ||
       s.isTerm && s.asTerm.isGetter &&
         s.asTerm.accessed.typeSignature.normalize <:< valueType
     }
-
-
     // val ModuleDef(_, _, Template(_, _, body)) = 
     //   c.typeCheck(c.enclosingClass, withMacrosDisabled = true)
-
     // val namesToPos = (body.collect {
     //   case vd @ ValDef(_, name, tpt, _)
     //       if namesSet(name.toString.trim) =>
@@ -85,8 +76,9 @@ package object internal {
   def enumValueNames[T: c.WeakTypeTag](c: Context): c.Expr[T] = {
     import c.universe._
 
+    val singletonType = c.enclosingClass.symbol.asModule.moduleClass.asType.toType
     val names = getNames(c)
-    println("names = " + names)
+    // println("names = " + names)
     try {
       val res =
         Apply(
@@ -99,21 +91,49 @@ package object internal {
               typeOf[String],
               names.map(name => Literal(Constant(name)))
             ),
-            Function(
-              Nil,
-              newArray(c)(
-                typeOf[AnyRef],
-                names.map(name => {
-                  Select(
-                    getModulePath(c.universe)(c.enclosingClass.symbol.asModule),
-                    name: TermName
+            {
+              val paramName: TermName = c.fresh()
+              val singletonName: TermName = c.fresh()
+              Function(
+                List(
+                  ValDef(
+                    NoMods, 
+                    paramName, 
+                    TypeTree(typeOf[AnyRef]),
+                    EmptyTree
                   )
-                })
+                ),
+                Block(
+                  ValDef(
+                    NoMods,
+                    singletonName,
+                    TypeTree(singletonType),
+                    TypeApply(
+                      Select(
+                        Ident(paramName),
+                        "asInstanceOf"
+                      ),
+                      List(
+                        TypeTree(singletonType)
+                      )
+                    )
+                  ),
+                  newArray(c)(
+                    typeOf[AnyRef],
+                    names.map(name => {
+                      Select(
+                        Ident(singletonName),
+                        //getModulePath(c.universe)(c.enclosingClass.symbol.asModule),
+                        name: TermName
+                      )
+                    })
+                  )
+                )
               )
-            )
+            }
           )
         )
-      println("Res = " + res)
+      // println("Res = " + res)
       c.Expr[T](
         c.typeCheck(res, weakTypeTag[T].tpe)
       )
@@ -142,7 +162,7 @@ package object internal {
           // Nil
         // )
       )
-      println("res = " + res)
+      // println("res = " + res)
       res
     } catch { case ex: Throwable =>
       ex.printStackTrace(System.out);
