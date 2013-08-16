@@ -91,6 +91,7 @@ object Scalaxy extends Build {
         // "-Yinfer-debug",
         //"-Xlog-implicits",
         //"-Ymacro-debug-lite", "-Ydebug",
+        // "-Ymacro-debug-verbose",
         "-feature",
         "-unchecked"
       ),
@@ -304,6 +305,9 @@ object Scalaxy extends Build {
 
   lazy val debug =
     Project(id = "scalaxy-debug", base = file("Debug"), settings = reflectSettings)
+
+  lazy val enum =
+    Project(id = "scalaxy-enum", base = file("Enum"), settings = reflectSettings)
 
   lazy val union =
     Project(id = "scalaxy-union", base = file("Union"), settings = reflectSettings ++ scalariformSettings)
