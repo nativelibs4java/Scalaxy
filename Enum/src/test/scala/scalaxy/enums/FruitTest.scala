@@ -15,6 +15,7 @@ import org.junit.Assert._
 object Fruits extends enum()(new EnumValueNames(
   names = Array("Banana", "Orange", "Apple"),
   initializer = e => {
+    println("Init WITH " + e)
     val f = e.asInstanceOf[Fruits.type]
     Array(f.Banana, f.Orange, f.Apple)
     })) {
@@ -65,12 +66,18 @@ class FruitTest {
   //   assertEquals(Fruits1.Banana, Fruits1.valueOf("Banana"))
   // }
 
-  // @Test
-  // def testCustomClass {
-  //   assertEquals(Seq(Fruits.Banana, Fruits.Orange, Fruits.Apple),
-  //     Fruits.values.toSeq)
+  @Test
+  def testCustomClass {
 
-  //   assertEquals(Set("Banana", "Orange", "Apple"),
-  //     Fruits.values.map(_.name).toSet)
-  // }
+    assertEquals("Banana", Fruits.Banana.name)
+    // println("GOT BANANA")
+
+    assertEquals("Orange", Fruits.valueOf("Orange").name)
+    
+    assertEquals(Set("Banana", "Orange", "Apple"),
+      Fruits.values.map(_.name).toSet)
+
+    assertEquals(Seq(Fruits.Banana, Fruits.Orange, Fruits.Apple),
+      Fruits.values.toSeq)
+  }
 }

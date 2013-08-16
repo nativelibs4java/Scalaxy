@@ -128,7 +128,7 @@ package object internal {
 
     // reify(enum.this.nextEnumValueData)
     try {
-      c.Expr[T](
+      val res = c.Expr[T](
         // Apply(
         c.typeCheck(
           Ident("nextEnumValueData": TermName),
@@ -142,6 +142,8 @@ package object internal {
           // Nil
         // )
       )
+      println("res = " + res)
+      res
     } catch { case ex: Throwable =>
       ex.printStackTrace(System.out);
       throw ex
