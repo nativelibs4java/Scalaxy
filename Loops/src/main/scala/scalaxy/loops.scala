@@ -31,7 +31,7 @@ package object loops
   // TODO: optimize (List/Seq).apply(...).foreach (replace with Array.apply + while loop)
   implicit def rangeExtensions(range: Range) =
     new RangeExtensions(range)
-  
+
   private[loops] class RangeExtensions(range: Range)
   {
     /** Ensures a Range's foreach loop is compiled as an optimized while loop.
@@ -39,7 +39,7 @@ package object loops
      */
     def optimized: OptimizedRange = ???
   }
-  
+
   private[loops] class OptimizedRange
   {
     /** Optimized foreach method.
@@ -119,7 +119,7 @@ package loops
             val rangeExpr = c.Expr[Range](range)
             c.info(c.macroApplication.pos, "Loop optimizations are disabled.", true) 
             reify(rangeExpr.splice.foreach(f.splice))
-          } else {          
+          } else {
             range match {
               case InlineRangeTree(start, end, stepOpt, isInclusive) =>
                 val step: Int = stepOpt match {
@@ -133,13 +133,13 @@ package loops
                 }
                 c.typeCheck(f.tree) match {
                   case Function(List(param), body) =>
-  
+
                     def newIntVal(name: TermName, rhs: Tree) =
                       ValDef(NoMods, name, TypeTree(IntTpe), rhs)
-  
+
                     def newIntVar(name: TermName, rhs: Tree) =
                       ValDef(Modifiers(MUTABLE), name, TypeTree(IntTpe), rhs)
-  
+
                     // Body expects a local constant: create a var outside the loop + a val inside it.
                     val iVar = newIntVar(c.fresh("i"), start)
                     val iVal = newIntVal(param.name, Ident(iVar.name))
@@ -161,7 +161,7 @@ package loops
                         ),
                         List(Ident(endVal.name))
                       )
-  
+
                     val iVarExpr = c.Expr[Unit](iVar)
                     val iValExpr = c.Expr[Unit](iVal)
                     val endValExpr = c.Expr[Unit](endVal)
@@ -171,7 +171,7 @@ package loops
                     // We must wipe it out (alas, it's not local, so we must reset all symbols).
                     // TODO: be less extreme, replacing only the param symbol (see branch replaceParamSymbols).
                     val bodyExpr = c.Expr[Unit](c.resetAllAttrs(body))
-  
+
                     val incrExpr = c.Expr[Unit](
                       Assign(
                         Ident(iVar.name),
@@ -186,7 +186,7 @@ package loops
                     )
                     val iVarRef = c.Expr[Int](Ident(iVar.name))
                     val stepValRef = c.Expr[Int](Ident(stepVal.name))
-  
+
                     reify {
                       iVarExpr.splice
                       endValExpr.splice
