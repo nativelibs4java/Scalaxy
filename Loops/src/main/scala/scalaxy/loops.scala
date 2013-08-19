@@ -3,6 +3,7 @@ package scalaxy
 import scala.language.experimental.macros
 import scala.language.implicitConversions
 
+import scala.reflect.NameTransformer
 import scala.reflect.macros.Context
 import scala.reflect.NameTransformer.encode
 
@@ -48,6 +49,10 @@ package object loops
     def foreach[U](f: Int => U): Unit =
       macro impl.rangeForeachImpl[U]
 
+    def withFilter(f: Int => Boolean): OptimizedRange = ???
+
+    def filter(f: Int => Boolean): OptimizedRange = ???
+
     /** This must not be executed at runtime
      *  (should be rewritten away by the foreach macro during compilation).
      */
@@ -72,13 +77,39 @@ package loops
       import definitions._
       import Flag._
 
+      case class InlineRange(
+        start: Tree,
+        end: Tree,
+        stepOpt: Option[Tree],
+        isInclusive: Boolean,
+        filters: List[Function])
+
+      object N {
+        def unapply(name: Name): Option[String] = Option(name).map(_.toString)
+      }
+
       object InlineRangeTree {
-        def unapply(tree: Tree): Option[(Tree, Tree, Option[Tree], Boolean)] =
+        def unapply(tree: Tree): Option[InlineRange] =
           Option(tree) collect {
             case StartEndInclusive(start, end, isInclusive) =>
-              (start, end, None, isInclusive)
+              InlineRange(start, end, None, isInclusive, Nil)
             case StartEndStepInclusive(start, end, step, isInclusive) =>
-              (start, end, Some(step), isInclusive)
+              InlineRange(start, end, Some(step), isInclusive, Nil)
+          }
+      }
+
+      object OptimizedRange {
+        def unapply(tree: Tree): Option[(Tree, InlineRange)] =
+          Option(tree) collect {
+            case Select(Apply(_, List(rangeTree @ InlineRangeTree(range))), N("optimized"))
+            if rangeTree.tpe <:< typeOf[Range] &&
+               tree.tpe <:< typeOf[OptimizedRange] =>
+              (rangeTree, range)
+            case Apply(Select(OptimizedRange(rangeTree, range), N(n @ ("filter" | "withFilter"))), List(filter @ Function(_, _))) =>
+              (
+                Apply(Select(rangeTree, n: TermName), List(filter.duplicate)),
+                range.copy(filters = range.filters :+ filter)
+              )
           }
       }
 
@@ -89,13 +120,10 @@ package loops
               Apply(
                 Select(
                   Apply(
-                    Select(_, intWrapperName),
+                    Select(_, N("intWrapper")),
                     List(start)),
-                  junctionName),
-                List(end))
-            if intWrapperName.toString == "intWrapper" &&
-               (junctionName.toString == "to" || junctionName.toString == "until")
-            =>
+                  N(junctionName @ ("to" | "until"))),
+                List(end)) =>
               (start, end, junctionName.toString == "to")
           }
       }
@@ -113,96 +141,123 @@ package loops
           }
       }
       c.typeCheck(c.prefix.tree) match {
-        case Select(Apply(_, List(range)), optimizedName)
-        if optimizedName.toString == "optimized" =>
+        case OptimizedRange(rangeTree, range) =>
           if (disabled) {
-            val rangeExpr = c.Expr[Range](range)
+            val rangeExpr = c.Expr[Range](rangeTree)
             c.info(c.macroApplication.pos, "Loop optimizations are disabled.", true) 
             reify(rangeExpr.splice.foreach(f.splice))
           } else {
-            range match {
-              case InlineRangeTree(start, end, stepOpt, isInclusive) =>
-                val step: Int = stepOpt match {
-                  case Some(Literal(Constant(step: Int))) =>
-                    step
-                  case None =>
-                    1
-                  case Some(step) =>
-                    c.error(step.pos, "Range step must be a non-null constant!")
-                    0
-                }
-                c.typeCheck(f.tree) match {
-                  case Function(List(param), body) =>
+            // import range._
+            val step: Int = range.stepOpt match {
+              case Some(Literal(Constant(step: Int))) =>
+                step
+              case None =>
+                1
+              case Some(step) =>
+                c.error(step.pos, "Range step must be a non-null constant!")
+                0
+            }
+            c.typeCheck(f.tree) match {
+              case Function(List(param), body) =>
 
-                    def newIntVal(name: TermName, rhs: Tree) =
-                      ValDef(NoMods, name, TypeTree(IntTpe), rhs)
+                def newIntVal(name: TermName, rhs: Tree) =
+                  ValDef(NoMods, name, TypeTree(IntTpe), rhs)
 
-                    def newIntVar(name: TermName, rhs: Tree) =
-                      ValDef(Modifiers(MUTABLE), name, TypeTree(IntTpe), rhs)
+                def newIntVar(name: TermName, rhs: Tree) =
+                  ValDef(Modifiers(MUTABLE), name, TypeTree(IntTpe), rhs)
 
-                    // Body expects a local constant: create a var outside the loop + a val inside it.
-                    val iVar = newIntVar(c.fresh("i"), start)
-                    val iVal = newIntVal(param.name, Ident(iVar.name))
-                    val stepVal = newIntVal(c.fresh("step"), Literal(Constant(step)))
-                    val endVal = newIntVal(c.fresh("end"), end)
-                    val condition =
-                      Apply(
-                        Select(
-                          Ident(iVar.name),
-                          newTermName(
-                            encode(
-                              if (step > 0) {
-                                if (isInclusive) "<=" else "<"
-                              } else {
-                                if (isInclusive) ">=" else ">"
-                              }
-                            )
-                          )
-                        ),
-                        List(Ident(endVal.name))
-                      )
-
-                    val iVarExpr = c.Expr[Unit](iVar)
-                    val iValExpr = c.Expr[Unit](iVal)
-                    val endValExpr = c.Expr[Unit](endVal)
-                    val stepValExpr = c.Expr[Unit](stepVal)
-                    val conditionExpr = c.Expr[Boolean](condition)
-                    // Body still refers to old function param symbol (which has same name as iVal).
-                    // We must wipe it out (alas, it's not local, so we must reset all symbols).
-                    // TODO: be less extreme, replacing only the param symbol (see branch replaceParamSymbols).
-                    val bodyExpr = c.Expr[Unit](c.resetAllAttrs(body))
-
-                    val incrExpr = c.Expr[Unit](
-                      Assign(
-                        Ident(iVar.name),
-                        Apply(
-                          Select(
-                            Ident(iVar.name),
-                            encode("+")
-                          ),
-                          List(Ident(stepVal.name))
+                // Body expects a local constant: create a var outside the loop + a val inside it.
+                val iVar = newIntVar(c.fresh("i"), range.start)
+                val iVal = newIntVal(param.name, Ident(iVar.name))
+                val filterVals = range.filters.map(filter => {
+                  ValDef(NoMods, c.fresh("filter"): TermName, TypeTree(typeOf[Int => Boolean]), filter)
+                })
+                val stepVal = newIntVal(c.fresh("step"), Literal(Constant(step)))
+                val endVal = newIntVal(c.fresh("end"), range.end)
+                val loopCondition =
+                  Apply(
+                    Select(
+                      Ident(iVar.name),
+                      newTermName(
+                        encode(
+                          if (step > 0) {
+                            if (range.isInclusive) "<=" else "<"
+                          } else {
+                            if (range.isInclusive) ">=" else ">"
+                          }
                         )
                       )
-                    )
-                    val iVarRef = c.Expr[Int](Ident(iVar.name))
-                    val stepValRef = c.Expr[Int](Ident(stepVal.name))
+                    ),
+                    List(Ident(endVal.name))
+                  )
 
+                val iValExpr = c.Expr[Unit](iVal)
+                val loopConditionExpr = c.Expr[Boolean](loopCondition)
+                // Body still refers to old function param symbol (which has same name as iVal).
+                // We must wipe it out (alas, it's not local, so we must reset all symbols).
+                // TODO: be less extreme, replacing only the param symbol (see branch replaceParamSymbols).
+                val bodyExpr = c.Expr[Unit](c.resetAllAttrs(body))
+
+                val incrExpr = c.Expr[Unit](
+                  Assign(
+                    Ident(iVar.name),
+                    Apply(
+                      Select(
+                        Ident(iVar.name),
+                        encode("+")
+                      ),
+                      List(Ident(stepVal.name))
+                    )
+                  )
+                )
+                val iVarRef = c.Expr[Int](Ident(iVar.name))
+                val stepValRef = c.Expr[Int](Ident(stepVal.name))
+
+                val loop = 
+                  if (filterVals.isEmpty) {
                     reify {
-                      iVarExpr.splice
-                      endValExpr.splice
-                      stepValExpr.splice
-                      while (conditionExpr.splice) {
+                      while (loopConditionExpr.splice) {
                         iValExpr.splice
                         bodyExpr.splice
                         incrExpr.splice
                       }
                     }
-                  case _ =>
-                    c.error(f.tree.pos, s"Unsupported function: $f")
-                    null
-                }
+                  } else {
+                    val filterApplies: List[Tree] = filterVals.map(filterVal => {
+                      Apply(
+                        Select(Ident(filterVal.name), "apply": TermName), 
+                        List(
+                          Ident(iVar.name)
+                        )
+                      )
+                    })
+                    val filterConditionExpr = c.Expr[Boolean](
+                      filterApplies.reduceLeft((a: Tree, b: Tree) => 
+                        Apply(
+                          Select(a, NameTransformer.encode("&&"): TermName),
+                          List(b)
+                        )
+                      )
+                    )
+                    reify {
+                      while (loopConditionExpr.splice) {
+                        if (filterConditionExpr.splice) {
+                          iValExpr.splice
+                          bodyExpr.splice
+                        }
+                        incrExpr.splice
+                      }
+                    }
+                  }
+
+                val res = c.Expr[Unit](
+                  Block(
+                    (iVar :: endVal :: stepVal :: filterVals) :+ loop.tree: _*)
+                )
+                println("res = " + res)
+                res
               case _ =>
-                c.error(range.pos, s"Unsupported range: $range")
+                c.error(f.tree.pos, s"Unsupported function: $f")
                 null
             }
           }

@@ -20,8 +20,7 @@ class LoopsTest
   }
 
   @Test
-  def bug {
-    println("TESTE")
+  def bug_scala_2_10_0_issue_7 {
     def apple[R](f: () => R)() = f()
     val x = apple( () =>
       for(i <- 1 until 10 optimized)()

@@ -14,4 +14,15 @@ class IntegrationTest {
     import scalaxy.reified._
     scalaxy.debug.assert(10 == reify(10).compile()())
   }
+
+  @Test
+  def testLoops {
+    var tot = 0
+    for (i <- 0 to 10 optimized;
+         j <- 0 to 2 optimized;
+         if i != j) {
+      tot += i * 10 + j
+    }
+    assertEquals(1650, tot)
+  }
 }
