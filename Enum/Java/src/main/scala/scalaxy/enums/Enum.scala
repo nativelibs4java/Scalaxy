@@ -3,10 +3,10 @@ package scalaxy.enums
 import scala.reflect.macros.Context
 import scala.language.experimental.macros
 
-abstract class enum(implicit names: EnumValueNames) {
+class enum(implicit names: EnumValueNames) {
 
-  // type value = EnumValue
-  type value <: EnumValue
+  type value = EnumValue
+  // type value <: EnumValue
 
   private lazy val valuesArray: Array[value] = {
     // println("INITIALIZING")
@@ -40,7 +40,7 @@ abstract class enum(implicit names: EnumValueNames) {
     // }
   }
   class EnumValue(implicit data: EnumValueData)
-      extends java.lang.Enum[EnumValue](
+      extends java.lang.Enum[value](
         if (data == null) "?" else data.name,
         if (data == null) -1 else data.ordinal)
       // with java.io.Externalizable 

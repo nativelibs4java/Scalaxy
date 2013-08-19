@@ -4,8 +4,8 @@ import org.junit._
 import org.junit.Assert._
 
 object Fruits extends enum {
-  class Fruit(val cost: Int) extends EnumValue
-  override type value = Fruit
+  class Fruit(val cost: Int) extends value
+  // override type value = Fruit
 
   object Banana extends Fruit(1)
   object Orange extends Fruit(2)

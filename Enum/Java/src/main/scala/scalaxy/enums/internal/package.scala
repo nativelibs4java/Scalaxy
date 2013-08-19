@@ -10,7 +10,7 @@ package object internal {
   private def getNames(c: Context): List[String] = {
     import c.universe._
 
-    val valueType = typeOf[enum#EnumValue]
+    val valueType = typeOf[enum#value]
     def isEnumValue(s: Symbol) = {
       s.isModule &&
         s.asModule.moduleClass.asType.toType <:< valueType ||
