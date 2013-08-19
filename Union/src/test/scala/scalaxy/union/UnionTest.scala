@@ -107,6 +107,13 @@ class UnionTest {
     compile("""Map("a" -> 10.0).as[JSONValue]""")
     compile("""Map("a" -> 10).as[JSONValue]""", false)
   }
+
+  type NumberLike = {
+    def +(rhs: Any): this.type
+  }
+  // def add[T <% NumberLike](a: T, b: T): T = {
+  //   a + b
+  // }
 }
 
 object UnionTest {

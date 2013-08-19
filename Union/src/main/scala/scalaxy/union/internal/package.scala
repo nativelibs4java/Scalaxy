@@ -105,7 +105,7 @@ package object internal {
     }
   }
 
-  private def getUnionTypes(c: Context)(tpe: c.universe.Type): List[c.universe.Type] = {
+  private[union] def getUnionTypes(c: Context)(tpe: c.universe.Type): List[c.universe.Type] = {
     import c.universe._
 
     def sub(tpe: Type): List[Type] = {

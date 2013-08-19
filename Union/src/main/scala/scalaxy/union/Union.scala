@@ -32,12 +32,24 @@ object | {
   def applyDynamic[T: c.WeakTypeTag](c: Context)(name: c.Expr[String])(args: c.Expr[Any]*): c.Expr[Any] = {
     import c.universe._
 
+    // val t = weakTypeTag[T].tpe
     val target = c.prefix.tree match {
       case tree @ Apply(target, List(value)) if target.symbol.isMethod && target.symbol.isImplicit =>
         value
       case tree =>
         Select(tree, "value": TermName)
     }
+
+    // val types = internal.getUnionTypes(c)(t)
+    // println(s"openImplicits = ${c.openImplicits}")
+    // println(s"openImplicits = ${c.openImplicits}")
+    // println(s"types = $types")
+    // for (tpe <- types) {
+    //   val structTpe = refinedType(Nil, NoSymbol, decls, NoPosition)
+    //   val conversionType = MethodType(List(tpe), structTpe)
+    // }
+    //val typedArgs = args.map(c.typeCheck(_.tree))
+
     c.Expr[Any](
       Apply(
         reify(|).tree,
