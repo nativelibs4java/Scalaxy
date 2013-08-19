@@ -5,6 +5,8 @@ import scalaxy.loops._
 import scalaxy.beans._
 import scalaxy.reified._
 
+import scala.language.postfixOps
+
 import org.junit._
 import org.junit.Assert._
 
