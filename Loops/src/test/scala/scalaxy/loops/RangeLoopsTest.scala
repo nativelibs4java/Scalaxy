@@ -18,7 +18,16 @@ class LoopsTest
     f(buf)
     buf.toList
   }
-  
+
+  @Test
+  def bug {
+    println("TESTE")
+    def apple[R](f: () => R)() = f()
+    val x = apple( () =>
+      for(i <- 1 until 10 optimized)()
+    ) _
+  }
+
   @Test
   def nestedRanges {
     val n = 10
