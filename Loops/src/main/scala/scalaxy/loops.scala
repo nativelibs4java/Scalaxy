@@ -88,6 +88,40 @@ package loops
         def unapply(name: Name): Option[String] = Option(name).map(_.toString)
       }
 
+      object StartEndInclusive {
+        def unapply(tree: Tree): Option[(Tree, Tree, Boolean)] =
+          Option(tree) collect {
+            case
+              Apply(
+                Select(
+                  Apply(
+                    Select(_, N("intWrapper")),
+                    List(start)),
+                  N(junctionName @ ("to" | "until"))),
+                List(end)) =>
+              (start, end, junctionName == "to")
+          }
+      }
+
+      object StartEndStepInclusive {
+        def unapply(tree: Tree): Option[(Tree, Tree, Tree, Boolean)] =
+          Option(tree) collect {
+            case
+              Apply(
+                Select(
+                  StartEndInclusive(start, end, isInclusive),
+                  N("by")),
+                List(step)) =>
+              (start, end, step, isInclusive)
+          }
+      }
+
+      def ifInstanceOf[A: TypeTag](tree: Tree): Option[Tree] =
+        if (tree != null && tree.tpe != null && tree.tpe <:< typeTag[A].tpe)
+          Some(tree)
+        else
+          None
+
       object InlineRangeTree {
         def unapply(tree: Tree): Option[InlineRange] =
           Option(tree) collect {
@@ -113,33 +147,6 @@ package loops
           }
       }
 
-      object StartEndInclusive {
-        def unapply(tree: Tree): Option[(Tree, Tree, Boolean)] =
-          Option(tree) collect {
-            case
-              Apply(
-                Select(
-                  Apply(
-                    Select(_, N("intWrapper")),
-                    List(start)),
-                  N(junctionName @ ("to" | "until"))),
-                List(end)) =>
-              (start, end, junctionName.toString == "to")
-          }
-      }
-      object StartEndStepInclusive {
-        def unapply(tree: Tree): Option[(Tree, Tree, Tree, Boolean)] =
-          Option(tree) collect {
-            case
-              Apply(
-                Select(
-                  StartEndInclusive(start, end, isInclusive),
-                  byName),
-                List(step))
-            if byName.toString == "by" =>
-              (start, end, step, isInclusive)
-          }
-      }
       def newInlineAnnotation = {
         Apply(
           Select(
@@ -152,7 +159,7 @@ package loops
         case OptimizedRange(rangeTree, range) =>
           if (disabled) {
             val rangeExpr = c.Expr[Range](rangeTree)
-            c.info(c.macroApplication.pos, "Loop optimizations are disabled.", true) 
+            c.info(c.macroApplication.pos, "Loop optimizations are disabled.", true)
             reify(rangeExpr.splice.foreach(f.splice))
           } else {
             // import range._
@@ -177,7 +184,7 @@ package loops
                 // Body expects a local constant: create a var outside the loop + a val inside it.
                 val iVar = newIntVar(c.fresh("i"), range.start)
                 val iVal = newIntVal(param.name, Ident(iVar.name))
-                val filterVals = range.filters.map {
+                val filterDefs = range.filters.map {
                   case Function(vparams, body) =>
                     DefDef(
                       NoMods.mapAnnotations(list => newInlineAnnotation :: list),
@@ -230,7 +237,7 @@ package loops
                 val stepValRef = c.Expr[Int](Ident(stepVal.name))
 
                 val loop =
-                  if (filterVals.isEmpty) {
+                  if (filterDefs.isEmpty) {
                     reify {
                       while (loopConditionExpr.splice) {
                         iValExpr.splice
@@ -239,10 +246,10 @@ package loops
                       }
                     }
                   } else {
-                    val filterApplies: List[Tree] = filterVals.map(filterVal => {
+                    val filterApplies: List[Tree] = filterDefs.map(filterDef => {
                       Apply(
-                        Ident(filterVal.name),
-                        // Select(Ident(filterVal.name), "apply": TermName), 
+                        Ident(filterDef.name),
+                        // Select(Ident(filterDef.name), "apply": TermName), 
                         List(
                           Ident(iVar.name)
                         )
@@ -251,7 +258,7 @@ package loops
                     val filterConditionExpr = c.Expr[Boolean](
                       filterApplies.reduceLeft((a: Tree, b: Tree) => 
                         Apply(
-                          Select(a, NameTransformer.encode("&&"): TermName),
+                          Select(a, encode("&&"): TermName),
                           List(b)
                         )
                       )
@@ -269,7 +276,7 @@ package loops
 
                 val res = c.Expr[Unit](
                   Block(
-                    (iVar :: endVal :: stepVal :: filterVals) :+ loop.tree: _*)
+                    (iVar :: endVal :: stepVal :: filterDefs) :+ loop.tree: _*)
                 )
                 // println("res = " + res)
                 res
