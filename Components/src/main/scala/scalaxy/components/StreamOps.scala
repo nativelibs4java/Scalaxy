@@ -179,8 +179,8 @@ trait StreamOps
             loop.inner += newIf(
               boolNot(isDefinedVar()),
               Block(
-                Assign(isDefinedVar(), newBool(true)),
-                newAssign(totVar, value.value()),
+                Assign(isDefinedVar(), newBool(true)) ::
+                  newAssign(totVar, value.value()) :: Nil,
                 newUnit
               ),
               update
@@ -191,9 +191,12 @@ trait StreamOps
                 boolNot(isDefinedVar()),
                 typed {
                   Throw(
-                    New(
-                      TypeTree(ArrayIndexOutOfBoundsExceptionClass.asType.toType),
-                      List(List(newInt(0)))
+                    Apply(
+                      Select(
+                        New(TypeTree(ArrayIndexOutOfBoundsExceptionClass.asType.toType)),
+                        nme.CONSTRUCTOR
+                      ),
+                      List(newInt(0))
                     )
                   )
                 }

@@ -47,7 +47,9 @@ class ReifiedFunctionTest extends TestUtils {
       val capture3 = 1234
       val g = reify((x: Int) => capture1 + capture3)
 
-      f.compose(g)
+      val comp = f.compose(g)
+      assertTrue(comp.isInstanceOf[ReifiedFunction1[_, _]])
+      comp
     }
 
     val comp10 = compose(10)
