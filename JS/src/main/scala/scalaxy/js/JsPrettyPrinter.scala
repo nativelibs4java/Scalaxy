@@ -47,12 +47,18 @@ object JsPrettyPrinter {
     def convert(tree: Tree, indent: String = "", topLevel: Boolean = false)(implicit globalPrefix: GlobalPrefix = GlobalPrefix()): String = {
       val subIndent = indent + "  "
       val subSubIndent = subIndent + "  "
+      val subSubSubIndent = subSubIndent + "  "
 
-      def assembleBlock(stats: List[String], value: String): String = {
+      def assembleBlock(stats: List[String], value: String, indent: String, applyArgs: List[String] = Nil): String = {
         "(function() {\n" +
-          subIndent + stats.filter(!_.trim.isEmpty).map(_ + ";").mkString("\n" + subIndent) + "\n" +
-          subIndent + "return " + value + ";\n" +
-        indent + "})()"
+          indent + "  " + stats.filter(!_.trim.isEmpty).map(_ + ";").mkString("\n" + indent + "  ") + "\n" +
+          (
+              if (value.trim.isEmpty)
+                ""
+              else
+                indent + "  " + "return " + value + ";\n"
+          ) +
+        indent + "})" + (if (applyArgs.isEmpty) "()" else ".apply(" + applyArgs.mkString(", ") + ")")
       }
       def defineVar(name: Name, value: String, isLazy: Boolean = false): String = {
         val (predefs, target) = {
@@ -63,7 +69,7 @@ object JsPrettyPrinter {
             val predefs = (for (n <- 1 to components.size) yield {
               val ancestor = components.take(n).mkString(".")
               "if (!" + ancestor + ") " + (if (n == 1) "var " else "") + ancestor + " = {};"
-            }).mkString("\n" + indent) + "\n"
+            }).mkString("\n" + indent) + "\n" + indent
             val target = globalPrefix.path
 
             (predefs, target)
@@ -72,7 +78,7 @@ object JsPrettyPrinter {
 
         if (isLazy) {
           predefs +
-          indent + "scalaxy.defineLazyFinalProperty(" + target + ", '" + name + "', function() {\n" +
+          "scalaxy.defineLazyFinalProperty(" + target + ", '" + name + "', function() {\n" +
             subIndent + "return " + value + ";\n" +
           indent + "});"
         } else {
@@ -80,7 +86,7 @@ object JsPrettyPrinter {
             "var " + name + " = " + value + ";"
           } else {
             predefs +
-            indent + globalPrefix.path + "." + name + " = " + value + ";"
+            globalPrefix.path + "." + name + " = " + value + ";"
           }
         }
       }
@@ -123,18 +129,22 @@ object JsPrettyPrinter {
             name,
             assembleBlock(
               List(
-                "var " + name + " = {}",
-                "(function() {\n" +
-                  subSubIndent + body.collect({
+                "var " + name + " = {};",
+                assembleBlock(
+                  body.collect({
                     case d: ValOrDefDef if !d.mods.hasFlag(Flag.LAZY) && d.name != nme.CONSTRUCTOR =>
                       convertStatement(d, subSubIndent) + "\n" +
                       subSubIndent + name + "." + d.name + " = " + d.name + ";"
                     case t =>
                       convertStatement(t, subSubIndent)
-                  }).mkString("\n" + subSubIndent) + "\n" +
-                subIndent + "}).apply(" + name + ");"
+                  }),
+                  "",
+                  subSubIndent,
+                  applyArgs = List(name.toString)
+                )
               ),
-              name.toString
+              name.toString,
+              subIndent
             ),
             isLazy = true
           )
@@ -151,7 +161,8 @@ object JsPrettyPrinter {
         case Block(stats, value) =>
           assembleBlock(
             stats.map(s => convert(s, subSubIndent)),
-            convert(value, subSubIndent)
+            convert(value, subSubIndent),
+            subSubIndent
           )
 
         case Select(target, name) =>
@@ -213,7 +224,7 @@ object JsPrettyPrinter {
             defineVar(
               name,
               "function(" + vparams.flatten.map(_.name).mkString(", ") + ") {\n" +
-                indent + convert(rhs, subIndent) + "\n" +
+                subIndent + convert(rhs, subIndent) + "\n" +
               indent + "}"
             )
           }
