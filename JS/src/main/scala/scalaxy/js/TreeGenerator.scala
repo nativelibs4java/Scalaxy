@@ -8,6 +8,27 @@ import com.google.javascript.rhino.jstype._
 
 object TreeGenerator {
   private val qualNameRx = """(.*?)\.([^.]+)""".r
+  // val jsPrimitiveTypes = Set("Object", "Boolean", "String", 
+  val invalidOverrideExceptions = Set(
+    "DOMApplicationCache.prototype.addEventListener",
+    "DOMApplicationCache.prototype.removeEventListener",
+    "DOMApplicationCache.prototype.dispatchEvent",
+    // "ClipboardData.prototype.clearData",
+    "DataTransfer.prototype.clearData",
+    "DataTransfer.prototype.setData",
+    "DataTransfer.prototype.getData",
+    "Object.prototype.toLocaleString",
+    "Object.prototype.toSource",
+    "Boolean.prototype.toSource",
+    "Date.prototype.toJSON",
+    "Element.prototype.querySelector"
+  )//.map(_.r)
+  val missingOverrideExceptions = Set(
+    "String.prototype.valueOf",
+    "Date.prototype.valueOf",
+    "Array.prototype.toSource"
+  )//.map(_.r)
+
   def generateClass(u: Universe)(classVars: ClassVars, externs: ClosureExterns, owner: u.Name): List[u.Tree] = {
 
     import u._
@@ -47,54 +68,61 @@ object TreeGenerator {
       }
     }
 
+    val constructorDoc = classVars.constructor.flatMap(c => Option(c.getJSDocInfo))
+
+    val className = simpleClassName: TypeName
+    val companionName = simpleClassName: TermName
+
     def convertMember(memberVar: Scope.Var): Tree = {
+      val memberName: TermName = memberVar.getName.split("\\.").last
       val templateTypeNames = Option(memberVar.getJSDocInfo).map(_.getTemplateTypeNames().toSet).getOrElse(Set())
       if (!templateTypeNames.isEmpty)
         EmptyTree
+      else if (memberName.toString == "toString")
+        EmptyTree
       else {
-        val memberName: TermName = memberVar.getName.split("\\.").last
         assert(memberName.toString.trim != "")
         memberVar.getType match {
           case ft: FunctionType =>
             //memberDoc
             val retType = conv(ft.getReturnType, templateTypeNames)
-            val vparams = Option(memberVar.getJSDocInfo) match {
+            val (vparams, isOverride) = Option(memberVar.getJSDocInfo) match {
               case None if ft.getParameters.isEmpty =>
-                Nil
+                (Nil, false)
               case None =>
                 // println("PARAMS(" + memberVar.getName + "): " + ft.getParameters.toList.map(p => p + ": " + p.getJSType).mkString(", "))
                 println("WARNING: " + memberVar.getName + " has no JSDoc")
-                for ((p, i) <- ft.getParameters.toList.zipWithIndex) yield {
-                  val name = p.getString
-                  ValDef(
-                    NoMods,
-                    (if (name.trim.isEmpty) "param" + i else name): TermName,
-                    conv(p.getJSType, templateTypeNames),
-                    EmptyTree
-                  )
-                }
+                (
+                  for ((p, i) <- ft.getParameters.toList.zipWithIndex) yield {
+                    val name = p.getString
+                    ValDef(
+                      NoMods,
+                      (if (name.trim.isEmpty) "param" + i else name): TermName,
+                      conv(p.getJSType, templateTypeNames),
+                      EmptyTree
+                    )
+                  },
+                  false
+                )
               case Some(memberDoc) =>
-                getParams(memberDoc, templateTypeNames)
+                (
+                  getParams(memberDoc, templateTypeNames),
+                  memberDoc.isOverride
+                )
             }
-            if (vparams.isEmpty)
-              q"def $memberName(): $retType = ???"
-            else
-              q"def $memberName(..$vparams): $retType = ???"
+            val mods =
+              if (isOverride && !invalidOverrideExceptions(memberVar.getName) ||
+                  missingOverrideExceptions(memberVar.getName))//.exists(_.unapplySeq(memberVar.getName) != None))
+                Modifiers(Flag.OVERRIDE)
+              else
+                NoMods
+            DefDef(mods, memberName, Nil, List(vparams), retType, q"???")
           case t =>
             val valType = Option(t).map(conv(_, templateTypeNames)).getOrElse(TypeTree(typeOf[Any]))
             q"var $memberName: $valType = _"
         }
       }
     }
-
-    val constructorDoc = classVars.constructor.flatMap(c => Option(c.getJSDocInfo))
-
-    val className = simpleClassName: TypeName
-    val companionName = simpleClassName: TermName
-
-    val protoMembers = classVars.protoMembers.map(convertMember(_))
-    val staticMembers = classVars.staticMembers.filter(!_.getName.endsWith(".prototype")).map(convertMember(_))
-
     /*
       Quasiquotes generate a constructor like this:
 
@@ -109,10 +137,29 @@ object TreeGenerator {
       override def transform(tree: Tree) = tree match {
         case Block(List(Select(target, nme.CONSTRUCTOR)), value) =>
           Block(List(Apply(Select(target, nme.CONSTRUCTOR), Nil)), value)
+        case ClassDef(mods, name, tparams, Template(parents, self, body)) if mods.hasFlag(Flag.TRAIT) =>
+          println("FOUND TRAIT")
+          ClassDef(
+            mods,
+            name,
+            tparams,
+            Template(
+              parents,
+              self,
+              body.filter({
+                case d: DefDef if d.name == nme.CONSTRUCTOR => false
+                case _ => true
+              })
+            )
+          )
         case _ =>
           super.transform(tree)
       }
     }
+
+    val protoMembers = classVars.protoMembers.map(convertMember(_))
+    val staticMembers = classVars.staticMembers.filter(!_.getName.endsWith(".prototype")).map(convertMember(_))
+
     val companion =
       if (staticMembers.isEmpty)
         Nil
@@ -126,12 +173,12 @@ object TreeGenerator {
         """ :: Nil
 
     lazy val traitTree =
-      q"""
+      fixer.transform(q"""
         @scalaxy.js.global
         trait $className {
           ..$protoMembers
         }
-      """
+      """)
 
     val result = constructorDoc match {
       case None =>
@@ -150,10 +197,15 @@ object TreeGenerator {
           val interfaces = 
             (classDoc.getExtendedInterfaces.toList ++ classDoc.getImplementedInterfaces.toList)
             .toSet.toList.map((t: JSTypeExpression) =>  convertTypeRef(u)(t: JSType, resolver))
-          if (interfaces.isEmpty)
-            List(TypeTree(typeOf[AnyRef]))
-          else
+          if (interfaces.isEmpty) {
+            if (simpleClassName == "Object" || simpleClassName == "Number" || simpleClassName == "Boolean")
+              List(TypeTree(typeOf[AnyRef]))
+            else
+              List(resolver("Object": TypeName))
+            // List(TypeTree(typeOf[AnyRef]))
+          } else {
             interfaces
+          }
         }
         val classDef = q"""
           @scalaxy.js.global

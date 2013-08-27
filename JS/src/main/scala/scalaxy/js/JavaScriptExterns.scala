@@ -75,7 +75,7 @@ object JavaScriptExterns {
         //   }
         // }
 
-        val decls: List[Tree] = existingDecls ++ generatedDecls//.take(125)
+        val decls: List[Tree] = existingDecls ++ generatedDecls//.take(350)
         List(q"object $name extends scala.AnyRef { ..$decls }")
       case _ =>
         c.error(c.enclosingPosition, "This annotation can only be set on an object, found on: " + annottees.map(_.tree))
