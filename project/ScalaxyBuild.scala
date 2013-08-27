@@ -300,7 +300,8 @@ object Scalaxy extends Build {
 
   lazy val js =
     Project(id = "scalaxy-js", base = file("JS"), settings = reflectSettings ++ Seq(
-      addCompilerPlugin("org.scala-lang.plugins" % "macro-paradise_2.10.3-RC1" % "2.0.0-SNAPSHOT"),
+      // addCompilerPlugin("org.scala-lang.plugins" % "macro-paradise_2.10.3-RC1" % "2.0.0-SNAPSHOT"),
+      addCompilerPlugin("org.scala-lang.plugins" % "macro-paradise_2.10.2" % "2.0.0-SNAPSHOT"),
       libraryDependencies += "com.google.javascript" % "closure-compiler" % "v20130722"
       // scalaVersion := "2.10.3-RC1"
 

@@ -37,7 +37,7 @@ object JavaScript {
       .map(tree => ApiMappings.replaceScalaApisByCallsToExterns(c.universe)(tree))
 
     val convJs = conv.map(JsPrettyPrinter.prettyPrintJs(c)(_)).mkString("\n")
-    // println("CONVERTED TO JavaScript:\n" + convJs)
+    println("CONVERTED TO JavaScript:\n" + convJs)
 
     import java.io._
     val javascriptFile = new File(
