@@ -20,7 +20,7 @@ case class GlobalVars(
   classes: List[ClassVars],
   globalVars: List[Scope.Var])
 
-object ExternsAnalyzer {
+object ExternsAnalysis {
 
   def analyze(externs: ClosureExterns): GlobalVars = {
     import externs._

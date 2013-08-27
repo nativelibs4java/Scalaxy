@@ -9,6 +9,8 @@ import com.google.javascript.rhino.JSTypeExpression
 import com.google.javascript.rhino.jstype._
 
 object ScalaxyClosureUtils {
+  def defaultExterns: List[SourceFile] = CommandLineRunner.getDefaultExterns().toList
+
   /**
    * See node.js externs: https://github.com/dcodeIO/node.js-closure-compiler-externs
    * Other extends: https://code.google.com/p/closure-compiler/wiki/ExternsForCommonLibraries
@@ -17,7 +19,7 @@ object ScalaxyClosureUtils {
    * Automatic externs extractor:
    * http://blog.dotnetwise.com/2009/11/closure-compiler-externs-extractor.html
    */
-  def scanExterns(externs: java.util.List[SourceFile] = CommandLineRunner.getDefaultExterns()): ClosureExterns = {
+  def scanExterns(externs: List[SourceFile] = defaultExterns): ClosureExterns = {
     val code = "window.console.loge('yay');"
 
     val compiler = new Compiler
@@ -26,9 +28,9 @@ object ScalaxyClosureUtils {
     options.checkTypes = true
     options.inferTypes = true
 
-    //val externs = JSSourceFile.fromCode("externs.js", "") :: Nil
+    //val externs = SourceFile.fromCode("externs.js", "") :: Nil
     // val externs = CommandLineRunner.getDefaultExterns()
-    val inputs = java.util.Collections.singletonList(JSSourceFile.fromCode("input.js", code))
+    val inputs = java.util.Collections.singletonList(SourceFile.fromCode("input.js", code))
 
     // compile() returns a Result, but it is not needed here.
     compiler.compile(externs, inputs, options)

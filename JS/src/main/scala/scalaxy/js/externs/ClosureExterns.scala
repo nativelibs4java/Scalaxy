@@ -1,5 +1,6 @@
 package scalaxy.js
 
+import scala.language.implicitConversions
 import com.google.javascript.jscomp._
 
 import scala.collection.JavaConversions._

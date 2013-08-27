@@ -11,12 +11,12 @@ import scala.collection.JavaConversions._
 
 object Test extends App {
 
-  val externs = ScalaxyClosureUtils.scanExterns()
-  val globalVars = ExternsAnalyzer.analyze(externs)
+  val generator = new JavaScriptToScalaSignaturesGenerator(ru)
 
-  for (classVars <- globalVars.classes) {
-    println(TreeGenerator.generateClass(ru)(classVars, externs, ru.newTermName("Test")))
-  }
+  val sigs = generator.generateSignatures[ru.Tree](ScalaxyClosureUtils.defaultExterns, "Test")
+
+  println(sigs)
+
   System.exit(0)
 }
 

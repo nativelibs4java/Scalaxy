@@ -2,15 +2,19 @@ package scalaxy.js
 
 import scala.collection.JavaConversions._
 import scala.reflect.macros.Context
+import scala.reflect.api.Universe
 // import scala.reflect.api.Universe
 
-object JsPrettyPrinter {
+trait JsPrettyPrinter extends Globals {
+
+  val global: Universe
+  import global._
+
   case class GlobalPrefix(path: String = "") {
     def derive(subPath: String): GlobalPrefix =
       GlobalPrefix(if (path == "") subPath else path + "." + subPath)
   }
-  def prettyPrintJs(c: Context)(tree: c.universe.Tree): String = {
-    import c.universe._
+  def prettyPrintJs(tree: Tree): String = {
 
     def resolve(sym: Symbol): Option[String] = if (sym == NoSymbol || sym.name == null) None else Some({
       var path: List[String] = sym.name.toString :: Nil
@@ -18,9 +22,9 @@ object JsPrettyPrinter {
       var ownerPackage = sym.owner
       while (ownerPackage != NoSymbol && !ownerPackage.isPackage) {
         if (!reachedGlobalScope) {
-          if (scalaxy.js.global.hasAnnotation(c.universe)(ownerPackage) ||
+          if (hasGlobalAnnotation(ownerPackage) ||
               ownerPackage.isClass && ownerPackage.asClass.module != NoSymbol && 
-                global.hasAnnotation(c.universe)(ownerPackage.asClass.module)) {
+                hasGlobalAnnotation(ownerPackage.asClass.module)) {
             reachedGlobalScope = true;
           } else {
             path = ownerPackage.name.toString :: path

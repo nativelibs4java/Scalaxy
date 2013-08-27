@@ -6,7 +6,11 @@ import com.google.javascript.jscomp._
 import com.google.javascript.rhino._
 import com.google.javascript.rhino.jstype._
 
-object TreeGenerator {
+trait TreeGenerators extends TypeConversions {
+
+  val global: Universe
+  import global._
+  
   private val qualNameRx = """(.*?)\.([^.]+)""".r
   // val jsPrimitiveTypes = Set("Object", "Boolean", "String", 
   val invalidOverrideExceptions = Set(
@@ -29,11 +33,9 @@ object TreeGenerator {
     "Array.prototype.toSource"
   )//.map(_.r)
 
-  def generateClass(u: Universe)(classVars: ClassVars, externs: ClosureExterns, owner: u.Name): List[u.Tree] = {
+  def generateClass(classVars: ClassVars, externs: ClosureExterns, owner: Name): List[Tree] = {
 
-    import u._
     import externs._
-    import TypeConversions.convertTypeRef
 
     val (fullClassName, packageName, simpleClassName) = classVars.className match {
       case fullClassName @ qualNameRx(packageName, simpleClassName) =>
@@ -50,10 +52,11 @@ object TreeGenerator {
       if (templateTypeNames(t.toString))
         TypeTree(typeOf[Any])
       else {
-        println("NOT A TEMPLATE = " + t)
-        convertTypeRef(u)(t, resolver).asInstanceOf[u.Tree]
+        // println("NOT A TEMPLATE = " + t)
+        convertTypeRef(t, resolver)
       }
     }
+
     def getParams(doc: JSDocInfo, templateTypeNames: Set[String], rename: Boolean = false): List[ValDef] = {
       for ((paramName, i) <- doc.getParameterNames.toList.zipWithIndex) yield {
         val paramType: JSType = doc.getParameterType(paramName)
@@ -196,7 +199,7 @@ object TreeGenerator {
         val parents = {
           val interfaces = 
             (classDoc.getExtendedInterfaces.toList ++ classDoc.getImplementedInterfaces.toList)
-            .toSet.toList.map((t: JSTypeExpression) =>  convertTypeRef(u)(t: JSType, resolver))
+            .toSet.toList.map((t: JSTypeExpression) =>  convertTypeRef(t: JSType, resolver))
           if (interfaces.isEmpty) {
             if (simpleClassName == "Object" || simpleClassName == "Number" || simpleClassName == "Boolean")
               List(TypeTree(typeOf[AnyRef]))
@@ -219,7 +222,7 @@ object TreeGenerator {
     }
     result.map(fixer.transform(_))
   }
-  def generateGlobal(u: Universe)(variable: Scope.Var): List[u.Tree] = {
+  def generateGlobal(u: Universe)(variable: Scope.Var): List[Tree] = {
     Nil
   }
 }

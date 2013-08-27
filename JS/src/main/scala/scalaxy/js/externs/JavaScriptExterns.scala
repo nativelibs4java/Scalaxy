@@ -23,14 +23,14 @@ object JavaScriptExterns {
     }
     println("PATHS:\n\t" + paths.mkString(",\n\t"))
 
+
+    val generator = new JavaScriptToScalaSignaturesGenerator(c.universe)
+
     val trees = annottees.map(_.tree).toList match {
-      case List(q"object $name extends scala.AnyRef { ..$existingDecls }") => //if existingDecls.isEmpty =>
-        // val paths = pathTrees.map {
-        //   case Literal(Constant(path: String)) => path
-        // }
+      case List(q"object $name extends scala.AnyRef { ..$existingDecls }") =>
+
         // println("PATHS:\n\t" + paths.mkString(",\n\t"))
-        val externSources = CommandLineRunner.getDefaultExterns().toList//: List[SourceFile]
-        val allExterns = JSSourceFile.fromCode("predefs.js", """
+        val allExterns = SourceFile.fromCode("predefs.js", """
             /** @constructor */ // var DatabaseCallback = function() {};
             /** @constructor */ // var DedicatedWorkerGlobalScope = function() {};
             /** @constructor */ // var EventListener = function() {};
@@ -51,32 +51,18 @@ object JavaScriptExterns {
             var MyClass = function() {};
             /** @this {MyClass} */
             MyClass.prototype.f = function() {};
-          """) :: externSources
-        val externs = ScalaxyClosureUtils.scanExterns(allExterns)
-        // val externs = ScalaxyClosureUtils.scanExterns(JSSourceFile.fromCode("externs.js", """
-        //     /** @constructor */
-        //     var MyClass = function() {};
-        //     /** @this {MyClass} */
-        //     MyClass.prototype.f = function() {};
-        //   """) :: Nil)
-        val globalVars = ExternsAnalyzer.analyze(externs)
-        val generatedDecls = globalVars.classes.flatMap(classVars => {
-          TreeGenerator.generateClass(c.universe)(classVars, externs, name)
-        })
+          """) :: ScalaxyClosureUtils.defaultExterns
 
+        val decls =
+          existingDecls ++
+          generator.generateSignatures[Tree](allExterns, name.toString)
 
-        // for (tree <- generatedDecls) {
-        //   try {
-        //     c.typeCheck(tree)
-        //   } catch { case ex: Throwable =>
-        //     // ex.printStackTrace()
-        //     println(tree)
-        //     throw ex
-        //   }
-        // }
-
-        val decls: List[Tree] = existingDecls ++ generatedDecls//.take(350)
-        List(q"object $name extends scala.AnyRef { ..$decls }")
+        List(
+          q"""
+            object $name extends scala.AnyRef {
+              ..$decls
+            }
+          """)
       case _ =>
         c.error(c.enclosingPosition, "This annotation can only be set on an object, found on: " + annottees.map(_.tree))
         Nil

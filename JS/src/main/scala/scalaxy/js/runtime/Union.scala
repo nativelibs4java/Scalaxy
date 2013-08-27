@@ -1,5 +1,7 @@
 package scalaxy.js
 
+import scala.language.implicitConversions
+
 class |[A, B](val value: Any)
 object | {
   implicit def union[A, B](value: Any): (A | B) = new |[A, B](value)

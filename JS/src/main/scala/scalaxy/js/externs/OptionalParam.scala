@@ -1,5 +1,7 @@
 package scalaxy.js
 
+import scala.language.implicitConversions
+
 sealed trait OptionalParam[+T] {
   implicit def asOption: Option[T]
 }

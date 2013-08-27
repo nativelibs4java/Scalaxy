@@ -3,10 +3,13 @@ package scalaxy.js
 import scala.collection.JavaConversions._
 import scala.reflect.api.Universe
 
-object ApiMappings {
+trait ApiMappings extends Globals {
 
-  def replaceScalaApisByCallsToExterns(u: Universe)(tree: u.Tree): u.Tree = {
-    import u._
+  val global: Universe
+  import global._
+
+  def replaceScalaApisByCallsToExterns(tree: Tree): Tree = {
+
     def getConstantName(tree: Tree): TermName = {
       val Literal(Constant(n: String)) = tree
       n: TermName
@@ -33,7 +36,7 @@ object ApiMappings {
           val name = getConstantName(nameValue)
           q"${transform(target)}.$name = ${transform(value)}"
 
-        case Select(root, name) if global.hasAnnotation(u)(tree.symbol) =>
+        case Select(root, name) if hasGlobalAnnotation(tree.symbol) =>
           Ident(name)
 
         case tree =>

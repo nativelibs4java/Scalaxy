@@ -7,10 +7,12 @@ import com.google.javascript.rhino.Node
 import com.google.javascript.rhino.JSTypeExpression
 import com.google.javascript.rhino.jstype._
 
-object TypeConversions {
+trait TypeConversions {
 
-  def convertTypeRef(u: Universe)(jsType: JSType, resolver: u.Name => u.Tree, nullable: Boolean = false): u.Tree = {
-    import u._
+  val global: Universe
+  import global._
+
+  def convertTypeRef(jsType: JSType, resolver: Name => Tree, nullable: Boolean = false): Tree = {
     jsType match {
       case null =>
         TypeTree(typeOf[Any])
@@ -40,7 +42,7 @@ object TypeConversions {
             case _ =>
               true
           })
-          val convertedAlts = alts.map(t => convertTypeRef(u)(t, resolver, hasNull || hasUndefined))
+          val convertedAlts = alts.map(t => convertTypeRef(t, resolver, hasNull || hasUndefined))
           val conv = convertedAlts match {
             case List(t) =>
               t
@@ -73,10 +75,12 @@ object TypeConversions {
               case ("Array", List(elementType)) =>
                 AppliedTypeTree(
                   Ident(rootMirror.staticClass("scala.Array")),
-                  List(convertTypeRef(u)(elementType, resolver).asInstanceOf[u.Tree])
+                  List(
+                    convertTypeRef(elementType, resolver)
+                  )
                 )
               case ("Function", elementTypes) =>
-                println("FUNCTION elementTypes = " + elementTypes.map(convertTypeRef(u)(_, resolver)))
+                println("FUNCTION elementTypes = " + elementTypes.map(convertTypeRef(_, resolver)))
                 TypeTree(typeOf[AnyRef])//n: TypeName)
                 // AppliedTypeTree(
                 //   Ident(rootMirror.staticClass("scala.Function" + )),
