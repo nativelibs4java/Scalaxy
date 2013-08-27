@@ -193,7 +193,16 @@ object JsPrettyPrinter {
         case Literal(Constant(v)) =>
           v match {
             case s: String =>
-              "'" + s.replaceAll("'", "\\\\'") + "'" // TODO: proper JS escapes
+              "'" +
+              s.replaceAll("'", "\\\\'")
+                .replaceAll("\n", "\\n")
+                .replaceAll("\r", "\\r")
+                .replaceAll("\b", "\\b")
+                .replaceAll("\f", "\\f")
+                .replaceAll("\t", "\\t")
+                .replaceAll("\u000b", "\\v")
+                .replaceAll("\0", "\\0") +
+              "'" // TODO: proper JS escapes
             case c: Char =>
               "'" + c + "'"
             case _ =>
