@@ -24,9 +24,18 @@ object Example {
     println("You've called me!")
     10
   }
-
   val someProperty = "fooo"
 }
+
+@global
+object Main {
+  println("This is run directly!")
+  class Sub {
+    println("Creating a sub class")
+  }
+  println(new Sub)
+}
+
 ```
 
 Will yield `Foo.js`:
@@ -54,4 +63,10 @@ scalaxy.defineLazyFinalProperty(scalaxy.js.example, 'Example', function() {
     return Example;
   })();
 });
+
+window.console.log('This is run directly!')
+scalaxy.js.example.Sub = function() {
+  window.console.log('Creating a sub class');
+};
+window.console.log(new scalaxy.js.example.Sub())
 ```

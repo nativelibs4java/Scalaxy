@@ -16,3 +16,12 @@ object Example {
 
   val someProperty = "fooo"
 }
+
+@global
+object Main {
+  println("This is run directly!")
+  class Sub {
+    println("Creating a sub class")
+  }
+  println(new Sub)
+}
