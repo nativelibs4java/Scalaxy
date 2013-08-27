@@ -9,7 +9,7 @@ import com.google.javascript.rhino.jstype._
 
 object TypeConversions {
 
-  def convertTypeRef(u: Universe)(jsType: JSType, nullable: Boolean = false): u.Tree = {
+  def convertTypeRef(u: Universe)(jsType: JSType, resolver: u.Name => u.Tree, nullable: Boolean = false): u.Tree = {
     import u._
     jsType match {
       case null =>
@@ -40,7 +40,7 @@ object TypeConversions {
             case _ =>
               true
           })
-          val convertedAlts = alts.map(t => convertTypeRef(u)(t, hasNull || hasUndefined))
+          val convertedAlts = alts.map(t => convertTypeRef(u)(t, resolver, hasNull || hasUndefined))
           val conv = convertedAlts match {
             case List(t) =>
               t
@@ -73,14 +73,23 @@ object TypeConversions {
               case ("Array", List(elementType)) =>
                 AppliedTypeTree(
                   Ident(rootMirror.staticClass("scala.Array")),
-                  List(convertTypeRef(u)(elementType).asInstanceOf[u.Tree])
+                  List(convertTypeRef(u)(elementType, resolver).asInstanceOf[u.Tree])
                 )
+              case ("Function", elementTypes) =>
+                println("FUNCTION elementTypes = " + elementTypes.map(convertTypeRef(u)(_, resolver)))
+                TypeTree(typeOf[AnyRef])//n: TypeName)
+                // AppliedTypeTree(
+                //   Ident(rootMirror.staticClass("scala.Function" + )),
+                //   List(convertTypeRef(u)(elementType, resolver).asInstanceOf[u.Tree])
+                // )
               case ("Object", _) =>
-                Ident(n: TypeName)
+                TypeTree(typeOf[AnyRef])//n: TypeName)
               case (_, _ :: _) =>
                 sys.error("Template type not handled for type " + n + ": " + jsType)
               case _ =>
-                Ident(n: TypeName)
+                Option(resolver).map(_(n: TypeName)).getOrElse {
+                  Ident(n: TypeName)
+                }
             }
           }
     }

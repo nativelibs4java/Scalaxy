@@ -52,7 +52,7 @@ object ExternsAnalyzer {
           staticMembers(className) += variable
         case n =>
           variable.getType match {
-            case t: FunctionType if t.isConstructor =>
+            case t: FunctionType if t.isConstructor || t.isInterface =>
               // println("Constructor for " + n + ": type = " + variable.getType + Option(variable.getType).map(": " + _.getClass.getName).getOrElse(""))
               constructors(n) = variable
             case _ =>

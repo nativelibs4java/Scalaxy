@@ -15,7 +15,7 @@ object Test extends App {
   val globalVars = ExternsAnalyzer.analyze(externs)
 
   for (classVars <- globalVars.classes) {
-    println(TreeGenerator.generateClass(ru)(classVars, externs))
+    println(TreeGenerator.generateClass(ru)(classVars, externs, ru.newTermName("Test")))
   }
   System.exit(0)
 }
