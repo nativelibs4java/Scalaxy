@@ -186,6 +186,7 @@ object Scalaxy extends Build {
     "Compilets" -> compilets,
     "Fx" -> fx,
     "Beans" -> beans,
+    "JS" -> js,
     "Loops" -> loops,
     //"Components" -> components,
     "Debug" -> debug,
@@ -296,6 +297,14 @@ object Scalaxy extends Build {
       watchSources <+= baseDirectory map { _ / "examples" }
     ))
     .dependsOn(debug)
+
+  lazy val js =
+    Project(id = "scalaxy-js", base = file("JS"), settings = reflectSettings ++ Seq(
+      addCompilerPlugin("org.scala-lang.plugins" % "macro-paradise_2.10.3-RC1" % "2.0.0-SNAPSHOT"),
+      libraryDependencies += "com.google.javascript" % "closure-compiler" % "v20130722"
+      // scalaVersion := "2.10.3-RC1"
+
+    ))
 
   lazy val beans =
     Project(id = "scalaxy-beans", base = file("Beans"), settings = reflectSettings)

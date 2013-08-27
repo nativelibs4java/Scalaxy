@@ -1,9 +1,14 @@
-resolvers += Resolver.url("artifactory", url("http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases"))(Resolver.ivyStylePatterns)
+resolvers ++= Seq(
+  Classpaths.sbtPluginReleases,
+  Opts.resolver.sonatypeReleases
+)
+
+//resolvers += Resolver.url("artifactory", url("http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases"))(Resolver.ivyStylePatterns)
 
 resolvers += "jgit-repo" at "http://download.eclipse.org/jgit/maven"
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "0.6.2")
-     
+
 addSbtPlugin("com.typesafe.sbt" % "sbt-ghpages" % "0.5.1")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-site" % "0.6.2")
@@ -20,8 +25,3 @@ addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "2.2.0")
 
 // ls.implicit.ly
 addSbtPlugin("me.lessis" % "ls-sbt" % "0.1.2")
-
-resolvers ++= Seq(
-  Classpaths.sbtPluginReleases,
-  Opts.resolver.sonatypeReleases
-)
