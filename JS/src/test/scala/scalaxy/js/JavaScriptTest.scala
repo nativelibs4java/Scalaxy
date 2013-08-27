@@ -13,5 +13,8 @@ object JavaScriptTest {
     10
   }
 
+  val msg = "Bonjour !"
+  js"alert($msg)"
+
   val someVal = "fooo"
 }

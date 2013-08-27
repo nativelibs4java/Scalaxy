@@ -86,3 +86,8 @@ For better performance, prevent `scalac` from finishing compilation:
 ```
 scalac -Xstop-after:typer -cp scalaxy-js.jar *.scala
 ```
+
+TODO
+
+- Generate .set(a: Int = 0, b: Int = 0) methods for all setters
+- 

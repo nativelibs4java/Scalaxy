@@ -92,6 +92,19 @@ object JsPrettyPrinter {
       }
 
       val res = tree match {
+        case q"$jsStringContext(scala.StringContext.apply(..$fragments)).js(..$args)" =>
+          val strings = fragments.map {
+            case Literal(Constant(s: String)) => s
+          }
+          assert(strings.size == args.size + 1)
+
+          var res = ""
+          for ((s, a) <- strings.zip(args)) {
+            res += s
+            res += convert(a, indent)
+          }
+          res + strings.last
+
         // case ClassDef(mods, name, tparams, Template(parents, self, q"def $init(..$vparams) = $initBody" :: body)) =>
         //   // val (constructor, body) = decls
         //   // val q"def $init(..$vparams) = $initBody" = constructor
