@@ -1,6 +1,7 @@
 package scalaxy
 
 import scala.language.dynamics
+import scala.language.implicitConversions
 import scala.language.experimental.macros
 
 import scala.reflect.ClassTag
@@ -117,7 +118,7 @@ package beans
           Apply(Select(Ident(beanName), setterSymbol), List(value))
       }
       // Build a block with the bean declaration, the setter calls and return the bean.
-      c.Expr[T](Block(Seq(beanDef) ++ setterCalls, Ident(beanName)))
+      c.Expr[T](Block(List(beanDef) ++ setterCalls, Ident(beanName)))
     }
   }
 }
