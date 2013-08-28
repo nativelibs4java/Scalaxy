@@ -1,15 +1,35 @@
 package scalaxy.js.ast
 
 object JS {
-  sealed trait Node {
+  sealed trait Node extends Api {
     def needsParen = false
   }
+  trait Api {
+    self: Node =>
+
+    def select(name: String, pos: SourcePos) = Select(this, Ident(name, pos), pos)
+    def select(name: Node, pos: SourcePos) = Select(this, name, pos)
+
+    def apply(args: List[Node], pos: SourcePos) = Apply(this, args, pos)
+    def apply(name: String, args: List[Node], pos: SourcePos) = Apply(select(name, pos), args, pos)
+    def apply(name: Node, args: List[Node], pos: SourcePos) = Apply(select(name, pos), args, pos)
+
+    def op(op: String, rhs: Node, pos: SourcePos) = BinOp(this, op, rhs, pos)
+    def preOp(op: String, pos: SourcePos) = PrefixOp(op, this, pos)
+    def postOp(op: String, pos: SourcePos) = PostfixOp(this, op, pos)
+
+    def assign(rhs: Node, pos: SourcePos): Assign = Assign(this, rhs, pos)
+    def assign(ident: String, pos: SourcePos): Assign = assign(Ident(ident, pos), pos)
+    def asVar(name: String, pos: SourcePos) = VarDef(name, this, pos)
+  }
+  def new_(name: String, pos: SourcePos) = New(Ident(name, pos), pos)
+
   case object NoNode extends Node
   case class BinOp(lhs: Node, op: String, rhs: Node, pos: SourcePos) extends Node {
     override def needsParen = true
   }
   case class PrefixOp(op: String, a: Node, pos: SourcePos) extends Node
-  case class SuffixOp(a: Node, op: String, pos: SourcePos) extends Node
+  case class PostfixOp(a: Node, op: String, pos: SourcePos) extends Node
   case class Block(body: List[Node], pos: SourcePos) extends Node
   case class If(condition: Node, thenNode: Node, elseNode: Node, pos: SourcePos) extends Node
   case class Function(name: Option[String], args: List[Node], body: Block, pos: SourcePos) extends Node {
@@ -33,8 +53,8 @@ object JS {
 
   def newEmptyJSON(pos: SourcePos) = JSONObject(Map(), pos) // TODO: JSONObject
 
-  def newSelect(pos: SourcePos, components: String*): Node = {
-    components.map(JS.Ident(_, pos): JS.Node).reduce(JS.Select(_, _, pos))
+  def path(path: String, pos: SourcePos): Node = {
+    path.split("\\.").map(JS.Ident(_, pos): JS.Node).reduce(JS.Select(_, _, pos))
   }
 
   def prettyPrint(node: Node, depth: Int = 0): PosAnnotatedString = node match {
@@ -133,7 +153,7 @@ object JS {
     case New(target, pos) =>
       pos("new ") ++ prettyPrint(target, depth)
 
-    case SuffixOp(operand, op, pos) =>
+    case PostfixOp(operand, op, pos) =>
       prettyPrint(operand, depth) ++
       pos(op)
 

@@ -22,3 +22,9 @@ scalaxy.defineLazyFinalProperty = function(obj, name, builder) {
     }
   });
 };
+
+/** @constructor */
+scalaxy.Tuple = function() {
+  this.values = arguments;
+};
+

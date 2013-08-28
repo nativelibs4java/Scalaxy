@@ -74,7 +74,7 @@ trait ASTConverter extends Globals {
           path = ownerPackage.fullName :: path
         }
       }
-      Some(JS.newSelect(pos, path:_*))
+      Some(JS.path(path.mkString("."), pos))
     }
   }
 
@@ -88,7 +88,7 @@ trait ASTConverter extends Globals {
     }
     JS.Function(
       None,
-      vparams.map(p => JS.Ident(p.name, pos(p))),
+      vparams.map(param => JS.Ident(param.name, pos(param))),
       JS.Block(
         stats.flatMap(convert(_)) ++
         (
@@ -104,9 +104,15 @@ trait ASTConverter extends Globals {
   def assembleBlock(stats: List[JS.Node], value: JS.Node, pos: SourcePos, applyArgs: List[JS.Node] = Nil): JS.Node = {
     val fun = JS.Function(None, Nil, JS.Block(stats :+ JS.Return(value, pos), pos), pos)
     if (applyArgs.isEmpty)
-      JS.Apply(fun, Nil, pos)
+      fun.apply(Nil, pos)
     else
-      JS.Apply(JS.Select(fun, JS.Ident("apply", pos), pos), applyArgs, pos)
+      fun.apply("apply", applyArgs, pos)
+  }
+
+  def convertSingle(tree: Tree, topLevel: Boolean = false)
+                   (implicit globalPrefix: GlobalPrefix,
+                    guardedPrefixes: GuardedPrefixes): JS.Node = {
+    convert(tree, topLevel).unique
   }
 
   def convert(tree: Tree, topLevel: Boolean = false)
@@ -125,12 +131,12 @@ trait ASTConverter extends Globals {
             val ancestorName = ancestorComponents.mkString(".")
             if (guardedPrefixes.add(ancestorName))
               Some {
-                val ancestorRef = JS.newSelect(pos, ancestorComponents:_*)
+                val ancestorRef = JS.path(ancestorName, pos)
                 (
                   JS.If(
                     JS.PrefixOp("!", ancestorRef, pos),
                     if (n == 1)
-                      JS.VarDef(components.head, emptyObj, pos)
+                      emptyObj.asVar(components.head, pos)
                     else
                       JS.Assign(ancestorRef, emptyObj, pos),
                     JS.NoNode,
@@ -147,8 +153,7 @@ trait ASTConverter extends Globals {
 
       if (isLazy) {
         predefs :+
-        JS.Apply(
-          JS.newSelect(pos, "scalaxy", "defineLazyFinalProperty"),
+        JS.path("scalaxy.defineLazyFinalProperty", pos).apply(
           List(
             target,
             JS.Literal(name.toString.trim, pos),
@@ -163,10 +168,9 @@ trait ASTConverter extends Globals {
           pos)
       } else {
         if (!topLevel || globalPrefix.path.isEmpty) {
-          JS.VarDef(name, value, pos) :: Nil
+          value.asVar(name, pos) :: Nil
         } else {
-          predefs :+
-          JS.Assign(JS.newSelect(pos, globalPrefix.path, name), value, pos)
+          predefs :+ JS.Assign(JS.path(globalPrefix.path + "." + name, pos), value, pos)
         }
       }
     }
@@ -194,13 +198,7 @@ trait ASTConverter extends Globals {
         case Apply(Apply(TypeApply(Select(New(arr), constr), List(tpt)), List(length)), List(classTag))
             if tree.tpe != null && tree.tpe <:< typeOf[Array[_]] =>
           val p = pos(tree)
-          JS.Apply(
-            JS.New(
-              JS.Ident("Array", p),
-              p),
-            List(
-              convert(length).unique),
-            p) :: Nil
+          JS.new_("Array", p).apply(List(convert(length).unique), p) :: Nil
 
         // Represent tuples as arrays (this will go well with ES6 destructuring assignments).
         case q"$target.apply[..$tparams](..$values)" 
@@ -243,23 +241,24 @@ trait ASTConverter extends Globals {
                     )
                   case _ =>
                     needsPairVar = true
+                    val pairRef = JS.Ident(pairName, p)
                     (
-                      JS.Assign(JS.Ident(pairName, p), convertedPair, p) :: Nil,
-                      JS.Ident(pairName, p)
+                      pairRef.assign(convertedPair, p) :: Nil,
+                      pairRef
                     )
                 }
                 (
                   predefs,
-                  JS.Select(pairRef, JS.Literal(0, p), p),
+                  pairRef.select(JS.Literal(0, p), p),
                   p,
-                  JS.Select(pairRef, JS.Literal(1, p), p),
+                  pairRef.select(JS.Literal(1, p), p),
                   p
                 )
             })
             val p = pos(tree)
             assembleBlock(
               List(
-                JS.VarDef(objName, JS.newEmptyJSON(p), p)
+                JS.newEmptyJSON(p).asVar(objName, p)
               ) ++
               (
                 if (needsPairVar)
@@ -270,10 +269,7 @@ trait ASTConverter extends Globals {
               keyVals.flatMap({
                 case (predefs, key, keyPos, value, valuePos) =>
                   predefs :+
-                  JS.Assign(
-                    JS.Select(JS.Ident(objName, keyPos), key, keyPos),
-                    value,
-                    keyPos)
+                  JS.Ident(objName, keyPos).select(key, keyPos).assign(value, keyPos)
               }),
               JS.Ident(objName, pos(tree)),
               pos(tree),
@@ -288,15 +284,13 @@ trait ASTConverter extends Globals {
             name,
             JS.Function(
               None,
-              vparams.map(p => JS.Ident(p.name, pos(p))),
+              vparams.map(param => JS.Ident(param.name, pos(param))),
               JS.Block(
                 body.flatMap({
                   case d: ValDef =>
+                    val p = pos(d)
                     convert(d) :+
-                    JS.Assign(
-                      JS.newSelect(pos(d), "this", d.name),
-                      JS.Ident(d.name, pos(d)),
-                      pos(d))
+                    JS.path("this." + d.name, p).assign(JS.Ident(d.name, p), p)
                   case _: DefDef =>
                     Nil
                   case t =>
@@ -309,7 +303,7 @@ trait ASTConverter extends Globals {
           body.collect({
             case d: DefDef if d.name != nme.CONSTRUCTOR =>
               JS.Assign(
-                JS.newSelect(pos(d), name, "prototype", d.name),
+                JS.path(name + ".prototype." + d.name, pos(d)),
                 convert(d).unique,
                 pos(d))
           })
@@ -329,22 +323,12 @@ trait ASTConverter extends Globals {
             //assembleBlock(stats, value, pos, applyArgs)
             assembleBlock(
               List(
-                JS.VarDef(
-                  name,
-                  JS.newEmptyJSON(pos(tree)),
-                  pos(tree)),
+                JS.newEmptyJSON(pos(tree)).asVar(name, pos(tree)),
                 assembleBlock(
                   body.flatMap({
                     case d: ValOrDefDef if !d.mods.hasFlag(Flag.LAZY) && d.name != nme.CONSTRUCTOR =>
                       val p = pos(d)
-                      convert(d) :+
-                      JS.Assign(
-                        JS.Select(
-                          JS.Ident(name, p),
-                          JS.Ident(d.name, p),
-                          p),
-                        JS.Ident(d.name, p),
-                        p)
+                      convert(d) :+ JS.Ident(name, p).select(d.name, p).assign(d.name, p)
                     case t =>
                       convert(t)
                   }),
@@ -361,8 +345,7 @@ trait ASTConverter extends Globals {
           )
 
         case Apply(target, args) =>
-          JS.Apply(
-            convert(target).unique,
+          convert(target).unique.apply(
             args.flatMap(convert(_)),
             pos(tree)) :: Nil
 
@@ -381,11 +364,11 @@ trait ASTConverter extends Globals {
             pos(tree)) :: Nil
 
         case Select(target, name) =>
-          val convTarget = convert(target)
+          val convTarget = convert(target).unique
           if (name == nme.CONSTRUCTOR)
-            convTarget
+            convTarget :: Nil
           else
-            JS.Select(convTarget.unique, JS.Ident(name, pos(tree)), pos(tree)) :: Nil
+            convTarget.select(name, pos(tree)) :: Nil
 
         case Ident(name) =>
           resolve(tree.symbol, pos(tree)).getOrElse {
@@ -448,7 +431,7 @@ trait ASTConverter extends Globals {
           }
 
         case Assign(lhs, rhs) =>
-          JS.Assign(convert(lhs).unique, convert(rhs).unique, pos(tree)) :: Nil
+          convert(lhs).unique.assign(convert(rhs).unique, pos(tree)) :: Nil
 
         case New(target) =>
           JS.New(
