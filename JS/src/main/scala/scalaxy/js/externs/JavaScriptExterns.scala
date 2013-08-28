@@ -67,7 +67,10 @@ object JavaScriptExterns {
         c.error(c.enclosingPosition, "This annotation can only be set on an object, found on: " + annottees.map(_.tree))
         Nil
     }
-    println("OUT =\n" + trees.mkString("\n"))
+
+    write(trees.mkString("\n"), new java.io.File("out.scala"))
+
+    // println("OUT =\n" + trees.mkString("\n"))
     c.Expr[Any](Block(trees, c.literalUnit.tree))
   }
 }

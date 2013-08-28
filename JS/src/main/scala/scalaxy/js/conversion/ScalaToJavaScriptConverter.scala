@@ -1,8 +1,9 @@
 package scalaxy.js
+import ast._
 
 import scala.reflect.api.Universe
 
-class ScalaToJavaScriptConverter(val global: Universe) extends ApiMappings with JsPrettyPrinter {
+class ScalaToJavaScriptConverter(val global: Universe) extends ApiMappings with ASTConverter {
 
   import global._
 
@@ -22,6 +23,14 @@ class ScalaToJavaScriptConverter(val global: Universe) extends ApiMappings with 
       .flatMap(collectGlobals _)
       .map(replaceScalaApisByCallsToExterns _)
 
-    conv.map(prettyPrintJs _).mkString("\n")
+    val fragments: List[PosAnnotatedString] =
+      conv.flatMap(convert(_)).map(JS.prettyPrint(_)).map(_ ++ a";\n")
+
+    val result: PosAnnotatedString =
+      if (fragments.isEmpty) PosAnnotatedString()
+      else fragments.reduce(_ ++ _)
+
+    // TODO create source map from result.map
+    result.value
   }
 }

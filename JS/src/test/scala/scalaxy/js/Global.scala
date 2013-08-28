@@ -1,6 +1,6 @@
 package scalaxy.js
 
-@JavaScriptExterns()
+//@JavaScriptExterns()
 object Global {
 
   @scalaxy.js.global
