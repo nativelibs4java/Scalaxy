@@ -89,5 +89,33 @@ scalac -Xstop-after:typer -cp scalaxy-js.jar *.scala
 
 TODO
 
-- Generate .set(a: Int = 0, b: Int = 0) methods for all setters
-- 
+- Generate `.set(a: Int = 0, b: Int = 0)` methods for all setters
+
+Hacking
+
+- Get Closure Library:
+
+  ```
+  mkdir JS/thirdparty/
+  git clone https://code.google.com/p/closure-library JS/thirdparty/closure-library
+  ```
+
+- Get Closure Compiler:
+
+  ```
+  mkdir JS/thirdparty/
+  git clone https://code.google.com/p/closure-compiler JS/thirdparty/closure-compiler
+  cd JS/thirdparty/closure-compiler && ant
+  ```
+
+- Compile JS runtime (to check for errors and test `JS/example.js`):
+
+  ```
+  JS/bin/closure target/javascript/scalaxy.js JS/src/main/javascript/*.js
+  ```
+
+- Compile JS runtime with optimizations:
+
+  ```
+  OPT=1 JS/bin/closure target/javascript/scalaxy.js JS/src/main/javascript/*.js && ls -l target/javascript/scalaxy.js*
+  ```

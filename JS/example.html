@@ -1,12 +1,47 @@
 <html>
   <head>
+    <script src="./src/main/javascript/goog.base.js"></script>
     <script src="./src/main/javascript/scalaxy.js"></script>
+    <script src="./src/main/javascript/scalaxy.lang.js"></script>
+    <script src="./src/main/javascript/scalaxy.lang.Object.js"></script>
+    <script src="./src/main/javascript/scalaxy.lang.Class.js"></script>
+    <script src="./src/main/javascript/experiments.js"></script>
+    <!--
+    <script src="../target/javascript/scalaxy.js"></script>
+    -->
     <script src="../target/javascript/JavaScriptTest.js"></script>
     <script src="../target/javascript/Run.js"></script>
   </head>
   <body>
     <script>
+      var obj = new scalaxy.lang.Object()
+      console.log(obj);
+      console.log(obj.getClass());
       //document.write(JavaScriptTest)
+
+
+      if (!test2) var test2 = {};
+
+      //goog.provide("test.Test");
+      scalaxy.lang.Class.declareClass(
+          new scalaxy.lang.Class({
+            owner: test2,
+            name: "test2.Test",
+            simpleName: "Test",
+            parent: scalaxy.lang.Class.Object,
+            traits: scalaxy.lang.Class.NO_TRAITS,
+            constructor: function(x) {
+              this.x = x;
+              window.console.log('Constructing Test with x = ' + this.x)
+            },
+            members: {
+              blah: function() {
+                window.console.log('blah ' + this.x)
+              }
+            },
+            module: null
+          }));
+
     </script>
   </body>
 </html>

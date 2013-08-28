@@ -1,0 +1,60 @@
+#!/bin/bash
+
+OUTPUT_FILE=$1
+shift
+FILES=$@
+if [[ -z "$FILES" ]]; then
+    FILES=`find . -name '*.js'`
+fi
+
+# Pain in the *ss: globalThis, reportUnknownTypes
+
+
+FORM_ARGS=""
+if [[ "$OPT" == "1" ]]; then
+  echo "Optimizing"
+  FORM_ARGS="--compilation_level ADVANCED_OPTIMIZATIONS"
+else
+  echo "Not obfuscating"
+  FORM_ARGS="--process_closure_primitives --formatting=pretty_print"
+fi
+
+if [[ "$MAP" == "1" ]]; then
+  FORM_ARGS="$FORM_ARGS --source_map_format V3 --create_source_map '$OUTPUT_FILE.map'"
+fi
+
+java -jar ~/github/closure-compiler/build/compiler.jar \
+    --language_in ECMASCRIPT5 \
+    --js_output_file $OUTPUT_FILE \
+    --jscomp_error accessControls \
+    --jscomp_error ambiguousFunctionDecl \
+    --jscomp_error checkEventfulObjectDisposal \
+    --jscomp_error checkRegExp \
+    --jscomp_error checkStructDictInheritance \
+    --jscomp_error checkTypes \
+    --jscomp_error checkVars \
+    --jscomp_error const \
+    --jscomp_error constantProperty \
+    --jscomp_error deprecated \
+    --jscomp_error duplicateMessage \
+    --jscomp_error es3 \
+    --jscomp_error es5Strict \
+    --jscomp_error externsValidation \
+    --jscomp_error fileoverviewTags \
+    --jscomp_error internetExplorerChecks \
+    --jscomp_error invalidCasts \
+    --jscomp_error misplacedTypeAnnotation \
+    --jscomp_error missingProperties \
+    --jscomp_error missingProvide \
+    --jscomp_error missingRequire \
+    --jscomp_error missingReturn \
+    --jscomp_error nonStandardJsDocs \
+    --jscomp_error strictModuleDepCheck \
+    --jscomp_error suspiciousCode \
+    --jscomp_error typeInvalidation \
+    --jscomp_error undefinedNames \
+    --jscomp_error undefinedVars \
+    --jscomp_error unknownDefines \
+    --jscomp_error uselessCode \
+    --jscomp_error visibility \
+    $FORM_ARGS $FILES

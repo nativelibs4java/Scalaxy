@@ -1,9 +1,11 @@
+goog.provide('scalaxy');
+
 var scalaxy = {};
 
 /**
  * Define a lazy final property (scala object or lazy val).
  *
- * @param {*} obj Object on which the property is defined.
+ * @param {!Object} obj Object on which the property is defined.
  * @param {string} name Name of the property.
  * @param {function(): Object} builder Function that builds the property value.
  */
@@ -21,6 +23,19 @@ scalaxy.defineLazyFinalProperty = function(obj, name, builder) {
       return value;
     }
   });
+};
+
+/**
+ * @this {*}
+ * @param {!Object} source
+ */
+scalaxy.importProperties = function(source) {
+  for (var key in source) {
+    if (source.hasOwnProperty(key)) {
+      this[key] = source[key];
+    }
+  }
+  return this;
 };
 
 /** @constructor */
