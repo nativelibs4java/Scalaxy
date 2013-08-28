@@ -3,20 +3,29 @@ package scalaxy.js
 
 @JavaScript
 object Collections {
+  def doSomething {
+    // val emptyArr = Array[Object]()
+    val arr = Array(1, 2, 3, 4)
+    // val arr2 = new Array[Int](10)
 
-  // val emptyArr = Array[Object]()
-  val arr = Array(1, 2, 3, 4)
-  // val arr2 = new Array[Int](10)
+    val emptyObj = Map[String, Any]()
+    val obj = Map[String, Any]()
+    println(obj)
 
-  val emptyObj = Map[String, Any]()
-  val obj = Map[String, Any]()
+    val obj1 = Map("x" -> 1, "y" -> Array(1, 2))
+    println(obj1)
 
-  val obj1 = Map("x" -> 1, "y" -> Array(1, 2))
+    val pair = (1, 2)
+    val obj2 = Map(pair, "bleh" -> 1)
+    println(obj2)
 
-  val pair = (1, 2)
-  val obj2 = Map(pair, "bleh" -> 1)
+    val obj3 = Map(1 -> 2, 2 -> 3)
+    println(obj3)
 
-  val obj3 = Map(1 -> 2, 2 -> 3)
+    val f = (x: Int) => x + 1
+    println(f)
+    println(f(10))
+  }
 }
 
 @global
@@ -33,4 +42,8 @@ object Run {
   //   println("Creating a sub class with x = " + x)
   // }
   // println(new Sub(10))
+
+  // val pair = (1, 2)
+  // val obj2 = Map(pair, "bleh" -> 1)
+  // println(obj2)
 }

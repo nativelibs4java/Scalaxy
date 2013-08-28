@@ -17,7 +17,7 @@ trait ASTConverter extends Globals {
   import global._
 
   object N {
-    def unapply(name: Name): Option[String] = Option(name).map(_.toString)
+    def unapply(name: Name): Option[String] = Option(name).map(n => decode(n.toString))
   }
 
   // TODO use Nodes here
@@ -35,6 +35,18 @@ trait ASTConverter extends Globals {
         true
       }
     }
+  }
+
+  private implicit def n2s(name: Name): String = name.toString
+  private implicit class ListExt(list: List[JS.Node]) {
+    def unique: JS.Node = list match {
+      case Nil => JS.NoNode
+      case List(v) => v
+    }
+  }
+  private def pos(tree: Tree) = tree.pos match {
+    case NoPosition => NoSourcePos
+    case p => SourcePos(p.source.path, p.line, p.column)
   }
 
   private def resolve(sym: Symbol, pos: SourcePos): Option[JS.Node] = {
@@ -66,6 +78,29 @@ trait ASTConverter extends Globals {
     }
   }
 
+  def convertFunction(vparams: List[ValDef], rhs: Tree, funPos: SourcePos)
+                     (implicit globalPrefix: GlobalPrefix,
+                      guardedPrefixes: GuardedPrefixes): JS.Function = {
+
+    val (stats, value) = rhs match {
+      case Block(stats, value) => (stats, value)
+      case value => (Nil, value)
+    }
+    JS.Function(
+      None,
+      vparams.map(p => JS.Ident(p.name, pos(p))),
+      JS.Block(
+        stats.flatMap(convert(_)) ++
+        (
+          if (value.tpe != null && !(value.tpe <:< typeOf[Unit]))
+            (JS.Return(convert(value).unique, pos(value)): JS.Node) :: Nil
+          else
+            convert(value)
+        ),
+        funPos),
+      funPos)
+  }
+
   def assembleBlock(stats: List[JS.Node], value: JS.Node, pos: SourcePos, applyArgs: List[JS.Node] = Nil): JS.Node = {
     val fun = JS.Function(None, Nil, JS.Block(stats :+ JS.Return(value, pos), pos), pos)
     if (applyArgs.isEmpty)
@@ -77,19 +112,6 @@ trait ASTConverter extends Globals {
   def convert(tree: Tree, topLevel: Boolean = false)
              (implicit globalPrefix: GlobalPrefix,
               guardedPrefixes: GuardedPrefixes): List[JS.Node] = {
-
-    def pos(tree: Tree) = tree.pos match {
-      case NoPosition => NoSourcePos
-      case p => SourcePos(p.source.path, p.line, p.column)
-    }
-
-    implicit def n2s(name: Name): String = name.toString
-    implicit class ListExt(list: List[JS.Node]) {
-      def unique: JS.Node = list match {
-        case Nil => JS.NoNode
-        case List(v) => v
-      }
-    }
 
     def defineVar(name: Name, value: JS.Node, pos: SourcePos, isLazy: Boolean = false): List[JS.Node] = {
       val emptyObj = JS.newEmptyJSON(pos)
@@ -164,6 +186,9 @@ trait ASTConverter extends Globals {
         // Represent array with... array.
         case q"scala.Array.apply[..$tparams](..$values)" =>
           JS.JSONArray(values.map(convert(_).unique), pos(tree)) :: Nil
+
+        case Apply(Select(a, N(op @ ("+" | "-" | "*" | "/" | "%" | "<" | "<=" | ">" | ">=" | "==" | "!=" | "===" | "!==" | "<<" | ">>" | ">>>" | "||" | "&&" | "^^" | "^" | "&" | "|"))), List(b)) =>
+          JS.BinOp(convert(a).unique, op, convert(b).unique, pos(tree)) :: Nil
 
         //case q"new scala.Array[..$tparams]($length)($classTag)" =>
         case Apply(Apply(TypeApply(Select(New(arr), constr), List(tpt)), List(length)), List(classTag))
@@ -396,6 +421,9 @@ trait ASTConverter extends Globals {
               isLazy = mods.hasFlag(Flag.LAZY))
           }
 
+        case Function(vparams, body) =>
+          convertFunction(vparams, body, pos(tree)) :: Nil
+
         case DefDef(mods, name, tparams, vparamss, tpt, rhs) =>
           val termSym = tree.symbol.asTerm
           if (name == nme.CONSTRUCTOR) {
@@ -413,14 +441,7 @@ trait ASTConverter extends Globals {
               Nil
             }
           } else {
-            defineVar(
-              name,
-              JS.Function(
-                None,
-                vparamss.flatten.map(p => JS.Ident(p.name, pos(p))),
-                JS.Block(convert(rhs), pos(tree)),
-                pos(tree)),
-              pos(tree))
+            convertFunction(vparamss.flatten, rhs, pos(tree)) :: Nil
           }
 
         case Assign(lhs, rhs) =>
