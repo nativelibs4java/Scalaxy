@@ -6,6 +6,7 @@ import scala.language.implicitConversions
 import scala.reflect.NameTransformer.{ encode, decode }
 
 import scala.collection.JavaConversions._
+import scala.collection.mutable
 import scala.reflect.macros.Context
 import scala.reflect.api.Universe
 // import scala.reflect.api.Universe
@@ -19,9 +20,21 @@ trait ASTConverter extends Globals {
     def unapply(name: Name): Option[String] = Option(name).map(_.toString)
   }
 
+  // TODO use Nodes here
   case class GlobalPrefix(path: String = "") {
-    def derive(subPath: String): GlobalPrefix =
+    def derive(subPath: String) =
       GlobalPrefix(if (path == "") subPath else path + "." + subPath)
+  }
+
+  case class GuardedPrefixes(set: mutable.Set[String] = mutable.Set()) {
+    def add(prefix: String) = {
+      if (set(prefix)) {
+        false
+      } else {
+        set += prefix
+        true
+      }
+    }
   }
 
   private def resolve(sym: Symbol, pos: SourcePos): Option[JS.Node] = {
@@ -45,7 +58,7 @@ trait ASTConverter extends Globals {
       }
 
       if (sym.isClass) {
-        if (ownerPackage != NoSymbol && !reachedGlobalScope) {
+        if (ownerPackage != NoSymbol) {//} && !reachedGlobalScope) {
           path = ownerPackage.fullName :: path
         }
       }
@@ -61,7 +74,9 @@ trait ASTConverter extends Globals {
       JS.Apply(JS.Select(fun, JS.Ident("apply", pos), pos), applyArgs, pos)
   }
 
-  def convert(tree: Tree, topLevel: Boolean = false)(implicit globalPrefix: GlobalPrefix = GlobalPrefix()): List[JS.Node] = {
+  def convert(tree: Tree, topLevel: Boolean = false)
+             (implicit globalPrefix: GlobalPrefix,
+              guardedPrefixes: GuardedPrefixes): List[JS.Node] = {
 
     def pos(tree: Tree) = tree.pos match {
       case NoPosition => NoSourcePos
@@ -83,17 +98,27 @@ trait ASTConverter extends Globals {
           (Nil, JS.Ident("this", pos))
         } else {
           val components = globalPrefix.path.split("\\.")
-          val predefs = (for (n <- (1 to components.size).toList) yield {
-            val ancestor = JS.newSelect(pos, components.take(n):_*)
-            JS.If(
-              JS.PrefixOp("!", ancestor, pos),
-              if (n == 1)
-                JS.VarDef(components.head, emptyObj, pos)
-              else
-                JS.Assign(ancestor, emptyObj, pos),
-              JS.NoNode,
-              pos): JS.Node
-          })
+          val (predefs, guards) = (for (n <- (1 to components.size).toList) yield {
+            val ancestorComponents = components.take(n)
+            val ancestorName = ancestorComponents.mkString(".")
+            if (guardedPrefixes.add(ancestorName))
+              Some {
+                val ancestorRef = JS.newSelect(pos, ancestorComponents:_*)
+                (
+                  JS.If(
+                    JS.PrefixOp("!", ancestorRef, pos),
+                    if (n == 1)
+                      JS.VarDef(components.head, emptyObj, pos)
+                    else
+                      JS.Assign(ancestorRef, emptyObj, pos),
+                    JS.NoNode,
+                    pos): JS.Node,
+                  ancestorName
+                )
+              }
+            else
+              None
+          }).flatten.unzip
           (predefs, JS.Ident(globalPrefix.path, pos))
         }
       }
@@ -124,6 +149,9 @@ trait ASTConverter extends Globals {
       }
     }
 
+    if (tree.toString.contains("new scala.Array"))
+      println("ARRAY IS: " + tree)
+
     val res: List[JS.Node] = //try {
       tree match {
 
@@ -134,10 +162,12 @@ trait ASTConverter extends Globals {
             pos(tree)) :: Nil
 
         // Represent array with... array.
-        case q"scala.Array.apply[$elemType](..$values)" =>
+        case q"scala.Array.apply[..$tparams](..$values)" =>
           JS.JSONArray(values.map(convert(_).unique), pos(tree)) :: Nil
 
-        case q"new scala.Array[$elemType]($length)($classTag[..$ctparams])" =>
+        //case q"new scala.Array[..$tparams]($length)($classTag)" =>
+        case Apply(Apply(TypeApply(Select(New(arr), constr), List(tpt)), List(length)), List(classTag))
+            if tree.tpe != null && tree.tpe <:< typeOf[Array[_]] =>
           val p = pos(tree)
           JS.Apply(
             JS.New(
@@ -158,7 +188,7 @@ trait ASTConverter extends Globals {
             JS.JSONObject(
               pairs.map({
                 //case q"$key -> $value" =>
-                case q"$caller[..$tparams]($key).->($value)" =>
+                case q"$assocBuilder[$keyType]($key).->[$valueType]($value)" =>
                   val Literal(Constant(keyString: String)) = key
                   keyString -> convert(value).unique
               }).toMap,
@@ -221,7 +251,8 @@ trait ASTConverter extends Globals {
                     keyPos)
               }),
               JS.Ident(objName, pos(tree)),
-              pos(tree))
+              pos(tree),
+              applyArgs = List(JS.Ident("this", pos(tree))))
           }) :: Nil
 
         // case ClassDef(mods, name, tparams, Template(parents, self, q"def $init(..$vparams) = $initBody" :: body)) =>
@@ -341,7 +372,7 @@ trait ASTConverter extends Globals {
 
         case PackageDef(pid, stats) =>
           val subGlobalPrefix = globalPrefix.derive(pid.toString)
-          stats.flatMap(convert(_, topLevel = true)(subGlobalPrefix))
+          stats.flatMap(convert(_, topLevel = true)(subGlobalPrefix, guardedPrefixes))
 
         case This(qual) =>
           JS.Ident("this", pos(tree)) :: Nil

@@ -2,20 +2,25 @@ package scalaxy.js
 
 
 @JavaScript
-@global
-object Run {
+object Collections {
 
   // val emptyArr = Array[Object]()
   val arr = Array(1, 2, 3, 4)
-  val arr2 = new Array[Int](10)
+  // val arr2 = new Array[Int](10)
 
   val emptyObj = Map[String, Any]()
   val obj = Map[String, Any]()
+
+  val obj1 = Map("x" -> 1, "y" -> Array(1, 2))
 
   val pair = (1, 2)
   val obj2 = Map(pair, "bleh" -> 1)
 
   val obj3 = Map(1 -> 2, 2 -> 3)
+}
+
+@global
+object Run {
 
   println("This is run directly!")
 

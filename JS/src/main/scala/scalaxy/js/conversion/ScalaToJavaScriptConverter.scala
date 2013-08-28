@@ -23,6 +23,8 @@ class ScalaToJavaScriptConverter(val global: Universe) extends ApiMappings with 
       .flatMap(collectGlobals _)
       .map(replaceScalaApisByCallsToExterns _)
 
+    implicit val globalPrefix = GlobalPrefix()
+    implicit val guardedPrefixes = GuardedPrefixes()
     val fragments: List[PosAnnotatedString] =
       conv.flatMap(convert(_)).map(JS.prettyPrint(_)).map(_ ++ a";\n")
 
