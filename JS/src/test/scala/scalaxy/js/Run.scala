@@ -23,6 +23,7 @@ object Collections {
     println(obj3)
 
     val f = (x: Int) => x + 1
+    
     println(f)
     println(f(10))
   }

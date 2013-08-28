@@ -441,7 +441,10 @@ trait ASTConverter extends Globals {
               Nil
             }
           } else {
-            convertFunction(vparamss.flatten, rhs, pos(tree)) :: Nil
+            defineVar(
+              name,
+              convertFunction(vparamss.flatten, rhs, pos(tree)),
+              pos(tree))
           }
 
         case Assign(lhs, rhs) =>
