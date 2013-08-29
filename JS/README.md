@@ -4,17 +4,18 @@ experiments of Scala -> JavaScript translation, using a macro annotation + Closu
 
 # Goals
 
-Still very early experimentation, but here are the current design goals:
-- Make Scala a first-class citizen of the JavaScript ecosystem:
-  - Calls from Scala to JavaScript should be very easy:
-    - Possibility to write inline JS with some string interpolation (+ translation of JS errors back to Scala ones)
-    - Full signatures of JavaScript externs to allow Scala typer to show its magic
-    - *Dynamic* mode where everything is allowed (`obj.asDynamic.whatever = blah`)
-  - The generated JavaScript code should:
-    - Be human-readable,
-    - Be obvious how to interface with from JavaScript,
-    - Have full Closure type annotations
-  - All JavaScript API
+Still very early experimentation, but the goal is to make Scala a first-class citizen of the JavaScript ecosystem.
+
+Here are the current design goals / constraints:
+
+- Calls from Scala to JavaScript should be very easy:
+  - Possibility to write inline JS with some string interpolation (+ translation of JS errors back to Scala ones)
+  - Full signatures of JavaScript externs to allow Scala typer to show its magic (using closure externs)
+  - *Dynamic* mode where everything is allowed (`obj.asDynamic.whatever = blah`)
+- The generated JavaScript code should:
+  - Be human-readable,
+  - Be obvious how to interface with from JavaScript,
+  - Have full Closure type annotations
 - The compiler should:
   - Be fast (faster than Scala !)
   - Provide a separate compilation model (+ linking = closure pass)
