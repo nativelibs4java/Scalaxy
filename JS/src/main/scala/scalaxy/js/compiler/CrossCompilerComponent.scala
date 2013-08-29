@@ -18,9 +18,9 @@ class CrossCompilationComponent(val global: Global, val outputDir: File)
   with ScalaToJavaScriptConversion {
 
   val phaseName = "javascript"
-  val runsRightAfter = Option("mixin")
+  val runsRightAfter = Option("flatten")
   val runsAfter = runsRightAfter.toList
-  override val runsBefore = List("cleanup")
+  override val runsBefore = List("mixin")
 
   import global._
 
