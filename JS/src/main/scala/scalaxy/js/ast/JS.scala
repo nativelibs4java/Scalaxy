@@ -25,6 +25,11 @@ object JS {
   }
   def new_(name: String)(implicit pos: SourcePos) = New(Ident(name))
 
+  val binaryOperators = Set(
+    "+", "-", "*", "/", "%",
+    "<", "<=", ">", ">=", "==", "!=", "===", "!==", "||", "&&", "^^",
+    "<<", ">>", ">>>", "^", "&", "|"
+  )
   case object NoNode extends Node {
     def pos: SourcePos = null
   }

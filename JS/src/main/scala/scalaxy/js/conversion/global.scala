@@ -9,6 +9,6 @@ trait Globals {
   import global._
 
   def hasGlobalAnnotation(sym: Symbol): Boolean = sym != null && {
-    sym.annotations.exists(a => a.tpe != null && a.tpe =:= typeOf[scalaxy.js.global])
+    sym.annotations.exists(a => Option(a.tpe).exists(_ =:= typeOf[scalaxy.js.global]))
   }
 }

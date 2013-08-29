@@ -105,7 +105,7 @@ trait ASTConverter extends Globals {
       JS.Block(
         stats.flatMap(convert(_)) ++
         (
-          if (value.tpe != null && !(value.tpe <:< typeOf[Unit]))
+          if (Option(value.tpe).exists(tpe => !(tpe <:< typeOf[Unit])))
             (JS.Return(convert(value).unique)(pos(value)): JS.Node) :: Nil
           else
             convert(value)
@@ -202,21 +202,21 @@ trait ASTConverter extends Globals {
         case q"scala.Array.apply[..$tparams](..$values)" =>
           JS.JSONArray(values.map(convert(_).unique)) :: Nil
 
-        case Apply(Select(a, N(op @ ("+" | "-" | "*" | "/" | "%" | "<" | "<=" | ">" | ">=" | "==" | "!=" | "===" | "!==" | "<<" | ">>" | ">>>" | "||" | "&&" | "^^" | "^" | "&" | "|"))), List(b)) =>
+        case Apply(Select(a, N(op)), List(b)) if JS.binaryOperators(op) =>
           JS.BinOp(convert(a).unique, op, convert(b).unique) :: Nil
 
         //case q"new scala.Array[..$tparams]($length)($classTag)" =>
         case Apply(Apply(TypeApply(Select(New(arr), constr), List(tpt)), List(length)), List(classTag))
-            if tree.tpe != null && tree.tpe <:< typeOf[Array[_]] =>
+            if Option(tree.tpe).exists(_ <:< typeOf[Array[_]]) =>
           JS.new_("Array").apply(List(convert(length).unique)) :: Nil
 
         // Represent tuples as arrays (this will go well with ES6 destructuring assignments).
-        case q"$target.apply[..$tparams](..$values)" 
-            if target.symbol != null && target.symbol.fullName.toString.matches("""scala\.Tuple\d+""") =>
-          //println("SYMMM: " + target.symbol.fullName)
+        case Apply(TypeApply(target, tparams), values)
+            if Option(target.symbol).exists(_.fullName.toString.matches("""scala\.Tuple\d+""")) =>
           JS.JSONArray(values.map(convert(_).unique)) :: Nil
 
-        case q"$mapCreator[$keyType, $valueType](..$pairs)" if tree.tpe != null && tree.tpe <:< typeOf[Map[_, _]] =>
+        case Apply(TypeApply(target, List(_, _)), pairs)
+            if Option(tree.tpe).exists(_ <:< typeOf[Map[_, _]]) =>
           (try {
             JS.JSONObject(
               pairs.map({
@@ -239,7 +239,7 @@ trait ASTConverter extends Globals {
                   pos(value)
                 )
               case _ =>
-                println("FAILED TO MATCH PAIR: " + pair)
+                // println("FAILED TO MATCH PAIR: " + pair)
                 implicit val p = pos(pair)
                 val convertedPair = convert(pair).unique
                 val (predefs, pairRef) = pair match {
@@ -371,8 +371,10 @@ trait ASTConverter extends Globals {
           Nil
 
         case Super(qual, mix) =>
-          JS.Ident("super") :: Nil
-          Nil // TODO
+          JS.Ident("super") :: Nil // TODO
+
+        case If(cond, thenp, elsep) =>
+          JS.If(convert(cond).unique, convert(thenp).unique, convert(elsep).unique) :: Nil // TODO
 
         case Block(stats, value) =>
           // TODO better job here
@@ -394,7 +396,8 @@ trait ASTConverter extends Globals {
           } :: Nil
 
         case Literal(Constant(v)) =>
-          JS.Literal(v) :: Nil
+          if (v == (())) JS.NoNode :: Nil
+          else JS.Literal(v) :: Nil
 
         case PackageDef(pid, stats) =>
           val subGlobalPrefix = pid match {
