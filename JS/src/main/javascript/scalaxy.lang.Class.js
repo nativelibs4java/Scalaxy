@@ -3,7 +3,7 @@ goog.require('scalaxy.lang');
 goog.require('scalaxy.lang.Object');
 
 /**
- * Representation of a Scala class.
+ * Runtime representation of a Java / Scala class.
  *
  * @constructor
  * @param {{
