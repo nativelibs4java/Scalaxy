@@ -1,6 +1,27 @@
-Scalaxy/JS:
+# Scalaxy/JS
 
 experiments of Scala -> JavaScript translation, using a macro annotation + Closure Compiler to generate all the externs, and another macro annotation to mark a compilation unit as to be converted.
+
+# Goals
+
+Still very early experimentation, but here are the current design goals:
+- Make Scala a first-class citizen of the JavaScript ecosystem:
+  - Calls from Scala to JavaScript should be very easy:
+    - Possibility to write inline JS with some string interpolation (+ translation of JS errors back to Scala ones)
+    - Full signatures of JavaScript externs to allow Scala typer to show its magic
+    - *Dynamic* mode where everything is allowed (`obj.asDynamic.whatever = blah`)
+  - The generated JavaScript code should:
+    - Be human-readable,
+    - Be obvious how to interface with from JavaScript,
+    - Have full Closure type annotations
+  - All JavaScript API
+- The compiler should:
+  - Be fast (faster than Scala !)
+  - Provide a separate compilation model (+ linking = closure pass)
+  - Support optional optimized mode
+  - Output source maps to allow debugging of Scala sources from the browser
+
+# Example
 
 First, we define externs in `Global.scala`:
 
@@ -87,11 +108,11 @@ For better performance, prevent `scalac` from finishing compilation:
 scalac -Xstop-after:typer -cp scalaxy-js.jar *.scala
 ```
 
-TODO
+# TODO
 
 - Generate `.set(a: Int = 0, b: Int = 0)` methods for all setters
 
-Hacking
+# Hacking
 
 - Get Closure Library:
 
