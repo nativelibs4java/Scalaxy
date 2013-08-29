@@ -17,7 +17,7 @@ Here are the current design goals / constraints:
   - Be obvious how to interface with from JavaScript,
   - Have full Closure type annotations
 - The compiler should:
-  - Be fast (faster than Scala !)
+  - Be as fast as possible
   - Provide a separate compilation model (+ linking = closure pass)
   - Support optional optimized mode
   - Output source maps to allow debugging of Scala sources from the browser
