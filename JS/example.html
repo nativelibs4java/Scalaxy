@@ -23,13 +23,13 @@
       if (!test2) var test2 = {};
 
       //goog.provide("test.Test");
-      scalaxy.lang.Class.declareClass(
+      scalaxy.lang.Class.defineClass(
           new scalaxy.lang.Class({
             owner: test2,
             name: "test2.Test",
             simpleName: "Test",
             parent: scalaxy.lang.Class.Object,
-            traits: scalaxy.lang.Class.NO_TRAITS,
+            traits: [],
             constructor: function(x) {
               this.x = x;
               window.console.log('Constructing Test with x = ' + this.x)

@@ -6,12 +6,18 @@ goog.require('scalaxy.lang');
  *
  * @constructor
  */
-scalaxy.lang.Object = function() {};
-
-/** @type {!scalaxy.lang.Class} */
-scalaxy.lang.Object.prototype.class_;
+scalaxy.lang.Object = function() {
+  var cls = this.getClass();
+  var self = this;
+  // TODO: check linearization order and such things...
+  cls.traits.forEach(function(t) {
+    t.constructor.apply(self);
+  })
+};
 
 /**
+ * Equivalent to `obj.isInstanceOf[type]` in Scala.
+ *
  * @this {!scalaxy.lang.Object}
  * @param {!scalaxy.lang.Class} type
  * @return {boolean}
@@ -29,5 +35,5 @@ scalaxy.lang.Object.prototype.isInstanceOf = function(type) {
  * @return {!scalaxy.lang.Class}
  */
 scalaxy.lang.Object.prototype.getClass = function() {
-  return this.class_;
+  return this[scalaxy.CLASS_FIELD];
 };

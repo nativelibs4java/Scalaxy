@@ -2,6 +2,8 @@ goog.provide('scalaxy');
 
 var scalaxy = {};
 
+scalaxy.CLASS_FIELD = '$class$';
+
 /**
  * Define a lazy final property (scala object or lazy val).
  *
@@ -23,19 +25,6 @@ scalaxy.defineLazyFinalProperty = function(obj, name, builder) {
       return value;
     }
   });
-};
-
-/**
- * @this {*}
- * @param {!Object} source
- */
-scalaxy.importProperties = function(source) {
-  for (var key in source) {
-    if (source.hasOwnProperty(key)) {
-      this[key] = source[key];
-    }
-  }
-  return this;
 };
 
 /** @constructor */
