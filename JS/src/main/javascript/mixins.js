@@ -7,6 +7,11 @@ goog.require('scalaxy.lang.Object');
   trait A { def foo = "A" }
   trait B { def foo = "B" }
 
+  class MixedA extends A
+  class MixedSuperA extends A { override def foo = "super = " + super.foo }
+  class MixedSuperAB_A extends A with B { override def foo = "super = " + super[A].foo }
+  class MixedSuperAB_B extends A with B { override def foo = "super = " + super[B].foo }
+
   assertEquals("A",
     (new A {}).foo)
 

@@ -1,9 +1,15 @@
 package scalaxy
+import scala.language.implicitConversions
 
-package object js {
-  implicit class DynamicExtension(value: Any) {
+package js {
+  /*implicit*/
+  class DynamicExtension(value: Any) {
     def asDynamic = new DynamicValue(value)
   }
+}
+package object js {
+  implicit def dynamicExtension(value: Any) = new DynamicExtension
+  
   type JSObject = collection.mutable.Map[String, Any]
 
   implicit class JSStringContext(c: StringContext) {

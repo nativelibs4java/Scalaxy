@@ -9,7 +9,7 @@ import scala.reflect.runtime.{ universe => ru }
 import scala.collection.mutable
 import scala.collection.JavaConversions._
 
-object Test extends App {
+object Test {//extends App {
 
   val generator = new JavaScriptToScalaSignaturesGenerator(ru)
 

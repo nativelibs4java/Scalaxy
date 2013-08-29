@@ -10,7 +10,7 @@ import scala.language.experimental.macros
 import scala.annotation.StaticAnnotation
 
 class JavaScriptExterns(paths: String*) extends StaticAnnotation {
-  def macroTransform(annottees: Any*) = macro JavaScriptExterns.implementation
+  // def macroTransform(annottees: Any*) = macro JavaScriptExterns.implementation
 }
 
 object JavaScriptExterns {

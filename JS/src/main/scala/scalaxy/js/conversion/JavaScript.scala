@@ -7,7 +7,7 @@ import scala.annotation.StaticAnnotation
 import java.io.File
 
 class JavaScript extends StaticAnnotation {
-  def macroTransform(annottees: Any*) = macro JavaScript.implementation
+  // def macroTransform(annottees: Any*) = macro JavaScript.implementation
 }
 
 object JavaScript {
@@ -15,7 +15,8 @@ object JavaScript {
     import c.universe._
 
     val body = c.typeCheck(c.enclosingUnit.body, withMacrosDisabled = true)
-    val javaScriptCode = new ScalaToJavaScriptConverter(c.universe).convert(body)
+    val converter = new ScalaToJavaScriptConverter(c.universe)
+    val javaScriptCode = converter.convert(body.asInstanceOf[converter.global.Tree])
     println("CONVERTED TO JavaScript:\n" + javaScriptCode)
     write(
       javaScriptCode,
