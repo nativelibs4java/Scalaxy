@@ -25,20 +25,15 @@ test.Test = function(x) {
 };
 goog.inherits(test.Test, scalaxy.lang.Object);
 
+scalaxy.lang.Class.defineClass({
+  name: "test.Test",
+  constructor: test.Test,
+  base: scalaxy.lang.Object
+});
+
 /**
  * @this {!test.Test}
  */
 test.Test.prototype.blah = function() {
   window.console.log('blah ' + this.x)
 };
-
-scalaxy.lang.Class.defineClass(
-    new scalaxy.lang.Class({
-      owner: test,
-      name: "test.Test",
-      simpleName: "Test",
-      parent: scalaxy.lang.Class.Object,
-      traits: [],
-      constructor: test.Test,
-      module: null
-    }));

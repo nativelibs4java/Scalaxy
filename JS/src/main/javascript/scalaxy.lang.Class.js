@@ -3,83 +3,115 @@ goog.require('scalaxy.lang');
 goog.require('scalaxy.lang.Object');
 
 /**
+ * @typedef {{
+ *    name: string,
+ *    constructor: Function,
+ *    base: (Object|undefined),
+ *    traits: (Array.<Function>|undefined),
+ *    module: (scalaxy.lang.Class|undefined)
+ * }}
+ */
+scalaxy.lang.ClassDescriptor;
+
+/**
  * Runtime representation of a Java / Scala class.
  *
  * @constructor
- * @param {{
- *    owner: Object,
- *    name: string,
- *    simpleName: string,
- *    parent: scalaxy.lang.Class,
- *    traits: Array.<scalaxy.lang.Class>,
- *    constructor: Function,
- *    module: scalaxy.lang.Class
- * }} desc Descriptor of the class in JSON form.
+ * @param {scalaxy.lang.ClassDescriptor} desc Descriptor of the class in JSON form.
  */
 scalaxy.lang.Class = function(desc) {
-
-  /** @type {!Object} */
-  this.owner = desc.owner || goog.global;
 
   /** @type {string} */
   this.name = desc.name;
 
-  /** @type {string} */
-  this.simpleName = desc.simpleName;
-
-  /** @type {scalaxy.lang.Class} */
-  this.parent = desc.parent;
-
-  /** @type {Array.<!scalaxy.lang.Class>} */
-  this.ownTraits = desc.traits;
-
-  /**
-   * @type {!Array.<!scalaxy.lang.Class>|undefined}
-   * @private
-   */
-  this.traits_;
-
   /** @type {Function} */
   this.constructor = desc.constructor;
 
+  /** @type {Object} */
+  this.base = desc.base || null;
+
+  /** @type {scalaxy.lang.Class|undefined} */
+  this.superclass_;
+
+  /** @type {Array.<Function>} */
+  this.traits = desc.traits || [];
+  this.traits.forEach(function(t) {
+    if (t instanceof scalaxy.lang.Object)
+      throw new Error("Not a trait: " + t);
+  })
+
   /** @type {scalaxy.lang.Class} */
-  this.moduleClass = desc.module;
+  this.moduleClass = desc.module || null;
 };
 
-/** @this {!scalaxy.lang.Class} */
+/**
+ * @this {!scalaxy.lang.Class}
+ * @return {string}
+ */
 scalaxy.lang.Class.prototype.getName = function() {
   return this.name;
 };
 
-/** @this {!scalaxy.lang.Class} */
+/**
+ * @this {!scalaxy.lang.Class}
+ * @return {string}
+ */
 scalaxy.lang.Class.prototype.getSimpleName = function() {
-  return this.simpleName;
+  return this.name.split('.').splice(-1)[0];
 };
 
-Object.defineProperty(scalaxy.lang.Class.prototype, 'traits', {
-  /** @this {!scalaxy.lang.Class} */
-  get: function() {
-    if (!goog.isDef(this.traits_)) {
-      var ownTraitsConstructors =  this.ownTraits.map(function(t) { return t.constructor; });
-      // TODO: check linearization order.
-      this.traits_ = (goog.isDefAndNotNull(this.parent) ? this.parent['traits'] : []).concat(this.ownTraits);
-      // Mix trait methods in.
-      // TODO: check linearization order + what happens of super calls.
-      var existingMembers = {};
-      Object.keys(this.constructor.prototype).forEach(function(k) {
-        existingMembers[k] = true;
-      });
-      this.traits_.forEach(function(t) {
-        for (var key in t) {
-          if (!existingMembers[key]) {
-            this.constructor.prototype[key] = t[key];
-          }
-        }
-      })
-    }
-    return this.traits_;
+/**
+ * @this {!scalaxy.lang.Class}
+ * @return {scalaxy.lang.Class}
+ */
+scalaxy.lang.Class.prototype.getSuperclass = function() {
+  if (this.base) {
+    this.superclass_ = this.base[scalaxy.CLASS_FIELD] || null;
   }
-});
+  return this.superclass_;
+};
+
+/**
+ * @this {!scalaxy.lang.Class}
+ * @return {boolean}
+ */
+scalaxy.lang.Class.prototype.isTrait = function() {
+  // TODO: better define this?
+  return !(this.constructor instanceof scalaxy.lang.Object);
+};
+
+/**
+ * @this {!scalaxy.lang.Class}
+ * @return {boolean}
+ */
+scalaxy.lang.Class.prototype.isModule = function() {
+  // TODO: better define this?
+  return !this.isTrait() && !goog.isDef(this.constructor.prototype);
+};
+
+/**
+ * @this {!scalaxy.lang.Class}
+ * @param {scalaxy.lang.Object} obj
+ * @return {boolean}
+ */
+scalaxy.lang.Class.prototype.isInstance = function(obj) {
+  if (!obj) {
+    return false;
+  }
+
+  if (this.isTrait()) {
+    var cls = obj.getClass();
+    while (cls) {
+      if (cls.traits.indexOf(this.constructor) >= 0) {
+        return true;
+      }
+      cls = cls.getSuperclass();
+    }
+    return false;
+  } else {
+    return obj instanceof this.constructor
+  }
+};
 
 /**
  * Class declarations
@@ -91,9 +123,12 @@ scalaxy.lang.Class.classes_ = {};
 /**
  * Declare a class
  *
- * @param {!scalaxy.lang.Class} cls
+ * @param {!scalaxy.lang.ClassDescriptor} desc
+ * @return {!scalaxy.lang.Class}
  */
-scalaxy.lang.Class.defineClass = function(cls) {
+scalaxy.lang.Class.defineClass = function(desc) {
+  var cls = new scalaxy.lang.Class(desc);
+
   Object.defineProperty(scalaxy.lang.Class.classes_, cls.getName(), {
     value: cls,
     enumerable: true
@@ -102,10 +137,11 @@ scalaxy.lang.Class.defineClass = function(cls) {
   if (goog.isDefAndNotNull(cls.moduleClass)) {
     scalaxy.defineLazyFinalProperty(
         /** @type {!Object} */ (cls.constructor),
-        'companion',
+        scalaxy.COMPANION,
         /** @type {function()} */ (cls.moduleClass.constructor));
   }
   cls.constructor.prototype[scalaxy.CLASS_FIELD] = cls;
+  return cls;
 };
 
 scalaxy.lang.Class.forName = function(name) {
@@ -129,19 +165,9 @@ scalaxy.lang.Class.classOf = function(type) {
   throw new Error("Not found: type " + type)
 }
 
-/**
- * Shortcut for Class.forName("java.lang.Object")
- */
-scalaxy.lang.Class.Object =
-    new scalaxy.lang.Class({
-      owner: scalaxy.lang,
-      name: "scalaxy.lang.Object",
-      simpleName: "Object",
-      parent: null,
-      traits: [],
-      constructor: scalaxy.lang.Object,
-      members: {},
-      module: null
-    });
-
-scalaxy.lang.Class.defineClass(scalaxy.lang.Class.Object);
+/** Shortcut */
+scalaxy.lang.Class.Object = scalaxy.lang.Class.defineClass({
+  name: "scalaxy.lang.Object",
+  constructor: scalaxy.lang.Object,
+  lazyBase: function() { return Object; }
+});

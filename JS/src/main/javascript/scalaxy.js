@@ -3,6 +3,7 @@ goog.provide('scalaxy');
 var scalaxy = {};
 
 scalaxy.CLASS_FIELD = '$class$';
+scalaxy.COMPANION = '$companion$';
 
 /**
  * Define a lazy final property (scala object or lazy val).

@@ -8,12 +8,10 @@ goog.require('scalaxy.lang');
  */
 scalaxy.lang.Object = function() {
   var cls = this.getClass();
-  var self = this;
-  // TODO: check linearization order and such things...
-  cls.traits.forEach(function(t) {
-    t.constructor.apply(self);
-  })
+  // Call trait constructors on this.
+  cls.traits.forEach(function(t) { t.apply(this); }, this);
 };
+goog.inherits(scalaxy.lang.Object, Object);
 
 /**
  * Equivalent to `obj.isInstanceOf[type]` in Scala.
@@ -23,11 +21,7 @@ scalaxy.lang.Object = function() {
  * @return {boolean}
  */
 scalaxy.lang.Object.prototype.isInstanceOf = function(type) {
-  if (this instanceof type) {
-    return true;
-  }
-  var cls = this.getClass();
-  return cls['traits'].indexOf(type) >= 0;
+  return type.isInstance(this);
 };
 
 /**
