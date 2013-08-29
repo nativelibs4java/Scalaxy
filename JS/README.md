@@ -17,7 +17,7 @@ Here are the current design goals / constraints:
   - Be obvious how to interface with from JavaScript,
   - Have full Closure type annotations
 - The compiler should:
-  - Be as fast as possible
+  - Be as fast as possible (resident compiler + sbt-style build manager?)
   - Provide a separate compilation model (+ linking = closure pass)
   - Support optional optimized mode
   - Output source maps to allow debugging of Scala sources from the browser
