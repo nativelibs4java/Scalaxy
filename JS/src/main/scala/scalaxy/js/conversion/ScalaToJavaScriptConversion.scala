@@ -25,8 +25,11 @@ trait ScalaToJavaScriptConversion extends ApiMappings with ASTConverter {
 
     implicit val globalPrefix = GlobalPrefix()
     implicit val guardedPrefixes = GuardedPrefixes()
-    val fragments: List[PosAnnotatedString] =
-      conv.flatMap(convert(_)).map(JS.prettyPrint(_)).map(_ ++ a";\n")
+    implicit val pos = SourcePos(null, -1, -1)
+    var jsTrees: List[JS.Node] = conv.flatMap(convert(_))
+    jsTrees = guardedPrefixes.generateGuards ++ jsTrees
+
+    val fragments = jsTrees.map(JS.prettyPrint(_)).map(_ ++ a";\n")
 
     val result: PosAnnotatedString =
       if (fragments.isEmpty) PosAnnotatedString()

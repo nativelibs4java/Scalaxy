@@ -13,8 +13,6 @@ object CrossCompilationComponent {
 }
 class CrossCompilationComponent(val global: Global, val outputDir: File)
   extends SubComponent
-  // with Transform
-  // with TypingTransformers
   with ScalaToJavaScriptConversion {
 
   val phaseName = "javascript"
@@ -24,11 +22,8 @@ class CrossCompilationComponent(val global: Global, val outputDir: File)
 
   import global._
 
-  println("Created CrossCompilationComponent")
   def newPhase(prev: Phase) = new StdPhase(prev) {
-    println("Created phase")
     def apply(unit: CompilationUnit) {
-      println("APPLY!!!")
       val javaScriptCode = convert(unit.body)
       println("CONVERTED TO JavaScript:\n" + javaScriptCode)
       write(

@@ -152,6 +152,14 @@ object JS {
         pos(" = ") ++
         prettyPrint(rhs, depth)
 
+      case Commented(comment, node) =>
+        val sub = prettyPrint(node, depth)
+        if (comment.contains("\n"))
+          pos(comment.replaceAll("\n", "\n" + indent(depth).value) + "\n") ++
+          indent(depth) ++ sub
+        else
+          pos(comment) ++ sub
+
       case BinOp(lhs, op, rhs) =>
         prettyPrint(lhs, depth) ++
         pos(" " ++ op ++ " ") ++

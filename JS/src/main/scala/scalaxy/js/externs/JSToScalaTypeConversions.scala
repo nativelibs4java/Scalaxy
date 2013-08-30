@@ -7,7 +7,7 @@ import com.google.javascript.rhino.Node
 import com.google.javascript.rhino.JSTypeExpression
 import com.google.javascript.rhino.jstype._
 
-trait TypeConversions {
+trait JSToScalaTypeConversions {
 
   val global: Universe
   import global._

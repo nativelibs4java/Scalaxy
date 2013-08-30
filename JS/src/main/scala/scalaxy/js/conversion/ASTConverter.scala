@@ -11,10 +11,12 @@ import scala.reflect.macros.Context
 import scala.reflect.api.Universe
 // import scala.reflect.api.Universe
 
-trait ASTConverter extends Globals {
+trait ASTConverter extends Globals with ScalaToJSTypeConversions {
 
   val global: Universe
   import global._
+
+  def runtimeObjectClassName = "scalaxy.lang.Object"
 
   object N {
     def unapply(name: Name): Option[String] = Option(name).map(n => decode(n.toString))
@@ -26,15 +28,18 @@ trait ASTConverter extends Globals {
       GlobalPrefix(if (path == "") subPath else path + "." + subPath)
   }
 
-  case class GuardedPrefixes(set: mutable.Set[String] = mutable.Set()) {
-    def add(prefix: String) = {
-      if (set(prefix)) {
-        false
-      } else {
-        set += prefix
-        true
-      }
-    }
+  case class GuardedPrefixes(set: java.util.LinkedHashSet[String] = new java.util.LinkedHashSet()) {
+    def add(prefix: String) = set.add(prefix)
+    def generateGuards(implicit pos: SourcePos): List[JS.Node] = set.toList.map(name => {
+      val ref = JS.path(name)
+      JS.If(
+        JS.PrefixOp("!", ref),
+        if (name.contains("."))
+          JS.Assign(ref, JS.newEmptyJSON)
+        else
+          JS.newEmptyJSON.asVar(name),
+        JS.NoNode)
+    })
   }
 
   private implicit def n2s(name: Name): String =
@@ -90,16 +95,28 @@ trait ASTConverter extends Globals {
     }
   }
 
-  def convertFunction(vparams: List[ValDef], rhs: Tree)
+  def convertFunction(vparams: List[ValDef], rhs: Tree, thisType: Option[Symbol], isConstructor: Boolean)
                      (implicit globalPrefix: GlobalPrefix,
                       guardedPrefixes: GuardedPrefixes,
-                      funPos: SourcePos): JS.Function = {
+                      funPos: SourcePos): JS.Node = {
 
     val (stats, value) = rhs match {
       case Block(stats, value) => (stats, value)
       case value => (Nil, value)
     }
-    JS.Function(
+    var jsDocLines =
+      (
+        if (isConstructor) List("@constructor")
+        else Nil
+      ) ++
+      thisType.map(t => "@this {!" + t.fullName + "}").toList ++
+      vparams.map(p => "@param {" + eraseType(p.tpe) + "} " + p.name) ++
+      (
+        if (Option(rhs.tpe).exists(_ =:= typeOf[Unit])) Nil
+        else List("@return {" + eraseType(rhs.tpe) + "}")
+      )
+
+    val fun = JS.Function(
       None,
       vparams.map(param => JS.Ident(param.name)(pos(param))),
       JS.Block(
@@ -110,6 +127,12 @@ trait ASTConverter extends Globals {
           else
             convert(value)
         )))
+    if (jsDocLines.isEmpty)
+      fun
+    else
+      JS.Commented(
+        jsDocLines.map(" * " + _).mkString("/**\n", "\n", "\n */"),
+        fun)
   }
 
   def assembleBlock(stats: List[JS.Node], value: JS.Node, applyArgs: List[JS.Node] = Nil)
@@ -122,56 +145,44 @@ trait ASTConverter extends Globals {
   }
 
 
-  def defineVar(name: Name, value: JS.Node, isLazy: Boolean = false, topLevel: Boolean = false)
+  def defineVar(name: String, value: JS.Node, isLazy: Boolean = false, topLevel: Boolean = false)
                (implicit globalPrefix: GlobalPrefix,
                 guardedPrefixes: GuardedPrefixes,
-                pos: SourcePos): List[JS.Node] = {
-    val emptyObj = JS.newEmptyJSON
-    val (predefs, target) = {
+                pos: SourcePos): JS.Node = {
+    val target = {
       if (!topLevel || globalPrefix.path.isEmpty) {
-        (Nil, JS.Ident("this"))
+        JS.Ident("this")
       } else {
         val components = globalPrefix.path.split("\\.")
-        val (predefs, guards) = (for (n <- (1 to components.size).toList) yield {
-          val ancestorComponents = components.take(n)
-          val ancestorName = ancestorComponents.mkString(".")
-          if (guardedPrefixes.add(ancestorName))
-            Some {
-              val ancestorRef = JS.path(ancestorName)
-              (
-                JS.If(
-                  JS.PrefixOp("!", ancestorRef),
-                  if (n == 1)
-                    emptyObj.asVar(components.head)
-                  else
-                    JS.Assign(ancestorRef, emptyObj),
-                  JS.NoNode): JS.Node,
-                ancestorName
-              )
-            }
-          else
-            None
-        }).flatten.unzip
-        (predefs, JS.Ident(globalPrefix.path))
+        for (n <- (1 to components.size).toList) {
+          guardedPrefixes.add(components.take(n).mkString("."))
+        }
+        JS.Ident(globalPrefix.path)
       }
     }
-    if (isLazy) {
-      predefs :+
-      JS.path("scalaxy.defineLazyFinalProperty")
-        .apply(
-          List(
-            target,
-            JS.Literal(name.toString.trim),
-            JS.Function(
-              None,
-              Nil,
-              JS.Block(List(JS.Return(value))))))
-    } else {
-      if (!topLevel || globalPrefix.path.isEmpty) {
-        value.asVar(name) :: Nil
+    def sub(value: JS.Node) = {
+      if (isLazy) {
+        JS.path("scalaxy.defineLazyFinalProperty")
+          .apply(
+            List(
+              target,
+              JS.Literal(name.trim),
+              JS.Function(
+                None,
+                Nil,
+                JS.Block(List(JS.Return(value))))))
       } else {
-        predefs :+ JS.Assign(JS.path(globalPrefix.derive(name).path), value)
+        if (/*!topLevel ||*/ globalPrefix.path.isEmpty) {
+          value.asVar(name)
+        } else {
+          JS.Assign(JS.path(globalPrefix.derive(name).path), value)
+        }
       }
+    }
+
+    value match {
+      case JS.Commented(comment, value) => JS.Commented(comment, sub(value))(value.pos)
+      case _ => sub(value)
     }
   }
   def convertSingle(tree: Tree, topLevel: Boolean = false)
@@ -311,13 +322,12 @@ trait ASTConverter extends Globals {
                     convert(t)
                 }) :+
                 JS.Return(JS.Ident("this")))),
-            topLevel = topLevel) ++
+            topLevel = topLevel) ::
           body.collect({
             case d: DefDef if d.name != nme.CONSTRUCTOR =>
               implicit val p = pos(d)
-              JS.Assign(
-                JS.path(name + ".prototype." + d.name),
-                convert(d).unique)
+              val subGlobalPrefix = globalPrefix.derive("prototype")
+              convert(d)(subGlobalPrefix, guardedPrefixes).unique
           })
 
         case ModuleDef(mods, name, Template(parents, self, body)) =>
@@ -351,7 +361,7 @@ trait ASTConverter extends Globals {
             ),
             isLazy = true,
             topLevel = topLevel
-          )
+          ) :: Nil
 
         case SuperCall(qual, mix, methodName, args) =>
           JS.Ident("goog").apply(
@@ -427,11 +437,11 @@ trait ASTConverter extends Globals {
               name,
               convert(rhs).unique,
               isLazy = mods.hasFlag(Flag.LAZY),
-              topLevel = topLevel)
+              topLevel = topLevel) :: Nil
           }
 
         case Function(vparams, body) =>
-          convertFunction(vparams, body) :: Nil
+          convertFunction(vparams, body, thisType = None, isConstructor = false) :: Nil
 
         case DefDef(mods, name, tparams, vparamss, tpt, rhs) =>
           val termSym = tree.symbol.asTerm
@@ -442,17 +452,17 @@ trait ASTConverter extends Globals {
               val Block(List(Assign(lhs, rhs2)), value) = rhs
               // Assignment of lazy val, introduced by typer.
               defineVar(
-                lhs.symbol.name,
+                globalPrefix.derive(lhs.symbol.name).path,
                 convert(rhs2).unique,
-                isLazy = true)
+                isLazy = true) :: Nil
             } else {
               Nil
             }
           } else {
             defineVar(
-              name,
-              convertFunction(vparamss.flatten, rhs),
-              topLevel = topLevel)
+              globalPrefix.derive(name).path,
+              convertFunction(vparamss.flatten, rhs, thisType = Some(tree.symbol.owner), isConstructor = false),
+              topLevel = topLevel) :: Nil
           }
 
         case Assign(lhs, rhs) =>

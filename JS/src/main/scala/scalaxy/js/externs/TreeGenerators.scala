@@ -6,7 +6,7 @@ import com.google.javascript.jscomp._
 import com.google.javascript.rhino._
 import com.google.javascript.rhino.jstype._
 
-trait TreeGenerators extends TypeConversions {
+trait TreeGenerators extends JSToScalaTypeConversions {
 
   val global: Universe
   import global._
