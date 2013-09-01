@@ -29,7 +29,7 @@ trait ScalaToJavaScriptConversion extends ApiMappings with ASTConverter {
     var jsTrees: List[JS.Node] = conv.flatMap(convert(_))
     jsTrees = guardedPrefixes.generateGuards ++ jsTrees
 
-    val fragments = jsTrees.map(JS.prettyPrint(_)).map(_ ++ a";\n")
+    val fragments = jsTrees.map(JS.prettyPrint(_)).filter(_ != JS.NoNode).map(_ ++ a";\n")
 
     val result: PosAnnotatedString =
       if (fragments.isEmpty) PosAnnotatedString()

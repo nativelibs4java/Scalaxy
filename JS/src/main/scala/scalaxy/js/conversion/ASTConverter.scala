@@ -11,16 +11,15 @@ import scala.reflect.macros.Context
 import scala.reflect.api.Universe
 // import scala.reflect.api.Universe
 
-trait ASTConverter extends Globals with ScalaToJSTypeConversions {
+trait ASTConverter
+    extends Globals
+    with ScalaToJSTypeConversions
+    with Matchers {
 
   val global: Universe
   import global._
 
   def runtimeObjectClassName = "scalaxy.lang.Object"
-
-  object N {
-    def unapply(name: Name): Option[String] = Option(name).map(n => decode(n.toString))
-  }
 
   // TODO use Nodes here
   case class GlobalPrefix(path: String = "") {
@@ -86,15 +85,6 @@ trait ASTConverter extends Globals with ScalaToJSTypeConversions {
     }
   }
 
-  object SuperCall { 
-    def unapply(tree: Tree): Option[(Tree, Name, Name, List[Tree])] = Option(tree) collect {
-      case Apply(Select(Super(qual, mix), Ident(methodName)), args) =>
-        (qual, mix, methodName, args)
-      case Select(Super(qual, mix), Ident(methodName)) =>
-        (qual, mix, methodName, Nil)
-    }
-  }
-
   def convertFunction(vparams: List[ValDef], rhs: Tree, thisType: Option[Symbol], isConstructor: Boolean)
                      (implicit globalPrefix: GlobalPrefix,
                       guardedPrefixes: GuardedPrefixes,
@@ -150,7 +140,7 @@ trait ASTConverter extends Globals with ScalaToJSTypeConversions {
                 guardedPrefixes: GuardedPrefixes,
                 pos: SourcePos): JS.Node = {
     val target = {
-      if (!topLevel || globalPrefix.path.isEmpty) {
+      if (/*!topLevel ||*/ globalPrefix.path.isEmpty) {
         JS.Ident("this")
       } else {
         val components = globalPrefix.path.split("\\.")
@@ -326,7 +316,8 @@ trait ASTConverter extends Globals with ScalaToJSTypeConversions {
           body.collect({
             case d: DefDef if d.name != nme.CONSTRUCTOR =>
               implicit val p = pos(d)
-              val subGlobalPrefix = globalPrefix.derive("prototype")
+              // TODO fix prefix mechanism
+              val subGlobalPrefix = globalPrefix.derive(name + ".prototype")
               convert(d)(subGlobalPrefix, guardedPrefixes).unique
           })
 
@@ -363,7 +354,7 @@ trait ASTConverter extends Globals with ScalaToJSTypeConversions {
             topLevel = topLevel
           ) :: Nil
 
-        case SuperCall(qual, mix, methodName, args) =>
+        case SuperCall(/*qual, mix, */methodName, args) =>
           JS.Ident("goog").apply(
             "base",
             List(JS.Ident("this")) ++
@@ -452,7 +443,7 @@ trait ASTConverter extends Globals with ScalaToJSTypeConversions {
               val Block(List(Assign(lhs, rhs2)), value) = rhs
               // Assignment of lazy val, introduced by typer.
               defineVar(
-                globalPrefix.derive(lhs.symbol.name).path,
+                name.toString,//globalPrefix.derive(lhs.symbol.name).path,
                 convert(rhs2).unique,
                 isLazy = true) :: Nil
             } else {
@@ -460,7 +451,7 @@ trait ASTConverter extends Globals with ScalaToJSTypeConversions {
             }
           } else {
             defineVar(
-              globalPrefix.derive(name).path,
+              name.toString,//globalPrefix.derive(name).path,
               convertFunction(vparamss.flatten, rhs, thisType = Some(tree.symbol.owner), isConstructor = false),
               topLevel = topLevel) :: Nil
           }
