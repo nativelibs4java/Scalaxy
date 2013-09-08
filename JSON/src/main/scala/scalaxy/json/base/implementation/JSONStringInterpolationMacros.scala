@@ -9,7 +9,7 @@ import org.json4s._
 import scala.collection.JavaConversions._
 
 trait JSONStringInterpolationMacros extends MacrosBase {
-  def parse(str: String): JValue
+  def parse(str: String, useBigDecimalForDouble: Boolean = false): JValue
 
   def json(c: Context)(args: c.Expr[JValue]*): c.Expr[JValue] = {
     import c.universe._
@@ -45,13 +45,6 @@ trait JSONStringInterpolationMacros extends MacrosBase {
     val (f, p) = fragments.last
     addText(f, p)
 
-    def reifyByteArray(v: Array[Byte]): c.Expr[Array[Byte]] = {
-      val Apply(TypeApply(target, tparams), _) = reify(Array[Byte](0: Byte)).tree
-      c.Expr[Array[Byte]](
-        Apply(TypeApply(target, tparams), v.toList.map(c.literal(_).tree))
-      )
-    }
-
     def build(v: JValue): c.Expr[JValue] = v match {
       case JNull =>
         reify(JNull)
@@ -66,10 +59,10 @@ trait JSONStringInterpolationMacros extends MacrosBase {
       case JArray(values) =>
         buildJSONArray(c)(values.map(build(_)))
       case JString(v) if replacements.contains(v) =>
+        c.Expr[JValue](replacements(v))
+      case JString(v) =>
         val x = c.literal(v)
         reify(JString(x.splice))
-      case JString(v) =>
-        c.Expr[JValue](replacements(v))
       case JBool(v) =>
         val x = c.literal(v)
         reify(JBool(x.splice))
@@ -77,11 +70,11 @@ trait JSONStringInterpolationMacros extends MacrosBase {
         val x = c.literal(v)
         reify(JDouble(x.splice))
       case JInt(v) =>
-        val x = reifyByteArray(v.toByteArray)
+        val x = reifyByteArray(c)(v.toByteArray)
         reify(JInt(BigInt(x.splice)))
       case JDecimal(v) =>
         val bd = v.bigDecimal
-        val x = reifyByteArray(bd.unscaledValue.toByteArray)
+        val x = reifyByteArray(c)(bd.unscaledValue.toByteArray)
         val s = c.literal(bd.scale)
         reify(JDecimal(BigDecimal(BigInt(x.splice), s.splice)))
     }
@@ -95,6 +88,10 @@ trait JSONStringInterpolationMacros extends MacrosBase {
     try {
       build(parse(textBuilder.toString))
     } catch {
+      case ex: MatchError =>
+        ex.printStackTrace()
+        c.error(c.enclosingPosition, ex.getMessage)
+        c.literalNull
       case ex: JacksonParseExceptionType =>
         import scala.language.reflectiveCalls
         val pos = ex.getLocation.getCharOffset.asInstanceOf[Int]

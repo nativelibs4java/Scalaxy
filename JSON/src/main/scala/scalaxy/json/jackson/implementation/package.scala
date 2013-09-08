@@ -12,7 +12,7 @@ import scala.collection.JavaConversions._
 package object implementation extends base.JSONStringInterpolationMacros  {
   configureLooseParser
 
-  override def parse(str: String): JValue = {
-    JsonMethods.parse(str)
+  override def parse(str: String, useBigDecimalForDouble: Boolean): JValue = {
+    JsonMethods.parse(str, useBigDecimalForDouble)
   }
 }

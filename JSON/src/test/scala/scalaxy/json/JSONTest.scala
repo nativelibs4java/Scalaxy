@@ -16,12 +16,18 @@ class JSONTest {
     val b = "123"
 
     //json.blah(1)
+    def p(v: JValue) { println(pretty(v)) }
 
-    json"""{ "x": $a, y: $b }"""
-    json(x = a, y = b)
+    p(json"""{
+      "x": $a,
+      y: $b,
+      z1: 10000000000,
+      z2: 1000000000000000.01
+    }""")
+    p(json(x = a, y = b))
 
-    // json"[$a, $b]"
-    json(a, b)
+    p(json"[$a, $b]")
+    p(json(a, b))
 
     // json"""{,}"""
     // assertEquals(JNothing, parse("{,e}"))
