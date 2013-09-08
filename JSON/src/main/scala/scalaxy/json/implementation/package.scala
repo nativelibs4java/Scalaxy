@@ -4,7 +4,8 @@ import scala.language.dynamics
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
 import org.json4s._
-import org.json4s.native.JsonMethods._
+import org.json4s.jackson.JsonMethods._
+// import org.json4s.native.JsonMethods._
 import scala.collection.JavaConversions._
 
 package object implementation {
@@ -57,9 +58,9 @@ package object implementation {
 
     val Apply(jsonStringContext, List(Apply(Select(scalaStringContext, applyName), fragmentTrees))) = c.prefix.tree
 
-    val fragments = fragmentTrees map { case Literal(Constant(s: String)) => s }
+    val fragments = fragmentTrees map { case t @ Literal(Constant(s: String)) => s -> t.pos }
     val nameRadix = {
-      val concat = fragments.mkString("")
+      val concat = fragments.map(_._1).mkString("")
       var i = 0
       def n = "_" + (if (i == 0) "" else i.toString)
       while (concat.contains(n)) {
@@ -70,14 +71,21 @@ package object implementation {
     val argNames = (1 to args.size).map(nameRadix + _)
     val replacements: Map[String, Tree] =
       args.zip(argNames).map({ case (a, n) => n -> a.tree }).toMap
-    val text = (fragments.zip(argNames).flatMap({ case (a, b) => Seq(a, "\"" + b + "\"") }) :+ fragments.last).mkString("")
 
-    val buildPair = {
-      val Apply(Select(target, name), _) = reify(("", 1: Any)).tree
-      (key: c.Expr[String], value: c.Expr[JValue]) => {
-        reify(key.splice -> value.splice)
+    val textBuilder = new StringBuilder()
+    var posMap = scala.collection.immutable.TreeMap[Int, Int]()
+    def addText(t: String, pos: Position = null) {
+      if (pos != null) {
+        posMap += (textBuilder.size -> pos.startOrPoint)
       }
+      textBuilder ++= t
     }
+    for (((f, fp), (a, ax)) <- fragments.zip(argNames.zip(args))) {
+      addText(f, fp)
+      addText("\"" + a + "\"", ax.tree.pos)
+    }
+    val (f, p) = fragments.last
+    addText(f, p)
 
     def build(v: JValue): c.Expr[JValue] = v match {
       case JNull =>
@@ -86,9 +94,9 @@ package object implementation {
         reify(JNothing)
       case JObject(values) =>
         buildJSONObject(c)(values.map({ case (n, v) =>
-          buildPair(
-            replacements.get(n).map(c.Expr[String](_)).getOrElse(c.literal(n)),
-            build(v))
+          val key = replacements.get(n).map(c.Expr[String](_)).getOrElse(c.literal(n))
+          val value = build(v)
+          reify(key.splice -> value.splice)
         }))
       case JArray(values) =>
         buildJSONArray(c)(values.map(build(_)))
@@ -103,20 +111,35 @@ package object implementation {
       case JDouble(v) =>
         val x = c.literal(v)
         reify(JDouble(x.splice))
-      // case JInt(v) =>
-      //   val x = c.literal(v)
-      //   reify(JInt(x.splice)).tree
-      // case JDecimal(v) =>
-      //   val x = c.literal(v)
-      //   reify(JDecimal(x.splice)).tree
+      case JInt(v) =>
+        val Apply(TypeApply(target, tparams), _) = reify(Array[Byte](0: Byte)).tree
+        val x = c.Expr[Array[Byte]](
+          Apply(TypeApply(target, tparams), v.toByteArray.toList.map(c.literal(_).tree))
+        )
+        reify(JInt(BigInt(x.splice)))
+      case JDecimal(v) =>
+        val x = c.literal(v.toString)
+        reify(JDecimal(BigDecimal(x.splice)))
     }
 
+    type JacksonParseExceptionType = {
+      def getLocation: { 
+        def getCharOffset: Long
+        def getByteOffset: Long
+      }
+    }
     try {
-      build(parse(text))
-    } catch { case ex: Throwable =>
-      c.error(c.enclosingPosition, ex.getMessage)
-      // TODO convert position
-      null
+      build(parse(textBuilder.toString))
+    } catch {
+      case ex: JacksonParseExceptionType =>
+        import scala.language.reflectiveCalls
+        val pos = ex.getLocation.getCharOffset.asInstanceOf[Int]
+        val (from, to) = posMap.toSeq.takeWhile(_._1 <= pos).last
+        c.error(c.enclosingPosition.withPoint(to + pos - from), ex.getMessage)
+        c.literalNull
+      case ex: Throwable =>
+        c.error(c.enclosingPosition, ex.getMessage)
+        c.literalNull
     }
   }
 

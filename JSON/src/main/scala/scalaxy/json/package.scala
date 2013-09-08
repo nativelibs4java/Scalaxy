@@ -5,7 +5,6 @@ import scala.language.implicitConversions
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
 import org.json4s._
-import org.json4s.native.JsonMethods._
 
 package object json {
   implicit class JSONStringContext(val context: StringContext) extends AnyVal {
