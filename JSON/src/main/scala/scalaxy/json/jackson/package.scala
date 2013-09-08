@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 
 package object jackson extends base.PackageBase {
   implicit class JSONStringContext(val context: StringContext) extends AnyVal {
-    def json(args: JValue*): JValue =
+    def json(args: Any*): JValue =
       macro implementation.json
   }
 

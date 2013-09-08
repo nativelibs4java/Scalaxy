@@ -14,6 +14,7 @@ class JSONTest {
 
     val a = 10
     val b = "123"
+    val n = "someKey"
 
     //json.blah(1)
     def p(v: JValue) { println(pretty(v)) }
@@ -21,8 +22,9 @@ class JSONTest {
     p(json"""{
       "x": $a,
       y: $b,
-      z1: 10000000000,
-      z2: 1000000000000000.01
+      z1: [10000000000, { x: 10 }],
+      z2: 100.01,
+      $n: 10
     }""")
     p(json(x = a, y = b))
 

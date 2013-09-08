@@ -9,7 +9,7 @@ trait JSONStringInterpolationMacros extends MacrosBase {
 
   def parse(str: String, useBigDecimalForDouble: Boolean = false): JValue
 
-  def json(c: Context)(args: c.Expr[JValue]*): c.Expr[JValue] = {
+  def json(c: Context)(args: c.Expr[Any]*): c.Expr[JValue] = {
     import c.universe._
 
     val Apply(jsonStringContext, List(Apply(Select(scalaStringContext, applyName), fragmentTrees))) = c.prefix.tree
