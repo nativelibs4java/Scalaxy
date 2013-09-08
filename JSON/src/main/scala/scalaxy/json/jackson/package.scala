@@ -3,8 +3,11 @@ package scalaxy.json
 import scala.language.dynamics
 import scala.language.implicitConversions
 import scala.language.experimental.macros
-import scala.reflect.macros.Context
+
 import org.json4s._
+import org.json4s.jackson.JsonMethods
+import com.fasterxml.jackson.core.JsonParser.Feature._
+import com.fasterxml.jackson.databind.ObjectMapper
 
 package object jackson extends base.PackageBase {
   implicit class JSONStringContext(val context: StringContext) extends AnyVal {
@@ -12,9 +15,7 @@ package object jackson extends base.PackageBase {
       macro implementation.json
   }
 
-  def configureLooseParser {
-    import org.json4s.jackson.JsonMethods.mapper
-    import com.fasterxml.jackson.core.JsonParser.Feature._
+  def configureLooseSyntaxParser(mapper: ObjectMapper = JsonMethods.mapper) {
     for (feature <- Seq(
         ALLOW_COMMENTS,
         ALLOW_NON_NUMERIC_NUMBERS,
@@ -25,6 +26,4 @@ package object jackson extends base.PackageBase {
       mapper.configure(feature, true)
     }
   }
-
-  configureLooseParser
 }

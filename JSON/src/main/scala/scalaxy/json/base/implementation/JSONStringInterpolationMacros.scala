@@ -1,14 +1,12 @@
 package scalaxy.json.base
 
-import scala.language.dynamics
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
+
 import org.json4s._
-// import org.json4s.jackson.JsonMethods._
-// import org.json4s.native.JsonMethods._
-import scala.collection.JavaConversions._
 
 trait JSONStringInterpolationMacros extends MacrosBase {
+
   def parse(str: String, useBigDecimalForDouble: Boolean = false): JValue
 
   def json(c: Context)(args: c.Expr[JValue]*): c.Expr[JValue] = {
