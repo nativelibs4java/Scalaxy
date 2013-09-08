@@ -1,57 +1,15 @@
-package scalaxy.json
+package scalaxy.json.base
 
 import scala.language.dynamics
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
 import org.json4s._
-import org.json4s.jackson.JsonMethods._
+// import org.json4s.jackson.JsonMethods._
 // import org.json4s.native.JsonMethods._
 import scala.collection.JavaConversions._
 
-package object implementation {
-
-  private def checkApplyName(c: Context)(name: c.Expr[String]) {
-    import c.universe._
-
-    val Literal(Constant(n)) = name.tree
-    if (n != "apply")
-      c.error(name.tree.pos, s"value $n is not a member of ${c.prefix.tree.tpe.normalize}")
-  }
-
-  private def buildJSONArray(c: Context)
-                            (args: List[c.Expr[JValue]]): c.Expr[JArray] = {
-    import c.universe._
-
-    val list = c.Expr[List[JValue]]({
-      val Apply(TypeApply(Select(target, name), tparams), _) = reify(List[JValue](null)).tree
-      Apply(TypeApply(Select(target, name), tparams), args.map(_.tree))
-    })
-    reify(JArray(list.splice))
-  }
-
-  private def buildJSONObject(c: Context)(args: List[c.Expr[(String, JValue)]]): c.Expr[JObject] = {
-    import c.universe._
-
-    val map = c.Expr[List[(String, JValue)]]({
-      val Apply(TypeApply(Select(target, name), tparams), _) = reify(List[(String, JValue)](null)).tree
-      Apply(TypeApply(Select(target, name), tparams), args.map(_.tree))
-    })
-    reify(new JObject(map.splice))
-  }
-
-  def applyDynamicNamed(c: Context)
-                       (name: c.Expr[String])
-                       (args: c.Expr[(String, JValue)]*): c.Expr[JObject] = {
-    checkApplyName(c)(name)
-    buildJSONObject(c)(args.toList)
-  }
-
-  def applyDynamic(c: Context)
-                  (name: c.Expr[String])
-                  (args: c.Expr[JValue]*): c.Expr[JArray] = {
-    checkApplyName(c)(name)
-    buildJSONArray(c)(args.toList)
-  }
+trait JSONStringInterpolationMacros extends MacrosBase {
+  def parse(str: String): JValue
 
   def json(c: Context)(args: c.Expr[JValue]*): c.Expr[JValue] = {
     import c.universe._
@@ -87,6 +45,13 @@ package object implementation {
     val (f, p) = fragments.last
     addText(f, p)
 
+    def reifyByteArray(v: Array[Byte]): c.Expr[Array[Byte]] = {
+      val Apply(TypeApply(target, tparams), _) = reify(Array[Byte](0: Byte)).tree
+      c.Expr[Array[Byte]](
+        Apply(TypeApply(target, tparams), v.toList.map(c.literal(_).tree))
+      )
+    }
+
     def build(v: JValue): c.Expr[JValue] = v match {
       case JNull =>
         reify(JNull)
@@ -112,18 +77,17 @@ package object implementation {
         val x = c.literal(v)
         reify(JDouble(x.splice))
       case JInt(v) =>
-        val Apply(TypeApply(target, tparams), _) = reify(Array[Byte](0: Byte)).tree
-        val x = c.Expr[Array[Byte]](
-          Apply(TypeApply(target, tparams), v.toByteArray.toList.map(c.literal(_).tree))
-        )
+        val x = reifyByteArray(v.toByteArray)
         reify(JInt(BigInt(x.splice)))
       case JDecimal(v) =>
-        val x = c.literal(v.toString)
-        reify(JDecimal(BigDecimal(x.splice)))
+        val bd = v.bigDecimal
+        val x = reifyByteArray(bd.unscaledValue.toByteArray)
+        val s = c.literal(bd.scale)
+        reify(JDecimal(BigDecimal(BigInt(x.splice), s.splice)))
     }
 
     type JacksonParseExceptionType = {
-      def getLocation: { 
+      def getLocation: {
         def getCharOffset: Long
         def getByteOffset: Long
       }
@@ -141,17 +105,5 @@ package object implementation {
         c.error(c.enclosingPosition, ex.getMessage)
         c.literalNull
     }
-  }
-
-  def jdouble[A: c.WeakTypeTag](c: Context)(v: c.Expr[A]): c.Expr[JDouble] = {
-    import c.universe._
-    val Apply(target, List(_)) = reify(JDouble(1)).tree
-    c.Expr[JDouble](Apply(target, List(v.tree)))
-  }
-  def jstring(c: Context)(v: c.Expr[String]): c.Expr[JString] = {
-    c.universe.reify(JString(v.splice))
-  }
-  def jbool(c: Context)(v: c.Expr[Boolean]): c.Expr[JBool] = {
-    c.universe.reify(JBool(v.splice))
   }
 }
