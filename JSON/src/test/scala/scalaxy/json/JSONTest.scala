@@ -114,6 +114,10 @@ class JSONTest {
     assertEquals(JDouble(10), b)
     assertEquals("!", s)
     assertEquals(JArray(List(JDouble(1), JDouble(2), JDouble(3))), a)
+
+    val x = 10
+    val json"{ x: ${JDouble(y)} }" = json"{ x: $x }"
+    assertEquals(x, y, 0)
   }
 
   @Test
