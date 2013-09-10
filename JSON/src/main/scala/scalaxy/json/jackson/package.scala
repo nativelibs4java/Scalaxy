@@ -5,18 +5,27 @@ import scala.language.implicitConversions
 import scala.language.experimental.macros
 
 import org.json4s._
-import org.json4s.jackson.JsonMethods
+import org.json4s.jackson.{ JsonMethods, Json4sScalaModule }
 import com.fasterxml.jackson.core.JsonParser.Feature._
 import com.fasterxml.jackson.databind.ObjectMapper
 
 package object jackson extends base.PackageBase {
+  private lazy val mapper = {
+    val mapper = new ObjectMapper
+    mapper.registerModule(new Json4sScalaModule)
+    configureLooseSyntaxParser(mapper)
+    mapper
+  }
+
   implicit class JSONStringContext(val context: StringContext) {
-    object json {
+    object json extends base.ExtractibleJSONStringContext(context) {
       def apply(args: Any*): JValue =
         macro implementation.jsonApply
 
-      def unapply(subpatterns: Any*): Option[JValue] =
-        macro implementation.jsonUnapply
+      override def parse(str: String): JValue = {
+        // JsonMethods.parse(str)
+        mapper.readValue(str, classOf[JValue])
+      }
     }
   }
 

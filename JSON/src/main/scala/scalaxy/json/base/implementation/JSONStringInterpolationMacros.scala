@@ -9,18 +9,17 @@ trait JSONStringInterpolationMacros extends MacrosBase {
 
   def parse(str: String, useBigDecimalForDouble: Boolean = false): JValue
 
-  def jsonUnapply(c: Context)(subpatterns: c.Expr[Any]*): c.Expr[Option[JValue]] = {
-    ???
-  }
-
   def jsonApply(c: Context)(args: c.Expr[Any]*): c.Expr[JValue] = {
     import c.universe._
 
     val Select(Apply(jsonStringContext, List(Apply(Select(scalaStringContext, applyName), fragmentTrees))), jsonName) = c.prefix.tree
 
-    val fragments = fragmentTrees map { case t @ Literal(Constant(s: String)) => s -> t.pos }
+    val fragments = fragmentTrees map {
+      case t @ Literal(Constant(s: String)) =>
+        StringContext.treatEscapes(s) -> t.pos
+    }
     val nameRadix = {
-      val concat = fragments.map(_._1).mkString("")
+      val concat = fragments.mkString("")
       var i = 0
       def n = "_" + (if (i == 0) "" else i.toString)
       while (concat.contains(n)) {
@@ -44,7 +43,7 @@ trait JSONStringInterpolationMacros extends MacrosBase {
 
     val textBuilder = new StringBuilder()
     var posMap = scala.collection.immutable.TreeMap[Int, Int]()
-    def addText(t: String, pos: Position = null) {
+    def addRawText(t: String, pos: Position = null) {
       if (pos != null) {
         posMap += (textBuilder.size -> pos.startOrPoint)
       }
@@ -73,14 +72,14 @@ trait JSONStringInterpolationMacros extends MacrosBase {
     }
 
     for (((fragment, fragmentPos), (argName, argTree)) <- fragments.zip(argNames.zip(typedArgs))) {
-      addText(fragment, fragmentPos)
+      addRawText(fragment, fragmentPos)
       val valueSuffix =
         if (isJField(argTree.tpe) || isJFieldOption(argTree.tpe)) ":0"
         else ""
-      addText("\"" + argName + "\"" + valueSuffix, argTree.pos)
+      addRawText("\"" + argName + "\"" + valueSuffix, argTree.pos)
     }
     val (f, p) = fragments.last
-    addText(f, p)
+    addRawText(f, p)
 
     def build(v: JValue): c.Expr[JValue] = v match {
       case JNull =>

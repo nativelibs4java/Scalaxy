@@ -6,7 +6,8 @@ import scala.reflect.macros.Context
 import org.json4s._
 import scala.collection.JavaConversions._
 
-package object implementation extends MacrosBase {
+package object implementation
+    extends MacrosBase {
 
   private def checkApplyName(c: Context)(name: c.Expr[String]) {
     import c.universe._

@@ -54,7 +54,7 @@ class JSONTest {
   "x": $a,
   y: $b,
   z1: [10000000000, { x: 10 }],
-  z2: 100.01,
+  z2: 100.01,\n
   byte: $byteValue,
   short: $shortValue,
   int: $intValue,
@@ -83,9 +83,13 @@ class JSONTest {
     // json"""{,e}"""
   }
 
+  def eval(src: String) = {
+    JSONTest.eval("import scalaxy.json.jackson._\n" + src)
+  }
+
   def assertEvalException(src: String, msg: String) {
     try {
-      JSONTest.eval("import scalaxy.json.jackson._\n" + src)
+      eval(src)
       fail("Expected eval error: " + msg)
     } catch { case ex: scala.tools.reflect.ToolBoxError =>
       assertEquals("scala.tools.reflect.ToolBoxError: reflective compilation has failed: \n\n" + msg, ex.toString)
@@ -100,6 +104,26 @@ class JSONTest {
     assertEvalException(
       """ json"[a,]" """,
       "Unexpected character ('a' (code 97)): expected a valid value (number, String, array, object, 'true', 'false' or 'null')")
+  }
+
+  @Test
+  def testDeconstructObject {
+    val json"{ x: $a, y: $b, s: ${JString(s)} }" =
+      """{ y: 10.0, s: "!", x: [1.0, 2.0, 3.0] }"""
+
+    assertEquals(JDouble(10), b)
+    assertEquals("!", s)
+    assertEquals(JArray(List(JDouble(1), JDouble(2), JDouble(3))), a)
+  }
+
+  @Test
+  def testDeconstructArray {
+    val json"[ $a, $b, ${JString(s)} ]" =
+      """[ 10.0, [1.0, 2.0, 3.0], "!" ]"""
+
+    assertEquals(JDouble(10), a)
+    assertEquals("!", s)
+    assertEquals(JArray(List(JDouble(1), JDouble(2), JDouble(3))), b)
   }
 }
 
