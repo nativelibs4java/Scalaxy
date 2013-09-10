@@ -10,9 +10,14 @@ import com.fasterxml.jackson.core.JsonParser.Feature._
 import com.fasterxml.jackson.databind.ObjectMapper
 
 package object jackson extends base.PackageBase {
-  implicit class JSONStringContext(val context: StringContext) extends AnyVal {
-    def json(args: Any*): JValue =
-      macro implementation.json
+  implicit class JSONStringContext(val context: StringContext) {
+    object json {
+      def apply(args: Any*): JValue =
+        macro implementation.jsonApply
+
+      def unapply(subpatterns: Any*): Option[JValue] =
+        macro implementation.jsonUnapply
+    }
   }
 
   def configureLooseSyntaxParser(mapper: ObjectMapper = JsonMethods.mapper) {

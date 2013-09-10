@@ -99,7 +99,7 @@ class JSONTest {
 
     assertEvalException(
       """ json"[a,]" """,
-      "Unexpected character ('[a' (code 97)): expected a valid value (number, String, array, object, 'true', 'false' or 'null')")
+      "Unexpected character ('a' (code 97)): expected a valid value (number, String, array, object, 'true', 'false' or 'null')")
   }
 }
 
