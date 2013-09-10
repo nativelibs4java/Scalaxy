@@ -24,6 +24,7 @@ private[json] trait PackageBase {
   implicit def Float2JValue(v: Float) = macro implementation.jdouble[Float]
   implicit def String2JValue(v: String) = macro implementation.jstring
   implicit def Boolean2JValue(v: Boolean) = macro implementation.jbool
+  implicit def Char2JValue(v: Char) = macro implementation.jchar
 
   implicit def ByteJField(v: (String, Byte)) = macro implementation.jfield[Byte]
   implicit def ShortJField(v: (String, Short)) = macro implementation.jfield[Short]
@@ -33,4 +34,5 @@ private[json] trait PackageBase {
   implicit def FloatJField(v: (String, Float)) = macro implementation.jfield[Float]
   implicit def StringJField(v: (String, String)) = macro implementation.jfield[String]
   implicit def BooleanJField(v: (String, Boolean)) = macro implementation.jfield[Boolean]
+  implicit def CharJField(v: (String, Char)) = macro implementation.jfield[Char]
 }

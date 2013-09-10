@@ -40,6 +40,10 @@ package object implementation extends MacrosBase {
     c.universe.reify(JString(v.splice))
   }
 
+  def jchar(c: Context)(v: c.Expr[Char]): c.Expr[JString] = {
+    c.universe.reify(JString(v.splice.toString))
+  }
+
   def jbool(c: Context)(v: c.Expr[Boolean]): c.Expr[JBool] = {
     c.universe.reify(JBool(v.splice))
   }
