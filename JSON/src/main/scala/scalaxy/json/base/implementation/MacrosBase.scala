@@ -17,14 +17,17 @@ trait MacrosBase {
     reify(JArray(list.splice))
   }
 
-  private[json] def buildJSONObject(c: Context)(args: List[c.Expr[(String, JValue)]]): c.Expr[JObject] = {
+  private[json] def buildJSONObject(c: Context)(args: List[c.Expr[(String, JValue)]], containsOptionalFields: Boolean = false): c.Expr[JObject] = {
     import c.universe._
 
     val map = c.Expr[List[(String, JValue)]]({
       val Apply(TypeApply(Select(target, name), tparams), _) = reify(List[(String, JValue)](null)).tree
       Apply(TypeApply(Select(target, name), tparams), args.map(_.tree))
     })
-    reify(JObject(map.splice))
+    if (containsOptionalFields)
+      reify(JObject(map.splice.filter(_ != null)))
+    else
+      reify(JObject(map.splice))
   }
 
   private[json] def reifyByteArray(c: Context)(v: Array[Byte]): c.Expr[Array[Byte]] = {

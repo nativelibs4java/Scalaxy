@@ -7,6 +7,7 @@ import scala.language.experimental.macros
 import org.json4s._
 
 private[json] trait PackageBase {
+
   object json extends Dynamic {
     def applyDynamicNamed(name: String)(args: (String, JValue)*): JValue =
       macro implementation.applyDynamicNamed
@@ -23,4 +24,13 @@ private[json] trait PackageBase {
   implicit def Float2JValue(v: Float) = macro implementation.jdouble[Float]
   implicit def String2JValue(v: String) = macro implementation.jstring
   implicit def Boolean2JValue(v: Boolean) = macro implementation.jbool
+
+  implicit def ByteJField(v: (String, Byte)) = macro implementation.jfield[Byte]
+  implicit def ShortJField(v: (String, Short)) = macro implementation.jfield[Short]
+  implicit def IntJField(v: (String, Int)) = macro implementation.jfield[Int]
+  implicit def LongJField(v: (String, Long)) = macro implementation.jfield[Long]
+  implicit def DoubleJField(v: (String, Double)) = macro implementation.jfield[Double]
+  implicit def FloatJField(v: (String, Float)) = macro implementation.jfield[Float]
+  implicit def StringJField(v: (String, String)) = macro implementation.jfield[String]
+  implicit def BooleanJField(v: (String, Boolean)) = macro implementation.jfield[Boolean]
 }

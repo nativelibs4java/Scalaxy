@@ -20,7 +20,7 @@ package object implementation extends MacrosBase {
                        (name: c.Expr[String])
                        (args: c.Expr[(String, JValue)]*): c.Expr[JObject] = {
     checkApplyName(c)(name)
-    buildJSONObject(c)(args.toList)
+    buildJSONObject(c)(args.toList, containsOptionalFields = false)
   }
 
   def applyDynamic(c: Context)
@@ -35,10 +35,27 @@ package object implementation extends MacrosBase {
     val Apply(target, List(_)) = reify(JDouble(1)).tree
     c.Expr[JDouble](Apply(target, List(v.tree)))
   }
+
   def jstring(c: Context)(v: c.Expr[String]): c.Expr[JString] = {
     c.universe.reify(JString(v.splice))
   }
+
   def jbool(c: Context)(v: c.Expr[Boolean]): c.Expr[JBool] = {
     c.universe.reify(JBool(v.splice))
+  }
+
+  def jfield[A : c.WeakTypeTag](c: Context)(v: c.Expr[(String, A)]): c.Expr[JField] = {
+    import c.universe._
+
+    val tv = c.typeCheck(v.tree)
+    val n = c.fresh: TermName
+    val vd = ValDef(NoMods, n, TypeTree(tv.tpe), v.tree)
+
+    val key = c.Expr[String](Select(Ident(n), "_1": TermName))
+    val value = c.Expr[JValue](Select(Ident(n), "_2": TermName))
+    c.Expr[JField](
+      Block(
+        List(vd),
+        reify(key.splice -> value.splice).tree))
   }
 }

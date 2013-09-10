@@ -16,14 +16,13 @@ package object jackson extends base.PackageBase {
   }
 
   def configureLooseSyntaxParser(mapper: ObjectMapper = JsonMethods.mapper) {
-    for (feature <- Seq(
-        ALLOW_COMMENTS,
-        ALLOW_NON_NUMERIC_NUMBERS,
-        ALLOW_NUMERIC_LEADING_ZEROS,
-        ALLOW_SINGLE_QUOTES,
-        ALLOW_UNQUOTED_CONTROL_CHARS,
-        ALLOW_UNQUOTED_FIELD_NAMES)) {
-      mapper.configure(feature, true)
-    }
+    val features = Seq(
+      ALLOW_COMMENTS,
+      ALLOW_NON_NUMERIC_NUMBERS,
+      ALLOW_NUMERIC_LEADING_ZEROS,
+      ALLOW_SINGLE_QUOTES,
+      ALLOW_UNQUOTED_CONTROL_CHARS,
+      ALLOW_UNQUOTED_FIELD_NAMES)
+    features.foreach(mapper.configure(_, true))
   }
 }

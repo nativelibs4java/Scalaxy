@@ -24,9 +24,19 @@ trait JSONStringInterpolationMacros extends MacrosBase {
       }
       n
     }
-    val argNames = (1 to args.size).map(nameRadix + _)
-    val replacements: Map[String, Tree] =
-      args.zip(argNames).map({ case (a, n) => n -> a.tree }).toMap
+    var typedArgs = args.map(arg => c.typeCheck(arg.tree))
+
+    val argNames = (1 to typedArgs.size).map(nameRadix + _)
+    val valNames = (1 to typedArgs.size).map(_ => c.fresh: TermName)
+    val valDefs = typedArgs.zip(valNames).map({
+      case (typedArg, valName) =>
+        ValDef(NoMods, valName, TypeTree(typedArg.tpe), typedArg): Tree
+    }).toList
+    val replacements: Map[String, (Tree, Type)] =
+      typedArgs.zip(valNames).zip(argNames).map({
+        case ((typedArg, valName), argName) =>
+          argName -> (Ident(valName) -> typedArg.tpe)
+      }).toMap
 
     val textBuilder = new StringBuilder()
     var posMap = scala.collection.immutable.TreeMap[Int, Int]()
@@ -36,9 +46,34 @@ trait JSONStringInterpolationMacros extends MacrosBase {
       }
       textBuilder ++= t
     }
-    for (((f, fp), (a, ax)) <- fragments.zip(argNames.zip(args))) {
-      addText(f, fp)
-      addText("\"" + a + "\"", ax.tree.pos)
+    def isJField(tpe: Type) = {
+      val t = tpe.normalize
+      t <:< typeOf[JField] ||
+      t <:< typeOf[(String, Byte)] ||
+      t <:< typeOf[(String, Short)] ||
+      t <:< typeOf[(String, Int)] ||
+      t <:< typeOf[(String, Long)] ||
+      t <:< typeOf[(String, Float)] ||
+      t <:< typeOf[(String, Double)] ||
+      t <:< typeOf[(String, Boolean)] ||
+      t <:< typeOf[(String, String)]
+      // TODO
+    }
+    def isJFieldOption(tpe: Type) = {
+      val t = tpe.normalize
+      t <:< typeOf[None.type] ||
+      t <:< typeOf[Option[_]] && {
+        val TypeRef(_, _, List(tparam)) = t
+        isJField(tparam)
+      }
+    }
+
+    for (((fragment, fragmentPos), (argName, argTree)) <- fragments.zip(argNames.zip(typedArgs))) {
+      addText(fragment, fragmentPos)
+      val valueSuffix =
+        if (isJField(argTree.tpe) || isJFieldOption(argTree.tpe)) ":0"
+        else ""
+      addText("\"" + argName + "\"" + valueSuffix, argTree.pos)
     }
     val (f, p) = fragments.last
     addText(f, p)
@@ -49,15 +84,33 @@ trait JSONStringInterpolationMacros extends MacrosBase {
       case JNothing =>
         reify(JNothing)
       case JObject(values) =>
-        buildJSONObject(c)(values.map({ case (n, v) =>
-          val key = replacements.get(n).map(c.Expr[String](_)).getOrElse(c.literal(n))
-          val value = build(v)
-          reify(key.splice -> value.splice)
-        }))
+        var containsOptionalFields = false
+        val fields = values.map({
+          case (n, v) =>
+            replacements.get(n) match {
+              case Some((replacement, tpe)) =>
+                if (isJField(tpe)) {
+                  c.Expr[JField](replacement)
+                } else if (isJFieldOption(tpe)) {
+                  val pair = c.Expr[Option[JField]](replacement)
+                  containsOptionalFields = true
+                  reify(pair.splice.getOrElse(null))
+                } else {
+                  val key = c.Expr[String](replacement)
+                  val value = build(v)
+                  reify(key.splice -> value.splice)
+                }
+              case None =>
+                val key = c.literal(n)
+                val value = build(v)
+                reify(key.splice -> value.splice)
+            }
+        })
+        buildJSONObject(c)(fields, containsOptionalFields = containsOptionalFields)
       case JArray(values) =>
         buildJSONArray(c)(values.map(build(_)))
       case JString(v) if replacements.contains(v) =>
-        c.Expr[JValue](replacements(v))
+        c.Expr[JValue](replacements(v)._1)
       case JString(v) =>
         val x = c.literal(v)
         reify(JString(x.splice))
@@ -84,17 +137,25 @@ trait JSONStringInterpolationMacros extends MacrosBase {
       }
     }
     try {
-      build(parse(textBuilder.toString))
+      val obj = build(parse(textBuilder.toString))
+      // val res =
+      c.Expr[JValue](
+        Block(
+          valDefs,
+          obj.tree))
+      // println("RES: " + res)
+      // res
     } catch {
-      case ex: MatchError =>
+      case ex @ ((_: MatchError) | (_: NullPointerException)) =>
         ex.printStackTrace()
         c.error(c.enclosingPosition, ex.getMessage)
         c.literalNull
-      case ex: JacksonParseExceptionType =>
+      case ex: JacksonParseExceptionType if ex.getClass.getName == "com.fasterxml.jackson.core.JsonParseException" =>
         import scala.language.reflectiveCalls
         val pos = ex.getLocation.getCharOffset.asInstanceOf[Int]
         val (from, to) = posMap.toSeq.takeWhile(_._1 <= pos).last
-        c.error(c.enclosingPosition.withPoint(to + pos - from), ex.getMessage)
+        val msg = ex.getMessage.replaceAll("""(.*?)\s+at \[[^\]]+\]""", "$1")
+        c.error(c.enclosingPosition.withPoint(to + pos - from), msg)
         c.literalNull
       case ex: Throwable =>
         c.error(c.enclosingPosition, ex.getMessage)
