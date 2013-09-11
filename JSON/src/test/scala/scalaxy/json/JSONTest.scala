@@ -108,26 +108,49 @@ class JSONTest {
 
   @Test
   def testDeconstructObject {
-    val json"{ x: $a, y: $b, s: ${JString(s)} }" =
-      """{ y: 10.0, s: "!", x: [1.0, 2.0, 3.0] }"""
+    {
+      val json"{ x: $a, y: $b, s: ${JString(s)} }" =
+        """{ y: 10.0, s: "!", x: [1.0, 2.0, 3.0] }"""
 
-    assertEquals(JDouble(10), b)
-    assertEquals("!", s)
-    assertEquals(JArray(List(JDouble(1), JDouble(2), JDouble(3))), a)
+      assertEquals(JDouble(10), b)
+      assertEquals("!", s)
+      assertEquals(JArray(List(JDouble(1), JDouble(2), JDouble(3))), a)
+    }
 
-    val x = 10
-    val json"{ x: ${JDouble(y)} }" = json"{ x: $x }"
-    assertEquals(x, y, 0)
+    {
+      val x = 10
+      val json"{ x: ${JDouble(y)} }" = json"{ x: $x }"
+      assertEquals(x, y, 0)
+    }
+
+    // {
+    //   val json"{ x: ${JDouble(x)}, ... }" = "{ x: 1.0, b: 10 }"
+    //   assertEquals(1.0, x, 0)
+    // }
+  }
+
+  def removeJsonStrings(s: String) = {
+    s.replaceAll("""
+      "([^\\"]+|\\"|\\\\|\\\w)*"
+    """.trim, "")
+  }
+  @Test
+  def dots {
+    assertEquals("a  c  e   f", removeJsonStrings("""
+      a "a\"b" c "d\\" e "\"" "\"...\"" f
+    """).trim)
   }
 
   @Test
   def testDeconstructArray {
-    val json"[ $a, $b, ${JString(s)} ]" =
-      """[ 10.0, [1.0, 2.0, 3.0], "!" ]"""
+    {
+      val json"[ $a, $b, ${JString(s)} ]" =
+        """[ 10.0, [1.0, 2.0, 3.0], "!" ]"""
 
-    assertEquals(JDouble(10), a)
-    assertEquals("!", s)
-    assertEquals(JArray(List(JDouble(1), JDouble(2), JDouble(3))), b)
+      assertEquals(JDouble(10), a)
+      assertEquals("!", s)
+      assertEquals(JArray(List(JDouble(1), JDouble(2), JDouble(3))), b)
+    }
   }
 }
 

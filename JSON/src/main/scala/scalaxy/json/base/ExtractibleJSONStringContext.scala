@@ -5,11 +5,6 @@ import org.json4s.jackson.JsonMethods
 import com.fasterxml.jackson.core.JsonParser.Feature._
 import com.fasterxml.jackson.databind.ObjectMapper
 
-// case class PreprocessedStringContext(
-//   stringContext: StringContext,
-//   pattern: JValue,
-//   placeholders: List[List[Any]])
-
 abstract class ExtractibleJSONStringContext(context: StringContext) {
 
   def parse(str: String): JValue
@@ -17,11 +12,12 @@ abstract class ExtractibleJSONStringContext(context: StringContext) {
   import ExtractibleJSONStringContext._
 
   // No extractor macros yet: https://issues.scala-lang.org/browse/SI-5903
+  // Extractor macros work in 2.11.0-SNAPSHOT: https://github.com/paulp/scala/pull/9
+  // Also see "extractors become name-based": https://github.com/scala/scala/pull/2848
   def unapplySeq(str: String): Option[Seq[Any]] =
     unapplySeq(parse(str))
 
   def unapplySeq(value: JValue): Option[Seq[Any]] = {
-    // macro implementation.jsonUnapplySeq
     val (placeholders, placeholderNames) = preparePlaceholders(context.parts, _ => false)
 
     val results = new Array[Any](context.parts.size - 1)
