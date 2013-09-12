@@ -5,6 +5,7 @@ import Assert._
 
 class PseudoParsingUtilsTest {
   import scalaxy.json.base.PseudoParsingUtils._
+  import scalaxy.json.base.JSONPseudoParsingUtils._
 
   val dotsRx = """\.\.\.""".r
   def findDots(s: String) = dotsRx.findAllMatchOutsideJSONCommentsAndStringsIn(s).map(_.start).toList

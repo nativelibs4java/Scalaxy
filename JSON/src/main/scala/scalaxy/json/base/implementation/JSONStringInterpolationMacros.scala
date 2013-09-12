@@ -18,7 +18,7 @@ trait JSONStringInterpolationMacros extends JsonDriverMacros {
     }
 
     var typedArgs = args.map(arg => c.typeCheck(arg.tree))
-    val (placeholders, argNames, posMap) = ExtractibleJSONStringContext.preparePlaceholders(
+    val Placeholders(placeholders, argNames, posMap, _) = ExtractibleJSONStringContext.preparePlaceholders(
       fragments, i => {
         val typedArg = typedArgs(i)
         val tpe = typedArg.tpe

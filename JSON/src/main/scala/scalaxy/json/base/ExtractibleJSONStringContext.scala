@@ -17,8 +17,11 @@ abstract class ExtractibleJSONStringContext(context: StringContext) {
   def unapplySeq(str: String): Option[Seq[Any]] =
     unapplySeq(parse(str))
 
-  def unapplySeq(value: JValue): Option[Seq[Any]] = {
-    val (placeholders, placeholderNames, posMap) =
+  def unapplySeq(value: JValue): Option[Seq[Any]] =
+    extract(value, strict = true)
+
+  private def extract(value: JValue, strict: Boolean): Option[Seq[Any]] = {
+    val Placeholders(placeholders, placeholderNames, posMap, _) =
       preparePlaceholders[Unit](context.parts.map(_ -> {}), _ => false, _ => {})
 
     val results = new Array[Any](context.parts.size - 1)
@@ -69,8 +72,14 @@ abstract class ExtractibleJSONStringContext(context: StringContext) {
   }
 }
 
+case class Placeholders[P](
+  sourceWithPlaceholders: String,
+  placeholderNames: List[String],
+  posMap: Map[Int, P],
+  dotsName: String)
+
 object ExtractibleJSONStringContext {
-  def preparePlaceholders[P](parts: Seq[(String, P)], paramIsField: Int => Boolean, getParamPos: Int => P): (String, List[String], Map[Int, P]) = {
+  def preparePlaceholders[P](parts: Seq[(String, P)], paramIsField: Int => Boolean, getParamPos: Int => P): Placeholders[P] = {
     val radix = {
       val concat = parts.mkString("")
       var i = 0
@@ -82,6 +91,7 @@ object ExtractibleJSONStringContext {
     }
 
     val params = (0 until parts.size - 1).map(radix + _).toList
+    val dotsName = radix + "d"
     val b = new StringBuilder
     var posMap = scala.collection.immutable.TreeMap[Int, P]()
     var i = 0 // faster than zipWithIndex
@@ -101,6 +111,10 @@ object ExtractibleJSONStringContext {
     posMap += (b.size -> lastPart._2)
     b ++= lastPart._1
 
-    (b.toString, params, posMap)
+    Placeholders[P](
+      sourceWithPlaceholders = b.toString,
+      placeholderNames = params,
+      posMap = posMap,
+      dotsName = dotsName)
   }
 }
