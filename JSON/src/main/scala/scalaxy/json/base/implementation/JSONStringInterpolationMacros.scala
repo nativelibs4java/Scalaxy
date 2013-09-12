@@ -3,8 +3,6 @@ package scalaxy.json.base
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
 
-// import org.json4s._
-
 trait JSONStringInterpolationMacros extends JsonDriverMacros {
 
   def parse(str: String, useBigDecimalForDouble: Boolean = false): JSONValueType
@@ -16,7 +14,6 @@ trait JSONStringInterpolationMacros extends JsonDriverMacros {
 
     val fragments = fragmentTrees map {
       case t @ Literal(Constant(s: String)) =>
-        // StringContext.treatEscapes(s)
         s -> t.pos
     }
 
@@ -40,35 +37,15 @@ trait JSONStringInterpolationMacros extends JsonDriverMacros {
           argName -> (Ident(valName) -> typedArg.tpe)
       }).toMap
 
-    type JacksonParseExceptionType = {
-      def getLocation: {
-        def getCharOffset: Long
-        def getByteOffset: Long
-      }
-    }
     try {
-      val obj = reifyJsonValue(c)(parse(placeholders), replacements)//parse(textBuilder.toString))
-      // val res =
       c.Expr[JSONValueType](
         Block(
           valDefs,
-          obj.tree))
-      // println("RES: " + res)
-      // res
+          reifyJsonValue(c)(parse(placeholders), replacements).tree))
     } catch {
-      case ex @ ((_: MatchError) | (_: NullPointerException)) =>
-        ex.printStackTrace()
-        c.error(c.enclosingPosition, ex.getMessage)
-        c.literalNull.asInstanceOf[c.Expr[JSONValueType]]
-      case ex: JacksonParseExceptionType if ex.getClass.getName == "com.fasterxml.jackson.core.JsonParseException" =>
-        import scala.language.reflectiveCalls
-        val pos = ex.getLocation.getCharOffset.asInstanceOf[Int]
-        val (from, to) = posMap.toSeq.takeWhile(_._1 <= pos).last
-        val msg = ex.getMessage.replaceAll("""(.*?)\s+at \[[^\]]+\]""", "$1")
-        c.error(c.enclosingPosition.withPoint(to.startOrPoint + pos - from), msg)
-        c.literalNull.asInstanceOf[c.Expr[JSONValueType]]
       case ex: Throwable =>
-        c.error(c.enclosingPosition, ex.getMessage)
+        if (!reportParsingException(c)(ex, posMap))
+          c.error(c.enclosingPosition, ex.getMessage)
         c.literalNull.asInstanceOf[c.Expr[JSONValueType]]
     }
   }

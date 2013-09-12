@@ -117,4 +117,18 @@ trait Json4sMacros extends JsonDriverMacros {
 
     build(v)
   }
+
+  override def reportParsingException(c: Context)(ex: Throwable, posMap: Map[Int, c.universe.Position]): Boolean = {
+    ex match {
+      case ex: com.fasterxml.jackson.core.JsonParseException =>
+        import scala.language.reflectiveCalls
+        val pos = ex.getLocation.getCharOffset.asInstanceOf[Int]
+        val (from, to) = posMap.toSeq.takeWhile(_._1 <= pos).last
+        val msg = ex.getMessage.replaceAll("""(.*?)\s+at \[[^\]]+\]""", "$1")
+        c.error(c.enclosingPosition.withPoint(to.startOrPoint + pos - from), msg)
+        true
+      case _ =>
+        false
+    }
+  }
 }

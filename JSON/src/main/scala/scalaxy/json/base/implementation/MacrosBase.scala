@@ -4,8 +4,6 @@ import scala.language.dynamics
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
 
-import org.json4s._
-
 trait MacrosBase {
 
   private[json] def reifyByteArray(c: Context)(v: Array[Byte]): c.Expr[Array[Byte]] = {

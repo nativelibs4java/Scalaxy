@@ -18,4 +18,6 @@ trait JsonDriverMacros extends MacrosBase {
   def isJFieldOption(c: Context)(tpe: c.universe.Type): Boolean
 
   private[json] def reifyJsonValue(c: Context)(v: JSONValueType, replacements: Map[String, (c.universe.Tree, c.universe.Type)]): c.Expr[JSONValueType]
+
+  def reportParsingException(c: Context)(ex: Throwable, posMap: Map[Int, c.universe.Position]): Boolean
 }
