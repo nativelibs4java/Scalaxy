@@ -7,7 +7,7 @@ import org.json4s._
 import scala.collection.JavaConversions._
 
 package object implementation
-    extends MacrosBase {
+    extends Json4sMacros {
 
   private def checkApplyName(c: Context)(name: c.Expr[String]) {
     import c.universe._
@@ -21,14 +21,14 @@ package object implementation
                        (name: c.Expr[String])
                        (args: c.Expr[(String, JValue)]*): c.Expr[JObject] = {
     checkApplyName(c)(name)
-    buildJSONObject(c)(args.toList, containsOptionalFields = false)
+    reifyJsonObject(c)(args.toList, containsOptionalFields = false)
   }
 
   def applyDynamic(c: Context)
                   (name: c.Expr[String])
                   (args: c.Expr[JValue]*): c.Expr[JArray] = {
     checkApplyName(c)(name)
-    buildJSONArray(c)(args.toList)
+    reifyJsonArray(c)(args.toList)
   }
 
   def jdouble[A: c.WeakTypeTag](c: Context)(v: c.Expr[A]): c.Expr[JDouble] = {
