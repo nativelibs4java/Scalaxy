@@ -16,7 +16,8 @@ trait JSONStringInterpolationMacros extends MacrosBase {
 
     val fragments = fragmentTrees map {
       case t @ Literal(Constant(s: String)) =>
-        StringContext.treatEscapes(s) -> t.pos
+        // StringContext.treatEscapes(s)
+        s -> t.pos
     }
     val nameRadix = {
       val concat = fragments.mkString("")

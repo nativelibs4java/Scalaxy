@@ -35,6 +35,7 @@ class JSONTest {
     assertEquals("""{
   "x" : 10.0,
   "y" : "123",
+  "s" : "a\nb\tc",
   "z1" : [ 10000000000, {
     "x" : 10
   } ],
@@ -53,8 +54,9 @@ class JSONTest {
 }""", pretty(json"""{
   "x": $a,
   y: $b,
+  s: "a\nb\tc",
   z1: [10000000000, { x: 10 }],
-  z2: 100.01,\n
+  z2: 100.01,
   byte: $byteValue,
   short: $shortValue,
   int: $intValue,
