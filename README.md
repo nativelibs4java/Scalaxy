@@ -38,7 +38,7 @@ Collection of Scala Macro goodies ([BSD-licensed](https://github.com/ochafik/Sca
     println(10.quoted("'"))
     // macro-expanded to `"'" + 10 + "'"`
     
-    println(10 copiesOf new Entity)
+    println(3 copiesOf new Entity)
     // macro-expanded to `Array.fill(3)(new Entity)`
     ```
 
