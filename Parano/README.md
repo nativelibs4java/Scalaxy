@@ -1,6 +1,6 @@
 # Scalaxy/Parano
 
-Extra compile-time warnings and error that prevent some stupid mistakes in compilation units where `scalaxy.parano.verify()` is called
+Extra compile-time errors that prevent some stupid mistakes in compilation units where `scalaxy.parano.verify()` is called
 
 Checks:
 * Confusing names in case class extractors
@@ -8,7 +8,7 @@ Checks:
 * Confusing names in method calls
 * (TODO) Potential side-effect free statements (e.g. missing + between multiline concatenations)
 
-```
+```scala
 scalaxy.parano.verify()
 
 case class Foo(a: Int, b: Int)
