@@ -5,7 +5,7 @@ import org.junit.Assert._
 
 class ParanoTest {
 
-	scalaxy.parano.verify()
+  scalaxy.parano.verify()
 
   case class Foo(a: Int, b: Foo)
   case class Foo2(a: Int)(b: Foo)
@@ -26,21 +26,21 @@ class ParanoTest {
   }
   @Test
   def longerNames {
-  	{
-	  	case class Bar(firstField: Int, secondField: Int, third: Int, fourth: Int)
+    {
+      case class Bar(firstField: Int, secondField: Int, third: Int, fourth: Int)
 
-	  	val b = Bar(1, 2, 3, 4)
-	  	val Bar(theFourth, first, theThird, theSecond) = b
-	  }
+      val b = Bar(1, 2, 3, 4)
+      val Bar(theFourth, first, theThird, theSecond) = b
+    }
   }
   @Test
   def ambiguousParams {
-  	case class Bar(a: Int, b: Int)
-  	val a = 10
-  	val b = 12
-  	Bar(b, a)
-  	Bar(a = 1, b = 2)
-  	Bar(a = 1, 2)
-  	Bar(1, 2)
+    case class Bar(a: Int, b: Int)
+    val a = 10
+    val b = 12
+    Bar(b, a)
+    Bar(a = 1, b = 2)
+    Bar(a = 1, 2)
+    Bar(1, 2)
   }
 }
