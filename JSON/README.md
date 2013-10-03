@@ -17,16 +17,22 @@ val a = 10
 val b = "123"
 
 // Two ways to create objects: named params or string interpolation.
-// Both are macro expanded into the corresponding JSON creation code
-// (no parsing takes place at run time, it all happens during compilation).
+// Both are macro expanded into the corresponding JSON creation code.
+// No parsing takes place at runtime, it all happens during compilation.
+// The resulting JSON is renormalized during compilation, so it's possible to drop some noisy quotes.
 val obj = json(x = a, y = b)
-val obj = json"{ x: $a, y: $b }"
+val obj2 = json"{ x: $a, y: $b }"
 // {
 //   "x" : 10.0,
 //   "y" : "123"
 // }
 
-// Extraction also works, but requires parsing at run time.
+// Same for arrays:
+val arr = json(a, b)
+val arr2 = json"[$a, $b]"
+// [ 10.0, "123" ]
+
+// Extraction also works, but currently requires some runtime parsing.
 // Runtime improvements will come in 2.11 using https://issues.scala-lang.org/browse/SI-5903.
 val json"{ x: $x, y: $y }" = obj
 ```
