@@ -37,6 +37,8 @@ val arr2 = json"[$a, $b]"
 val json"{ x: $x, y: $y }" = obj
 ```
 
+For more examples, [have a look at the tests](https://github.com/ochafik/Scalaxy/blob/master/JSON/src/test/scala/scalaxy/json/JSONTest.scala).
+
 # Features
 
 - `json` string interpolation that is macro-expanded (type-safe and with no runtime parsing)
