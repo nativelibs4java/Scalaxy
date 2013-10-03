@@ -112,7 +112,7 @@ object Scalaxy extends Build {
       //scalacOptions ++= Seq("-language:experimental.macros"),
       libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-compiler" % _),
       libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-reflect" % _)
-      //libraryDependencies <+= scalaVersion("org.scala-lang.macro-paradise" % "scala-reflect" % _)
+      // libraryDependencies <+= scalaVersion("org.scala-lang.macro-paradise" % "scala-reflect" % _)
       // libraryDependencies += "org.scala-lang.macro-paradise" % "scala-reflect" % "2.10.3-SNAPSHOT"
     )
 
@@ -171,7 +171,7 @@ object Scalaxy extends Build {
       settings =
         standardSettings ++
         Seq(publish := { }))
-    .aggregate(integration, loops, compilets, fx, js, beans, components, debug, extensions, reified, scalaxyDoc)
+    .aggregate(integration, loops, compilets, fx, js, json, beans, components, debug, extensions, reified, scalaxyDoc, parano)
 
   lazy val integration =
     Project(
@@ -180,13 +180,15 @@ object Scalaxy extends Build {
       settings =
         standardSettings ++
         Seq(publish := { }))
-    .dependsOn(loops, compilets, fx, js, beans, components, debug, extensions, reified)
+    .dependsOn(loops, compilets, fx, js, json, beans, components, debug, extensions, reified, parano)
 
   lazy val docProjects = Map(
     "Compilets" -> compilets,
     "Fx" -> fx,
     "Beans" -> beans,
     "JS" -> js,
+    "JSON" -> json,
+    "Parano" -> parano,
     "Loops" -> loops,
     //"Components" -> components,
     "Debug" -> debug,
@@ -300,11 +302,19 @@ object Scalaxy extends Build {
 
   lazy val js =
     Project(id = "scalaxy-js", base = file("JS"), settings = reflectSettings ++ Seq(
-      addCompilerPlugin("org.scala-lang.plugins" % "macro-paradise_2.10.3-RC1" % "2.0.0-SNAPSHOT"),
+      // addCompilerPlugin("org.scala-lang.plugins" % "macro-paradise_2.10.3-RC1" % "2.0.0-SNAPSHOT"),
       // addCompilerPlugin("org.scala-lang.plugins" % "macro-paradise_2.10.2" % "2.0.0-SNAPSHOT"),
       libraryDependencies += "com.google.javascript" % "closure-compiler" % "v20130722"
       // scalaVersion := "2.10.3-RC1"
 
+    ))
+
+  lazy val json =
+    Project(id = "scalaxy-json", base = file("JSON"), settings = reflectSettings ++ Seq(
+      // libraryDependencies += "com.fasterxml.jackson.module" % "jackson-module-scala" % "2.2.2"
+      // libraryDependencies += "com.fasterxml.jackson.core" % "jackson-databind" % "2.2.3"
+      libraryDependencies += "org.json4s" %% "json4s-jackson" % "3.2.5",
+      libraryDependencies += "org.json4s" %% "json4s-native" % "3.2.5"
     ))
 
   lazy val beans =
@@ -322,6 +332,9 @@ object Scalaxy extends Build {
   lazy val union =
     Project(id = "scalaxy-union", base = file("Union"), settings = reflectSettings ++ scalariformSettings)
     .dependsOn(debug)
+
+  lazy val parano =
+    Project(id = "scalaxy-parano", base = file("Parano"), settings = reflectSettings ++ scalariformSettings)
 
   lazy val generic =
     Project(id = "scalaxy-generic", base = file("Generic"), settings = reflectSettings ++ scalariformSettings)
