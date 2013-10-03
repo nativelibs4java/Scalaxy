@@ -6,7 +6,8 @@ import scala.collection.immutable
 
 object PseudoParsingUtils {
   implicit class RegexExt(val r: Regex) extends AnyVal {
-    def findAllRangesIn(s: CharSequence) =
+    /** Returns a map from range start to range end (no overlap) */
+    def findAllRangesIn(s: CharSequence): immutable.TreeMap[Int, Int] =
       immutable.TreeMap[Int, Int]() ++ r.findAllMatchIn(s).map(m => m.start -> m.end)
 
     def findAllMatchOutsidePatternIn(s: CharSequence, outsidePattern: Regex): Iterator[Match] =
@@ -27,10 +28,4 @@ object PseudoParsingUtils {
       r.findAllMatchIn(s).filter(getMatchFilter(bannedRanges))
     }
   }
-
-  // implicit class StringExt(val s: String) extends AnyVal {
-  //   def visitSkippingRanges(bannedRanges: immutable.TreeMap[Int, Int], replacementChar: Char, f: Char => Unit) {
-      
-  //   }
-  // }
 }

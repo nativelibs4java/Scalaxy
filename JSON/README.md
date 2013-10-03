@@ -47,6 +47,7 @@ For more examples, [have a look at the tests](https://github.com/ochafik/Scalaxy
 
 # TODO
 
+- `json` string interpolation should create something between a string and a JSON object (it currently creates an object), so as to optimize the .toString use case.
 - Current matching is exact (all the extracted keys must exist, and no other must exist).
   By introducing a `...` notation, it will be possible to accept more unexpected keys.
 

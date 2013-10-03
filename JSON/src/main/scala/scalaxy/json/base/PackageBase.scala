@@ -16,6 +16,23 @@ private[json] trait PackageBase {
       macro implementation.applyDynamic
   }
 
+  class PreparedJValue(_value: => JValue, _string: => String) {
+    lazy val value = _value
+    private lazy val string = _string
+
+    override def toString = string
+    /** Cannot use string.hashCode, since string content is not stable */
+    override def hashCode = value.hashCode
+    override def equals(v: Any) = v match {
+      case v: PreparedJValue =>
+        value.equals(v.value)
+      case _ =>
+        false
+    }
+  }
+  implicit def preparedJValue2String(p: PreparedJValue): String = p.toString
+  implicit def preparedJValue2JValue(p: PreparedJValue): JValue = p.value
+
   implicit def Byte2JValue(v: Byte) = macro implementation.jdouble[Byte]
   implicit def Short2JValue(v: Short) = macro implementation.jdouble[Short]
   implicit def Int2JValue(v: Int) = macro implementation.jdouble[Int]
