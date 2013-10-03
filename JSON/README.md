@@ -1,8 +1,17 @@
 # Scalaxy/JSON
 
 Macro-based JSON string interpolation, to create JSON objects as well as to extract values from them.
+
+Currently uses [json4s](https://github.com/json4s/json4s), but decoupling is in progress.
+
 ```scala
-import scalaxy.json._
+import org.json4s._
+
+import scalaxy.json.jackson._
+import org.json4s.jackson.JsonMethods._
+
+// import scalaxy.json.native._
+// import org.json4s.native.JsonMethods._
 
 val a = 10
 val b = "123"
@@ -21,6 +30,12 @@ val obj = json"{ x: $a, y: $b }"
 // Runtime improvements will come in 2.11 using https://issues.scala-lang.org/browse/SI-5903.
 val json"{ x: $x, y: $y }" = obj
 ```
+
+# Features
+
+- `json` string interpolation that is macro-expanded (type-safe and with no runtime parsing)
+- `json` string interpolation extractor
+- Smart error reporting for `json` string interpolation when using the `json4s.jackson`: JSON parsing errors are seamlessly transformed to Scala compiler errors, with the correct location.
 
 # TODO
 
