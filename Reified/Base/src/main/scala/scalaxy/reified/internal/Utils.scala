@@ -19,8 +19,11 @@ object Utils {
     newExpr[A](typeCheckTree(expr.tree, pt))
   }
 
-  private[reified] val optimisingOptions = "-optimise -Yclosure-elim -Yinline" // -Xprint:lambdalift"
-  private[reified] val optimisingToolbox = {
+  val optimisingOptions =
+    System.getProperty(
+      "scalaxy.reified.optimisingOptions",
+      "-optimise -Yclosure-elim -Yinline") // -Xprint:lambdalift"
+  lazy val optimisingToolbox = {
     currentMirror.mkToolBox(options = optimisingOptions)
   }
 

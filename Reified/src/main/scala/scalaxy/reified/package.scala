@@ -57,6 +57,7 @@ package object reified {
       val f = this
       //reify((c: A) => f(g(c)))
       internal.reifyWithDifferentRuntimeValue[A => R](
+        // f.compose(g),
         (c: A) => f(g(c)),
         f.reifiedValue.value.compose(g.reifiedValue.value)
       )
@@ -75,6 +76,7 @@ package object reified {
       val f = this
       //reify((a: T1) => g(f(a)))
       internal.reifyWithDifferentRuntimeValue[T1 => A](
+        // f.andThen(g),
         (a: T1) => g(f(a)),
         f.reifiedValue.value.andThen(g.reifiedValue.value)
       )

@@ -93,7 +93,7 @@ object Optimizer {
     optimized
   }
 
-  private def getFreshNameGenerator(tree: Tree): String => TermName = {
+  def getFreshNameGenerator(tree: Tree): String => TermName = {
     val names = collection.mutable.HashSet[String]()
     names ++= tree.collect {
       case t if t.symbol != null && t.symbol.isTerm =>
@@ -115,7 +115,7 @@ object Optimizer {
     import toolbox.resetAllAttrs
 
     val tree = reset(rawTree, toolbox)
-    def freshName = getFreshNameGenerator(tree)
+    val freshName = getFreshNameGenerator(tree)
 
     val transformer = new Transformer {
       override def transform(tree: Tree) = tree match {
