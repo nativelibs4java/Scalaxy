@@ -123,7 +123,7 @@ object Optimizer {
         case Apply(
           TypeApply(
             Select(
-              NumRange(IntTpe, start, end, Step(step), isInclusive, filters),
+              NumRange(rangeTpe, IntTpe, start, end, Step(step), isInclusive, filters),
               foreachName()),
             List(u)),
           List(Function(List(param), body))) =>

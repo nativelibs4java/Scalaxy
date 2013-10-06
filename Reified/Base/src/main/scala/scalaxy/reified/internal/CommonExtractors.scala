@@ -8,6 +8,7 @@ import scala.reflect.macros.Context
 import scala.reflect.runtime.universe
 import scala.reflect.NameTransformer.encode
 import scala.tools.reflect.ToolBox
+import scala.collection.immutable.NumericRange
 
 import scalaxy.reified.internal.Utils._
 
@@ -55,42 +56,43 @@ private[reified] object CommonExtractors {
   object NumRange {
     import CommonScalaNames._
 
-    def apply(numTpe: Type, from: Tree, to: Tree, by: Option[Tree], isInclusive: Boolean, filters: List[Tree]) = ???
+    def apply(rangeTpe: Type, numTpe: Type, from: Tree, to: Tree, by: Option[Tree], isInclusive: Boolean, filters: List[Tree]) = ???
 
     object WrapperName {
-      def unapply(name: Name): Option[Type] = Option(name) collect {
-        case intWrapperName() => IntTpe
-        case longWrapperName() => LongTpe
+      def apply(rangeTpe: Type, numTpe: Type) = ???
+      def unapply(name: Name): Option[(Type, Type)] = Option(name) collect {
+        case intWrapperName() => (typeOf[Range], IntTpe)
+        case longWrapperName() => (typeOf[NumericRange[Long]], LongTpe)
       }
     }
-    def unapply(tree: Tree): Option[(Type, Tree, Tree, Option[Tree], Boolean, List[Tree])] = {
+    def unapply(tree: Tree): Option[(Type, Type, Tree, Tree, Option[Tree], Boolean, List[Tree])] = {
       if (tree.tpe <:< typeOf[Range]) {
         tree match {
           case Apply(
             Select(
               Apply(
-                Select(Predef(), WrapperName(numTpe)),
+                Select(Predef(), WrapperName(rangeTpe, numTpe)),
                 List(from)),
               funToName @ (toName() | untilName())),
             List(to)) =>
 
             Option(funToName) collect {
               case toName() =>
-                (numTpe, from, to, None, true, Nil)
+                (rangeTpe, numTpe, from, to, None, true, Nil)
               case untilName() =>
-                (numTpe, from, to, None, false, Nil)
+                (rangeTpe, numTpe, from, to, None, false, Nil)
             }
           case Apply(
             Select(
-              NumRange(numTpe, from, to, by, isInclusive, filters),
+              NumRange(rangeTpe, numTpe, from, to, by, isInclusive, filters),
               n @ (byName() | withFilterName() | filterName())),
             List(arg)) =>
 
             Option(n) collect {
               case byName() if by == None =>
-                (numTpe, from, to, Some(arg), isInclusive, filters)
+                (rangeTpe, numTpe, from, to, Some(arg), isInclusive, filters)
               case withFilterName() | filterName() /* if !options.stream */ =>
-                (numTpe, from, to, by, isInclusive, filters :+ arg)
+                (rangeTpe, numTpe, from, to, by, isInclusive, filters :+ arg)
             }
           case _ =>
             None

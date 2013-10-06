@@ -290,7 +290,7 @@ trait StreamSources
         OptionStreamSource(tree, Some(component), onlyIfNotNull = true, component.tpe)
       case OptionTree(componentType) =>
         OptionStreamSource(tree, None, onlyIfNotNull = true, componentType)
-      case NumRange(IntTpe, from, to, By(byValue), isUntil, filters) =>
+      case NumRange(rangeTpe, IntTpe, from, to, By(byValue), isUntil, filters) =>
         assert(filters.isEmpty, "Filters are not empty !!!")
         RangeStreamSource(tree, from, to, byValue, isUntil /*, filters*/ )
     }

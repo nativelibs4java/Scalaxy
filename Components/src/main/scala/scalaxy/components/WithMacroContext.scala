@@ -90,7 +90,7 @@ trait WithMacroContext {
     context.typeCheck(x.tree.asInstanceOf[context.universe.Tree]).asInstanceOf[Tree]
 
   def typeCheck(tree: Tree, pt: Type): Tree = {
-    if (tree.tpe =:= pt)
+    if (tree.tpe != null && tree.tpe =:= pt)
       tree
     else
       context.typeCheck(

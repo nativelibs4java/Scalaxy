@@ -145,32 +145,33 @@ trait MiscMatchers extends Tuploids {
   //   }
   // }
   object NumRange {
-    def apply(numTpe: Type, from: Tree, to: Tree, by: Option[Tree], isUntil: Boolean, filters: List[Tree]) = sys.error("not implemented")
+    def apply(rangeTpe: Type, numTpe: Type, from: Tree, to: Tree, by: Option[Tree], isUntil: Boolean, filters: List[Tree]) = sys.error("not implemented")
 
     object WrapperName {
-      def unapply(name: Name): Option[Type] = Option(name) collect {
-        case intWrapperName() => IntTpe
-        case longWrapperName() => LongTpe
+      def apply(rangeTpe: Type, numTpe: Type) = ???
+      def unapply(name: Name): Option[(Type, Type)] = Option(name) collect {
+        case intWrapperName() => (typeOf[Range], IntTpe)
+        case longWrapperName() => (typeOf[NumericRange[Long]], LongTpe)
       }
     }
-    def unapply(tree: Tree): Option[(Type, Tree, Tree, Option[Tree], Boolean, List[Tree])] = {
+    def unapply(tree: Tree): Option[(Type, Type, Tree, Tree, Option[Tree], Boolean, List[Tree])] = {
       if (tree.tpe == null || tree.tpe <:< typeOf[Range] || tree.tpe <:< typeOf[NumericRange[Long]])
         tree match {
-          case Apply(Select(Apply(Select(Predef(), WrapperName(numTpe)), List(from)), funToName @ (toName() | untilName())), List(to)) =>
+          case Apply(Select(Apply(Select(Predef(), WrapperName(rangeTpe, numTpe)), List(from)), funToName @ (toName() | untilName())), List(to)) =>
             Option(funToName) collect {
               case toName() =>
-                (numTpe, from, to, None, false, Nil)
+                (rangeTpe, numTpe, from, to, None, false, Nil)
               case untilName() =>
-                (numTpe, from, to, None, true, Nil)
+                (rangeTpe, numTpe, from, to, None, true, Nil)
             }
           case Apply(Select(tg, n @ (byName() | withFilterName() | filterName())), List(arg)) =>
             tg match {
-              case NumRange(numTpe, from, to, by, isUntil, filters) =>
+              case NumRange(rangeTpe, numTpe, from, to, by, isUntil, filters) =>
                 Option(n) collect {
                   case byName() if by == None =>
-                    (numTpe, from, to, Some(arg), isUntil, filters)
+                    (rangeTpe, numTpe, from, to, Some(arg), isUntil, filters)
                   case withFilterName() | filterName() /* if !options.stream */ =>
-                    (numTpe, from, to, by, isUntil, filters :+ arg)
+                    (rangeTpe, numTpe, from, to, by, isUntil, filters :+ arg)
                 }
               case _ =>
                 None

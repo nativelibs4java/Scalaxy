@@ -218,7 +218,7 @@ trait TraversalOps
             case withFilterName() =>
               //println("FOUND WITHFILTER")
               collection match {
-                case NumRange(_, _, _, _, _, _) =>
+                case NumRange(_, _, _, _, _, _, _) =>
                   //println("FOUND IntRange")
                   Some(FilterOp(tree, function, false), collection.tpe)
                 case _ =>
