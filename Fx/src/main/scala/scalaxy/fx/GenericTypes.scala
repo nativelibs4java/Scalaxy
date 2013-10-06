@@ -14,7 +14,7 @@ import scala.language.experimental.macros
 private[fx] sealed trait GenericType[T, J, B <: Binding[J], P <: Property[J]]
 
 /** Type associations. */
-private[fx] trait GenericTypes 
+private[fx] trait GenericTypes
 {
   implicit def GenericObjectType[T <: AnyRef]:
       GenericType[T, T, Binding[T], SimpleObjectProperty[T]] = ???

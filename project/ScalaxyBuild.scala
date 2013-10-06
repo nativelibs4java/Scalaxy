@@ -382,12 +382,4 @@ object Scalaxy extends Build {
       id = "scalaxy-fx",
       base = file("Fx/Macros"),
       settings = fxSettings)
-    .dependsOn(fxRuntime)
-    .aggregate(fxRuntime)
-
-  lazy val fxRuntime =
-    Project(
-      id = "scalaxy-fx-runtime",
-      base = file("Fx/Runtime"),
-      settings = fxSettings)
 }

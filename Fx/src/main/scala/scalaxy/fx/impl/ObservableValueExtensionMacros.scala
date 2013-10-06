@@ -10,33 +10,10 @@ import javafx.event._
 import scala.language.experimental.macros
 import scala.reflect.macros.Context
 
-import scalaxy.fx.runtime.ScalaChangeListener
+// import scalaxy.fx.runtime.ScalaChangeListener
 
 /** Macros that create ChangeListener[_] and InvalidationListener instances
  *  out of functions and blocks.
- *
- *  Note that we need a single runtime class to implement ChangeListener[T] due to a bug in Scala macros:
- *  <code>
- *    'Error: unexpected: bound type that doesn't have a tpe'
- *  </code>
- *
- *  Otherwise we could use the following below:
- *  <pre><code>
- *    val valueExpr = c.Expr[ObservableValue[T]](value)
- *    reify(
- *      valueExpr.splice.addListener(
- *        new ChangeListener[T]() {
- *          override def changed(
- *              observable: ObservableValue[_ <: T],
- *              oldValue: T,
- *              newValue: T)
- *          {
- *            f.splice(oldValue, newValue)
- *          }
- *        }
- *      )
- *    )
- *  </code></pre>
  */
 private[fx] object ObservableValueExtensionMacros
 {
@@ -64,8 +41,12 @@ private[fx] object ObservableValueExtensionMacros
         Select(value, getAddListenerMethod(c)(value.tpe)),
         List(
           reify(
-            new ScalaChangeListener[T] {
-              override def changed(/*observable: ObservableValue[_ <: T], */oldValue: T, newValue: T) {
+            new ChangeListener[T]() {
+              override def changed(
+                  observable: ObservableValue[_ <: T],
+                  oldValue: T,
+                  newValue: T)
+              {
                 f.splice(newValue)
               }
             }
@@ -87,8 +68,8 @@ private[fx] object ObservableValueExtensionMacros
         Select(value, getAddListenerMethod(c)(value.tpe)),
         List(
           reify(
-            new ScalaChangeListener[T] {
-              override def changed(/*observable: ObservableValue[_ <: T], */oldValue: T, newValue: T) {
+            new ChangeListener[T] {
+              override def changed(observable: ObservableValue[_ <: T], oldValue: T, newValue: T) {
                 f.splice(oldValue, newValue)
               }
             }
@@ -112,8 +93,8 @@ private[fx] object ObservableValueExtensionMacros
         Select(value, getAddListenerMethod(c)(value.tpe)),
         List(
           reify(
-            new ScalaChangeListener[T] {
-              override def changed(/*observable: ObservableValue[_ <: T], */oldValue: T, newValue: T) {
+            new ChangeListener[T] {
+              override def changed(observable: ObservableValue[_ <: T], oldValue: T, newValue: T) {
                 block.splice
               }
             }

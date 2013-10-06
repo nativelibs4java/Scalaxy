@@ -7,10 +7,6 @@ unmanagedJars in Compile ++= Seq(new File(System.getProperty("java.home")) / "li
 // This is the bulk of Scalaxy/Fx, needed only during compilation (no runtime dependency here).
 libraryDependencies += "com.nativelibs4java" %% "scalaxy-fx" % "0.3-SNAPSHOT" % "provided"
 
-// This runtime library contains only one class needed for the `onChange { ... }` syntax.
-// You can just remove it if you don't use that syntax.
-libraryDependencies += "com.nativelibs4java" %% "scalaxy-fx-runtime" % "0.3-SNAPSHOT" 
-
 libraryDependencies += "junit" % "junit" % "4.10" % "test"
 
 libraryDependencies += "com.novocode" % "junit-interface" % "0.8" % "test"
