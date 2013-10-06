@@ -5,6 +5,7 @@ import scala.reflect.runtime.universe._
 
 import scalaxy.reified.internal.CaptureTag
 import scalaxy.reified.internal.Optimizer
+import scalaxy.reified.internal.CompilerUtils
 import scalaxy.reified.internal.CommonExtractors._
 import scalaxy.reified.internal.Utils
 import scalaxy.reified.internal.Utils._
@@ -88,20 +89,7 @@ final case class ReifiedValue[A: TypeTag](
       }
     }
 
-    val result = {
-      try {
-        toolbox.compile(toolbox.resetAllAttrs(finalAST))
-      } catch {
-        case ex1: Throwable =>
-          try {
-            toolbox.compile(finalAST)
-          } catch {
-            case ex2: Throwable =>
-              ex1.printStackTrace()
-              throw new RuntimeException("Compilation failed: " + ex1 + "\nSource:\n\t" + ast, ex1)
-          }
-      }
-    }
+    val result = CompilerUtils.compile(finalAST)
 
     if (topLevelCaptures.isEmpty) {
       // No values to inject.
