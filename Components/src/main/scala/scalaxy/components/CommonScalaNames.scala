@@ -69,6 +69,7 @@ trait CommonScalaNames {
   val scalaName = N("scala")
   val ArrayName = N("Array")
   val intWrapperName = N("intWrapper")
+  val longWrapperName = N("longWrapper")
   val tabulateName = N("tabulate")
   val toName = N("to")
   val byName = N("by")

@@ -6,7 +6,6 @@ import scala.language.implicitConversions
 import scala.reflect._
 import scala.reflect.macros.Context
 import scala.reflect.runtime.universe
-import scala.reflect.runtime.universe._
 import scala.reflect.NameTransformer.encode
 import scala.tools.reflect.ToolBox
 
@@ -20,6 +19,8 @@ import scalaxy.reified.internal.CommonExtractors._
  * - TODO: add Range foreach loops optimizations from Scalaxy
  */
 object Optimizer {
+  import universe._
+  import definitions._
 
   private def reset(tree: Tree, toolbox: ToolBox[universe.type]): Tree = {
     typeCheckTree(toolbox.resetAllAttrs(resolveModulePaths(universe)(tree)))
@@ -122,7 +123,7 @@ object Optimizer {
         case Apply(
           TypeApply(
             Select(
-              IntRange(start, end, Step(step), isInclusive, filters),
+              NumRange(IntTpe, start, end, Step(step), isInclusive, filters),
               foreachName()),
             List(u)),
           List(Function(List(param), body))) =>

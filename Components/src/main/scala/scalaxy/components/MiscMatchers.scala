@@ -31,6 +31,7 @@
 package scalaxy.components
 
 import scala.reflect.api.Universe
+import scala.collection.immutable.NumericRange
 
 trait MiscMatchers extends Tuploids {
   val global: Universe
@@ -116,30 +117,68 @@ trait MiscMatchers extends Tuploids {
         None
     }
   }
-  object IntRange {
-    def apply(from: Tree, to: Tree, by: Option[Tree], isUntil: Boolean, filters: List[Tree]) = sys.error("not implemented")
+  // object IntRange {
+  //   def apply(from: Tree, to: Tree, by: Option[Tree], isUntil: Boolean, filters: List[Tree]) = sys.error("not implemented")
 
-    def unapply(tree: Tree): Option[(Tree, Tree, Option[Tree], Boolean, List[Tree])] = tree match {
-      case Apply(Select(Apply(Select(Predef(), intWrapperName()), List(from)), funToName @ (toName() | untilName())), List(to)) =>
-        Option(funToName) collect {
-          case toName() =>
-            (from, to, None, false, Nil)
-          case untilName() =>
-            (from, to, None, true, Nil)
-        }
-      case Apply(Select(tg, n @ (byName() | withFilterName() | filterName())), List(arg)) =>
-        tg match {
-          case IntRange(from, to, by, isUntil, filters) =>
-            Option(n) collect {
-              case byName() if by == None =>
-                (from, to, Some(arg), isUntil, filters)
-              case withFilterName() | filterName() /* if !options.stream */ =>
-                (from, to, by, isUntil, filters :+ arg)
+  //   def unapply(tree: Tree): Option[(Tree, Tree, Option[Tree], Boolean, List[Tree])] = tree match {
+  //     case Apply(Select(Apply(Select(Predef(), intWrapperName()), List(from)), funToName @ (toName() | untilName())), List(to)) =>
+  //       Option(funToName) collect {
+  //         case toName() =>
+  //           (from, to, None, false, Nil)
+  //         case untilName() =>
+  //           (from, to, None, true, Nil)
+  //       }
+  //     case Apply(Select(tg, n @ (byName() | withFilterName() | filterName())), List(arg)) =>
+  //       tg match {
+  //         case IntRange(from, to, by, isUntil, filters) =>
+  //           Option(n) collect {
+  //             case byName() if by == None =>
+  //               (from, to, Some(arg), isUntil, filters)
+  //             case withFilterName() | filterName() /* if !options.stream */ =>
+  //               (from, to, by, isUntil, filters :+ arg)
+  //           }
+  //         case _ =>
+  //           None
+  //       }
+  //     case _ =>
+  //       None
+  //   }
+  // }
+  object NumRange {
+    def apply(numTpe: Type, from: Tree, to: Tree, by: Option[Tree], isUntil: Boolean, filters: List[Tree]) = sys.error("not implemented")
+
+    object WrapperName {
+      def unapply(name: Name): Option[Type] = Option(name) collect {
+        case intWrapperName() => IntTpe
+        case longWrapperName() => LongTpe
+      }
+    }
+    def unapply(tree: Tree): Option[(Type, Tree, Tree, Option[Tree], Boolean, List[Tree])] = {
+      if (tree.tpe == null || tree.tpe <:< typeOf[Range] || tree.tpe <:< typeOf[NumericRange[Long]])
+        tree match {
+          case Apply(Select(Apply(Select(Predef(), WrapperName(numTpe)), List(from)), funToName @ (toName() | untilName())), List(to)) =>
+            Option(funToName) collect {
+              case toName() =>
+                (numTpe, from, to, None, false, Nil)
+              case untilName() =>
+                (numTpe, from, to, None, true, Nil)
+            }
+          case Apply(Select(tg, n @ (byName() | withFilterName() | filterName())), List(arg)) =>
+            tg match {
+              case NumRange(numTpe, from, to, by, isUntil, filters) =>
+                Option(n) collect {
+                  case byName() if by == None =>
+                    (numTpe, from, to, Some(arg), isUntil, filters)
+                  case withFilterName() | filterName() /* if !options.stream */ =>
+                    (numTpe, from, to, by, isUntil, filters :+ arg)
+                }
+              case _ =>
+                None
             }
           case _ =>
             None
         }
-      case _ =>
+      else
         None
     }
   }
