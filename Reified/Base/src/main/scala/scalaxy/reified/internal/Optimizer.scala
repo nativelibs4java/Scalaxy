@@ -42,15 +42,18 @@ object Optimizer {
   }
 
   private def optimizeFunctionVals(rawTree: Tree, toolbox: ToolBox[universe.type]): Tree = {
-    val tree = safeReset(rawTree, toolbox)
+    val tree = typeCheckTree(safeReset(rawTree, toolbox))
 
-    val functionSymbols = tree collect {
+    val valDefs = tree collect {
       case vd @ ValDef(mods, name, tpt, Function(vparams, body)) =>
-        vd.symbol
+        vd
     }
 
-    assert(functionSymbols.forall(s => s != null && s != NoSymbol), "Some ValDefs have no symbol")
+    val symbolLessValDefs = valDefs.filter(v => v.symbol == null || v.symbol == NoSymbol)
+    if (!symbolLessValDefs.isEmpty)
+      sys.error("Some ValDefs have no symbol: " + symbolLessValDefs)
 
+    val functionSymbols = valDefs.map(_.symbol).toSet
     val functionsUsedAsObjects = tree.collect {
       case Select(t, m) if functionSymbols.contains(t.symbol) && m.toString != "apply" =>
         t.symbol
@@ -58,7 +61,7 @@ object Optimizer {
         rhs.symbol
     }
 
-    val optimizableFunctions = functionSymbols.toSet -- functionsUsedAsObjects.toSet
+    val optimizableFunctions = functionSymbols -- functionsUsedAsObjects.toSet
 
     //println(s"functionSymbols = $functionSymbols")
     //println(s"functionsUsedAsObjects = $functionsUsedAsObjects")
@@ -111,7 +114,7 @@ object Optimizer {
   private def optimizeLoops(rawTree: Tree, toolbox: ToolBox[universe.type]): Tree = {
     import toolbox.resetAllAttrs
 
-    val tree = safeReset(rawTree, toolbox)
+    val tree = typeCheckTree(safeReset(rawTree, toolbox))
     val freshName = getFreshNameGenerator(tree)
 
     val transformer = new Transformer {

@@ -74,12 +74,6 @@ object Utils {
 
   def safeReset(tree: Tree, toolbox: ToolBox[universe.type]): Tree = {
     val resolved = resolveModulePaths(universe)(tree)
-    try {
-      typeCheckTree(toolbox.resetAllAttrs(resolved))
-    } catch {
-      case ex =>
-        ex.printStackTrace()
-        throw new RuntimeException("Failed to perform a safe attributes reset of " + tree, ex)
-    }
+    toolbox.resetAllAttrs(resolved)
   }
 }
