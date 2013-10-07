@@ -48,15 +48,13 @@ object Utils {
         case Ident() if tree.symbol != null && tree.symbol != NoSymbol =>
           val sym = tree.symbol
           val owner = tree.symbol.owner
-          val res = if (sym.isModule) {
+          if (sym.isModule) {
             getModulePath(u)(sym.asModule)
           } else if (owner.isModule || owner.isPackage) {
             Select(getModulePath(u)(owner), sym.name)
           } else {
             tree
           }
-          // println("RES " + res)
-          res
         case _ =>
           super.transform(tree)
       }
