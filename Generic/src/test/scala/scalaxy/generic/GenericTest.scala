@@ -50,8 +50,6 @@ class GenericTest {
     assertEquals(10.0, a.toDouble, 0)
   }
 
-  def generic[A: Generic](value: A) = new GenericOps[A](value)
-
   @Test
   def testAlternatives {
     def test[N: TypeTag: Generic](a: N) {

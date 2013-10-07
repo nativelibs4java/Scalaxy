@@ -22,6 +22,8 @@ import scalaxy.debug._
 package object generic {
   //type TypeTag[T] = scala.reflect.runtime.universe.TypeTag[T]
 
+  def generic[A: Generic](value: A) = new GenericOps[A](value)
+
   private[generic] val typeTagsToNumerics: Map[scala.reflect.runtime.universe.TypeTag[_], Numeric[_]] = {
     import Numeric._
     Map(
