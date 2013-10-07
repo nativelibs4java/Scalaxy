@@ -61,7 +61,7 @@ object Utils {
     }.transform(root)
   }
 
-  private[reified] def typeCheckTree(tree: Tree, pt: Type = WildcardType): Tree = {
+  def typeCheckTree(tree: Tree, pt: Type = WildcardType): Tree = {
     try {
       optimisingToolbox.typeCheck(tree, pt)
     } catch {
