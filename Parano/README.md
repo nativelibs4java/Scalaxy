@@ -44,6 +44,7 @@ resolvers += Resolver.sonatypeRepo("snapshots")
 # TODO
 
 Ideas
+- Turn into a compiler plugin (+ can keep the macro)
 - Tuple return types in extractors: require an apply companion method with symmetric signature, take names from it and propagate accross matches:
 
   ```scala
