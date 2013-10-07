@@ -27,7 +27,7 @@ object Utils {
     currentMirror.mkToolBox(options = optimisingOptions)
   }
 
-  private[reified] def getModulePath(u: scala.reflect.api.Universe)(moduleSym: u.ModuleSymbol): u.Tree = {
+  private[reified] def getModulePath(u: scala.reflect.api.Universe)(moduleSym: u.Symbol): u.Tree = {
     import u._
     def rec(relements: List[String]): Tree = relements match {
       case name :: Nil =>
@@ -41,12 +41,22 @@ object Utils {
     rec(moduleSym.fullName.split("\\.").reverse.toList)
   }
 
-  private[reified] def resolveModulePaths(u: scala.reflect.api.Universe)(root: u.Tree): u.Tree = {
+  def resolveModulePaths(u: scala.reflect.api.Universe)(root: u.Tree): u.Tree = {
     import u._
     new Transformer {
       override def transform(tree: Tree) = tree match {
-        case Ident() if tree.symbol != null && tree.symbol.isModule =>
-          getModulePath(u)(tree.symbol.asModule)
+        case Ident() if tree.symbol != null && tree.symbol != NoSymbol =>
+          val sym = tree.symbol
+          val owner = tree.symbol.owner
+          val res = if (sym.isModule) {
+            getModulePath(u)(sym.asModule)
+          } else if (owner.isModule || owner.isPackage) {
+            Select(getModulePath(u)(owner), sym.name)
+          } else {
+            tree
+          }
+          // println("RES " + res)
+          res
         case _ =>
           super.transform(tree)
       }
@@ -62,4 +72,14 @@ object Utils {
     }
   }
 
+  def safeReset(tree: Tree, toolbox: ToolBox[universe.type]): Tree = {
+    val resolved = resolveModulePaths(universe)(tree)
+    try {
+      typeCheckTree(toolbox.resetAllAttrs(resolved))
+    } catch {
+      case ex =>
+        ex.printStackTrace()
+        throw new RuntimeException("Failed to perform a safe attributes reset of " + tree, ex)
+    }
+  }
 }

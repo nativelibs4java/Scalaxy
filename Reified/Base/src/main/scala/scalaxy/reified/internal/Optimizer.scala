@@ -22,10 +22,6 @@ object Optimizer {
   import universe._
   import definitions._
 
-  private def reset(tree: Tree, toolbox: ToolBox[universe.type]): Tree = {
-    typeCheckTree(toolbox.resetAllAttrs(resolveModulePaths(universe)(tree)))
-  }
-
   def optimize(rawTree: Tree, toolbox: ToolBox[universe.type] = Utils.optimisingToolbox): Tree = {
     val result = optimizeLoops(optimizeFunctionVals(rawTree, toolbox), toolbox)
     //val result = optimizeFunctionVals(rawTree, toolbox)
@@ -46,7 +42,7 @@ object Optimizer {
   }
 
   private def optimizeFunctionVals(rawTree: Tree, toolbox: ToolBox[universe.type]): Tree = {
-    val tree = reset(rawTree, toolbox)
+    val tree = safeReset(rawTree, toolbox)
 
     val functionSymbols = tree collect {
       case vd @ ValDef(mods, name, tpt, Function(vparams, body)) =>
@@ -115,7 +111,7 @@ object Optimizer {
   private def optimizeLoops(rawTree: Tree, toolbox: ToolBox[universe.type]): Tree = {
     import toolbox.resetAllAttrs
 
-    val tree = reset(rawTree, toolbox)
+    val tree = safeReset(rawTree, toolbox)
     val freshName = getFreshNameGenerator(tree)
 
     val transformer = new Transformer {
