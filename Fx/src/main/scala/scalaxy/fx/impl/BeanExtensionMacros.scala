@@ -86,7 +86,7 @@ private[fx] object BeanExtensionMacros
           Apply(
             Select(
               Select(Ident(beanName), propertyName),
-              "bind"
+              "bind": TermName
             ),
             List(value)
           )
@@ -110,7 +110,7 @@ private[fx] object BeanExtensionMacros
     }
     // Build a block with the bean declaration, the setter calls and return the bean.
     c.Expr[T](
-      Block(Seq(beanDef) ++ setterCalls :+ Ident(beanName): _*)
+      Block(List(beanDef) ++ setterCalls, Ident(beanName))
     )
   }
 }

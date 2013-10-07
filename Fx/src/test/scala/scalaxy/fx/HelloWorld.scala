@@ -1,5 +1,7 @@
 package scalaxy.helloworld
 
+import scala.language.reflectiveCalls
+
 import org.junit._
 import org.junit.Assert._
 

@@ -1,5 +1,7 @@
 package scalaxy.fx
 
+import scala.language.implicitConversions
+
 import scala.language.dynamics
 import scala.language.experimental.macros
 

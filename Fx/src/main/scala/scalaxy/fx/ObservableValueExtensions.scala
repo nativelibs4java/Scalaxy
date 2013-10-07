@@ -1,9 +1,11 @@
 package scalaxy.fx
 
-import javafx.beans.value._
-
+import scala.language.implicitConversions
 import scala.language.experimental.macros
+
 import scala.reflect.ClassTag
+
+import javafx.beans.value._
 
 /** Meant to be imported by (package) objects that want to expose change listener macros. */
 private[fx] trait ObservableValueExtensions

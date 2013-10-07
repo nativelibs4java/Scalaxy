@@ -48,8 +48,8 @@ class MacroExtensionsComponent(
   override val runsBefore = List[String]("namer")
 
   private final val selfName = "self"
-  
-  def newPhase(prev: Phase): StdPhase = new StdPhase(prev) 
+
+  def newPhase(prev: Phase): StdPhase = new StdPhase(prev)
   {
     def apply(unit: CompilationUnit) {
       val onTransformer = new Transformer

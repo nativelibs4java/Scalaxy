@@ -1,5 +1,7 @@
 package scalaxy.fx
 
+import scala.language.implicitConversions
+
 import javafx.beans.binding.Binding
 import javafx.beans.property.Property
 

@@ -1,5 +1,7 @@
 package scalaxy.fx
 
+import scala.language.implicitConversions
+
 import javafx.event.{ Event, EventHandler }
 
 import scala.language.experimental.macros
