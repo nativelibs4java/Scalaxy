@@ -45,6 +45,7 @@ resolvers += Resolver.sonatypeRepo("snapshots")
 
 Ideas
 - Tuple return types in extractors: require an apply companion method with symmetric signature, take names from it and propagate accross matches:
+
   ```scala
     object MyExtractor {
     def apply(a: Int, b: Int) = ???
