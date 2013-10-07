@@ -101,7 +101,7 @@ class GenericOps[+A: Generic](val rawValue: A, implicitConversions: List[Any] = 
 
   override def equals(other: Any) = value.equals(other)
   override def hashCode() = value.hashCode()
-  override def toString() = "GenericOps(" + value + ")"
+  override def toString() = String.valueOf(value) //"GenericOps(" + value + ")"
 }
 
 trait NumberOps[+A] {
