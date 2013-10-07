@@ -171,7 +171,7 @@ object Scalaxy extends Build {
       settings =
         standardSettings ++
         Seq(publish := { }))
-    .aggregate(integration, loops, compilets, fx, js, json, beans, components, debug, extensions, reified, scalaxyDoc, parano)
+    .aggregate(integration, loops, compilets, fx, json, beans, components, debug, extensions, reified, scalaxyDoc, parano)
 
   lazy val integration =
     Project(
@@ -180,7 +180,7 @@ object Scalaxy extends Build {
       settings =
         standardSettings ++
         Seq(publish := { }))
-    .dependsOn(loops, compilets, fx, js, json, beans, components, debug, extensions, reified, parano)
+    .dependsOn(loops, compilets, fx, json, beans, components, debug, extensions, reified, parano)
 
   lazy val docProjects = Map(
     "Compilets" -> compilets,
@@ -188,7 +188,7 @@ object Scalaxy extends Build {
     "Beans" -> beans,
     "JS" -> js,
     "JSON" -> json,
-    "Parano" -> parano,
+    // "Parano" -> parano,
     "Loops" -> loops,
     //"Components" -> components,
     "Debug" -> debug,
@@ -301,7 +301,7 @@ object Scalaxy extends Build {
     .dependsOn(debug)
 
   lazy val js =
-    Project(id = "scalaxy-js", base = file("JS"), settings = reflectSettings ++ Seq(
+    Project(id = "scalaxy-js", base = file("Experiments/JS"), settings = reflectSettings ++ Seq(
       // addCompilerPlugin("org.scala-lang.plugins" % "macro-paradise_2.10.3-RC1" % "2.0.0-SNAPSHOT"),
       // addCompilerPlugin("org.scala-lang.plugins" % "macro-paradise_2.10.2" % "2.0.0-SNAPSHOT"),
       libraryDependencies += "com.google.javascript" % "closure-compiler" % "v20130722"
@@ -380,6 +380,6 @@ object Scalaxy extends Build {
   lazy val fx =
     Project(
       id = "scalaxy-fx",
-      base = file("Fx/Macros"),
+      base = file("Fx"),
       settings = fxSettings)
 }
