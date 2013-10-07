@@ -1,0 +1,38 @@
+index.html:
+
+  <html>
+    <head>
+      <script src="index.js"/>
+    </head>
+    <body>
+      <form id="sendForm">
+        <input name="name" type="text"/>
+        <button id="sendButton"/>
+      </form>
+    </body>
+  </html>
+
+index.sourceMap:
+
+  https://docs.google.com/document/d/1U1RGAehQwRypUTovF1KRlpiOFze0b-_2gc6fAH0KY0k/edit?hl=en_US&pli=1&pli=1
+  
+build.sh:
+
+  scalac -Xstop-after:typer -cp scala-js.jar *.scala
+  
+index.scala:
+  
+  import js.html5._
+  
+  object Index extends Page {
+    val 
+    //document.getElementById("sendButton")
+    document.sendForm.sendButton.onclick = event => {
+      
+    }
+  }
+  
+index.js:
+
+  //# sourceMappingURL=index.sourceMap
+  document.

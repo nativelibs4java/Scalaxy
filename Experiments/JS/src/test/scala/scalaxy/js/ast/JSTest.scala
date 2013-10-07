@@ -7,7 +7,7 @@ import org.junit._
 import Assert._
 
 class JSTest {
-  val pos = SourcePos("", 0, 0)
+  implicit val pos = SourcePos("", 0, 0)
   
   @Test
   def simpleFunction {

@@ -1,0 +1,34 @@
+#!/bin/bash
+
+CP="$HOME/.sbt/0.12.2/boot/org.scala-lang.macro-paradise.scala-2.10.3-SNAPSHOT/lib/scala-reflect.jar"
+
+PLUGIN_ARGS=" -Xplugin:$HOME/.ivy2/cache/org.scala-lang.plugins/macro-paradise_2.10.2/jars/macro-paradise_2.10.2-2.0.0-SNAPSHOT.jar"
+
+SRC="mixins.scala"
+
+TIMES=${TIMES:-10}
+in29() {
+    for i in `seq 1 $TIMES`; do
+        scalac-2.9 $SRC
+    done    
+}
+withPlugin() {
+    for i in `seq 1 $TIMES`; do
+        scalac-2.10 $PLUGIN_ARGS -cp $CP $SRC
+    done    
+}
+withoutPlugin() {
+    for i in `seq 1 $TIMES`; do
+        scalac-2.10 -cp $CP $SRC
+    done    
+}
+
+time in29
+echo "IN 2.9"
+
+time withPlugin
+echo "WITH PLUGIN"
+
+time withoutPlugin
+echo "WITHOUT PLUGIN"
+

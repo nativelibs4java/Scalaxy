@@ -8,4 +8,4 @@ libraryDependencies in ThisBuild <+= scalaVersion("org.scala-lang" % "scala-refl
 
 libraryDependencies += "com.google.javascript" % "closure-compiler" % "v20130722"
 
-scalaVersion := "2.10.3-RC1"
+//scalaVersion := "2.10.3-RC1"
