@@ -1,0 +1,4 @@
+<plugin>
+  <name>scalaxy-parano</name>
+  <classname>scalaxy.parano.ParanoPlugin</classname>
+</plugin>

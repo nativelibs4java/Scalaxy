@@ -9,8 +9,6 @@ Checks:
 * (TODO) Potential side-effect free statements (e.g. missing + between multiline concatenations)
 
 ```scala
-scalaxy.parano.verify()
-
 case class Foo(theFirst: Int, second: Int)
 
 val foo = Foo(10, 12)                // Error: unnamed params theFirst and second have same type
@@ -31,11 +29,16 @@ val foo5 = Foo(theSecond, first)     // Error: ident theSecond used for param th
 
 If you're using `sbt` 0.12.2+, just put the following lines in `build.sbt`:
 ```scala
-// Only works with 2.10.0+
-scalaVersion := "2.10.0"
+// Only works with 2.10.2+
+scalaVersion := "2.10.2"
 
-// Dependency at compilation-time only (not at runtime).
-libraryDependencies += "com.nativelibs4java" %% "scalaxy-parano" % "0.3-SNAPSHOT" % "provided"
+autoCompilerPlugins := true
+
+// Scalaxy/Parano plugin
+addCompilerPlugin("com.nativelibs4java" %% "scalaxy-parano" % "0.3-SNAPSHOT")
+
+// Ensure Scalaxy/Parano's plugin is used.
+scalacOptions += "-Xplugin-require:scalaxy-parano"
 
 // Scalaxy/Parano snapshots are published on the Sonatype repository.
 resolvers += Resolver.sonatypeRepo("snapshots")
@@ -44,7 +47,6 @@ resolvers += Resolver.sonatypeRepo("snapshots")
 # TODO
 
 Ideas
-- Turn into a compiler plugin (+ can keep the macro)
 - Tuple return types in extractors: require an apply companion method with symmetric signature, take names from it and propagate accross matches:
 
   ```scala
@@ -70,3 +72,21 @@ If you want to build / test / hack on this project:
     cd Scalaxy
     sbt "project scalaxy-parano" "; clean ; ~test"
     ```
+- Test with:
+
+  ```
+  git clone git://github.com/ochafik/Scalaxy.git
+  cd Scalaxy
+  sbt "project scalaxy-parano" "run examples/Test.scala"
+  ```
+
+- You can also use plain `scalac` directly, once Scalaxy/Parano's JAR is cached by sbt / Ivy:
+
+  ```
+  git clone git://github.com/ochafik/Scalaxy.git
+  cd Scalaxy
+  sbt update
+  cd Parano
+  scalac -Xplugin:$HOME/.ivy2/cache/com.nativelibs4java/scalaxy-parano_2.10/jars/scalaxy-parano_2.10-0.3-SNAPSHOT.jar examples/Test.scala
+  scalac examples/Test.scala
+  ```

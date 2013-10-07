@@ -4,8 +4,9 @@ import org.junit._
 import org.junit.Assert._
 
 class ParanoTest {
-
-  scalaxy.parano.verify()
+  // TODO: embed parser and do proper tests.
+  // Uncomment to test
+  // scalaxy.parano.verify()
 
   case class Foo(a: Int, b: Foo)
   case class Foo2(a: Int)(b: Foo)
