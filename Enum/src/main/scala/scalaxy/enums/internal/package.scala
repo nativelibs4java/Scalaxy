@@ -114,7 +114,7 @@ package object internal {
                     TypeApply(
                       Select(
                         Ident(paramName),
-                        "asInstanceOf"
+                        "asInstanceOf": TermName
                       ),
                       List(
                         TypeTree(singletonType)
