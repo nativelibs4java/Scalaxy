@@ -41,6 +41,22 @@ libraryDependencies += "com.nativelibs4java" %% "scalaxy-parano" % "0.3-SNAPSHOT
 resolvers += Resolver.sonatypeRepo("snapshots")
 ```
 
+# TODO
+
+Ideas
+- Tuple return types in extractors: require an apply companion method with symmetric signature, take names from it and propagate accross matches:
+  ```scala
+    object MyExtractor {
+    def apply(a: Int, b: Int) = ???
+    def unapply(v: Any): Option[(Int, Int)] = v match {
+      case ... =>
+        val a = ...
+        val b = ...
+        (b, a) // Error: potential naming confusion (names of tuple are (a, b)).
+    }
+  }
+  ```
+
 # Hacking
 
 If you want to build / test / hack on this project:
