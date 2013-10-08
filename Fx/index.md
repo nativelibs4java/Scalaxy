@@ -82,10 +82,6 @@ unmanagedJars in Compile ++= Seq(new File(System.getProperty("java.home")) / "li
 // This is the bulk of Scalaxy/Fx, needed only during compilation (no runtime dependency here).
 libraryDependencies += "com.nativelibs4java" %% "scalaxy-fx" % "0.3-SNAPSHOT" % "provided"
 
-// This runtime library contains only one class needed for the `onChange { ... }` syntax.
-// You can just remove it if you don't use that syntax.
-libraryDependencies += "com.nativelibs4java" %% "scalaxy-fx-runtime" % "0.3-SNAPSHOT" 
-
 // JavaFX doesn't cleanup everything well, need to fork tests / runs.
 fork := true
 
@@ -193,22 +189,8 @@ The syntactic facilities available so far are:
   
 - Despite it not being officially supported, creates anonymous handler classes from inside macros.
   (see [EventHandlerMacros.scala](https://github.com/ochafik/Scalaxy/blob/master/Fx/Macros/src/main/scala/scalaxy/fx/impl/EventHandlerMacros.scala))
-- Macros all over, for virtually no runtime dependency.
-  The only exception is that it's not currently possible to have unbound types in macros due to [a bug in reifiers](https://issues.scala-lang.org/browse/SI-6386), so the following will crash compilation because of the `[_ <: T]` part:
-  
-    ```scala
-    val valueExpr = c.Expr[ObservableValue[T]](value)
-    reify(
-      valueExpr.splice.addListener(
-        new ChangeListener[T]() {
-          override def changed(observable: ObservableValue[_ <: T], oldValue: T, newValue: T) {
-            f.splice(oldValue, newValue)
-          }
-        }
-      )
-    )
-    ```
-    
+- Macros all over, for absolutely no runtime dependency. This means the dependency in sbt / Maven can be marked as `provided`, and won't be needed when running your program.
+
 # Hacking
 
 If you want to build / test / hack on this project:

@@ -83,7 +83,98 @@ allowing / preserving values captured outside its expression.
 
         <div id="types" class="types members">
               <h3>Type Members</h3>
-              <ol><li name="scalaxy.reified.ReifiedFunction1" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+              <ol><li name="scalaxy.reified.Capture" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="CaptureextendsAnyRef"></a>
+      <a id="Capture:Capture"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">sealed </span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Capture.html"><span class="name">Capture</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4>
+      
+    </li><li name="scalaxy.reified.DefaultLifter" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DefaultLifterextendsLifter"></a>
+      <a id="DefaultLifter:DefaultLifter"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <a href="DefaultLifter.html"><span class="name">DefaultLifter</span></a><span class="result"> extends <a href="Lifter.html" class="extype" name="scalaxy.reified.Lifter">Lifter</a></span>
+      </span>
+      </h4>
+      
+    </li><li name="scalaxy.reified.InjectedCapture" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="InjectedCaptureextendsCapturewithProductwithSerializable"></a>
+      <a id="InjectedCapture:InjectedCapture"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="InjectedCapture.html"><span class="name">InjectedCapture</span></a><span class="params">(<span name="value">value: <span class="extype" name="scala.Any">Any</span></span>, <span name="tpe">tpe: <span class="extype" name="scala.reflect.api.Types.Type">scala.reflect.api.JavaUniverse.Type</span></span>)</span><span class="result"> extends <a href="Capture.html" class="extype" name="scalaxy.reified.Capture">Capture</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4>
+      
+    </li><li name="scalaxy.reified.InlinableLiftedCapture" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="InlinableLiftedCaptureextendsCapturewithProductwithSerializable"></a>
+      <a id="InlinableLiftedCapture:InlinableLiftedCapture"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="InlinableLiftedCapture.html"><span class="name">InlinableLiftedCapture</span></a><span class="params">(<span name="tree">tree: <span class="extype" name="scala.reflect.api.Trees.Tree">scala.reflect.api.JavaUniverse.Tree</span></span>, <span name="tpe">tpe: <span class="extype" name="scala.reflect.api.Types.Type">scala.reflect.api.JavaUniverse.Type</span></span>)</span><span class="result"> extends <a href="Capture.html" class="extype" name="scalaxy.reified.Capture">Capture</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4>
+      
+    </li><li name="scalaxy.reified.LiftResult" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="LiftResultextendsProductwithSerializable"></a>
+      <a id="LiftResult:LiftResult"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="LiftResult.html"><span class="name">LiftResult</span></a><span class="params">(<span name="tree">tree: <span class="extype" name="scala.reflect.api.Trees.Tree">scala.reflect.api.JavaUniverse.Tree</span></span>, <span name="inlinable">inlinable: <span class="extype" name="scala.Boolean">Boolean</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4>
+      
+    </li><li name="scalaxy.reified.LiftedCapture" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="LiftedCaptureextendsCapturewithProductwithSerializable"></a>
+      <a id="LiftedCapture:LiftedCapture"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="LiftedCapture.html"><span class="name">LiftedCapture</span></a><span class="params">(<span name="tree">tree: <span class="extype" name="scala.reflect.api.Trees.Tree">scala.reflect.api.JavaUniverse.Tree</span></span>, <span name="tpe">tpe: <span class="extype" name="scala.reflect.api.Types.Type">scala.reflect.api.JavaUniverse.Type</span></span>)</span><span class="result"> extends <a href="Capture.html" class="extype" name="scalaxy.reified.Capture">Capture</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4>
+      
+    </li><li name="scalaxy.reified.Lifter" visbl="pub" data-isabs="true" fullComment="no" group="Ungrouped">
+      <a id="LifterextendsAnyRef"></a>
+      <a id="Lifter:Lifter"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Lifter.html"><span class="name">Lifter</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4>
+      
+    </li><li name="scalaxy.reified.ReifiedFunction1" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="ReifiedFunction1[T1,R]extendsHasReifiedValue[T1=&gt;R]"></a>
       <a id="ReifiedFunction1[T1,R]:ReifiedFunction1[T1,R]"></a>
       <h4 class="signature">
@@ -129,19 +220,19 @@ allowing / preserving values captured outside its expression.
 
         <div id="values" class="values members">
               <h3>Value Members</h3>
-              <ol><li name="scalaxy.reified.CaptureConversions" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="CaptureConversions"></a>
-      <a id="CaptureConversions:CaptureConversions"></a>
+              <ol><li name="scalaxy.reified.Lifter" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Lifter"></a>
+      <a id="Lifter:Lifter"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a href="CaptureConversions$.html"><span class="name">CaptureConversions</span></a>
+        <a href="Lifter$.html"><span class="name">Lifter</span></a>
       </span>
       </h4>
-      <p class="comment cmt">Conversions for captured references of common types.</p>
+      
     </li><li name="scalaxy.reified.package#hasReifiedValueToReifiedValue" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="hasReifiedValueToReifiedValue[A](r:scalaxy.reified.HasReifiedValue[A]):scalaxy.reified.ReifiedValue[A]"></a>
       <a id="hasReifiedValueToReifiedValue[A](HasReifiedValue[A]):ReifiedValue[A]"></a>
@@ -186,7 +277,7 @@ allowing / preserving values captured outside its expression.
       <a id="reify[A](A)(scala.reflect.api.JavaUniverse.TypeTag[A]):ReifiedValue[A]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
-        <span class="modifier"></span>
+        <span class="modifier">implicit </span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">

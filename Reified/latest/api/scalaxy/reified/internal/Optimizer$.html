@@ -153,58 +153,6 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li name="scalaxy.reified.internal.Optimizer.CommonScalaNames" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="CommonScalaNames"></a>
-      <a id="CommonScalaNames:CommonScalaNames"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a href="Optimizer$$CommonScalaNames$.html"><span class="name">CommonScalaNames</span></a>
-      </span>
-      </h4>
-      
-    </li><li name="scalaxy.reified.internal.Optimizer.IntRange" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="IntRange"></a>
-      <a id="IntRange:IntRange"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a href="Optimizer$$IntRange$.html"><span class="name">IntRange</span></a>
-      </span>
-      </h4>
-      
-    </li><li name="scalaxy.reified.internal.Optimizer.Predef" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="Predef"></a>
-      <a id="Predef:Predef"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a href="Optimizer$$Predef$.html"><span class="name">Predef</span></a>
-      </span>
-      </h4>
-      
-    </li><li name="scalaxy.reified.internal.Optimizer.Step" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="Step"></a>
-      <a id="Step:Step"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">object</span>
-      </span>
-      <span class="symbol">
-        <a href="Optimizer$$Step$.html"><span class="name">Step</span></a>
-      </span>
-      </h4>
-      
     </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
       <a id="asInstanceOf[T0]:T0"></a>
@@ -295,6 +243,19 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scalaxy.reified.internal.Optimizer#getFreshNameGenerator" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="getFreshNameGenerator(tree:reflect.runtime.universe.Tree):String=&gt;reflect.runtime.universe.TermName"></a>
+      <a id="getFreshNameGenerator(scala.reflect.api.JavaUniverse.Tree):(String)⇒scala.reflect.api.JavaUniverse.TermName"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getFreshNameGenerator</span><span class="params">(<span name="tree">tree: <span class="extype" name="scala.reflect.api.Trees.Tree">scala.reflect.api.JavaUniverse.Tree</span></span>)</span><span class="result">: (<span class="extype" name="scala.Predef.String">String</span>) ⇒ <span class="extype" name="scala.reflect.api.Names.TermName">scala.reflect.api.JavaUniverse.TermName</span></span>
+      </span>
+      </h4>
+      
     </li><li name="scala.AnyRef#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hashCode():Int"></a>
       <a id="hashCode():Int"></a>
@@ -369,46 +330,7 @@
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">optimize</span><span class="params">(<span name="rawTree">rawTree: <span class="extype" name="scala.reflect.api.Trees.Tree">scala.reflect.api.JavaUniverse.Tree</span></span>, <span name="toolbox">toolbox: <span class="extype" name="scala.tools.reflect.ToolBox">ToolBox</span>[<span class="extype" name="scala.reflect.runtime.universe">universe</span>.type]</span>)</span><span class="result">: <span class="extype" name="scala.reflect.api.Trees.Tree">scala.reflect.api.JavaUniverse.Tree</span></span>
-      </span>
-      </h4>
-      
-    </li><li name="scalaxy.reified.internal.Optimizer#optimizeFunctionVals" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="optimizeFunctionVals(rawTree:reflect.runtime.universe.Tree,toolbox:scala.tools.reflect.ToolBox[reflect.runtime.universe.type]):reflect.runtime.universe.Tree"></a>
-      <a id="optimizeFunctionVals(scala.reflect.api.JavaUniverse.Tree,ToolBox[universe.type]):scala.reflect.api.JavaUniverse.Tree"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">optimizeFunctionVals</span><span class="params">(<span name="rawTree">rawTree: <span class="extype" name="scala.reflect.api.Trees.Tree">scala.reflect.api.JavaUniverse.Tree</span></span>, <span name="toolbox">toolbox: <span class="extype" name="scala.tools.reflect.ToolBox">ToolBox</span>[<span class="extype" name="scala.reflect.runtime.universe">universe</span>.type]</span>)</span><span class="result">: <span class="extype" name="scala.reflect.api.Trees.Tree">scala.reflect.api.JavaUniverse.Tree</span></span>
-      </span>
-      </h4>
-      
-    </li><li name="scalaxy.reified.internal.Optimizer#optimizeLoops" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="optimizeLoops(rawTree:reflect.runtime.universe.Tree,toolbox:scala.tools.reflect.ToolBox[reflect.runtime.universe.type]):reflect.runtime.universe.Tree"></a>
-      <a id="optimizeLoops(scala.reflect.api.JavaUniverse.Tree,ToolBox[universe.type]):scala.reflect.api.JavaUniverse.Tree"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">optimizeLoops</span><span class="params">(<span name="rawTree">rawTree: <span class="extype" name="scala.reflect.api.Trees.Tree">scala.reflect.api.JavaUniverse.Tree</span></span>, <span name="toolbox">toolbox: <span class="extype" name="scala.tools.reflect.ToolBox">ToolBox</span>[<span class="extype" name="scala.reflect.runtime.universe">universe</span>.type]</span>)</span><span class="result">: <span class="extype" name="scala.reflect.api.Trees.Tree">scala.reflect.api.JavaUniverse.Tree</span></span>
-      </span>
-      </h4>
-      
-    </li><li name="scalaxy.reified.internal.Optimizer#reset" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="reset(tree:reflect.runtime.universe.Tree,toolbox:scala.tools.reflect.ToolBox[reflect.runtime.universe.type]):reflect.runtime.universe.Tree"></a>
-      <a id="reset(scala.reflect.api.JavaUniverse.Tree,ToolBox[universe.type]):scala.reflect.api.JavaUniverse.Tree"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">reset</span><span class="params">(<span name="tree">tree: <span class="extype" name="scala.reflect.api.Trees.Tree">scala.reflect.api.JavaUniverse.Tree</span></span>, <span name="toolbox">toolbox: <span class="extype" name="scala.tools.reflect.ToolBox">ToolBox</span>[<span class="extype" name="scala.reflect.runtime.universe">universe</span>.type]</span>)</span><span class="result">: <span class="extype" name="scala.reflect.api.Trees.Tree">scala.reflect.api.JavaUniverse.Tree</span></span>
+        <span class="name">optimize</span><span class="params">(<span name="rawTree">rawTree: <span class="extype" name="scala.reflect.api.Trees.Tree">scala.reflect.api.JavaUniverse.Tree</span></span>, <span name="toolbox">toolbox: <span class="extype" name="scala.tools.reflect.ToolBox">ToolBox</span>[<span class="extype" name="scala.reflect.runtime.universe">universe</span>.type] = <span class="symbol"><span class="name"><a href="Utils$.html">Utils.optimisingToolbox</a></span></span></span>)</span><span class="result">: <span class="extype" name="scala.reflect.api.Trees.Tree">scala.reflect.api.JavaUniverse.Tree</span></span>
       </span>
       </h4>
       

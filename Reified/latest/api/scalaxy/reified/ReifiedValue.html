@@ -218,18 +218,21 @@ in the capturedTerms field of this reified value).
               
         </dd></dl></div>
     </li><li name="scalaxy.reified.ReifiedValue#compile" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="compile(conversion:scalaxy.reified.CaptureConversions.Conversion,toolbox:scala.tools.reflect.ToolBox[reflect.runtime.universe.type],optimizeAST:Boolean):()=&gt;A"></a>
-      <a id="compile(Conversion,ToolBox[universe.type],Boolean):()⇒A"></a>
+      <a id="compile(lifter:scalaxy.reified.Lifter,toolbox:scala.tools.reflect.ToolBox[reflect.runtime.universe.type],optimizeAST:Boolean):()=&gt;A"></a>
+      <a id="compile(Lifter,ToolBox[universe.type],Boolean):()⇒A"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">compile</span><span class="params">(<span name="conversion">conversion: <a href="CaptureConversions$.html#Conversion=PartialFunction[(Any,reflect.runtime.universe.Type,Any),reflect.runtime.universe.Tree]" class="extmbr" name="scalaxy.reified.CaptureConversions.Conversion">Conversion</a> = <span class="symbol"><span class="name"><a href="CaptureConversions$.html">CaptureConversions.DEFAULT</a></span></span></span>, <span name="toolbox">toolbox: <span class="extype" name="scala.tools.reflect.ToolBox">ToolBox</span>[<span class="extype" name="scala.reflect.runtime.universe">universe</span>.type] = <span class="symbol"><span class="name"><a href="internal/package.html">internal.Utils.optimisingToolbox</a></span></span></span>, <span name="optimizeAST">optimizeAST: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">true</span></span>)</span><span class="result">: () ⇒ <span class="extype" name="scalaxy.reified.ReifiedValue.A">A</span></span>
+        <span class="name">compile</span><span class="params">(<span name="lifter">lifter: <a href="Lifter.html" class="extype" name="scalaxy.reified.Lifter">Lifter</a> = <span class="symbol"><span class="name"><a href="Lifter$.html">Lifter.DEFAULT</a></span></span></span>, <span name="toolbox">toolbox: <span class="extype" name="scala.tools.reflect.ToolBox">ToolBox</span>[<span class="extype" name="scala.reflect.runtime.universe">universe</span>.type] = <span class="symbol"><span class="name"><a href="internal/package.html">internal.Utils.optimisingToolbox</a></span></span></span>, <span name="optimizeAST">optimizeAST: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">true</span></span>)</span><span class="result">: () ⇒ <span class="extype" name="scalaxy.reified.ReifiedValue.A">A</span></span>
       </span>
       </h4>
-      <p class="shortcomment cmt">Compile the AST (using the provided conversion to convert captured values to ASTs).</p><div class="fullcomment"><div class="comment cmt"><p>Compile the AST (using the provided conversion to convert captured values to ASTs).</p></div><dl class="paramcmts block"><dt class="param">conversion</dt><dd class="cmt"><p>how to convert captured values</p></dd><dt class="param">toolbox</dt><dd class="cmt"><p>toolbox used to perform the compilation. By default, using a toolbox configured with all stable optimization flags available.</p></dd><dt class="param">optimizeAST</dt><dd class="cmt"><p>whether to apply Scalaxy AST optimizations or not (optimizations range from transforming function value objects into defs when possible, to (TODO:) transforming some foreach loops into equivalent while loops).
+      <p class="shortcomment cmt">Compile the AST (using the provided lifter to convert captured values to ASTs).</p><div class="fullcomment"><div class="comment cmt"><p>Compile the AST (using the provided lifter to convert captured values to ASTs).</p></div><dl class="paramcmts block"><dt class="param">lifter</dt><dd class="cmt"><p>how to convert captured values</p></dd><dt class="param">toolbox</dt><dd class="cmt"><p>toolbox used to perform the compilation. By default, using a toolbox configured
+    with all stable optimization flags available.</p></dd><dt class="param">optimizeAST</dt><dd class="cmt"><p>whether to apply Scalaxy AST optimizations or not
+    (optimizations range from transforming function value objects into defs when possible,
+    to transforming some foreach loops into equivalent while loops).
 </p></dd></dl></div>
     </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="eq(x$1:AnyRef):Boolean"></a>
@@ -244,20 +247,23 @@ in the capturedTerms field of this reified value).
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scalaxy.reified.ReifiedValue#expr" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="expr(conversion:scalaxy.reified.CaptureConversions.Conversion):reflect.runtime.universe.Expr[A]"></a>
-      <a id="expr(Conversion):scala.reflect.api.JavaUniverse.Expr[A]"></a>
+    </li><li name="scalaxy.reified.ReifiedValue#expr" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="expr(lifter:scalaxy.reified.Lifter):(reflect.runtime.universe.Expr[A],Seq[(String,scalaxy.reified.InjectedCapture)])"></a>
+      <a id="expr(Lifter):(scala.reflect.api.JavaUniverse.Expr[A],Seq[(String,InjectedCapture)])"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">expr</span><span class="params">(<span name="conversion">conversion: <a href="CaptureConversions$.html#Conversion=PartialFunction[(Any,reflect.runtime.universe.Type,Any),reflect.runtime.universe.Tree]" class="extmbr" name="scalaxy.reified.CaptureConversions.Conversion">Conversion</a> = <span class="symbol"><span class="name"><a href="CaptureConversions$.html">CaptureConversions.DEFAULT</a></span></span></span>)</span><span class="result">: <span class="extype" name="scala.reflect.api.Exprs.Expr">scala.reflect.api.JavaUniverse.Expr</span>[<span class="extype" name="scalaxy.reified.ReifiedValue.A">A</span>]</span>
+        <span class="name">expr</span><span class="params">(<span name="lifter">lifter: <a href="Lifter.html" class="extype" name="scalaxy.reified.Lifter">Lifter</a> = <span class="symbol"><span class="name"><a href="Lifter$.html">Lifter.DEFAULT</a></span></span></span>)</span><span class="result">: (<span class="extype" name="scala.reflect.api.Exprs.Expr">scala.reflect.api.JavaUniverse.Expr</span>[<span class="extype" name="scalaxy.reified.ReifiedValue.A">A</span>], <span class="extype" name="scala.Seq">Seq</span>[(<span class="extype" name="scala.Predef.String">String</span>, <a href="InjectedCapture.html" class="extype" name="scalaxy.reified.InjectedCapture">InjectedCapture</a>)])</span>
       </span>
       </h4>
-      <p class="shortcomment cmt">Get the AST of this reified value, using the specified conversion function for any
-value that was captured by the expression.</p>
+      <p class="shortcomment cmt">Get the AST of this reified value, using the specified lifter for any
+value that was captured by the expression.</p><div class="fullcomment"><div class="comment cmt"><p>Get the AST of this reified value, using the specified lifter for any
+value that was captured by the expression.</p></div><dl class="paramcmts block"><dt>returns</dt><dd class="cmt"><p>a block which starts by declaring all the captured values, and ends with a value that
+only contains references to these declarations.
+</p></dd></dl></div>
     </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
       <a id="finalize():Unit"></a>
