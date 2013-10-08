@@ -1,10 +1,12 @@
 # Scalaxy/Parano
 
-Extra compile-time errors that prevent some stupid mistakes in compilation units where `scalaxy.parano.verify()` is called
+Extra compile-time checks that prevent some stupid mistakes.
+
+Can be used as a compiler plugin (preferred method), as a standalone compiler (`scalaxy.parano.ParanoCompiler`) or by calling a macro (`scalaxy.parano.verify()`).
 
 Checks:
 * Confusing names in case class extractors
-* Ambiguous unnamed arguments with same type
+* Ambiguous unnamed arguments with same type (e.g. `Int` parameters that could be inadvertently swapped)
 * Confusing names in method calls
 * (TODO) Potential side-effect free statements (e.g. missing + between multiline concatenations)
 
@@ -29,8 +31,7 @@ val foo5 = Foo(theSecond, first)     // Error: ident theSecond used for param th
 
 If you're using `sbt` 0.12.2+, just put the following lines in `build.sbt`:
 ```scala
-// Only works with 2.10.2+
-scalaVersion := "2.10.2"
+scalaVersion := "2.10.3"
 
 autoCompilerPlugins := true
 
@@ -47,6 +48,7 @@ resolvers += Resolver.sonatypeRepo("snapshots")
 # TODO
 
 Ideas
+- Make an exception for natural progressions: `x, y, z`, `a, b, c, d`, `i1, i2, i3`... (they still need mismatching names check, but no ambiguity check)
 - Tuple return types in extractors: require an apply companion method with symmetric signature, take names from it and propagate accross matches:
 
   ```scala
