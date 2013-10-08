@@ -6,7 +6,7 @@ import scala.reflect.macros.Context
 import scala.collection.mutable
 
 /**
- * Perform extra compilation-time checks in compilation units where scalaxy.parano.verify() is called.
+ * Perform extra compilation-time checks.
  * Checks:
  * - Confusing names in case class extractors
  * - Ambiguous unnamed arguments with same type
@@ -14,7 +14,9 @@ import scala.collection.mutable
  * - (TODO) Potential side-effect free statements (e.g. missing + between multiline concatenations)
  */
 package object parano {
-  // def verify(wholeFile, extractors, methodCalls, ambiguousTypes) = macro impl.parano
+  /**
+   * Perform parano checks in the enclosing compilation unit.
+   */
   def verify() = macro impl.parano
 }
 
