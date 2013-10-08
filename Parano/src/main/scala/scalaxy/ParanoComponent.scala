@@ -4,6 +4,7 @@ package scalaxy.parano
 import scala.tools.nsc.Global
 import scala.tools.nsc.Phase
 import scala.tools.nsc.plugins.PluginComponent
+import scala.tools.nsc.symtab.Flags
 
 /**
  *  To understand / reproduce this, you should use paulp's :power mode in the scala console:
@@ -21,7 +22,6 @@ class ParanoComponent(
     with ParanoChecks {
   import global._
   import definitions._
-  import Flag._
 
   override val phaseName = "scalaxy-parano"
 
@@ -29,7 +29,10 @@ class ParanoComponent(
   override val runsAfter = runsRightAfter.toList
   override val runsBefore = List[String]("patmat")
 
-  def error(pos: Position, msg: String) = reporter.error(pos, msg)
+  override def error(pos: Position, msg: String) = reporter.error(pos, msg)
+
+  override def isSynthetic(mods: Modifiers) =
+    mods.hasFlag(Flags.SYNTHETIC)
 
   def newPhase(prev: Phase): StdPhase = new StdPhase(prev) {
     def apply(unit: CompilationUnit) {

@@ -73,12 +73,17 @@ trait ParanoChecks {
     checker traverse tree
   }
 
+  def isSynthetic(mods: Modifiers): Boolean
+
   private val checker = new Traverser {
     override def traverse(tree: Tree) {
+      var traverseChildren = true
       tree match {
+        case DefDef(mods, _, _, _, _, _) if isSynthetic(mods) =>
+          // Don't check synthetic methods (created by the compiler itself, so better be good already).
+          traverseChildren = false
         case Apply(target, args) if target.symbol.isMethod =>
           val msym = target.symbol.asMethod
-          // if (args.size ==)
           val groups = getMethodParamTypeGroups(msym)
           val params = getMethodParams(msym).flatten
           val decisiveIdents = args.zip(params).map({
@@ -86,7 +91,6 @@ trait ParanoChecks {
               arg match {
                 case Ident(name) =>
                   val n = name.toString
-                  //if (param.containsExactFragment(n)
                   val matches = params.filter(_.containsExactFragment(n))
                   if (matches.contains(param)) {
                     // Decisive if not matched by any other.
@@ -112,7 +116,7 @@ trait ParanoChecks {
             if (!named) {
               for (
                 group <- groups.get(i);
-                if i != group.last._2 /* Report in all  per group */ ) {
+                if i != group.last._2 /* Report in all per group */ ) {
                 val (namedParams, unnamedParams) = group.partition({
                   case (name, index) =>
                     // TODO add unequivocal ident name check here.
@@ -130,17 +134,12 @@ trait ParanoChecks {
                 }
               }
             }
-            // c.warning(arg.pos, "Named arg!")
-            // named <- isNamedParam(arg); if named
           }
 
-        // println(msym)
-        // println(showRaw(args))
         case Match(selector, cases) =>
           val sym = selector.tpe.typeSymbol
           if (sym.isClass && sym.asClass.isCaseClass) {
             val fields = getCaseClassFields(sym.asClass)
-            // println(s"fields = $fields")
             for (CaseDef(pat, guard, body) <- cases) {
               pat match {
                 case Apply(target, args) =>
@@ -161,7 +160,8 @@ trait ParanoChecks {
           }
         case _ =>
       }
-      super.traverse(tree)
+      if (traverseChildren)
+        super.traverse(tree)
     }
   }
 

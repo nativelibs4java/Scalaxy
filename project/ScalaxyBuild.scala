@@ -334,7 +334,8 @@ object Scalaxy extends Build {
     .dependsOn(debug)
 
   lazy val parano =
-    Project(id = "scalaxy-parano", base = file("Parano"), settings = reflectSettings ++ scalariformSettings)
+    Project(id = "scalaxy-parano", base = file("Parano"), settings = reflectSettings ++ scalariformSettings ++ Seq(
+      watchSources <+= baseDirectory map { _ / "examples" }))
 
   lazy val generic =
     Project(id = "scalaxy-generic", base = file("Generic"), settings = reflectSettings ++ scalariformSettings)
