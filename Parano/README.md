@@ -50,7 +50,7 @@ Ideas
 - Tuple return types in extractors: require an apply companion method with symmetric signature, take names from it and propagate accross matches:
 
   ```scala
-    object MyExtractor {
+  object MyExtractor {
     def apply(a: Int, b: Int) = ???
     def unapply(v: Any): Option[(Int, Int)] = v match {
       case ... =>
