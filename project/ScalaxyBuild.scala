@@ -183,10 +183,10 @@ object Scalaxy extends Build {
     .dependsOn(loops, compilets, fx, json, beans, components, debug, extensions, reified, parano)
 
   lazy val docProjects = Map(
-    "Compilets" -> compilets,
+    // "Compilets" -> compilets,
     "Fx" -> fx,
     "Beans" -> beans,
-    "JS" -> js,
+    // "JS" -> js,
     "JSON" -> json,
     // "Parano" -> parano,
     "Loops" -> loops,
