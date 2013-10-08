@@ -30,23 +30,27 @@ private[reified] trait HasReifiedValue[A] {
  * AST by calls to {@link scalaxy.internal.CaptureTag} (which contain the index of the captured value
  * in the capturedTerms field of this reified value).
  */
-final case class ReifiedValue[A: TypeTag](
+final class ReifiedValue[A: TypeTag](
   /**
    * Original value passed to {@link scalaxy.reified.reify}
    */
-  val value: A,
+  valueGetter: => A,
   /**
    * AST of the value, with {@link scalaxy.internal.CaptureTag} calls wherever an external value
    * reference was captured.
    */
-  val taggedExpr: Expr[A],
+  taggedExprGetter: => Expr[A],
   /**
    * Runtime values of the references captured by the AST, along with their static type at the site
    * of the capture.
    * The order of captures matches {@link scalaxy.internal.CaptureTag#indexCapture}.
    */
-  val capturedTerms: Seq[(AnyRef, Type)])
+  capturedTermsGetter: => Seq[(AnyRef, Type)])
     extends HasReifiedValue[A] {
+
+  lazy val value = valueGetter
+  lazy val taggedExpr = taggedExprGetter
+  lazy val capturedTerms = capturedTermsGetter
 
   override def reifiedValue = this
   override def valueTag = typeTag[A]
