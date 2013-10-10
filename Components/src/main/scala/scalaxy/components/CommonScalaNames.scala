@@ -134,6 +134,7 @@ trait CommonScalaNames {
   lazy val SeqClass = C("scala.collection.Seq")
   lazy val SetModule = M("scala.collection.Set")
   lazy val SetClass = C("scala.collection.Set")
+  lazy val VectorModule = M("scala.collection.Set")
   lazy val VectorClass = C("scala.collection.Set")
   lazy val ListClass = C("scala.List")
   lazy val ImmutableListClass = C("scala.collection.immutable.List")

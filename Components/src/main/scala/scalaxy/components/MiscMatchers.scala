@@ -370,29 +370,58 @@ trait MiscMatchers extends Tuploids {
         components
     }
   }
-  class CollectionApply(colModule: Symbol, colClass: Symbol) {
+
+  // def resolveType(t: Type) = t match {
+  //   case TypeRef(_, sym, args) if sym.asType.isAliasType =>
+  //     t.dealias
+  //   case _ =>
+  //     t
+  // }
+  class CollectionApply(colModule: Symbol, colTpe: Type) {
+    val colType = normalize(colTpe)
+    //val colTpe = colClass.typeSignature
+    def matchesColModule(s: Symbol) = {
+      s == colModule ||
+        s.typeSignature.typeSymbol == colModule ||
+        s.typeSignature.typeSymbol.toString == colModule.toString
+    }
     def apply(component: Tree) = sys.error("not implemented")
-    def unapply(tree: Tree): Option[(List[Tree], Type)] = tree match {
-      case TreeWithType(
-        Apply(TypeApply(Select(colObject, applyName()), List(tpe)), components),
-        TypeRef(_, colClass, List(componentType))
-        ) if colObject.symbol == colModule =>
-        //normalize(tree.tpe) match {
-        //  case TypeRef(_, colClass, List(componentType)) =>
-        Some(components, componentType)
-      //  case _ =>
-      //    None
-      //}
-      case _ =>
+    def unapply(tree: Tree): Option[(List[Tree], Type)] = {
+      val tpe = normalize(tree.tpe)
+      if (tpe != null && tpe <:< colType) {
+        tree match {
+          case Apply(TypeApply(Select(colObject, applyName()), List(_)), components) if matchesColModule(colObject.symbol) =>
+            val TypeRef(_, colClass, List(componentType)) = normalize(tree.tpe)
+            Some(components, componentType)
+          // case Apply(TypeApply(Select(colObject, applyName()), List(_)), components) =>
+          //   val TypeRef(_, colClass, List(componentType)) = normalize(tree.tpe)
+          //   println(s"""NO DEAL:
+          //     colObject.symbol = ${colObject.symbol}
+          //     colObject.symbol.typeSignature.typeSymbol = ${colObject.symbol.typeSignature.typeSymbol}
+          //     colModule = $colModule
+          //     colModule.typeSignature.typeSymbol = ${colModule.typeSignature.typeSymbol}
+          //   """)
+          //   println
+          //   None
+          case Apply(Select(colObject, applyName()), components) if matchesColModule(colObject.symbol) =>
+            val TypeRef(_, colClass, List(componentType)) = normalize(tree.tpe)
+            Some(components, componentType)
+          case _ =>
+            None
+        }
+      } else {
+        // println("NO DEAL: colType = " + colType + ", tree.tpe = " + tree.tpe)
         None
+      }
     }
   }
 
-  object OptionApply extends CollectionApply(OptionModule, OptionClass)
-  object ArrayApply extends CollectionApply(ArrayModule, ArrayClass)
-  object SeqApply extends CollectionApply(SeqModule, SeqClass)
-  object IndexedSeqApply extends CollectionApply(IndexedSeqModule, IndexedSeqClass)
-  object ListApply extends CollectionApply(ListModule, ListClass)
+  object OptionApply extends CollectionApply(OptionModule, typeOf[Option[_]])
+  object ArrayApply extends CollectionApply(ArrayModule, typeOf[Array[_]])
+  object SeqApply extends CollectionApply(SeqModule, typeOf[Seq[_]])
+  object IndexedSeqApply extends CollectionApply(IndexedSeqModule, typeOf[IndexedSeq[_]])
+  object ListApply extends CollectionApply(ListModule, typeOf[List[_]])
+  object VectorApply extends CollectionApply(VectorModule, typeOf[Vector[_]])
 
   def normalize(tpe: Type): Type =
     Option(tpe).map(_.normalize.widen).orNull
@@ -404,14 +433,11 @@ trait MiscMatchers extends Tuploids {
     def unapply(tree: Tree): Option[Type] = tree match {
       case TypeTree() =>
         None
+      case _ if tree.tpe != null && tree.tpe <:< typeOf[Option[_]] =>
+        val TypeRef(_, optionClass, List(componentType)) = normalize(tree.tpe)
+        Some(componentType)
       case _ =>
-        normalize(tree.tpe) match {
-          case TypeRef(_, optionClass, List(componentType)) =>
-            //println("FOUND OPTION TREE " + tree)
-            Some(componentType)
-          case _ =>
-            None
-        }
+        None
     }
   }
   object Predef {

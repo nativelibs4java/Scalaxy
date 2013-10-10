@@ -257,6 +257,9 @@ trait StreamSources
   case class IndexedSeqApplyStreamSource(override val tree: Tree, components: List[Tree], override val componentType: Type)
     extends ExplicitCollectionStreamSource(tree, components, componentType) with CanCreateVectorSink // default IndexedSeq implementation is Vector
 
+  case class VectorApplyStreamSource(override val tree: Tree, components: List[Tree], override val componentType: Type)
+    extends ExplicitCollectionStreamSource(tree, components, componentType) with CanCreateVectorSink // default IndexedSeq implementation is Vector
+
   case class ListApplyStreamSource(override val tree: Tree, components: List[Tree], override val componentType: Type)
     extends ExplicitCollectionStreamSource(tree, components, componentType) with CanCreateListSink
 
@@ -293,6 +296,9 @@ trait StreamSources
       case NumRange(rangeTpe, IntTpe, from, to, By(byValue), isUntil, filters) =>
         assert(filters.isEmpty, "Filters are not empty !!!")
         RangeStreamSource(tree, from, to, byValue, isUntil /*, filters*/ )
+    } orElse {
+      println("Failed: " + showRaw(tree))
+      None
     }
   }
 }
