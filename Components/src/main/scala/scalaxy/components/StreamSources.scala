@@ -296,9 +296,10 @@ trait StreamSources
       case NumRange(rangeTpe, IntTpe, from, to, By(byValue), isUntil, filters) =>
         assert(filters.isEmpty, "Filters are not empty !!!")
         RangeStreamSource(tree, from, to, byValue, isUntil /*, filters*/ )
-    } orElse {
-      println("Failed: " + showRaw(tree))
-      None
     }
+    // orElse {
+    //   println("Failed: " + showRaw(tree))
+    //   None
+    // }
   }
 }

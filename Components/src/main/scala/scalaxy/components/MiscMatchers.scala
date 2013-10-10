@@ -121,7 +121,7 @@ trait MiscMatchers extends Tuploids {
   //   def apply(from: Tree, to: Tree, by: Option[Tree], isUntil: Boolean, filters: List[Tree]) = sys.error("not implemented")
 
   //   def unapply(tree: Tree): Option[(Tree, Tree, Option[Tree], Boolean, List[Tree])] = tree match {
-  //     case Apply(Select(Apply(Select(Predef(), intWrapperName()), List(from)), funToName @ (toName() | untilName())), List(to)) =>
+  //     case Apply(Select(Apply(Select(PredefModuleTree(), intWrapperName()), List(from)), funToName @ (toName() | untilName())), List(to)) =>
   //       Option(funToName) collect {
   //         case toName() =>
   //           (from, to, None, false, Nil)
@@ -157,7 +157,7 @@ trait MiscMatchers extends Tuploids {
     def unapply(tree: Tree): Option[(Type, Type, Tree, Tree, Option[Tree], Boolean, List[Tree])] = {
       if (tree.tpe == null || tree.tpe <:< typeOf[Range] || tree.tpe <:< typeOf[NumericRange[Long]])
         tree match {
-          case Apply(Select(Apply(Select(Predef(), WrapperName(rangeTpe, numTpe)), List(from)), funToName @ (toName() | untilName())), List(to)) =>
+          case Apply(Select(Apply(Select(PredefModuleTree(), WrapperName(rangeTpe, numTpe)), List(from)), funToName @ (toName() | untilName())), List(to)) =>
             Option(funToName) collect {
               case toName() =>
                 (rangeTpe, numTpe, from, to, None, false, Nil)
@@ -440,7 +440,7 @@ trait MiscMatchers extends Tuploids {
         None
     }
   }
-  object Predef {
+  object PredefModuleTree {
     lazy val RefArrayOps = this("refArrayOps")
     lazy val GenericArrayOps = this("genericArrayOps")
     lazy val IntWrapper = this("intWrapper")
@@ -453,10 +453,10 @@ trait MiscMatchers extends Tuploids {
   object ArrayOps {
     val arrayOpsClass = ArrayOpsClass
     def unapply(tree: Tree): Option[Type] = tree match {
-      case TypeApply(sel, List(arg)) if sel.symbol == Predef.RefArrayOps || sel.symbol == Predef.GenericArrayOps =>
+      case TypeApply(sel, List(arg)) if sel.symbol == PredefModuleTree.RefArrayOps || sel.symbol == PredefModuleTree.GenericArrayOps =>
         Some(arg.tpe)
       case _ => tree.tpe match {
-        case MethodType(_, TypeRef(_, arrayOpsClass, List(param))) if Predef contains tree.symbol =>
+        case MethodType(_, TypeRef(_, arrayOpsClass, List(param))) if PredefModuleTree contains tree.symbol =>
           Some(param)
         case _ =>
           None

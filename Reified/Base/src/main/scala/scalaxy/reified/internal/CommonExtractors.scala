@@ -47,7 +47,7 @@ private[reified] object CommonExtractors {
     }
   }
 
-  object Predef {
+  object PredefExtractor {
     import CommonScalaNames._
 
     def unapply(tree: Tree): Boolean = tree.symbol == PredefModule
@@ -71,7 +71,7 @@ private[reified] object CommonExtractors {
           case Apply(
             Select(
               Apply(
-                Select(Predef(), WrapperName(rangeTpe, numTpe)),
+                Select(PredefModule(), WrapperName(rangeTpe, numTpe)),
                 List(from)),
               funToName @ (toName() | untilName())),
             List(to)) =>

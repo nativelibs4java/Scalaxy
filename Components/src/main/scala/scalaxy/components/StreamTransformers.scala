@@ -33,13 +33,7 @@ package scalaxy.components
 import scala.reflect.api.Universe
 
 trait StreamTransformers
-    extends MiscMatchers
-    with TreeBuilders
-    with TraversalOps
-    with Streams
-    with StreamSources
-    with StreamOps
-    with StreamSinks {
+    extends OpsStreams {
   val global: Universe
   import global._
   import definitions._
@@ -47,47 +41,7 @@ trait StreamTransformers
 
   def stream = true
 
-  case class OpsStream(
-    source: StreamSource,
-    colTree: Tree,
-    ops: List[StreamTransformer])
-
   def newTransformer = new Transformer /* TODO: TypingTransformer */ {
-    object OpsStream {
-      def unapply(tree: Tree) = {
-        var ops = List[StreamTransformer]()
-        var colTree = tree
-        var source: StreamSource = null
-        var finished = false
-        while (!finished) {
-          //println("Trying to match " + colTree)
-          colTree match {
-            case TraversalOp(traversalOp) if traversalOp.op.isInstanceOf[StreamTransformer] =>
-              //println("found op " + traversalOp + "\n\twith collection = " + traversalOp.collection)
-              val trans = traversalOp.op.asInstanceOf[StreamTransformer]
-              if (trans.resultKind != StreamResult)
-                ops = List()
-              ops = trans :: ops
-              colTree = traversalOp.collection
-            case StreamSource(cr) =>
-              //println("found streamSource " + cr.getClass + " (ops = " + ops + ")")
-              source = cr
-              if (colTree != cr.unwrappedTree) {
-                //println("Unwrapping " + colTree.tpe + " into " + cr.unwrappedTree.tpe)
-                colTree = cr.unwrappedTree
-              } else
-                finished = true
-            case _ =>
-              //if (!ops.isEmpty) println("Finished with " + ops.size + " ops upon "+ tree + " ; source = " + source + " ; colTree = " + colTree)
-              finished = true
-          }
-        }
-        if (ops.isEmpty || source == null)
-          None
-        else
-          Some(new OpsStream(source, colTree, ops))
-      }
-    }
 
     var matchedColTreeIds = Set[Tree]()
 
@@ -226,7 +180,7 @@ trait StreamTransformers
                 }
                 replaceTabulates(lengthDefs, null, params, Map(), Map())._1
               }
-            case OpsStream(opsStream) if stream &&
+            case SomeOpsStream(opsStream) if stream &&
               //(opsStream.source ne null) && 
               //!opsStream.ops.isEmpty && 
               //(opsStream ne null) && 

@@ -50,61 +50,61 @@ class StreamSourcesTest
   }
 
   @Test def intRangeSource {
-    val Some(RangeStreamSource(_, const(0), const(10), 1, true)) =
-      StreamSource.unapply(typeCheck(reify(0 until 10)))
+    val StreamSource(RangeStreamSource(_, const(0), const(10), 1, true)) =
+      typeCheck(reify(0 until 10))
   }
 
   @Test def applyArraySource {
-    val Some(ArrayApplyStreamSource(_, _, _)) =
-      StreamSource.unapply(typeCheck(reify(Array(1, 2))))
+    val StreamSource(ArrayApplyStreamSource(_, _, _)) =
+      typeCheck(reify(Array(1, 2)))
   }
 
   @Test def applySeqSource {
-    val Some(SeqApplyStreamSource(_, _, _)) =
-      StreamSource.unapply(typeCheck(reify(Seq(1, 2))))
+    val StreamSource(SeqApplyStreamSource(_, _, _)) =
+      typeCheck(reify(Seq(1, 2)))
+  }
+
+  @Test def applyListSource {
+    val StreamSource(ListApplyStreamSource(_, _, _)) =
+      typeCheck(reify(List(1, 2)))
+  }
+
+  @Test def listSource {
+    val StreamSource(ListStreamSource(_, _)) =
+      typeCheck(reify({ val x = 1 :: Nil; x }))
+  }
+
+  @Test def applyOptionSource {
+    val StreamSource(OptionStreamSource(_, Some(_), true, _)) =
+      typeCheck(reify(Option(1)))
+  }
+
+  @Test def optionSource {
+    val StreamSource(OptionStreamSource(_, None, true, _)) =
+      typeCheck(reify({ val x = Option(1); x }))
   }
 
   @Ignore
   @Test def applyIndexedSeqSource {
-    val Some(IndexedSeqApplyStreamSource(_, _, _)) =
-      StreamSource.unapply(typeCheck(reify(IndexedSeq(1, 2))))
+    val StreamSource(IndexedSeqApplyStreamSource(_, _, _)) =
+      typeCheck(reify(IndexedSeq(1, 2)))
   }
 
   @Ignore
   @Test def applyVectorSource {
-    val Some(VectorApplyStreamSource(_, _, _)) =
-      StreamSource.unapply(typeCheck(reify(Vector(1, 2))))
-  }
-
-  @Test def applyListSource {
-    val Some(ListApplyStreamSource(_, _, _)) =
-      StreamSource.unapply(typeCheck(reify(List(1, 2))))
-  }
-
-  @Test def listSource {
-    val Some(ListStreamSource(_, _)) =
-      StreamSource.unapply(typeCheck(reify({ val x = 1 :: Nil; x })))
-  }
-
-  @Test def applyOptionSource {
-    val Some(OptionStreamSource(_, Some(_), true, _)) =
-      StreamSource.unapply(typeCheck(reify(Option(1))))
-  }
-
-  @Test def optionSource {
-    val Some(OptionStreamSource(_, None, true, _)) =
-      StreamSource.unapply(typeCheck(reify({ val x = Option(1); x })))
+    val StreamSource(VectorApplyStreamSource(_, _, _)) =
+      typeCheck(reify(Vector(1, 2)))
   }
 
   @Ignore
   @Test def longRangeSource {
-    val Some(RangeStreamSource(_, const(0L), const(10L), 1, true)) =
-      StreamSource.unapply(typeCheck(reify(0L until 10L)))
+    val StreamSource(RangeStreamSource(_, const(0L), const(10L), 1, true)) =
+      typeCheck(reify(0L until 10L))
   }
 
   @Ignore
   @Test def wrappedArraySource {
-    val Some(WrappedArrayStreamSource(_, _, _)) =
-      StreamSource.unapply(typeCheck(reify(Array(1, 2): Seq[Int])))
+    val StreamSource(WrappedArrayStreamSource(_, _, _)) =
+      typeCheck(reify(Array(1, 2): Seq[Int]))
   }
 }

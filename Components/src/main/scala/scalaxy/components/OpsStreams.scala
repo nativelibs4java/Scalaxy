@@ -30,36 +30,59 @@
  */
 package scalaxy.components
 
-import org.junit._
-import Assert._
-import org.hamcrest.CoreMatchers._
+import scala.reflect.api.Universe
 
-class MiscMatchersTest
+trait OpsStreams
     extends MiscMatchers
-    with WithRuntimeUniverse
-    with WithTestFresh {
+    with TreeBuilders
+    with TraversalOps
+    with Streams
+    with StreamSources
+    with StreamOps
+    with StreamSinks {
+  val global: Universe
   import global._
+  import definitions._
+  import Flag._
 
-  def extractTupleComponentTypes(x: Expr[_]) =
-    TupleCreation.unapply(typeCheck(x.tree)).map(_.map(_.tpe.normalize.widen))
+  case class OpsStream(
+    source: StreamSource,
+    colTree: Tree,
+    ops: List[StreamTransformer])
 
-  @Test def testTuples {
-    assertEquals(
-      Some(List(typeOf[Int], typeOf[Float])),
-      extractTupleComponentTypes(reify((1, 2f)))
-    )
-  }
-
-  @Test def testTupleCreation {
-    val t = reify({ (1, 1f) }).tree
-    val tt = typeCheck(t)
-    assertEquals(
-      Some(List(Literal(Constant(1)), Literal(Constant(1f)))) + "",
-      TupleCreation.unapply(tt) + ""
-    )
-  }
-
-  @Test def testFunc {
-    val Func(List(_, _), _) = typeCheck(reify((x: Int, y: Int) => x + y))
+  object SomeOpsStream {
+    def unapply(tree: Tree) = {
+      var ops = List[StreamTransformer]()
+      var colTree = tree
+      var source: StreamSource = null
+      var finished = false
+      while (!finished) {
+        //println("Trying to match " + colTree)
+        colTree match {
+          case SomeTraversalOp(traversalOp) if traversalOp.op.isInstanceOf[StreamTransformer] =>
+            //println("found op " + traversalOp + "\n\twith collection = " + traversalOp.collection)
+            val trans = traversalOp.op.asInstanceOf[StreamTransformer]
+            if (trans.resultKind != StreamResult)
+              ops = List()
+            ops = trans :: ops
+            colTree = traversalOp.collection
+          case StreamSource(cr) =>
+            //println("found streamSource " + cr.getClass + " (ops = " + ops + ")")
+            source = cr
+            if (colTree != cr.unwrappedTree) {
+              println("Unwrapping " + colTree.tpe + " into " + cr.unwrappedTree.tpe)
+              colTree = cr.unwrappedTree
+            } else
+              finished = true
+          case _ =>
+            //if (!ops.isEmpty) println("Finished with " + ops.size + " ops upon "+ tree + " ; source = " + source + " ; colTree = " + colTree)
+            finished = true
+        }
+      }
+      if (ops.isEmpty || source == null)
+        None
+      else
+        Some(new OpsStream(source, colTree, ops))
+    }
   }
 }

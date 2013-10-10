@@ -26,16 +26,6 @@ trait StreamOps
     val f: Tree
   }
 
-  class TraversalOp(
-      val op: TraversalOpType,
-      val collection: Tree,
-      val resultType: Type,
-      val mappedCollectionType: Type,
-      val isLeft: Boolean,
-      val initialValue: Tree) {
-    override def toString = "TraversalOp(" + Array(op, collection, resultType, mappedCollectionType, isLeft, initialValue).mkString(", ") + ")"
-  }
-
   /// Matches one of the folding/scanning/reducing functions : (reduce|fold|scan)(Left|Right)
   /// Matches one of the folding/scanning/reducing functions : (reduce|fold|scan)(Left|Right)
   object TraversalOps {
@@ -408,9 +398,9 @@ trait StreamOps
     case class CollectOp(tree: Tree, f: Tree, canBuildFrom: Tree) extends TraversalOpType {
       override def toString = "collect"
     }
-    case class UpdateAllOp(tree: Tree, f: Tree) extends TraversalOpType {
-      override def toString = "update"
-    }
+    // case class UpdateAllOp(tree: Tree, f: Tree) extends TraversalOpType {
+    //   override def toString = "update"
+    // }
     case class ForeachOp(tree: Tree, f: Tree) extends TraversalOpType with Function1Transformer {
       override def toString = "foreach"
       override def order = SameOrder
