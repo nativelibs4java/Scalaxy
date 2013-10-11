@@ -41,7 +41,12 @@ trait WithRuntimeUniverse {
   def verbose = false
 
   def withSymbol[T <: Tree](sym: Symbol, tpe: Type = NoType)(tree: T): T = tree
-  def typed[T <: Tree](tree: T): T = tree
+  def typed[T <: Tree](tree: T): T = {
+    // if (tree.tpe == null && tree.tpe == NoType)
+    //   toolbox.typeCheck(tree.asInstanceOf[toolbox.u.Tree]).asInstanceOf[T]
+    // else
+    tree
+  }
   def inferImplicitValue(pt: Type): Tree =
     toolbox.inferImplicitValue(pt.asInstanceOf[toolbox.u.Type]).asInstanceOf[global.Tree]
   def setInfo(sym: Symbol, tpe: Type): Symbol = sym

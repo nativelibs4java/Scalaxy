@@ -41,7 +41,7 @@ trait StreamTransformers
 
   def stream = true
 
-  def newTransformer = new Transformer /* TODO: TypingTransformer */ {
+  def newStreamTransformer(optimizeOnlyIfKnownToBenefit: Boolean) = new Transformer /* TODO: TypingTransformer */ {
 
     var matchedColTreeIds = Set[Tree]()
 
@@ -70,7 +70,7 @@ trait StreamTransformers
 
               val lengthDefs = lengths.map {
                 case length =>
-                  newVariable("n$", currentOwner, tree.pos, false, typeCheck(length, IntTpe))
+                  newVariable("n$", currentOwner, tree.pos, false, typeCheck(length, IntTpe), IntTpe)
               }
 
               //msg(tree.pos, "transformed Array.tabulate[" + returnType + "] into equivalent while loop") 
@@ -81,23 +81,23 @@ trait StreamTransformers
                   val param = params.head
                   val pos = tree.pos
                   val nVar = lengthDefs.head
-                  val iVar = newVariable("i$", currentOwner, pos, true, newInt(0))
-                  val iVal = newVariable("i$val$", currentOwner, pos, false, iVar())
+                  val iVar = newVariable("i$", currentOwner, pos, true, newInt(0), IntTpe)
+                  val iVal = newVariable("i$val$", currentOwner, pos, false, iVar(), IntTpe)
 
                   val newMappings: Map[Symbol, TreeGen] = mappings + (param.symbol -> iVal)
                   val newReplacements = symbolReplacements ++ Map(param.symbol -> iVal.symbol, f.symbol -> currentOwner)
 
-                  val mappedArrayTpe = getArrayType(lengthDefs.size, returnType)
+                  val mappedArrayTpe = getArrayType(returnType, lengthDefs.size)
 
                   val arrayVar = if (parentArrayIdentGen == null)
-                    newVariable("m$", currentOwner, tree.pos, false, newArrayMulti(mappedArrayTpe, returnType, lengthDefs.map(_.identGen()), manifest))
+                    newVariable("m$", currentOwner, tree.pos, false, newArrayMulti(mappedArrayTpe, returnType, lengthDefs.map(_.identGen()), manifest), mappedArrayTpe)
                   else
-                    VarDef(parentArrayIdentGen, null, null)
+                    VarDef(parentArrayIdentGen, null, null, null) // TODO pass types here and around
 
                   val subArrayVar = if (lengthDefs.tail == Nil)
                     null
                   else
-                    newVariable("subArray$", currentOwner, tree.pos, false, newApply(tree.pos, arrayVar(), iVal()))
+                    newVariable("subArray$", currentOwner, tree.pos, false, newApply(tree.pos, arrayVar(), iVal()), getArrayType(returnType, lengthDefs.size - 1))
 
                   val (newBody, bodyType) = if (lengthDefs.tail == Nil)
                     (
@@ -191,17 +191,20 @@ trait StreamTransformers
               val txt = "Streamed ops on " + (if (source == null) "UNKNOWN COL" else source.tree.tpe) + " : " + ops /*.map(_.getClass.getName)*/ .mkString(", ")
               matchedColTreeIds += colTree
               //msg(tree.pos, "# " + txt) 
+              // println(txt)
 
               {
                 try {
                   val stream = Stream(source, ops)
-                  checkStreamWillBenefitFromOptimization(stream)
+                  if (optimizeOnlyIfKnownToBenefit)
+                    checkStreamWillBenefitFromOptimization(stream)
                   val asm = assembleStream(stream, tree, this.transform _, tree.pos, currentOwner)
                   //println(txt + "\n\t" + asm.toString.replaceAll("\n", "\n\t"))
-                  //println("### TRANSFORMED : ###\n" + nodeToString(asm))
+                  // println("### TRANSFORMED : ###\n" + showRaw(asm))
                   asm
                 } catch {
-                  case BrokenOperationsStreamException(msg, sourceAndOps, componentsWithSideEffects) =>
+                  case ex @ BrokenOperationsStreamException(msg, sourceAndOps, componentsWithSideEffects) =>
+                    println("broken: " + ex)
                     warning(sourceAndOps.head.tree.pos, "Cannot optimize this operations stream due to side effects")
                     for (SideEffectFullComponent(comp, sideEffects, preventedOptimizations) <- componentsWithSideEffects) {
                       for (sideEffect <- sideEffects) {
@@ -221,6 +224,9 @@ trait StreamTransformers
                       internalTransform(sub, retryWithSmallerChain = false)
                     else
                       sub
+                  case ex: Throwable =>
+                    ex.printStackTrace()
+                    throw ex
                 }
               }
             case _ =>

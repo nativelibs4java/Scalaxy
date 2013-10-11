@@ -64,14 +64,15 @@ trait Streams
 
     def innerIf(cond: TreeGen) =
       innerComposition(sub => {
-        typeCheck(
-          If(
-            cond(),
-            Block(sub, EmptyTree),
-            EmptyTree
-          ),
-          UnitTpe
+        // typeCheck(
+        If(
+          cond(),
+          Block(sub, EmptyTree),
+          EmptyTree
         )
+        //   ,
+        //   UnitTpe
+        // )
       })
 
     def innerComposition(composer: List[Tree] => Tree) = {
@@ -107,10 +108,10 @@ trait Streams
           (postOuterSeq.dropRight(1), postOuterSeq.last)
 
       val cond = tests.toSeq.reduceLeft(boolAnd)
-      val body = typeCheck(
-        Block(rootInners.toList, EmptyTree),
-        UnitTpe
-      )
+      val body = //typeCheck(
+        Block(rootInners.toList, EmptyTree) //,
+      //   UnitTpe
+      // )
       val ret = Block(
         preOuter.toList ++
           Seq(
@@ -183,7 +184,7 @@ trait Streams
   }
 
   implicit def varDef2TupleValue(value: VarDef) =
-    new DefaultTupleValue(value.definition.tpe, value)
+    new DefaultTupleValue(Option(value.tpe).getOrElse(value.definition.tpe), value)
 
   case class StreamValue(
       value: TupleValue,
@@ -349,9 +350,9 @@ trait Streams
       val sink = sinkCreator.createStreamSink(expectedType, value.value.tpe, value.valuesCount)
       sink.output(value, expectedType)
     }
-    typeCheck(
-      loop.tree,
-      sourceAndOps.last.tree.tpe
-    )
+    // typeCheck(
+    loop.tree //,
+    //   sourceAndOps.last.tree.tpe
+    // )
   }
 }

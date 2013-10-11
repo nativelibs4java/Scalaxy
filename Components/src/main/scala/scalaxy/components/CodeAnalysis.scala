@@ -190,7 +190,7 @@ trait CodeAnalysis
       PredefModule,
       ScalaMathPackage,
       ScalaMathPackageClass,
-      ScalaMathCommonClass,
+      // ScalaMathCommonClass,
       SeqClass,
       VectorClass,
       ListClass,

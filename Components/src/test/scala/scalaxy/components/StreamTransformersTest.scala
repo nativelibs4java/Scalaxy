@@ -34,76 +34,43 @@ import org.junit._
 import Assert._
 import org.hamcrest.CoreMatchers._
 
-class StreamSourcesTest
-    extends StreamSources
+import scala.reflect.runtime.universe._
+import scala.reflect.runtime.currentMirror
+import scala.tools.reflect.ToolBox
+
+class StreamTransformersTest
+    extends MiscMatchers
+    with StreamTransformers
     with WithRuntimeUniverse
     with WithTestFresh {
   import global._
-  import definitions._
 
+  // val toolbox = currentMirror.mkToolBox()
+
+  def conv[T](x: Expr[T]): T = {
+    val original = typeCheck(x)
+    val result = newStreamTransformer(false) transform original
+
+    println(original)
+    println(result)
+    assertFalse(original.toString == result.toString)
+
+    val untyped = toolbox.resetAllAttrs(result.asInstanceOf[toolbox.u.Tree])
+    toolbox.compile(untyped)().asInstanceOf[T]
+  }
   override def warning(pos: Position, msg: String) =
     println(msg + " (" + pos + ")")
 
-  object const {
-    def unapply(t: Tree) = Option(t) collect {
-      case Literal(Constant(v)) => v
-    }
-  }
-
-  @Test def intRangeSource {
-    val StreamSource(RangeStreamSource(_, const(0), const(10), 1, true, IntTpe)) =
-      typeCheck(reify(0 until 10))
-  }
-  @Test def longRangeSource {
-    val StreamSource(RangeStreamSource(_, const(0L), const(10L), 1, true, LongTpe)) =
-      typeCheck(reify(0L until 10L))
-  }
-
-  @Test def applyArraySource {
-    val StreamSource(ArrayApplyStreamSource(_, _, _)) =
-      typeCheck(reify(Array(1, 2)))
-  }
-
-  @Test def applySeqSource {
-    val StreamSource(SeqApplyStreamSource(_, _, _)) =
-      typeCheck(reify(Seq(1, 2)))
-  }
-
-  @Test def applyListSource {
-    val StreamSource(ListApplyStreamSource(_, _, _)) =
-      typeCheck(reify(List(1, 2)))
-  }
-
-  @Test def listSource {
-    val StreamSource(ListStreamSource(_, _)) =
-      typeCheck(reify({ val x = 1 :: Nil; x }))
-  }
-
-  @Test def applyOptionSource {
-    val StreamSource(OptionStreamSource(_, Some(_), true, _)) =
-      typeCheck(reify(Option(1)))
-  }
-
-  @Test def optionSource {
-    val StreamSource(OptionStreamSource(_, None, true, _)) =
-      typeCheck(reify({ val x = Option(1); x }))
-  }
-
   @Ignore
-  @Test def applyIndexedSeqSource {
-    val StreamSource(IndexedSeqApplyStreamSource(_, _, _)) =
-      typeCheck(reify(IndexedSeq(1, 2)))
-  }
+  @Test
+  def simple {
+    assertEquals((0 to 10),
+      conv(reify((0 to 10).map(i => i))))
 
-  @Ignore
-  @Test def applyVectorSource {
-    val StreamSource(VectorApplyStreamSource(_, _, _)) =
-      typeCheck(reify(Vector(1, 2)))
-  }
+    assertEquals((0 to 10).filter(_ % 2 == 0).map(_ * 10).max,
+      conv(reify((0 to 10).filter(_ % 2 == 0).map(_ * 10).max)))
 
-  @Ignore
-  @Test def wrappedArraySource {
-    val StreamSource(WrappedArrayStreamSource(_, _, _)) =
-      typeCheck(reify(Array(1, 2): Seq[Int]))
+    assertEquals((0 to 10).filter(_ % 2 == 0).map(_ * 10).toSet,
+      conv(reify((0 to 10).filter(_ % 2 == 0).map(_ * 10).toSet)))
   }
 }

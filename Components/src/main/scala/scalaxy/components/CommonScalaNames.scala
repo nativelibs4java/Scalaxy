@@ -129,7 +129,7 @@ trait CommonScalaNames {
   lazy val ScalaMathPackage = M("scala.math.package")
   lazy val ScalaMathPackageClass =
     ScalaMathPackage.moduleClass //.asModule.moduleClass
-  lazy val ScalaMathCommonClass = C("scala.MathCommon")
+  //lazy val ScalaMathCommonClass = C("scala.MathCommon")
 
   lazy val SeqModule = M("scala.collection.Seq")
   lazy val SeqClass = C("scala.collection.Seq")

@@ -75,10 +75,13 @@ trait TreeBuilders
                 val treeKey = key(tree.symbol)
                 mappings.get(treeKey).map({
                   case (sym, treeGen) =>
-                    typeCheck(
-                      treeGen(),
-                      tree.symbol.asType.toType
-                    )
+                    // typeCheck(
+                    treeGen() //,
+                  //   if (tree.tpe != null && tree.tpe != NoType)
+                  //     tree.tpe
+                  //   else
+                  //     tree.symbol.typeSignature
+                  // )
                 }).getOrElse(super.transform(tree))
               case _ =>
                 super.transform(tree)
@@ -122,9 +125,12 @@ trait TreeBuilders
     }
   }
   def newTypeTree(tpe: Type): TypeTree =
-    withSymbol(tpe.typeSymbol, tpe) {
-      TypeTree(tpe)
-    }
+    if (tpe == null)
+      TypeTree(NoType)
+    else
+      withSymbol(tpe.typeSymbol, tpe) {
+        TypeTree(tpe)
+      }
 
   // TreeGen.mkIsInstanceOf adds an extra Apply (and does not set all symbols), which makes it apparently useless in our case(s)
   def newIsInstanceOf(tree: Tree, tpe: Type) = {
@@ -485,13 +491,12 @@ trait TreeBuilders
   def newUnit() =
     newConstant(())
 
-  case class VarDef(rawIdentGen: IdentGen, symbol: Symbol, definition: ValDef) {
+  case class VarDef(rawIdentGen: IdentGen, symbol: Symbol, definition: ValDef, tpe: Type) {
     var identUsed = false
     val identGen: IdentGen = () => {
       identUsed = true
       rawIdentGen()
     }
-    def tpe = definition.tpe
     def apply() = identGen()
 
     def defIfUsed = if (identUsed) Some(definition) else None
@@ -500,8 +505,9 @@ trait TreeBuilders
   implicit def VarDev2IdentGen(vd: VarDef) = if (vd == null) null else vd.identGen
 
   def simpleBuilderResult(builder: Tree): Tree = typed {
-    val resultMethod = builder.tpe member resultName
-    apply(resultMethod)(
+    //val resultMethod = builder.tpe member resultName
+    //apply(resultMethod)(
+    Apply(
       Select(
         builder,
         resultName
@@ -511,8 +517,9 @@ trait TreeBuilders
   }
 
   def addAssign(target: Tree, toAdd: Tree) = {
-    val sym = (target.tpe member addAssignName())
-    apply(sym)(
+    // val sym = (target.tpe member addAssignName())
+    //apply(sym)(
+    Apply(
       Select(
         target,
         addAssignName()
@@ -564,12 +571,15 @@ trait TreeBuilders
     pos: Position,
     mutable: Boolean,
     initialValue: Tree,
-    ttpe: Type = NoType): VarDef = {
+    ttpe: Type): VarDef = {
     val tpe = normalize {
-      if (ttpe != NoType)
+      if (ttpe != NoType && ttpe != null)
         ttpe
       else
         (typed { initialValue }).tpe
+    }
+    if (tpe == null) {
+      println("initialValue = " + initialValue + ", ttpe = " + ttpe)
     }
     //var tpe = initialValue.tpe
     //if (ConstantType.unapply(tpe))//.isInstanceOf[ConstantType])
@@ -579,17 +589,20 @@ trait TreeBuilders
     if (tpe != null && tpe != NoType)
       setInfo(sym, tpe)
 
+    val t = Option(tpe).getOrElse(ttpe)
+
     VarDef(
-      () => ident(sym, tpe, newTermName(name), pos),
+      () => ident(sym, t, newTermName(name), pos),
       sym,
-      withSymbol(sym, tpe) {
+      withSymbol(sym, t) {
         ValDef(
           Modifiers(if (mutable) Flag.MUTABLE else NoFlags),
           name,
-          newTypeTree(tpe),
+          newTypeTree(t),
           initialValue
         )
-      }
+      },
+      t
     )
   }
 }

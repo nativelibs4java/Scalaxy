@@ -66,7 +66,8 @@ trait StreamSinks extends Streams {
             intAdd(size(), newInt(1))
           else
             size()
-        )
+        ),
+        getArrayType(value.tpe)
       )
       loop.preOuter += a.definition
       for (v <- value.extraFirstValue)
@@ -176,6 +177,7 @@ trait StreamSinks extends Streams {
     def builderResultGetter: Tree => Tree =
       simpleBuilderResult _
 
+    val builderType: Type
     def builderCreation: Tree
     def builderAppend: (Tree, Tree) => Tree =
       addAssign(_, _)
@@ -194,7 +196,7 @@ trait StreamSinks extends Streams {
       val builderGen = createBuilderGen(value)
       import builderGen._
 
-      val a = newVariable("out", currentOwner, pos, false, builderCreation)
+      val a = newVariable("out", currentOwner, pos, false, builderCreation, builderGen.builderType)
       loop.preOuter += a.definition
       for (v <- value.extraFirstValue)
         loop.preOuter += builderAppend(a(), v())
@@ -280,8 +282,8 @@ trait StreamSinks extends Streams {
           import loop.{ currentOwner }
           val pos = loop.pos
 
-          val out = newVariable("out", currentOwner, pos, true, newNull(value.tpe))
-          val presence = newVariable("hasOut", currentOwner, pos, true, newBool(false))
+          val out = newVariable("out", currentOwner, pos, true, newNull(value.tpe), value.tpe)
+          val presence = newVariable("hasOut", currentOwner, pos, true, newBool(false), BooleanTpe)
           loop.preOuter += out.definition
           loop.preOuter += presence.definition
           loop.inner += newAssign(out, value.value())

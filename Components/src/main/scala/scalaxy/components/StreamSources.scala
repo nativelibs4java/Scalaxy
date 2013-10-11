@@ -30,8 +30,8 @@ trait StreamSources
       val skipFirst = false // TODO
       val reverseOrder = direction == FromRight
 
-      val aVar = newVariable("array$", currentOwner, pos, false, transform(array))
-      val nVar = newVariable("n$", currentOwner, pos, false, newArrayLength(aVar()))
+      val aVar = newVariable("array$", currentOwner, pos, false, transform(array), getArrayType(componentType))
+      val nVar = newVariable("n$", currentOwner, pos, false, newArrayLength(aVar()), IntTpe)
       val iVar = newVariable("i$", currentOwner, pos, true,
         if (reverseOrder) {
           if (skipFirst)
@@ -43,10 +43,11 @@ trait StreamSources
             newInt(1)
           else
             newInt(0)
-        }
+        },
+        IntTpe
       )
 
-      val itemVar = newVariable("item$", currentOwner, pos, false, newApply(pos, aVar(), iVar()))
+      val itemVar = newVariable("item$", currentOwner, pos, false, newApply(pos, aVar(), iVar()), componentType)
 
       loop.preOuter += aVar.definition
       loop.preOuter += nVar.definition
@@ -103,8 +104,8 @@ trait StreamSources
       val skipFirst = false // TODO
       val colTpe = list.tpe
 
-      val aVar = newVariable("list$", currentOwner, pos, true, transform(list))
-      val itemVar = newVariable("item$", currentOwner, pos, false, newSelect(aVar(), headName))
+      val aVar = newVariable("list$", currentOwner, pos, true, transform(list), getListType(componentType))
+      val itemVar = newVariable("item$", currentOwner, pos, false, newSelect(aVar(), headName), componentType)
 
       loop.preOuter += aVar.definition
       loop.tests += (
@@ -128,7 +129,7 @@ trait StreamSources
     }
   }
 
-  case class RangeStreamSource(tree: Tree, from: Tree, to: Tree, byValue: Int, isUntil: Boolean)
+  case class RangeStreamSource(tree: Tree, from: Tree, to: Tree, byValue: Int, isUntil: Boolean, itemTpe: Type)
       extends StreamSource
       with CanCreateVectorSink
       with SideEffectFreeStreamComponent {
@@ -139,10 +140,10 @@ trait StreamSources
       import loop.{ currentOwner, transform }
       val pos = tree.pos
 
-      val fromVar = newVariable("from$", currentOwner, tree.pos, false, typeCheck(transform(from), IntTpe))
-      val toVar = newVariable("to$", currentOwner, tree.pos, false, typeCheck(transform(to), IntTpe))
-      val itemVar = newVariable("item$", currentOwner, tree.pos, true, fromVar())
-      val itemVal = newVariable("item$val$", currentOwner, tree.pos, false, itemVar())
+      val fromVar = newVariable("from$", currentOwner, tree.pos, false, typeCheck(transform(from), itemTpe), itemTpe)
+      val toVar = newVariable("to$", currentOwner, tree.pos, false, typeCheck(transform(to), itemTpe), itemTpe)
+      val itemVar = newVariable("item$", currentOwner, tree.pos, true, fromVar(), itemTpe)
+      val itemVal = newVariable("item$val$", currentOwner, tree.pos, false, itemVar(), itemTpe)
 
       val size = {
         val span = intSub(toVar(), fromVar())
@@ -156,9 +157,9 @@ trait StreamSources
         else
           intDiv(width, newInt(byValue))
       }
-      val sizeVal = newVariable("outputSize$", currentOwner, tree.pos, false, size)
-      val iVar = newVariable("outputIndex$", currentOwner, tree.pos, true, newInt(0)) //if (reverseOrder) intSub(outputSizeVar(), newInt(1)) else newInt(0))
-      val iVal = newVariable("i", currentOwner, tree.pos, true, iVar()) //if (reverseOrder) intSub(outputSizeVar(), newInt(1)) else newInt(0))
+      val sizeVal = newVariable("outputSize$", currentOwner, tree.pos, false, size, itemTpe)
+      val iVar = newVariable("outputIndex$", currentOwner, tree.pos, true, newInt(0), itemTpe) //if (reverseOrder) intSub(outputSizeVar(), newInt(1)) else newInt(0))
+      val iVal = newVariable("i", currentOwner, tree.pos, true, iVar(), itemTpe) //if (reverseOrder) intSub(outputSizeVar(), newInt(1)) else newInt(0))
 
       loop.preOuter += fromVar.definition
       loop.preOuter += toVar.definition
@@ -203,7 +204,7 @@ trait StreamSources
 
       val (valueVar: VarDef, isDefinedVar: VarDef, isAlwaysDefined: Boolean) = componentOption match {
         case Some(component) =>
-          val valueVar = newVariable("value$", currentOwner, pos, false, transform(component))
+          val valueVar = newVariable("value$", currentOwner, pos, false, transform(component), componentType)
           val (isDefinedValue, isAlwaysDefined) =
             if (onlyIfNotNull && !isAnyVal(component.tpe))
               component match {
@@ -215,13 +216,13 @@ trait StreamSources
               }
             else
               (newBool(true), true)
-          val isDefinedVar = newVariable("isDefined$", currentOwner, pos, false, isDefinedValue)
+          val isDefinedVar = newVariable("isDefined$", currentOwner, pos, false, isDefinedValue, BooleanTpe)
           loop.preOuter += valueVar.definition
           (valueVar, isDefinedVar, isAlwaysDefined)
         case None =>
-          val optionVar = newVariable("option$", currentOwner, pos, false, transform(tree))
-          val isDefinedVar = newVariable("isDefined$", currentOwner, pos, false, newSelect(optionVar(), N("isDefined")))
-          val valueVar = newVariable("value$", currentOwner, pos, false, newSelect(optionVar(), N("get")))
+          val optionVar = newVariable("option$", currentOwner, pos, false, transform(tree), getOptionType(componentType))
+          val isDefinedVar = newVariable("isDefined$", currentOwner, pos, false, newSelect(optionVar(), N("isDefined")), BooleanTpe)
+          val valueVar = newVariable("value$", currentOwner, pos, false, newSelect(optionVar(), N("get")), componentType)
           loop.preOuter += optionVar.definition
           loop.preInner += valueVar.definition
           (valueVar, isDefinedVar, false)
@@ -293,9 +294,9 @@ trait StreamSources
         OptionStreamSource(tree, Some(component), onlyIfNotNull = true, component.tpe)
       case OptionTree(componentType) =>
         OptionStreamSource(tree, None, onlyIfNotNull = true, componentType)
-      case NumRange(rangeTpe, IntTpe, from, to, By(byValue), isUntil, filters) =>
+      case NumRange(rangeTpe, itemTpe, from, to, By(byValue), isUntil, filters) =>
         assert(filters.isEmpty, "Filters are not empty !!!")
-        RangeStreamSource(tree, from, to, byValue, isUntil /*, filters*/ )
+        RangeStreamSource(tree, from, to, byValue, isUntil /*, filters*/ , itemTpe)
     }
     // orElse {
     //   println("Failed: " + showRaw(tree))

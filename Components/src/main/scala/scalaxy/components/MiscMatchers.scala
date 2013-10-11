@@ -109,7 +109,7 @@ trait MiscMatchers extends Tuploids {
           left.tpe == ScalaMathPackageClass.asType.toType)
           Some((f.tpe, name, args))
         else if (tree.symbol != NoSymbol &&
-          tree.symbol.owner == ScalaMathCommonClass)
+          tree.symbol.owner == ScalaMathPackage) // ScalaMathCommonClass)
           Some((f.tpe, name, args))
         else
           None
@@ -278,13 +278,22 @@ trait MiscMatchers extends Tuploids {
       tpe == CharTpe ||
       tpe == BooleanTpe
 
-  def getArrayType(dimensions: Int, componentType: Type): Type = dimensions match {
-    case 1 =>
-      appliedType(ArrayClass.asType.toType, List(componentType))
-    case _ =>
-      assert(dimensions > 1)
-      appliedType(ArrayClass.asType.toType, List(getArrayType(dimensions - 1, componentType)))
+  def getArrayType(componentType: Type, dimensions: Int = 1): Type = {
+    assert(dimensions >= 1)
+    appliedType(
+      // ArrayClass.asType.toType,
+      typeOf[Array[_]],
+      List(
+        if (dimensions == 1)
+          componentType
+        else
+          getArrayType(componentType, dimensions - 1)
+      )
+    )
   }
+
+  def getOptionType(componentType: Type) = appliedType(typeOf[Option[_]], List(componentType))
+  def getListType(componentType: Type) = appliedType(typeOf[List[_]], List(componentType))
 
   object BasicTypeApply {
     def unapply(tree: Tree): Option[(Tree, Name, List[Tree], Seq[List[Tree]])] = tree match {

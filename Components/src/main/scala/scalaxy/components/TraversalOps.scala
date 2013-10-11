@@ -139,11 +139,11 @@ trait TraversalOps
 
       val initVarOpt = someIf(hasInitVal || producesExtraFirstValue) {
         newVariable(op + "$init", currentOwner, tree.pos, false,
-          initVal
+          initVal, value.tpe
         )
       }
       val totVar = newVariable(op + "$", currentOwner, tree.pos, true,
-        initVarOpt.map(_()).getOrElse(initVal)
+        initVarOpt.map(_()).getOrElse(initVal), value.tpe
       )
 
       val mayNotBeDefined = throwsIfEmpty(value) && needsInitialValue && !hasInitVal
@@ -152,7 +152,7 @@ trait TraversalOps
 
       val isDefinedVarOpt = someIf(mayNotBeDefined) {
         newVariable("is$" + op + "$defined", currentOwner, tree.pos, true,
-          newBool(false)
+          newBool(false), BooleanTpe
         )
       }
 
@@ -288,7 +288,7 @@ trait TraversalOps
     override def resultKind = ScalarResult
     override def transform(value: StreamValue)(implicit loop: Loop): StreamValue = {
       import loop.{ currentOwner }
-      val countVar = newVariable("count$", currentOwner, tree.pos, true, newInt(0))
+      val countVar = newVariable("count$", currentOwner, tree.pos, true, newInt(0), IntTpe)
       loop.preOuter += countVar.definition
       loop.inner +=
         newIf(
@@ -324,7 +324,10 @@ trait TraversalOps
     override def updateTotalWithValue(totIdentGen: TreeGen, valueIdentGen: TreeGen)(implicit loop: Loop): ReductionTotalUpdate = {
       val totIdent = totIdentGen()
       val valueIdent = valueIdentGen()
-      ReductionTotalUpdate(valueIdent, conditionOpt = Some(binOp(valueIdent, totIdent.tpe.member(GT), totIdent)))
+      ReductionTotalUpdate(
+        valueIdent,
+        conditionOpt = //Some(binOp(valueIdent, totIdent.tpe.member(GT), totIdent)))
+          Some(Apply(Select(valueIdent, GT), List(totIdent))))
     }
   }
   case class FilterOp(tree: Tree, f: Tree, not: Boolean) extends TraversalOpType with Function1Transformer {
@@ -350,7 +353,7 @@ trait TraversalOps
     override def transform(value: StreamValue)(implicit loop: Loop): StreamValue = {
       import loop.{ currentOwner }
 
-      val passedVar = newVariable("passed$", currentOwner, tree.pos, true, newBool(false))
+      val passedVar = newVariable("passed$", currentOwner, tree.pos, true, newBool(false), BooleanTpe)
       loop.preOuter += passedVar.definition
 
       if (take)
@@ -391,7 +394,8 @@ trait TraversalOps
     override def toString = "map"
     override def order = Unordered
     override def transform(value: StreamValue)(implicit loop: Loop): StreamValue = {
-      val mappedVar = newVariable("mapped$", loop.currentOwner, loop.pos, false, transformedFunc(value))
+      val TypeRef(_, _, List(_, toTpe, _)) = canBuildFrom.tpe
+      val mappedVar = newVariable("mapped$", loop.currentOwner, loop.pos, false, transformedFunc(value), toTpe)
       loop.inner += mappedVar.definition
 
       value.copy(value = new DefaultTupleValue(mappedVar))
@@ -421,8 +425,8 @@ trait TraversalOps
     override def transform(value: StreamValue)(implicit loop: Loop): StreamValue = {
       import loop.{ currentOwner }
 
-      val hasTrueVar = newVariable("hasTrue$", currentOwner, tree.pos, true, newBool(all))
-      val countVar = newVariable("count$", currentOwner, tree.pos, true, newInt(0))
+      val hasTrueVar = newVariable("hasTrue$", currentOwner, tree.pos, true, newBool(all), BooleanTpe)
+      val countVar = newVariable("count$", currentOwner, tree.pos, true, newInt(0), IntTpe)
       loop.preOuter += hasTrueVar.definition
       loop.tests += (
         if (all)
