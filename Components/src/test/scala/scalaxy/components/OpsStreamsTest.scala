@@ -30,58 +30,22 @@
  */
 package scalaxy.components
 
-import scala.reflect.api.Universe
+import org.junit._
+import Assert._
+import org.hamcrest.CoreMatchers._
 
-trait OpsStreams
-    extends MiscMatchers
-    with TreeBuilders
-    with TraversalOpsMatchers
-    with Streams
-    with StreamSources
-    with StreamSinks {
-  val global: Universe
+class OpsStreamsTest
+    extends OpsStreams
+    with WithRuntimeUniverse
+    with WithTestFresh {
   import global._
   import definitions._
-  import Flag._
 
-  case class OpsStream(
-    source: StreamSource,
-    colTree: Tree,
-    ops: List[StreamTransformer])
+  override def warning(pos: Position, msg: String) =
+    println(msg + " (" + pos + ")")
 
-  object SomeOpsStream {
-    def unapply(tree: Tree) = {
-      var ops = List[StreamTransformer]()
-      var colTree = tree
-      var source: StreamSource = null
-      var finished = false
-      while (!finished) {
-        //println("Trying to match " + colTree)
-        colTree match {
-          case SomeTraversalOp(traversalOp) if traversalOp.op.isInstanceOf[StreamTransformer] =>
-            //println("found op " + traversalOp + "\n\twith collection = " + traversalOp.collection)
-            val trans = traversalOp.op.asInstanceOf[StreamTransformer]
-            if (trans.resultKind != StreamResult)
-              ops = List()
-            ops = trans :: ops
-            colTree = traversalOp.collection
-          case StreamSource(cr) =>
-            //println("found streamSource " + cr.getClass + " (ops = " + ops + ")")
-            source = cr
-            if (colTree != cr.unwrappedTree) {
-              println("Unwrapping " + colTree.tpe + " into " + cr.unwrappedTree.tpe)
-              colTree = cr.unwrappedTree
-            } else
-              finished = true
-          case _ =>
-            //if (!ops.isEmpty) println("Finished with " + ops.size + " ops upon "+ tree + " ; source = " + source + " ; colTree = " + colTree)
-            finished = true
-        }
-      }
-      if (ops.isEmpty || source == null)
-        None
-      else
-        Some(new OpsStream(source, colTree, ops))
-    }
+  @Test def simple {
+    val SomeOpsStream(s @ OpsStream(_, _, _)) = typeCheck(reify(for (i <- 0 until 10) yield i))
+    println(s)
   }
 }

@@ -35,7 +35,7 @@ import Assert._
 import org.hamcrest.CoreMatchers._
 
 class TraversalOpsTest
-    extends TraversalOps
+    extends TraversalOpsMatchers
     with WithRuntimeUniverse
     with WithTestFresh {
   import global._
@@ -49,8 +49,6 @@ class TraversalOpsTest
       case SomeTraversalOp(TraversalOp(op, _, _, _, _, _)) => op
     }
   }
-
-  import TraversalOps._
 
   @Test def testForall {
     val op(AllOrSomeOp(_, _, _)) = typeCheck(reify(Seq(1).forall(_ == 1)))

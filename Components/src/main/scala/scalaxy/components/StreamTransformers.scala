@@ -243,8 +243,6 @@ trait StreamTransformers
 
     val sourceAndOps = source +: transformers
 
-    import TraversalOps._
-
     val closuresCount = sourceAndOps.map(_.closuresCount).sum
     (transformers, closuresCount, source) match {
       case (Seq(), _, _) =>
