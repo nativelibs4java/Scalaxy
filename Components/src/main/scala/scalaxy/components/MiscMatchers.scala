@@ -117,33 +117,7 @@ trait MiscMatchers extends Tuploids {
         None
     }
   }
-  // object IntRange {
-  //   def apply(from: Tree, to: Tree, by: Option[Tree], isUntil: Boolean, filters: List[Tree]) = sys.error("not implemented")
 
-  //   def unapply(tree: Tree): Option[(Tree, Tree, Option[Tree], Boolean, List[Tree])] = tree match {
-  //     case Apply(Select(Apply(Select(PredefModuleTree(), N("intWrapper")), List(from)), funToName @ (N("to" | "until"))), List(to)) =>
-  //       Option(funToName) collect {
-  //         case N("to") =>
-  //           (from, to, None, false, Nil)
-  //         case N("until") =>
-  //           (from, to, None, true, Nil)
-  //       }
-  //     case Apply(Select(tg, n @ (N("by" | "withFilter" | "filter"))), List(arg)) =>
-  //       tg match {
-  //         case IntRange(from, to, by, isUntil, filters) =>
-  //           Option(n) collect {
-  //             case N("by") if by == None =>
-  //               (from, to, Some(arg), isUntil, filters)
-  //             case N("withFilter" | "filter") /* if !options.stream */ =>
-  //               (from, to, by, isUntil, filters :+ arg)
-  //           }
-  //         case _ =>
-  //           None
-  //       }
-  //     case _ =>
-  //       None
-  //   }
-  // }
   object NumRange {
     def apply(rangeTpe: Type, numTpe: Type, from: Tree, to: Tree, by: Option[Tree], isUntil: Boolean, filters: List[Tree]) = sys.error("not implemented")
 
@@ -513,27 +487,11 @@ trait MiscMatchers extends Tuploids {
     }
   }
 
-  object TrivialCanBuildFromArg {
-    private def isCanBuildFrom(tpe: Type) =
-      tpe != null &&
-        tpe.normalize <:< CanBuildFromClass.asType.toType
-    //tpe.dealias.deconst <:< CanBuildFromClass.tpe
-
-    val n1 = N("canBuildIndexedSeqFromIndexedSeq") // ScalaCL
-    val n2 = N("canBuildArrayFromArray") // ScalaCL
-    def unapply(tree: Tree) = if (!isCanBuildFrom(tree.tpe)) None else Option(tree) collect {
-      case Apply(TypeApply(Select(comp, N("canBuildFrom")), List(resultType)), List(_)) =>
-        resultType
-      case Apply(TypeApply(Select(comp, n1() | n2()), List(resultType)), _) =>
-        resultType
-      case TypeApply(Select(comp, N("canBuildFrom")), List(resultType)) =>
-        resultType
-    }
-  }
   object CanBuildFromArg {
-    def unapply(tree: Tree) = tree match {
-      case TrivialCanBuildFromArg(_) => true
-      case _ => false
+    private val canBuildFromTpe = typeOf[scala.collection.generic.CanBuildFrom[_, _, _]]
+    def unapply(tree: Tree) = {
+      val tpe = tree.tpe
+      tpe != null && tpe <:< canBuildFromTpe
     }
   }
 

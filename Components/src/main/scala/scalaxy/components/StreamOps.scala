@@ -219,7 +219,7 @@ trait StreamOps
 
       override def order = SameOrder
     }
-    case class ScanOp(tree: Tree, f: Tree, initialValue: Tree, isLeft: Boolean) extends TraversalOpType with Function2Reduction {
+    case class ScanOp(tree: Tree, f: Tree, initialValue: Tree, isLeft: Boolean, canBuildFrom: Tree) extends TraversalOpType with Function2Reduction {
       override def toString = "scan" + (if (isLeft) "Left" else "Right")
       override val needsFunction: Boolean = true
       override val needsInitialValue = true

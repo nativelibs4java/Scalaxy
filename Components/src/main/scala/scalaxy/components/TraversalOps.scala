@@ -101,7 +101,7 @@ trait TraversalOps
         List(mappedComponentType, mappedCollectionType),
         Seq(
           List(function @ Func(List(_), _)),
-          List(canBuildFrom) // @ CanBuildFromArg())
+          List(canBuildFrom @ CanBuildFromArg())
           )
         ) =>
         Some(new TraversalOp(MapOp(tree, function, canBuildFrom), collection, refineComponentType(mappedComponentType.tpe, tree), mappedCollectionType.tpe, true, null))
@@ -121,10 +121,10 @@ trait TraversalOps
         Seq(
           List(initialValue),
           List(function),
-          List(CanBuildFromArg())
+          List(canBuildFrom @ CanBuildFromArg())
           )
         ) if isLeft =>
-        Some(new TraversalOp(ScanOp(tree, function, initialValue, isLeft), collection, functionResultType.tpe, null, isLeft, initialValue))
+        Some(new TraversalOp(ScanOp(tree, function, initialValue, isLeft, canBuildFrom), collection, functionResultType.tpe, null, isLeft, initialValue))
       case // foldLeft, foldRight
       (
         FoldName(isLeft),
