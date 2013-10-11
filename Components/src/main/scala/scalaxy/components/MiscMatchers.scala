@@ -121,20 +121,20 @@ trait MiscMatchers extends Tuploids {
   //   def apply(from: Tree, to: Tree, by: Option[Tree], isUntil: Boolean, filters: List[Tree]) = sys.error("not implemented")
 
   //   def unapply(tree: Tree): Option[(Tree, Tree, Option[Tree], Boolean, List[Tree])] = tree match {
-  //     case Apply(Select(Apply(Select(PredefModuleTree(), intWrapperName()), List(from)), funToName @ (toName() | untilName())), List(to)) =>
+  //     case Apply(Select(Apply(Select(PredefModuleTree(), N("intWrapper")), List(from)), funToName @ (N("to" | "until"))), List(to)) =>
   //       Option(funToName) collect {
-  //         case toName() =>
+  //         case N("to") =>
   //           (from, to, None, false, Nil)
-  //         case untilName() =>
+  //         case N("until") =>
   //           (from, to, None, true, Nil)
   //       }
-  //     case Apply(Select(tg, n @ (byName() | withFilterName() | filterName())), List(arg)) =>
+  //     case Apply(Select(tg, n @ (N("by" | "withFilter" | "filter"))), List(arg)) =>
   //       tg match {
   //         case IntRange(from, to, by, isUntil, filters) =>
   //           Option(n) collect {
-  //             case byName() if by == None =>
+  //             case N("by") if by == None =>
   //               (from, to, Some(arg), isUntil, filters)
-  //             case withFilterName() | filterName() /* if !options.stream */ =>
+  //             case N("withFilter" | "filter") /* if !options.stream */ =>
   //               (from, to, by, isUntil, filters :+ arg)
   //           }
   //         case _ =>
@@ -150,27 +150,22 @@ trait MiscMatchers extends Tuploids {
     object WrapperName {
       def apply(rangeTpe: Type, numTpe: Type) = ???
       def unapply(name: Name): Option[(Type, Type)] = Option(name) collect {
-        case intWrapperName() => (typeOf[Range], IntTpe)
-        case longWrapperName() => (typeOf[NumericRange[Long]], LongTpe)
+        case N("intWrapper") => (typeOf[Range], IntTpe)
+        case N("longWrapper") => (typeOf[NumericRange[Long]], LongTpe)
       }
     }
     def unapply(tree: Tree): Option[(Type, Type, Tree, Tree, Option[Tree], Boolean, List[Tree])] = {
       if (tree.tpe == null || tree.tpe <:< typeOf[Range] || tree.tpe <:< typeOf[NumericRange[Long]])
         tree match {
-          case Apply(Select(Apply(Select(PredefModuleTree(), WrapperName(rangeTpe, numTpe)), List(from)), funToName @ (toName() | untilName())), List(to)) =>
-            Option(funToName) collect {
-              case toName() =>
-                (rangeTpe, numTpe, from, to, None, false, Nil)
-              case untilName() =>
-                (rangeTpe, numTpe, from, to, None, true, Nil)
-            }
-          case Apply(Select(tg, n @ (byName() | withFilterName() | filterName())), List(arg)) =>
+          case Apply(Select(Apply(Select(PredefModuleTree(), WrapperName(rangeTpe, numTpe)), List(from)), N(funToName @ ("to" | "until"))), List(to)) =>
+            Some((rangeTpe, numTpe, from, to, None, funToName == "until", Nil))
+          case Apply(Select(tg, N(n @ ("by" | "withFilter" | "filter"))), List(arg)) =>
             tg match {
               case NumRange(rangeTpe, numTpe, from, to, by, isUntil, filters) =>
                 Option(n) collect {
-                  case byName() if by == None =>
+                  case "by" if by == None =>
                     (rangeTpe, numTpe, from, to, Some(arg), isUntil, filters)
-                  case withFilterName() | filterName() /* if !options.stream */ =>
+                  case "withFilter" | "filter" /* if !options.stream */ =>
                     (rangeTpe, numTpe, from, to, by, isUntil, filters :+ arg)
                 }
               case _ =>
@@ -336,9 +331,9 @@ trait MiscMatchers extends Tuploids {
 
   object Foreach {
     def unapply(tree: Tree): Option[(Tree, Function)] = Option(tree) collect {
-      case Apply(TypeApply(Select(collection, foreachName()), _), List(function @ Function(_, _))) =>
+      case Apply(TypeApply(Select(collection, N("foreach")), _), List(function @ Function(_, _))) =>
         (collection, function)
-      case Apply(Select(collection, foreachName()), List(function @ Function(_, _))) =>
+      case Apply(Select(collection, N("foreach")), List(function @ Function(_, _))) =>
         // Non-typed foreach lacks the TypeApply.
         (collection, function)
     }
@@ -362,7 +357,7 @@ trait MiscMatchers extends Tuploids {
 
   object TupleCreation {
     def unapply(tree: Tree): Option[List[Tree]] = Option(tree) collect {
-      case Apply(TypeApply(Select(TupleSelect(), applyName()), types), components) if isTupleType(tree.tpe) =>
+      case Apply(TypeApply(Select(TupleSelect(), N("apply")), types), components) if isTupleType(tree.tpe) =>
         components
       case Apply(tt @ TypeTree(), components) if isTupleSymbol(tree.tpe.typeSymbol) =>
         // TODO FIX THIS BROAD HACK !!! (test tt)
@@ -390,10 +385,10 @@ trait MiscMatchers extends Tuploids {
       val tpe = normalize(tree.tpe)
       if (tpe != null && tpe <:< colType) {
         tree match {
-          case Apply(TypeApply(Select(colObject, applyName()), List(_)), components) if matchesColModule(colObject.symbol) =>
+          case Apply(TypeApply(Select(colObject, N("apply")), List(_)), components) if matchesColModule(colObject.symbol) =>
             val TypeRef(_, colClass, List(componentType)) = normalize(tree.tpe)
             Some(components, componentType)
-          // case Apply(TypeApply(Select(colObject, applyName()), List(_)), components) =>
+          // case Apply(TypeApply(Select(colObject, N("apply")), List(_)), components) =>
           //   val TypeRef(_, colClass, List(componentType)) = normalize(tree.tpe)
           //   println(s"""NO DEAL:
           //     colObject.symbol = ${colObject.symbol}
@@ -403,7 +398,7 @@ trait MiscMatchers extends Tuploids {
           //   """)
           //   println
           //   None
-          case Apply(Select(colObject, applyName()), components) if matchesColModule(colObject.symbol) =>
+          case Apply(Select(colObject, N("apply")), components) if matchesColModule(colObject.symbol) =>
             val TypeRef(_, colClass, List(componentType)) = normalize(tree.tpe)
             Some(components, componentType)
           case _ =>
@@ -503,7 +498,7 @@ trait MiscMatchers extends Tuploids {
 
   object ArrayTabulate {
     /** This is the one all the other ones go through. */
-    lazy val tabulateSyms = ArrayModule.asModule.moduleClass.asType.toType.members.filter(_.name == tabulateName()).toSet //filter (_.paramss.flatten.size == 3)
+    lazy val tabulateSyms = ArrayModule.asModule.moduleClass.asType.toType.members.filter(_.name.toString == "tabulate").toSet //filter (_.paramss.flatten.size == 3)
 
     def apply(componentType: Tree, lengths: List[Tree], function: Tree, manifest: Tree) = sys.error("not implemented")
     def unapply(tree: Tree): Option[(Tree, List[Tree], Tree, Tree)] = {
@@ -527,11 +522,11 @@ trait MiscMatchers extends Tuploids {
     val n1 = N("canBuildIndexedSeqFromIndexedSeq") // ScalaCL
     val n2 = N("canBuildArrayFromArray") // ScalaCL
     def unapply(tree: Tree) = if (!isCanBuildFrom(tree.tpe)) None else Option(tree) collect {
-      case Apply(TypeApply(Select(comp, canBuildFromName()), List(resultType)), List(_)) =>
+      case Apply(TypeApply(Select(comp, N("canBuildFrom")), List(resultType)), List(_)) =>
         resultType
       case Apply(TypeApply(Select(comp, n1() | n2()), List(resultType)), _) =>
         resultType
-      case TypeApply(Select(comp, canBuildFromName()), List(resultType)) =>
+      case TypeApply(Select(comp, N("canBuildFrom")), List(resultType)) =>
         resultType
     }
   }
