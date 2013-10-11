@@ -47,7 +47,7 @@ class StreamTransformersTest
 
   // val toolbox = currentMirror.mkToolBox()
 
-  def conv[T](x: Expr[T]): T = {
+  def conv[T](x: Expr[T]) {
     val original = typeCheck(x)
     val result = newStreamTransformer(false) transform original
 
@@ -55,22 +55,20 @@ class StreamTransformersTest
     println(result)
     assertFalse(original.toString == result.toString)
 
+    val originalValue = toolbox.compile(original.asInstanceOf[toolbox.u.Tree])().asInstanceOf[T]
+
     val untyped = toolbox.resetAllAttrs(result.asInstanceOf[toolbox.u.Tree])
-    toolbox.compile(untyped)().asInstanceOf[T]
+    val resultValue = toolbox.compile(untyped)().asInstanceOf[T]
+    assertEquals(originalValue, resultValue)
   }
-  override def warning(pos: Position, msg: String) =
-    println(msg + " (" + pos + ")")
 
   @Ignore
   @Test
   def simple {
-    assertEquals((0 to 10),
-      conv(reify((0 to 10).map(i => i))))
+    conv(reify((0 to 10).map(i => i)))
 
-    assertEquals((0 to 10).filter(_ % 2 == 0).map(_ * 10).max,
-      conv(reify((0 to 10).filter(_ % 2 == 0).map(_ * 10).max)))
+    conv(reify((0 to 10).filter(_ % 2 == 0).map(_ * 10).max))
 
-    assertEquals((0 to 10).filter(_ % 2 == 0).map(_ * 10).toSet,
-      conv(reify((0 to 10).filter(_ % 2 == 0).map(_ * 10).toSet)))
+    conv(reify((0 to 10).filter(_ % 2 == 0).map(_ * 10).toSet))
   }
 }

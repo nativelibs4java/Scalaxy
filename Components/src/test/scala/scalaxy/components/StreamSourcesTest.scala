@@ -41,9 +41,6 @@ class StreamSourcesTest
   import global._
   import definitions._
 
-  override def warning(pos: Position, msg: String) =
-    println(msg + " (" + pos + ")")
-
   object const {
     def unapply(t: Tree) = Option(t) collect {
       case Literal(Constant(v)) => v

@@ -41,9 +41,6 @@ class TraversalOpsTest
   import global._
   import definitions._
 
-  override def warning(pos: Position, msg: String) =
-    println(msg + " (" + pos + ")")
-
   object op {
     def unapply(t: Tree) = Option(t) collect {
       case SomeTraversalOp(TraversalOp(op, _, _, _, _, _)) => op

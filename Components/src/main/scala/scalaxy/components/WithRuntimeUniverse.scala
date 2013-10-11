@@ -40,6 +40,9 @@ trait WithRuntimeUniverse {
 
   def verbose = false
 
+  def warning(pos: Position, msg: String) =
+    println(msg + " (" + pos + ")")
+
   def withSymbol[T <: Tree](sym: Symbol, tpe: Type = NoType)(tree: T): T = tree
   def typed[T <: Tree](tree: T): T = {
     // if (tree.tpe == null && tree.tpe == NoType)

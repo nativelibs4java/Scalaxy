@@ -46,6 +46,9 @@ trait WithMacroContext {
 
   def verbose = true
 
+  def warning(pos: Position, msg: String) =
+    context.warning(pos.asInstanceOf[context.universe.Position], msg)
+
   def withSymbol[T <: Tree](sym: Symbol, tpe: Type = NoType)(tree: T): T = {
     try {
       tree.symbol = sym

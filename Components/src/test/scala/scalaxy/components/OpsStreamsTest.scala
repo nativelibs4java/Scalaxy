@@ -41,9 +41,6 @@ class OpsStreamsTest
   import global._
   import definitions._
 
-  override def warning(pos: Position, msg: String) =
-    println(msg + " (" + pos + ")")
-
   @Test def simple {
     val SomeOpsStream(s @ OpsStream(_, _, _)) = typeCheck(reify(for (i <- 0 until 10) yield i))
     println(s)
