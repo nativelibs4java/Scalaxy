@@ -58,7 +58,6 @@ class TraversalOpsTest
   @Test def testExists {
     val op(AllOrSomeOp(_, _, _)) = typeCheck(reify(Seq(1).exists(_ == 1)))
   }
-
   @Ignore
   @Test def testCollect {
     val op(CollectOp(_, _, _)) =
@@ -82,11 +81,13 @@ class TraversalOpsTest
     val op(FindOp(_, _)) = typeCheck(reify(Seq(1).find(_ == 1)))
   }
   @Test def testFoldLeft {
-    val op(FoldOp(_, _, _, _)) = typeCheck(reify(Seq(1).foldLeft(0)(_ + _)))
+    val op(o @ FoldOp(_, _, _, _)) = typeCheck(reify(Seq(1).foldLeft(0)(_ + _)))
+    assertEquals(true, o.isLeft)
   }
-  @Ignore
+  // @Ignore
   @Test def testFoldRight {
-    val op(FoldOp(_, _, _, _)) = typeCheck(reify(Seq(1).foldRight(0)(_ + _)))
+    val op(o @ FoldOp(_, _, _, _)) = typeCheck(reify(Seq(1).foldRight(0)(_ + _)))
+    assertEquals(false, o.isLeft)
   }
 
   @Test def testForeach {
@@ -106,11 +107,13 @@ class TraversalOpsTest
   }
 
   @Test def testReduceLeft {
-    val op(ReduceOp(_, _, _)) = typeCheck(reify(Seq(1).reduceLeft(_ + _)))
+    val op(o @ ReduceOp(_, _, _)) = typeCheck(reify(Seq(1).reduceLeft(_ + _)))
+    assertEquals(true, o.isLeft)
   }
-  @Ignore
+  // @Ignore
   @Test def testReduceRight {
-    val op(ReduceOp(_, _, _)) = typeCheck(reify(Seq(1).reduceRight(_ + _)))
+    val op(o @ ReduceOp(_, _, _)) = typeCheck(reify(Seq(1).reduceRight(_ + _)))
+    assertEquals(false, o.isLeft)
   }
 
   @Test def testReverse {
@@ -118,11 +121,13 @@ class TraversalOpsTest
   }
 
   @Test def testScanLeft {
-    val op(ScanOp(_, _, _, _, _)) = typeCheck(reify(Seq(1).scanLeft(0)(_ + _)))
+    val op(o @ ScanOp(_, _, _, _, _)) = typeCheck(reify(Seq(1).scanLeft(0)(_ + _)))
+    assertEquals(true, o.isLeft)
   }
-  @Ignore
+  // @Ignore
   @Test def testScanRight {
-    val op(ScanOp(_, _, _, _, _)) = typeCheck(reify(Seq(1).scanRight(0)(_ + _)))
+    val op(o @ ScanOp(_, _, _, _, _)) = typeCheck(reify(Seq(1).scanRight(0)(_ + _)))
+    assertEquals(false, o.isLeft)
   }
 
   @Test def testSum {

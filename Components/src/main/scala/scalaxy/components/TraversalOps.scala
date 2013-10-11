@@ -69,8 +69,8 @@ trait TraversalOps
       ToIndexedSeqOp(tree)
     case "toVector" =>
       ToVectorOp(tree)
-    //case "reverse" =>
-    //  ReverseOp(tree) // TODO !!!
+    case "reverse" =>
+      ReverseOp(tree) // TODO !!!
   }
 
   def basicTypeApplyTraversalOp(tree: Tree, collection: Tree, name: String, typeArgs: List[Tree], args: Seq[List[Tree]]): Option[TraversalOp] = {
@@ -84,8 +84,8 @@ trait TraversalOps
         Some(new TraversalOp(MinOp(tree), collection, tpt.tpe, null, true, null))
       case ("max", List(tpt), List(_)) =>
         Some(new TraversalOp(MaxOp(tree), collection, tpt.tpe, null, true, null))
-      case ("collect", List(mappedComponentType), Seq(List(function @ Func(List(_), _)))) =>
-        Some(new TraversalOp(CollectOp(tree, function, null), collection, refineComponentType(mappedComponentType.tpe, tree), null, true, null))
+      case ("collect", List(mappedComponentType), Seq(List(function @ Func(List(_), _)), List(cb @ CanBuildFromArg()))) =>
+        Some(new TraversalOp(CollectOp(tree, function, cb), collection, refineComponentType(mappedComponentType.tpe, tree), null, true, null))
       case // Option.map[B](f)
       (
         "map",
@@ -123,7 +123,7 @@ trait TraversalOps
           List(function),
           List(canBuildFrom @ CanBuildFromArg())
           )
-        ) if isLeft =>
+        ) => //if isLeft =>
         Some(new TraversalOp(ScanOp(tree, function, initialValue, isLeft, canBuildFrom), collection, functionResultType.tpe, null, isLeft, initialValue))
       case // foldLeft, foldRight
       (
@@ -133,7 +133,7 @@ trait TraversalOps
           List(initialValue),
           List(function)
           )
-        ) if isLeft =>
+        ) => //if isLeft =>
         Some(new TraversalOp(FoldOp(tree, function, initialValue, isLeft), collection, functionResultType.tpe, null, isLeft, initialValue))
       case // toArray
       (
@@ -179,7 +179,7 @@ trait TraversalOps
         Seq(
           List(function)
           )
-        ) if isLeft =>
+        ) => //if isLeft =>
         Some(new TraversalOp(ReduceOp(tree, function, isLeft), collection, functionResultType.tpe, null, isLeft, null))
       case // zip(col)(canBuildFrom)
       (
@@ -215,7 +215,7 @@ trait TraversalOps
       case TypeApply(Select(collection, N("toSet")), List(resultType)) =>
         Some(new TraversalOp(ToSetOp(tree), collection, resultType.tpe, tree.tpe, true, null))
       // reverse, toList, toSeq, toIndexedSeq
-      case Select(collection, N(n @ ("reverse" | "toList" /*| "toSeq"*/ | "toIndexedSeq" | "toVector"))) =>
+      case Select(collection, N(n @ ("reverse" | "toList" | "toSeq" | "toIndexedSeq" | "toVector"))) =>
         traversalOpWithoutArg(n, tree).collect { case op => new TraversalOp(op, collection, null, null, true, null) }
       //Some(new TraversalOp(Reverse, collection, null, null, true, null))
       // filter, filterNot, takeWhile, dropWhile, forall, exists
@@ -237,6 +237,9 @@ trait TraversalOps
             AllOrSomeOp(tree, function, true) -> BooleanTpe
           case "exists" =>
             AllOrSomeOp(tree, function, false) -> BooleanTpe
+
+          case "find" =>
+            FindOp(tree, function) -> tree.tpe
 
           case "count" =>
             CountOp(tree, function) -> IntTpe

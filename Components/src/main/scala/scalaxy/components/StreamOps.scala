@@ -58,8 +58,10 @@ trait StreamOps
         )
     }
     trait Function2Reduction extends Reductoid with FunctionTransformer {
+      def isLeft: Boolean
       lazy val Func(List(leftParam, rightParam), body) = f
 
+      override def order = if (isLeft) SameOrder else ReverseOrder
       override def updateTotalWithValue(total: TreeGen, value: TreeGen)(implicit loop: Loop): ReductionTotalUpdate = {
         import loop.{ currentOwner }
         val result = replaceOccurrences(
@@ -216,8 +218,6 @@ trait StreamOps
       override def throwsIfEmpty(value: StreamValue) = false
 
       override def consumesExtraFirstValue = true
-
-      override def order = SameOrder
     }
     case class ScanOp(tree: Tree, f: Tree, initialValue: Tree, isLeft: Boolean, canBuildFrom: Tree) extends TraversalOpType with Function2Reduction {
       override def toString = "scan" + (if (isLeft) "Left" else "Right")
@@ -247,7 +247,6 @@ trait StreamOps
       override def throwsIfEmpty(value: StreamValue) = true
 
       override def consumesExtraFirstValue = true
-      override def order = SameOrder
     }
     case class SumOp(tree: Tree) extends TraversalOpType with SideEffectFreeScalarReduction {
       override def toString = "sum"
