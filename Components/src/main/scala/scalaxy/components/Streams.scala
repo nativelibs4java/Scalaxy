@@ -116,17 +116,9 @@ trait Streams
         preOuter.toList ++
           Seq(
             if (isLoop)
-              whileLoop(
-              owner = currentOwner,
-              pos = pos,
-              cond = cond,
-              body = body
-            )
+              whileLoop(cond, body)
             else
-              typeCheck(
-                If(cond, body, EmptyTree),
-                UnitTpe
-              )
+              newIf(cond, body)
           ) ++
             postStats,
         postVal
@@ -154,7 +146,7 @@ trait Streams
     if (elements.isEmpty && tpe != UnitTpe)
       throw new RuntimeException("Invalid elements with tpe " + tpe + " : " + elements.mkString(", "))
 
-    def this(vd: VarDef) = this(vd.tpe, vd)
+    def this(vd: ValueDef) = this(vd.tpe, vd)
 
     override def apply(): Ident = {
       if (elements.size != 1)
@@ -183,7 +175,7 @@ trait Streams
         throw new RuntimeException("not implemented")
   }
 
-  implicit def varDef2TupleValue(value: VarDef) =
+  implicit def valueDef2TupleValue(value: ValueDef) =
     new DefaultTupleValue(Option(value.tpe).getOrElse(value.definition.tpe), value)
 
   case class StreamValue(

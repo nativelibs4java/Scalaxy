@@ -70,34 +70,34 @@ trait StreamTransformers
 
               val lengthDefs = lengths.map {
                 case length =>
-                  newVariable("n$", currentOwner, tree.pos, false, typeCheck(length, IntTpe), IntTpe)
+                  newVal("n$", typeCheck(length, IntTpe), IntTpe)
               }
 
               //msg(tree.pos, "transformed Array.tabulate[" + returnType + "] into equivalent while loop") 
               {
 
-                def replaceTabulates(lengthDefs: List[VarDef], parentArrayIdentGen: IdentGen, params: List[ValDef], mappings: Map[Symbol, TreeGen], symbolReplacements: Map[Symbol, Symbol]): (Tree, Type) = {
+                def replaceTabulates(lengthDefs: List[ValueDef], parentArrayIdentGen: IdentGen, params: List[ValDef], mappings: Map[Symbol, TreeGen], symbolReplacements: Map[Symbol, Symbol]): (Tree, Type) = {
 
                   val param = params.head
                   val pos = tree.pos
                   val nVar = lengthDefs.head
-                  val iVar = newVariable("i$", currentOwner, pos, true, newInt(0), IntTpe)
-                  val iVal = newVariable("i$val$", currentOwner, pos, false, iVar(), IntTpe)
+                  val iVar = newVar("i$", newInt(0), IntTpe)
+                  val iVal = newVal("i$val$", iVar(), IntTpe)
 
                   val newMappings: Map[Symbol, TreeGen] = mappings + (param.symbol -> iVal)
-                  val newReplacements = symbolReplacements ++ Map(param.symbol -> iVal.symbol, f.symbol -> currentOwner)
+                  val newReplacements = symbolReplacements // ++ Map(param.symbol -> iVal())
 
                   val mappedArrayTpe = getArrayType(returnType, lengthDefs.size)
 
                   val arrayVar = if (parentArrayIdentGen == null)
-                    newVariable("m$", currentOwner, tree.pos, false, newArrayMulti(mappedArrayTpe, returnType, lengthDefs.map(_.identGen()), manifest), mappedArrayTpe)
+                    newVal("m$", newArrayMulti(mappedArrayTpe, returnType, lengthDefs.map(_.identGen()), manifest), mappedArrayTpe)
                   else
-                    VarDef(parentArrayIdentGen, null, null, null) // TODO pass types here and around
+                    ValueDef(parentArrayIdentGen, null, null) // TODO pass types here and around
 
                   val subArrayVar = if (lengthDefs.tail == Nil)
                     null
                   else
-                    newVariable("subArray$", currentOwner, tree.pos, false, newApply(tree.pos, arrayVar(), iVal()), getArrayType(returnType, lengthDefs.size - 1))
+                    newVal("subArray$", newApplyCall(arrayVar(), iVal()), getArrayType(returnType, lengthDefs.size - 1))
 
                   val (newBody, bodyType) = if (lengthDefs.tail == Nil)
                     (
@@ -125,55 +125,51 @@ trait StreamTransformers
 
                   (
                     super.transform {
-                      typed {
-                        treeCopy.Block(
-                          tree,
-                          (
-                            if (parentArrayIdentGen == null)
-                              lengthDefs.map(_.definition) :+ arrayVar.definition
-                            else
-                              Nil
-                          ) ++
-                            List(
-                              iVar.definition,
-                              whileLoop(
-                                currentOwner,
-                                tree,
-                                binOp(
-                                  iVar(),
-                                  IntTpe.member(LT),
-                                  nVar()
-                                ),
-                                Block(
-                                  (
-                                    if (lengthDefs.tail == Nil)
-                                      List(
-                                      iVal.definition,
-                                      newUpdate(
-                                        tree.pos,
-                                        arrayVar(),
-                                        iVar(),
-                                        checkedBody
-                                      )
-                                    )
-                                    else {
-                                      List(
-                                        iVal.definition,
-                                        subArrayVar.definition,
-                                        checkedBody
-                                      )
-                                    }
-                                  ),
-                                  incrementIntVar(iVar, newInt(1))
-                                )
-                              )
-                            ),
+                      treeCopy.Block(
+                        tree,
+                        (
                           if (parentArrayIdentGen == null)
-                            arrayVar()
+                            lengthDefs.map(_.definition) :+ arrayVar.definition
                           else
-                            newUnit
-                        )
-                      }
+                            Nil
+                        ) ++
+                          List(
+                            iVar.definition,
+                            whileLoop(
+                              binOp(
+                                iVar(),
+                                LT,
+                                nVar()
+                              ),
+                              Block(
+                                (
+                                  if (lengthDefs.tail == Nil)
+                                    List(
+                                    iVal.definition,
+                                    newUpdate(
+                                      tree.pos,
+                                      arrayVar(),
+                                      iVar(),
+                                      checkedBody
+                                    )
+                                  )
+                                  else {
+                                    List(
+                                      iVal.definition,
+                                      subArrayVar.definition,
+                                      checkedBody
+                                    )
+                                  }
+                                ),
+                                incrementIntVar(iVar, newInt(1))
+                              )
+                            )
+                          ),
+                        if (parentArrayIdentGen == null)
+                          arrayVar()
+                        else
+                          newUnit
+                      )
                     },
                     mappedArrayTpe
                   )

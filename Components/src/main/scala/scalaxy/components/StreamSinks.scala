@@ -59,7 +59,7 @@ trait StreamSinks extends Streams {
 
       val componentType = value.tpe
       val hasExtraValue = value.extraFirstValue.isDefined
-      val a = newVariable("out", currentOwner, pos, false,
+      val a = newVal("out",
         newArray(
           componentType,
           if (hasExtraValue)
@@ -170,7 +170,7 @@ trait StreamSinks extends Streams {
     private val setType = appliedType(setClass.asType.toType, List(componentType))
     val builderType = appliedType(SetBuilderClass.asType.toType, List(componentType, setType))
     override def builderCreation =
-      newInstance(builderType, List(newApply(newSetModuleTree, applyName, List(newTypeTree(componentType)), Nil)))
+      newInstance(builderType, List(newApply(newSetModuleTree, applyName, List(TypeTree(componentType)), Nil)))
   }
 
   trait BuilderGen {
@@ -196,7 +196,7 @@ trait StreamSinks extends Streams {
       val builderGen = createBuilderGen(value)
       import builderGen._
 
-      val a = newVariable("out", currentOwner, pos, false, builderCreation, builderGen.builderType)
+      val a = newVal("out", builderCreation, builderGen.builderType)
       loop.preOuter += a.definition
       for (v <- value.extraFirstValue)
         loop.preOuter += builderAppend(a(), v())
@@ -282,8 +282,8 @@ trait StreamSinks extends Streams {
           import loop.{ currentOwner }
           val pos = loop.pos
 
-          val out = newVariable("out", currentOwner, pos, true, newNull(value.tpe), value.tpe)
-          val presence = newVariable("hasOut", currentOwner, pos, true, newBool(false), BooleanTpe)
+          val out = newVar("out", newNull(value.tpe), value.tpe)
+          val presence = newVar("hasOut", newBool(false), BooleanTpe)
           loop.preOuter += out.definition
           loop.preOuter += presence.definition
           loop.inner += newAssign(out, value.value())

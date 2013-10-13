@@ -58,8 +58,10 @@ trait WithRuntimeUniverse {
   def setPos(tree: Tree, pos: Position): Tree = tree
 
   lazy val toolbox = cm.mkToolBox()
+
   def typeCheck(x: Expr[_]): Tree =
     typeCheck(x.tree)
+
   def typeCheck(tree: Tree, pt: Type = WildcardType): Tree = {
     val ttree = tree.asInstanceOf[toolbox.u.Tree]
     if (ttree.tpe != null && ttree.tpe != NoType)
@@ -75,4 +77,9 @@ trait WithRuntimeUniverse {
       }
     }.asInstanceOf[Tree]
   }
+
+  def cleanTypeCheck(tree: Tree): Tree = {
+    toolbox.typeCheck(toolbox.resetAllAttrs(tree.asInstanceOf[toolbox.u.Tree])).asInstanceOf[Tree]
+  }
+
 }

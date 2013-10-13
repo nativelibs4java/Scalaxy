@@ -30,14 +30,14 @@ trait StreamSources
       val skipFirst = false // TODO
       val reverseOrder = direction == FromRight
 
-      val aVar = newVariable("array$", currentOwner, pos, false, transform(array), getArrayType(componentType))
-      val nVar = newVariable("n$", currentOwner, pos, false, newArrayLength(aVar()), IntTpe)
-      val iVar = newVariable("i$", currentOwner, pos, true,
+      val aVal = newVal("array$", transform(array), getArrayType(componentType))
+      val nVal = newVal("n$", newArrayLength(aVal()), IntTpe)
+      val iVar = newVar("i$",
         if (reverseOrder) {
           if (skipFirst)
-            intSub(nVar(), newInt(1))
+            intSub(nVal(), newInt(1))
           else
-            nVar()
+            nVal()
         } else {
           if (skipFirst)
             newInt(1)
@@ -47,19 +47,19 @@ trait StreamSources
         IntTpe
       )
 
-      val itemVar = newVariable("item$", currentOwner, pos, false, newApply(pos, aVar(), iVar()), componentType)
+      val itemVal = newVal("item$", newApplyCall(aVal(), iVar()), componentType)
 
-      loop.preOuter += aVar.definition
-      loop.preOuter += nVar.definition
+      loop.preOuter += aVal.definition
+      loop.preOuter += nVal.definition
       loop.preOuter += iVar.definition
       loop.tests += (
         if (reverseOrder)
-          binOp(iVar(), IntTpe.member(GT), newInt(0))
+          binOp(iVar(), GT, newInt(0))
         else
-          binOp(iVar(), IntTpe.member(LT), nVar())
+          binOp(iVar(), LT, nVal())
       )
 
-      loop.preInner += itemVar.definition
+      loop.preInner += itemVal.definition
       loop.postInner += (
         if (reverseOrder)
           decrementIntVar(iVar, newInt(1))
@@ -67,9 +67,9 @@ trait StreamSources
           incrementIntVar(iVar, newInt(1))
       )
       new StreamValue(
-        value = itemVar,
+        value = itemVal,
         valueIndex = Some(iVar),
-        valuesCount = Some(nVar)
+        valuesCount = Some(nVal)
       )
     }
   }
@@ -82,7 +82,7 @@ trait StreamSources
 
   abstract class ExplicitCollectionStreamSource(val tree: Tree, items: List[Tree], val componentType: Type)
       extends AbstractArrayStreamSource {
-    val array = newArrayApply(newTypeTree(componentType), items: _*)
+    val array = newArrayApply(TypeTree(componentType), items: _*)
 
     override def analyzeSideEffectsOnStream(analyzer: SideEffectsAnalyzer) =
       analyzer.analyzeSideEffects(tree, items: _*)
@@ -104,8 +104,8 @@ trait StreamSources
       val skipFirst = false // TODO
       val colTpe = list.tpe
 
-      val aVar = newVariable("list$", currentOwner, pos, true, transform(list), getListType(componentType))
-      val itemVar = newVariable("item$", currentOwner, pos, false, newSelect(aVar(), headName), componentType)
+      val aVar = newVar("list$", transform(list), getListType(componentType))
+      val itemVar = newVal("item$", newSelect(aVar(), headName), componentType)
 
       loop.preOuter += aVar.definition
       loop.tests += (
@@ -140,13 +140,13 @@ trait StreamSources
       import loop.{ currentOwner, transform }
       val pos = tree.pos
 
-      val fromVar = newVariable("from$", currentOwner, tree.pos, false, typeCheck(transform(from), itemTpe), itemTpe)
-      val toVar = newVariable("to$", currentOwner, tree.pos, false, typeCheck(transform(to), itemTpe), itemTpe)
-      val itemVar = newVariable("item$", currentOwner, tree.pos, true, fromVar(), itemTpe)
-      val itemVal = newVariable("item$val$", currentOwner, tree.pos, false, itemVar(), itemTpe)
+      val fromVal = newVal("from$", transform(from), itemTpe)
+      val toVal = newVal("to$", transform(to), itemTpe)
+      val itemVar = newVar("item$", fromVal(), itemTpe)
+      val itemVal = newVal("item$val$", itemVar(), itemTpe)
 
       val size = {
-        val span = intSub(toVar(), fromVar())
+        val span = intSub(toVal(), fromVal())
         val width = if (isUntil)
           span
         else
@@ -157,26 +157,24 @@ trait StreamSources
         else
           intDiv(width, newInt(byValue))
       }
-      val sizeVal = newVariable("outputSize$", currentOwner, tree.pos, false, size, itemTpe)
-      val iVar = newVariable("outputIndex$", currentOwner, tree.pos, true, newInt(0), itemTpe) //if (reverseOrder) intSub(outputSizeVar(), newInt(1)) else newInt(0))
-      val iVal = newVariable("i", currentOwner, tree.pos, true, iVar(), itemTpe) //if (reverseOrder) intSub(outputSizeVar(), newInt(1)) else newInt(0))
+      val sizeVal = newVal("outputSize$", size, itemTpe)
+      val iVar = newVar("outputIndex$", newInt(0), itemTpe) //if (reverseOrder) intSub(outputSizeVar(), newInt(1)) else newInt(0))
+      val iVal = newVal("i", iVar(), itemTpe) //if (reverseOrder) intSub(outputSizeVar(), newInt(1)) else newInt(0))
 
-      loop.preOuter += fromVar.definition
-      loop.preOuter += toVar.definition
+      loop.preOuter += fromVal.definition
+      loop.preOuter += toVal.definition
       loop.preOuter += itemVar.definition
       loop.preOuter += (sizeVal.defIfUsed _)
       loop.preOuter += (() => if (iVal.identUsed) Some(iVar.definition) else None)
       loop.tests += (
         binOp(
           itemVar(),
-          IntTpe.member(
-            if (isUntil) {
-              if (byValue < 0) GT else LT
-            } else {
-              if (byValue < 0) GE else LE
-            }
-          ),
-          toVar()
+          if (isUntil) {
+            if (byValue < 0) GT else LT
+          } else {
+            if (byValue < 0) GE else LE
+          },
+          toVal()
         )
       )
       loop.preInner += itemVal.definition // it's important to keep a non-mutable local reference !
@@ -202,9 +200,9 @@ trait StreamSources
 
       loop.isLoop = false
 
-      val (valueVar: VarDef, isDefinedVar: VarDef, isAlwaysDefined: Boolean) = componentOption match {
+      val (valueVar: ValueDef, isDefinedVar: ValueDef, isAlwaysDefined: Boolean) = componentOption match {
         case Some(component) =>
-          val valueVar = newVariable("value$", currentOwner, pos, false, transform(component), componentType)
+          val valueVar = newVal("value$", transform(component), componentType)
           val (isDefinedValue, isAlwaysDefined) =
             if (onlyIfNotNull && !isAnyVal(component.tpe))
               component match {
@@ -216,13 +214,13 @@ trait StreamSources
               }
             else
               (newBool(true), true)
-          val isDefinedVar = newVariable("isDefined$", currentOwner, pos, false, isDefinedValue, BooleanTpe)
+          val isDefinedVar = newVal("isDefined$", isDefinedValue, BooleanTpe)
           loop.preOuter += valueVar.definition
           (valueVar, isDefinedVar, isAlwaysDefined)
         case None =>
-          val optionVar = newVariable("option$", currentOwner, pos, false, transform(tree), getOptionType(componentType))
-          val isDefinedVar = newVariable("isDefined$", currentOwner, pos, false, newSelect(optionVar(), N("isDefined")), BooleanTpe)
-          val valueVar = newVariable("value$", currentOwner, pos, false, newSelect(optionVar(), N("get")), componentType)
+          val optionVar = newVal("option$", transform(tree), getOptionType(componentType))
+          val isDefinedVar = newVal("isDefined$", newSelect(optionVar(), N("isDefined")), BooleanTpe)
+          val valueVar = newVal("value$", newSelect(optionVar(), N("get")), componentType)
           loop.preOuter += optionVar.definition
           loop.preInner += valueVar.definition
           (valueVar, isDefinedVar, false)

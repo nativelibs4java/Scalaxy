@@ -124,86 +124,63 @@ trait TreeBuilders
       )
     }
   }
-  def newTypeTree(tpe: Type): TypeTree =
-    if (tpe == null)
-      TypeTree(NoType)
-    else
-      withSymbol(tpe.typeSymbol, tpe) {
-        TypeTree(tpe)
-      }
+
+  def defaultValue(tpe: Type): Any = tpe.normalize match {
+    case IntTpe => 0
+    case BooleanTpe => false
+    case ByteTpe => 0: Byte
+    case ShortTpe => 0: Short
+    case CharTpe => '\0'
+    case LongTpe => 0L
+    case FloatTpe => 0.0f
+    case DoubleTpe => 0.0
+    case s => null
+  }
 
   // TreeGen.mkIsInstanceOf adds an extra Apply (and does not set all symbols), which makes it apparently useless in our case(s)
   def newIsInstanceOf(tree: Tree, tpe: Type) = {
-    try {
-      typeApply(AnyClass.asType.toType.member(newTermName("isInstanceOf")))(
-        Select(
-          tree,
-          N("isInstanceOf")
-        ),
-        List(newTypeTree(tpe))
-      )
-    } catch {
-      case ex: Throwable =>
-        ex.printStackTrace
-        throw new RuntimeException(ex)
-    }
+    TypeApply(
+      Select(
+        tree,
+        N("isInstanceOf")
+      ),
+      List(TypeTree(tpe))
+    )
   }
-  def newApply(pos: Position, array: => Tree, index: => Tree) = {
-    val a = array
-    assert(a.tpe != null)
-    typed {
-      atPos(pos) {
-        //a.DOT(N("apply"))(index)
-        val sym =
-          (a.tpe member applyName())
-            .filter(s => s.isMethod && s.asMethod.paramss.size == 1)
-        apply(sym)(
-          Select(
-            a,
-            N("apply")
-          ),
-          List(index)
-        )
-      }
-    }
+  def newApplyCall(array: Tree, index: Tree) = {
+    Apply(
+      Select(
+        array,
+        N("apply")
+      ),
+      List(index)
+    )
   }
 
   def newSelect(target: Tree, name: Name, typeArgs: List[TypeTree] = Nil) =
     newApply(target, name, typeArgs, null)
 
   def newApply(target: Tree /*, targetType: Type*/ , name: Name, typeArgs: List[TypeTree] = Nil, args: List[Tree] = Nil) = {
-    val targetType =
-      if (target.tpe == NoType || target.tpe == null)
-        target.symbol.typeSignature
-      else
-        target.tpe
-
-    val sym = targetType.member(name)
-    typed {
-      val select = withSymbol(sym) { Select(target, name) }
-      if (!typeArgs.isEmpty)
-        Apply(
-          typeApply(sym)(select, typeArgs),
-          args
-        )
-      else if (args != null)
-        Apply(select, args)
-      else
-        select
-    }
+    val select = Select(target, name)
+    if (!typeArgs.isEmpty)
+      Apply(
+        TypeApply(select, typeArgs),
+        args
+      )
+    else if (args != null)
+      Apply(select, args)
+    else
+      select
   }
 
   def newInstance(tpe: Type, constructorArgs: List[Tree]) = {
-    val sym = primaryConstructor(tpe)
-    typed {
-      apply(sym)(
-        Select(
-          New(newTypeTree(tpe)),
-          sym
-        ),
-        constructorArgs
-      )
-    }
+    Apply(
+      Select(
+        New(TypeTree(tpe)),
+        nme.CONSTRUCTOR
+      ),
+      constructorArgs
+    )
   }
 
   def newCollectionApply(collectionModuleTree: => Tree, typeExpr: TypeTree, values: Tree*) =
@@ -257,7 +234,7 @@ trait TreeBuilders
     newApply(newSeqModuleTree, applyName, List(typeExpr), values.toList)
 
   def newSomeApply(tpe: Type, value: Tree) =
-    newApply(newSomeModuleTree, applyName, List(newTypeTree(tpe)), List(value))
+    newApply(newSomeModuleTree, applyName, List(TypeTree(tpe)), List(value))
 
   def newArrayApply(typeExpr: TypeTree, values: Tree*) =
     newApply(newArrayModuleTree, applyName, List(typeExpr), values.toList)
@@ -280,7 +257,7 @@ trait TreeBuilders
                     N("ofDim")
                   )
                 },
-                List(newTypeTree(componentTpe))
+                List(TypeTree(componentTpe))
               ),
               lengths
             )
@@ -298,7 +275,7 @@ trait TreeBuilders
       val sym = primaryConstructor(arrayType)
       apply(sym)(
         Select(
-          New(newTypeTree(arrayType)),
+          New(TypeTree(arrayType)),
           sym
         ),
         List(length)
@@ -322,20 +299,13 @@ trait TreeBuilders
     }
   }
 
-  def binOp(a: Tree, op: Symbol, b: Tree) = typed {
-    assert(op != NoSymbol)
-    //withSymbol(op) {
+  def binOp(a: Tree, op: TermName, b: Tree) =
     Apply(
-      //withSymbol(op) {
       Select(a, op),
-      //}, 
-      List(b)
-    )
-    //}
-  }
+      List(b))
 
   def newIsNotNull(target: Tree) = typed {
-    binOp(target, AnyRefClass.asType.toType.member(NE), newNull(target.tpe))
+    binOp(target, NE, newNull(target.tpe))
   }
 
   def newArrayLength(a: Tree) =
@@ -349,7 +319,7 @@ trait TreeBuilders
     else if (b == null)
       a
     else
-      binOp(a, BooleanTpe.member(ZAND /* AMPAMP */ ), b)
+      binOp(a, ZAND /* AMPAMP */ , b)
   }
   def boolOr(a: Tree, b: Tree) = typed {
     if (a == null)
@@ -357,7 +327,7 @@ trait TreeBuilders
     else if (b == null)
       a
     else
-      binOp(a, BooleanTpe.member(ZOR), b)
+      binOp(a, ZOR, b)
   }
   def ident(sym: Symbol, tpe: Type, n: Name, pos: Position = NoPosition): Ident = {
     assert(sym != NoSymbol)
@@ -378,24 +348,21 @@ trait TreeBuilders
     */
   }
 
-  def boolNot(a: => Tree) = {
-    val sym = BooleanTpe.member(UNARY_!)
-    //Apply(
-    withSymbol(sym, BooleanTpe) { Select(a, UNARY_!) }
+  def boolNot(a: Tree) = {
+    Select(a, UNARY_!)
   }
 
   def intAdd(a: => Tree, b: => Tree) =
-    binOp(a, IntTpe.member(PLUS), b)
+    binOp(a, PLUS, b)
 
   def intDiv(a: => Tree, b: => Tree) =
-    binOp(a, IntTpe.member(DIV), b)
+    binOp(a, DIV, b)
 
   def intSub(a: => Tree, b: => Tree) =
-    binOp(a, IntTpe.member(MINUS), b)
+    binOp(a, MINUS, b)
 
-  def newAssign(target: IdentGen, value: Tree) = typed {
+  def newAssign(target: IdentGen, value: Tree) =
     Assign(target(), value)
-  }
 
   def incrementIntVar(identGen: IdentGen, value: Tree = newInt(1)) =
     newAssign(identGen, intAdd(identGen(), value))
@@ -408,36 +375,26 @@ trait TreeBuilders
     )
   }
 
-  def whileLoop(owner: Symbol, tree: Tree, cond: Tree, body: Tree): Tree =
-    whileLoop(owner, tree.pos, cond, body)
-
-  def whileLoop(owner: Symbol, pos: Position, cond: Tree, body: Tree): Tree = {
+  def whileLoop(cond: Tree, body: Tree): Tree = {
     val lab = newTermName(fresh("while$"))
-    val labTyp = MethodType(Nil, UnitTpe)
-    val labSym = setInfo(owner.newTermSymbol(lab, pos, Flag.LOCAL), labTyp)
-
-    typed {
-      withSymbol(labSym) {
-        LabelDef(
-          lab,
-          Nil,
-          If(
-            cond,
-            Block(
-              if (body == null)
-                Nil
-              else
-                List(body),
-              Apply(
-                ident(labSym, NoType, lab, pos),
-                Nil
-              )
-            ),
-            newUnit
+    LabelDef(
+      lab,
+      Nil,
+      If(
+        cond,
+        Block(
+          if (body == null)
+            Nil
+          else
+            List(body),
+          Apply(
+            Ident(lab),
+            Nil
           )
-        )
-      }
-    }
+        ),
+        newUnit
+      )
+    )
   }
 
   type IdentGen = () => Ident
@@ -491,7 +448,7 @@ trait TreeBuilders
   def newUnit() =
     newConstant(())
 
-  case class VarDef(rawIdentGen: IdentGen, symbol: Symbol, definition: ValDef, tpe: Type) {
+  case class ValueDef(rawIdentGen: IdentGen, definition: ValDef, tpe: Type) {
     var identUsed = false
     val identGen: IdentGen = () => {
       identUsed = true
@@ -499,22 +456,13 @@ trait TreeBuilders
     }
     def apply() = identGen()
 
-    def defIfUsed = if (identUsed) Some(definition) else None
+    def defIfUsed = ifUsed(definition)
     def ifUsed[V](v: => V) = if (identUsed) Some(v) else None
   }
-  implicit def VarDev2IdentGen(vd: VarDef) = if (vd == null) null else vd.identGen
+  implicit def ValueDef2IdentGen(vd: ValueDef) = if (vd == null) null else vd.identGen
 
-  def simpleBuilderResult(builder: Tree): Tree = typed {
-    //val resultMethod = builder.tpe member resultName
-    //apply(resultMethod)(
-    Apply(
-      Select(
-        builder,
-        resultName
-      ),
-      Nil
-    )
-  }
+  def simpleBuilderResult(builder: Tree): Tree =
+    newApply(builder, resultName)
 
   def addAssign(target: Tree, toAdd: Tree) = {
     // val sym = (target.tpe member addAssignName())
@@ -529,81 +477,38 @@ trait TreeBuilders
   }
 
   lazy val TypeRef(manifestPre, manifestSym, _) = typeOf[Manifest[Int]]
-  def toArray(tree: Tree, componentType: Type) = typed {
+  def toArray(tree: Tree, componentType: Type) = {
     val manifest = inferImplicitValue(typeRef(manifestPre, manifestSym, List(componentType)))
     assert(manifest != EmptyTree, "Failed to get manifest for " + componentType)
 
-    val method = tree.tpe member toArrayName
-    apply(method)(
-      typeApply(method)(
+    Apply(
+      TypeApply(
         Select(
           tree,
           toArrayName
         ),
-        List(newTypeTree(componentType))
+        List(TypeTree(componentType))
       ),
       List(manifest)
     )
   }
 
-  def newIf(cond: Tree, thenTree: Tree, elseTree: Tree = null) = {
-    typed { thenTree }
-    if (elseTree != null)
-      typed { elseTree }
+  def newIf(cond: Tree, thenTree: Tree, elseTree: Tree = null) =
+    If(cond, thenTree, Option(elseTree).getOrElse(EmptyTree))
 
-    val tpe = {
-      if (elseTree == null)
-        UnitTpe
-      else if (thenTree.tpe == elseTree.tpe)
-        thenTree.tpe
-      else
-        throw new RuntimeException("Mismatching types between then and else : " + thenTree.tpe + " vs. " + elseTree.tpe)
-    }
+  def newVal(prefix: String, value: Tree, tpe: Type) =
+    newValueDef(prefix, false, value, tpe)
 
-    withSymbol(NoSymbol, tpe) {
-      If(cond, thenTree, Option(elseTree).getOrElse(EmptyTree))
-    }
-  }
+  def newVar(prefix: String, value: Tree, tpe: Type) =
+    newValueDef(prefix, true, value, tpe)
 
-  def newVariable(
-    prefix: String,
-    symbolOwner: Symbol,
-    pos: Position,
-    mutable: Boolean,
-    initialValue: Tree,
-    ttpe: Type): VarDef = {
-    val tpe = normalize {
-      if (ttpe != NoType && ttpe != null)
-        ttpe
-      else
-        (typed { initialValue }).tpe
-    }
-    if (tpe == null) {
-      println("initialValue = " + initialValue + ", ttpe = " + ttpe)
-    }
-    //var tpe = initialValue.tpe
-    //if (ConstantType.unapply(tpe))//.isInstanceOf[ConstantType])
-    val name = fresh(prefix)
-    val sym =
-      symbolOwner.newTermSymbol(name, pos, (if (mutable) Flag.MUTABLE else NoFlags) | Flag.LOCAL)
-    if (tpe != null && tpe != NoType)
-      setInfo(sym, tpe)
-
-    val t = Option(tpe).getOrElse(ttpe)
-
-    VarDef(
-      () => ident(sym, t, newTermName(name), pos),
-      sym,
-      withSymbol(sym, t) {
-        ValDef(
-          Modifiers(if (mutable) Flag.MUTABLE else NoFlags),
-          name,
-          newTypeTree(t),
-          initialValue
-        )
-      },
-      t
-    )
+  private def newValueDef(prefix: String, mutable: Boolean, value: Tree, tpe: Type) = {
+    val vd = ValDef(
+      if (mutable) Modifiers(Flag.MUTABLE) else NoMods,
+      fresh(prefix): TermName,
+      TypeTree(tpe),
+      value)
+    ValueDef(() => Ident(vd.name), vd, tpe)
   }
 }
 

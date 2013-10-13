@@ -101,4 +101,12 @@ trait WithMacroContext {
         pt.asInstanceOf[context.universe.Type]
       ).asInstanceOf[Tree]
   }
+
+  def cleanTypeCheck(tree: Tree): Tree = {
+    context.typeCheck(context.resetAllAttrs(tree.asInstanceOf[context.Tree])).asInstanceOf[Tree]
+  }
+
+  def resetAllAttrs(tree: Tree): Tree = {
+    context.resetAllAttrs(tree.asInstanceOf[context.Tree]).asInstanceOf[Tree]
+  }
 }
