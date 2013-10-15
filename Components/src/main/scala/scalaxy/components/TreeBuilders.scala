@@ -44,15 +44,10 @@ trait TreeBuilders
 
   type TreeGen = () => Tree
 
-  def withSymbol[T <: Tree](sym: Symbol, tpe: Type = NoType)(tree: T): T
   def typed[T <: Tree](tree: T): T
   def typeCheck(tree: Tree, pt: Type): Tree
   def fresh(s: String): String
   def inferImplicitValue(pt: Type): Tree
-  def setInfo(sym: Symbol, tpe: Type): Symbol
-  def setType(sym: Symbol, tpe: Type): Symbol
-  def setType(tree: Tree, tpe: Type): Tree
-  def setPos(tree: Tree, pos: Position): Tree
 
   def replaceOccurrences(
     tree: Tree,
@@ -102,27 +97,6 @@ trait TreeBuilders
     tpe.members.iterator
       .find(s => s.isMethod && s.asMethod.isPrimaryConstructor)
       .getOrElse(sys.error("No primary constructor for " + tpe))
-  }
-
-  def apply(sym: Symbol)(target: Tree, args: List[Tree]) = {
-    withSymbol(sym) {
-      Apply(
-        withSymbol(sym) {
-          target
-        },
-        args
-      )
-    }
-  }
-  def typeApply(sym: Symbol)(target: Tree, targs: List[TypeTree]) = {
-    withSymbol(sym) {
-      TypeApply(
-        withSymbol(sym) {
-          target
-        },
-        targs
-      )
-    }
   }
 
   def defaultValue(tpe: Type): Any = tpe.normalize match {
@@ -244,27 +218,21 @@ trait TreeBuilders
       val sym = (ArrayModule.asModule.moduleClass.asType.toType member newTermName("ofDim"))
         .suchThat(s => s.isMethod && s.asMethod.paramss.flatten.size == lengths.size + 1)
       //.getOrElse(sys.error("No Array.ofDim found"))
-      withSymbol(sym) {
+      Apply(
         Apply(
-          withSymbol(sym) {
-            Apply(
-              TypeApply(
-                withSymbol(sym) {
-                  Select(
-                    Ident(
-                      ArrayModule
-                    ),
-                    N("ofDim")
-                  )
-                },
-                List(TypeTree(componentTpe))
+          TypeApply(
+            Select(
+              Ident(
+                ArrayModule
               ),
-              lengths
-            )
-          },
-          List(manifest)
-        )
-      }
+              N("ofDim")
+            ),
+            List(TypeTree(componentTpe))
+          ),
+          lengths
+        ),
+        List(manifest)
+      )
     }
 
   def newArray(componentType: Type, length: => Tree) =
@@ -273,7 +241,7 @@ trait TreeBuilders
   def newArrayWithArrayType(arrayType: Type, length: => Tree) =
     typed {
       val sym = primaryConstructor(arrayType)
-      apply(sym)(
+      Apply(
         Select(
           New(TypeTree(arrayType)),
           sym
@@ -288,7 +256,7 @@ trait TreeBuilders
     val sym = a.tpe member updateName()
     typed {
       atPos(pos) {
-        apply(sym)(
+        Apply(
           Select(
             a,
             N("update")
@@ -309,9 +277,7 @@ trait TreeBuilders
   }
 
   def newArrayLength(a: Tree) =
-    withSymbol(a.tpe.member(lengthName()), IntTpe) {
-      Select(a, lengthName())
-    }
+    Select(a, lengthName())
 
   def boolAnd(a: Tree, b: Tree) = typed {
     if (a == null)
@@ -465,8 +431,6 @@ trait TreeBuilders
     newApply(builder, resultName)
 
   def addAssign(target: Tree, toAdd: Tree) = {
-    // val sym = (target.tpe member addAssignName())
-    //apply(sym)(
     Apply(
       Select(
         target,

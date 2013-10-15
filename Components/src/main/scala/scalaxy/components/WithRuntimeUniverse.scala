@@ -52,10 +52,6 @@ trait WithRuntimeUniverse {
   }
   def inferImplicitValue(pt: Type): Tree =
     toolbox.inferImplicitValue(pt.asInstanceOf[toolbox.u.Type]).asInstanceOf[global.Tree]
-  def setInfo(sym: Symbol, tpe: Type): Symbol = sym
-  def setType(sym: Symbol, tpe: Type): Symbol = sym
-  def setType(tree: Tree, tpe: Type): Tree = tree
-  def setPos(tree: Tree, pos: Position): Tree = tree
 
   lazy val toolbox = cm.mkToolBox()
 

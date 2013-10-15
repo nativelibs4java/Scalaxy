@@ -66,26 +66,6 @@ trait WithMacroContext {
   def inferImplicitValue(pt: Type): Tree =
     context.inferImplicitValue(pt.asInstanceOf[context.universe.Type]).asInstanceOf[Tree]
 
-  def setInfo(sym: Symbol, tpe: Type): Symbol = {
-    //sym.setInfo(tpe)
-    sym
-  }
-
-  def setType(sym: Symbol, tpe: Type): Symbol = {
-    //sym.tpe = tpe
-    sym
-  }
-
-  def setType(tree: Tree, tpe: Type): Tree = {
-    tree.tpe = tpe
-    tree
-  }
-
-  def setPos(tree: Tree, pos: Position): Tree = {
-    tree.pos = pos
-    tree
-  }
-
   def fresh(s: String) =
     context.fresh(s)
 
