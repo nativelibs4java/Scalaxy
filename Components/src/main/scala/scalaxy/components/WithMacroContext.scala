@@ -109,4 +109,8 @@ trait WithMacroContext {
   def resetAllAttrs(tree: Tree): Tree = {
     context.resetAllAttrs(tree.asInstanceOf[context.Tree]).asInstanceOf[Tree]
   }
+
+  def resetLocalAttrs(tree: Tree): Tree = {
+    context.resetLocalAttrs(tree.asInstanceOf[context.Tree]).asInstanceOf[Tree]
+  }
 }

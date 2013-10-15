@@ -82,4 +82,12 @@ trait WithRuntimeUniverse {
     toolbox.typeCheck(toolbox.resetAllAttrs(tree.asInstanceOf[toolbox.u.Tree])).asInstanceOf[Tree]
   }
 
+  def resetLocalAttrs(tree: Tree): Tree = {
+    toolbox.resetLocalAttrs(tree.asInstanceOf[toolbox.u.Tree]).asInstanceOf[Tree]
+  }
+
+  def resetAllAttrs(tree: Tree): Tree = {
+    toolbox.resetAllAttrs(tree.asInstanceOf[toolbox.u.Tree]).asInstanceOf[Tree]
+  }
+
 }

@@ -376,7 +376,7 @@ trait TreeBuilders
   }
 
   def whileLoop(cond: Tree, body: Tree): Tree = {
-    val lab = newTermName(fresh("while$"))
+    val lab: TermName = fresh("while$")
     LabelDef(
       lab,
       Nil,
