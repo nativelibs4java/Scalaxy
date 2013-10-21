@@ -105,16 +105,9 @@ final class ReifiedValue[A: TypeTag](
           if (instance == null)
             null.asInstanceOf[A]
           else {
-            val classLoader = Option(instance.getClass.getClassLoader)
-              .getOrElse(Thread.currentThread.getContextClassLoader)
-            val instanceMirror = runtimeMirror(classLoader).reflect(instance)
-            val instanceType = instanceMirror.symbol.asType.toType
-            val method = instanceType.member("apply": TermName)
-
             val args = topLevelCaptures.map(_._2.value)
-            // println("METHOD: " + method + " (alternative: " + method.asTerm.alternatives.head)
             // println("ARGS: " + args.mkString(", "))
-            instanceMirror.reflectMethod(method.asTerm.alternatives.head.asMethod)(args: _*).asInstanceOf[A]
+            reflectMethod(instance, "apply")(args: _*).asInstanceOf[A]
           }
         }
     }

@@ -44,7 +44,7 @@ package object internal {
 
     val (expr, capturesExpr) = transformReifiedRefs(c)(v)
     val res = reify({
-      implicit val valueTag = tt.splice
+      implicit val valueTag: universe.TypeTag[A] = tt.splice
       new ReifiedValue[A](
         v.splice,
         Utils.typeCheck(expr.splice, valueTag.tpe),

@@ -9,6 +9,17 @@ import scalaxy.reified.ReifiedValue
 
 object Utils {
 
+  def reflectMethod(instance: Any, name: String) = {
+    val classLoader = Option(instance.getClass.getClassLoader)
+      .getOrElse(Thread.currentThread.getContextClassLoader)
+    val instanceMirror = runtimeMirror(classLoader).reflect(instance)
+    val instanceType = instanceMirror.symbol.asType.toType
+    val method = instanceType.member("apply": TermName)
+
+    // println("METHOD: " + method + " (alternative: " + method.asTerm.alternatives.head)
+    instanceMirror.reflectMethod(method.asTerm.alternatives.head.asMethod)
+  }
+
   private[reified] def newExpr[A](tree: Tree): Expr[A] = {
     Expr[A](
       currentMirror,
