@@ -73,25 +73,25 @@ private[reified] object CommonExtractors {
               Apply(
                 Select(PredefTree(), WrapperName(rangeTpe, numTpe)),
                 List(from)),
-              funToName @ (toName() | untilName())),
+              N(funToName @ ("to" | "until"))),
             List(to)) =>
 
             Option(funToName) collect {
-              case toName() =>
+              case "to" =>
                 (rangeTpe, numTpe, from, to, None, true, Nil)
-              case untilName() =>
+              case "until" =>
                 (rangeTpe, numTpe, from, to, None, false, Nil)
             }
           case Apply(
             Select(
               NumRange(rangeTpe, numTpe, from, to, by, isInclusive, filters),
-              n @ (byName() | withFilterName() | filterName())),
+              N(n @ ("by" | "withFilter" | "filter"))),
             List(arg)) =>
 
             Option(n) collect {
-              case byName() if by == None =>
+              case "by" if by == None =>
                 (rangeTpe, numTpe, from, to, Some(arg), isInclusive, filters)
-              case withFilterName() | filterName() /* if !options.stream */ =>
+              case "withFilter" | "filter" /* if !options.stream */ =>
                 (rangeTpe, numTpe, from, to, by, isInclusive, filters :+ arg)
             }
           case _ =>

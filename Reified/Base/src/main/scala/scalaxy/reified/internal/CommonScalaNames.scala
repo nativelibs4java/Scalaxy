@@ -15,6 +15,7 @@ private[reified] object CommonScalaNames {
   }
   object N {
     def apply(s: String) = new N(s)
+    def unapply(n: Name): Option[String] = Option(n).map(_.toString)
   }
   implicit def N2TermName(n: N) = n()
 
