@@ -9,7 +9,7 @@ import scalaxy.reified.ReifiedValue
 
 object Utils {
 
-  def reflectMethod(instance: Any, name: String) = {
+  def getMethodMirror(instance: Any, name: String) = {
     val classLoader = Option(instance.getClass.getClassLoader)
       .getOrElse(Thread.currentThread.getContextClassLoader)
     val instanceMirror = runtimeMirror(classLoader).reflect(instance)

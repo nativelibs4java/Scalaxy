@@ -107,7 +107,7 @@ final class ReifiedValue[A: TypeTag](
           else {
             val args = topLevelCaptures.map(_._2.value)
             // println("ARGS: " + args.mkString(", "))
-            reflectMethod(instance, "apply")(args: _*).asInstanceOf[A]
+            getMethodMirror(instance, "apply")(args: _*).asInstanceOf[A]
           }
         }
     }
