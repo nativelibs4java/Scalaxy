@@ -70,11 +70,11 @@ class HelloWorld extends Application {
     
 # Usage
 
-To use with `sbt` 0.12.2+, please have a look at the [HelloWorld example](https://github.com/ochafik/Scalaxy/blob/master/Fx/Example) and make your `build.sbt` file look like:
+To use with `sbt` 0.13.0+, please have a look at the [HelloWorld example](https://github.com/ochafik/Scalaxy/blob/master/Fx/Example) and make your `build.sbt` file look like:
 
 ```scala
 // Only works with 2.10.0+
-scalaVersion := "2.10.0"
+scalaVersion := "2.10.3"
 
 // Add JavaFX Runtime as an unmanaged dependency, hoping to find it in the JRE's library folder.
 unmanagedJars in Compile ++= Seq(new File(System.getProperty("java.home")) / "lib" / "jfxrt.jar")

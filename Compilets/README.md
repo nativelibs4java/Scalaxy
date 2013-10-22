@@ -8,7 +8,7 @@
 
 # Usage
 
-The preferred way to use Scalaxy/Compilets is with Sbt 0.12.2 and the [sbt-scalaxy](http://github.com/ochafik/sbt-scalaxy) Sbt plugin, but the `Examples` subfolder demonstrates how to use it [with Maven or with Sbt but without `sbt-scalaxy`](https://github.com/ochafik/Scalaxy/tree/master/Examples/UsageWithMavenOrWithoutSbtPlugin). 
+The preferred way to use Scalaxy/Compilets is with Sbt 0.13.0 and the [sbt-scalaxy](http://github.com/ochafik/sbt-scalaxy) Sbt plugin, but the `Examples` subfolder demonstrates how to use it [with Maven or with Sbt but without `sbt-scalaxy`](https://github.com/ochafik/Scalaxy/tree/master/Examples/UsageWithMavenOrWithoutSbtPlugin). 
 
 To compile your Sbt project with Scalaxy's compiler plugin and default compilets:
 *   Put the following in `project/plugins.sbt` (or in `~/.sbt/plugins/build.sbt` for global setup):
@@ -22,7 +22,7 @@ To compile your Sbt project with Scalaxy's compiler plugin and default compilets
 *   Make your `build.sbt` look like this:
 
     ```scala
-    scalaVersion := "2.10.0"
+    scalaVersion := "2.10.3"
     
     autoCompilets := true
     
@@ -93,7 +93,7 @@ Here's how to run tests:
 
 	sbt clean test
 	
-To deploy to Sonatype (assuming ~/.sbt/0.12.2/sonatype.sbt contains the correct credentials), then advertise a release on ls.implicit.ly:
+To deploy to Sonatype (assuming ~/.sbt/0.13/sonatype.sbt contains the correct credentials), then advertise a release on ls.implicit.ly:
 
 	sbt "+ assembly" "+ publish"
 	sbt "project scalaxy" ls-write-version lsync

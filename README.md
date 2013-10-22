@@ -89,7 +89,7 @@ Any help (testing, patches, bug reports) will be greatly appreciated!
     ```
   (you can preview the site with `sbt "project scalaxy-doc" preview-site`)
 
-- Publishing projects on Sonatype OSS Repository + advertise on ls.implicit.ly (assuming correct credentials in `~/.sbt/0.12.4/sonatype.sbt`):
+- Publishing projects on Sonatype OSS Repository + advertise on ls.implicit.ly (assuming correct credentials in `~/.sbt/0.13/sonatype.sbt`):
 
     ```
     sbt "+ assembly" "+ publish"
