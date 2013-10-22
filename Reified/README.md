@@ -39,7 +39,7 @@ If you're using `sbt` 0.12.2+, just put the following lines in `build.sbt`:
 scalaVersion := "2.10.2"
 
 // Dependency at compilation-time only (not at runtime).
-libraryDependencies += "com.nativelibs4java" %% "scalaxy-reified" % "0.3-SNAPSHOT" % "provided"
+libraryDependencies += "com.nativelibs4java" %% "scalaxy-reified" % "0.3-SNAPSHOT"
 
 // Scalaxy/Reified snapshots are published on the Sonatype repository.
 resolvers += Resolver.sonatypeRepo("snapshots")
