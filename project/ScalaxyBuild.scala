@@ -86,7 +86,7 @@ object Scalaxy extends Build {
       javacOptions ++= Seq("-Xlint:unchecked"),
       scalacOptions ++= Seq(
         "-encoding", "UTF-8",
-        "-optimise",
+        // "-optimise",
         "-deprecation",
         // "-Yinfer-debug",
         //"-Xlog-implicits",
@@ -346,15 +346,19 @@ object Scalaxy extends Build {
     .dependsOn(debug, union, generic)
 
   lazy val reified =
-    Project(id = "scalaxy-reified", base = file("Reified"), settings = reflectSettings ++ scalariformSettings ++ Seq(
-      fork in Test := true,
-      //javaOptions in Test ++= Seq("-Xdebug", "-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"),
-      scalacOptions in Test ++= Seq(
-        "-optimise",
-        "-Yclosure-elim",
-        "-Yinline"
-      )
-    ))
+    Project(id = "scalaxy-reified", base = file("Reified"),
+      settings = reflectSettings ++
+        scalariformSettings ++
+        // shadeSettings ++
+        Seq(
+          fork in Test := true,
+          //javaOptions in Test ++= Seq("-Xdebug", "-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"),
+          scalacOptions in Test ++= Seq(
+            "-optimise",
+            "-Yclosure-elim",
+            "-Yinline"
+          )
+        ))
     .dependsOn(reifiedBase)
     .aggregate(reifiedBase, union, generic)
 
