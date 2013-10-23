@@ -46,25 +46,24 @@ class StreamTransformersTest
   import global._
 
   // val toolbox = currentMirror.mkToolBox()
+  private def comp[T](t: Tree, reset: Boolean): T = {
+    var tree = t
+    if (reset)
+      toolbox.compile(toolbox.resetLocalAttrs(t.asInstanceOf[toolbox.u.Tree]))().asInstanceOf[T]
+    else
+      toolbox.compile(t.asInstanceOf[toolbox.u.Tree])().asInstanceOf[T]
+  }
 
-  def conv[T](x: Expr[T]) {
+  private def conv[T](x: Expr[T]) {
     val original = x.tree
-    val result = newStreamTransformer(false) transform typeCheck(x)
+    val result = newStreamTransformer(false) transform typeCheck(original, WildcardType)
 
     println(original)
     println(result)
     assertFalse(original.toString == result.toString)
 
-    def comp[T](t: Tree, reset: Boolean): T = {
-      var tree = t
-      if (reset)
-        toolbox.compile(toolbox.resetAllAttrs(t.asInstanceOf[toolbox.u.Tree]))().asInstanceOf[T]
-      else
-        toolbox.compile(t.asInstanceOf[toolbox.u.Tree])().asInstanceOf[T]
-    }
-
-    val originalValue = comp[T](original, false)
     val resultValue = comp[T](result, true)
+    val originalValue = comp[T](original, true)
     assertEquals(originalValue, resultValue)
   }
 
@@ -73,12 +72,44 @@ class StreamTransformersTest
     conv(reify((0 to 10).map(i => i)))
   }
   @Test def simpleFilterMapMax {
-    conv(reify((0 to 10).filter(_ % 2 == 0).map(_ * 10).max))
+    conv(reify((0 to 10).filter((x: Int) => x % 2 == 0).map((x: Int) => x * 10).max))
   }
   @Test def simpleFilterMapSum {
-    conv(reify((0 to 10).filter(_ % 2 == 0).map(_ * 10).sum))
+    conv(reify((0 to 10).filter((x: Int) => x % 2 == 0).map((x: Int) => x * 10).sum))
   }
   @Test def simpleFilterMapToSet {
-    conv(reify((0 to 10).filter(_ % 2 == 0).map(_ * 10).toSet))
+    conv(reify((0 to 10).filter((x: Int) => x % 2 == 0).map((x: Int) => x * 10).toSet))
+  }
+
+  @Ignore
+  @Test def matrix {
+    conv(reify {
+      val rows = 10
+      val columns = 20
+      import scala.Predef
+
+      val aData = (0 until rows * columns).map(_ * 3.0 + 0.2).toArray
+      val bData = (rows * columns until 0 by -1).map(_ * 0.2 + 3.0).toArray
+      val outData = new Array[Double](rows * columns)
+      val outColumns = columns
+      val aRows = rows
+      val aColumns = columns
+      val bColumns = columns
+      for (
+        i <- 0 until aRows;
+        j <- 0 until bColumns
+      ) {
+        // TODO chain map and sum (to avoid creating a builder here !)
+        // outData(i * outColumns + j) =
+        //   (0 until aColumns).map(k => {
+        //     aData(i * aColumns + k) * bData(k * bColumns + j)
+        //   }).sum
+        var sum = 0.0
+        for (k <- 0 until aColumns) {
+          sum = sum + aData(i * aColumns + k) * bData(k * bColumns + j)
+        }
+        outData(i * outColumns + j) = sum
+      }
+    })
   }
 }

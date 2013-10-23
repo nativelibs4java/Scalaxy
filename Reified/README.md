@@ -41,6 +41,9 @@ scalaVersion := "2.10.3"
 // Dependency at compilation-time only (not at runtime).
 libraryDependencies += "com.nativelibs4java" %% "scalaxy-reified" % "0.3-SNAPSHOT"
 
+// Avoid sbt-related macro classpath issues.
+fork := true
+
 // Scalaxy/Reified snapshots are published on the Sonatype repository.
 resolvers += Resolver.sonatypeRepo("snapshots")
 ```

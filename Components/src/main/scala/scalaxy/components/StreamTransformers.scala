@@ -56,9 +56,7 @@ trait StreamTransformers
       tree: Tree,
       retryWithSmallerChain: Boolean = true): Tree =
       {
-        //if (!shouldOptimize(tree))
-        //  super.transform(tree)
-        //else
+        // println(s"internalTransform($tree)")
         try {
           tree match {
             case ArrayTabulate(componentType, lengths @ (firstLength :: otherLengths), f @ Func(params, body), manifest) =>
@@ -177,16 +175,16 @@ trait StreamTransformers
                 replaceTabulates(lengthDefs, null, params, Map(), Map())._1
               }
             case SomeOpsStream(opsStream) if stream &&
-              //(opsStream.source ne null) && 
-              //!opsStream.ops.isEmpty && 
-              //(opsStream ne null) && 
+              //(opsStream.source ne null) &&
+              //!opsStream.ops.isEmpty &&
+              //(opsStream ne null) &&
               (opsStream.colTree ne null) &&
               !matchedColTreeIds.contains(opsStream.colTree) =>
               import opsStream._
 
-              val txt = "Streamed ops on " + (if (source == null) "UNKNOWN COL" else source.tree.tpe) + " : " + ops /*.map(_.getClass.getName)*/ .mkString(", ")
+              def txt = "Streamed ops on " + (if (source == null) "UNKNOWN COL" else source.tree.tpe) + " :\n\t" + opsStream //ops.mkString(",\n\t")
               matchedColTreeIds += colTree
-              //msg(tree.pos, "# " + txt) 
+              // msg(tree.pos, "# " + txt)
               // println(txt)
 
               {
@@ -195,7 +193,7 @@ trait StreamTransformers
                   if (optimizeOnlyIfKnownToBenefit)
                     checkStreamWillBenefitFromOptimization(stream)
                   val asm = assembleStream(stream, tree, this.transform _, tree.pos, currentOwner)
-                  //println(txt + "\n\t" + asm.toString.replaceAll("\n", "\n\t"))
+                  // println(txt + "\n\t" + asm.toString.replaceAll("\n", "\n\t"))
                   // println("### TRANSFORMED : ###\n" + showRaw(asm))
                   asm
                 } catch {

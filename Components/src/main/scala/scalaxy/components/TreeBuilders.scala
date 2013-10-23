@@ -55,8 +55,14 @@ trait TreeBuilders
     symbolReplacements: Map[Symbol, Symbol],
     treeReplacements: Map[Tree, TreeGen]) =
     {
+      // println(s"""
+      // REPLACE OCCURRENCES:
+      //   mappingsSym: $mappingsSym
+      //   symbolReplacements: $symbolReplacements
+      //   treeReplacements: $treeReplacements
+      // """)
       def key(s: Symbol) =
-        ownerChain(s).map(_.toString)
+        (s :: ownerChain(s)).map(_.name.toString)
 
       val mappings = mappingsSym.map {
         case (sym, treeGen) =>
