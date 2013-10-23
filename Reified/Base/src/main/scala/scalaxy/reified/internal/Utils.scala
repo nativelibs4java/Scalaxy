@@ -83,6 +83,6 @@ object Utils {
 
   def safeReset(tree: Tree, toolbox: ToolBox[universe.type]): Tree = {
     val resolved = resolveModulePaths(universe)(tree)
-    toolbox.resetAllAttrs(resolved)
+    toolbox.resetLocalAttrs(resolved)
   }
 }

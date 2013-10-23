@@ -8,12 +8,27 @@ import scala.reflect.runtime.currentMirror
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe.TypeTag
 
+import scala.collection.mutable.ArrayBuffer
+
 import scalaxy.reified.{ reify, ReifiedValue }
 
 trait TestUtils {
 
   implicit class ReifiedValueExtensions[A](r: ReifiedValue[A]) {
-    private[test] def capturedValues: Seq[AnyRef] = r.capturedTerms.map(_._1)
+    private[test] def capturedValues: Seq[AnyRef] = {
+      val b = ArrayBuffer[AnyRef]()
+      import universe._
+      new Traverser {
+        override def traverse(tree: Tree) {
+          if (tree.symbol != null && tree.symbol.isFreeTerm) {
+            b += tree.symbol.asFreeTerm.value.asInstanceOf[AnyRef]
+          } else {
+            super.traverse(tree)
+          }
+        }
+      } traverse r.flatExpr.tree
+      b
+    }
   }
 
   def assertSameEvals[A: TypeTag, B: TypeTag](f: ReifiedValue[A => B], inputs: A*) {

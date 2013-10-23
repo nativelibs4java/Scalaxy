@@ -112,7 +112,7 @@ object Optimizer {
   }
 
   private def optimizeLoops(rawTree: Tree, toolbox: ToolBox[universe.type]): Tree = {
-    import toolbox.resetAllAttrs
+    import toolbox.resetLocalAttrs
 
     val tree = typeCheckTree(safeReset(rawTree, toolbox))
     val freshName = getFreshNameGenerator(tree)
@@ -161,7 +161,7 @@ object Optimizer {
           // Body still refers to old function param symbol (which has same name as iVal).
           // We must wipe it out (alas, it's not local, so we must reset all symbols).
           // TODO: be less extreme, replacing only the param symbol (see branch replaceParamSymbols).
-          val bodyExpr = newExpr[Unit](resetAllAttrs(transform(body)))
+          val bodyExpr = newExpr[Unit](resetLocalAttrs(transform(body)))
 
           val incrExpr = newExpr[Unit](
             Assign(
