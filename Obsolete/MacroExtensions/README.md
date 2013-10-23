@@ -105,7 +105,7 @@ You can also use plain `scalac` directly, once Scalaxy/MacroExtensions's JAR is 
 git clone git://github.com/ochafik/Scalaxy.git
 cd Scalaxy
 sbt update
-cd Extensions
+cd Obsolete/Extensions
 scalac -Xplugin:$HOME/.ivy2/cache/com.nativelibs4java/scalaxy-macro-extensions_2.10/jars/scalaxy-macro-extensions_2.10-0.3-SNAPSHOT.jar examples/TestExtensions.scala -Xprint:scalaxy-extensions
 scalac examples/Test.scala
 ```
