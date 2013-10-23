@@ -62,7 +62,7 @@ trait TreeBuilders
       //   treeReplacements: $treeReplacements
       // """)
       def key(s: Symbol) =
-        (s :: ownerChain(s)).map(_.name.toString)
+        s //(s :: ownerChain(s)).map(_.name.toString)
 
       val mappings = mappingsSym.map {
         case (sym, treeGen) =>
