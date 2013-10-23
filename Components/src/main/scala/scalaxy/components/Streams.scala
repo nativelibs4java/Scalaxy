@@ -67,10 +67,9 @@ trait Streams
         // typeCheck(
         If(
           cond(),
-          Block(sub, EmptyTree),
-          EmptyTree
-        )
-        //   ,
+          Block(sub, newUnit),
+          newUnit
+        ) //,
         //   UnitTpe
         // )
       })

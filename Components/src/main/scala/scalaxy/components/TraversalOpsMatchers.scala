@@ -141,26 +141,26 @@ trait TraversalOpsMatchers
           List(isNumeric)
           )
         ) =>
-        isNumeric.toString match {
-          case "math.this.Numeric.IntIsIntegral" |
-            "math.this.Numeric.ShortIsIntegral" |
-            "math.this.Numeric.LongIsIntegral" |
-            "math.this.Numeric.ByteIsIntegral" |
-            "math.this.Numeric.CharIsIntegral" |
-            "math.this.Numeric.FloatIsFractional" |
-            "math.this.Numeric.DoubleIsFractional" |
-            "math.this.Numeric.DoubleAsIfIntegral" |
-            "math.this.Ordering.Int" |
-            "math.this.Ordering.Short" |
-            "math.this.Ordering.Long" |
-            "math.this.Ordering.Byte" |
-            "math.this.Ordering.Char" |
-            "math.this.Ordering.Double" |
-            "math.this.Ordering.Float" =>
-            traversalOpWithoutArg(n, tree).collect { case op => new TraversalOp(op, collection, functionResultType.tpe, null, true, null) }
-          case _ =>
-            None
-        }
+        // isNumeric.toString match {
+        //   case "math.this.Numeric.IntIsIntegral" |
+        //     "math.this.Numeric.ShortIsIntegral" |
+        //     "math.this.Numeric.LongIsIntegral" |
+        //     "math.this.Numeric.ByteIsIntegral" |
+        //     "math.this.Numeric.CharIsIntegral" |
+        //     "math.this.Numeric.FloatIsFractional" |
+        //     "math.this.Numeric.DoubleIsFractional" |
+        //     "math.this.Numeric.DoubleAsIfIntegral" |
+        //     "math.this.Ordering.Int" |
+        //     "math.this.Ordering.Short" |
+        //     "math.this.Ordering.Long" |
+        //     "math.this.Ordering.Byte" |
+        //     "math.this.Ordering.Char" |
+        //     "math.this.Ordering.Double" |
+        //     "math.this.Ordering.Float" =>
+        traversalOpWithoutArg(n, tree).collect { case op => new TraversalOp(op, collection, functionResultType.tpe, null, true, null) }
+      //   case _ =>
+      //     None
+      // }
       case // reduceLeft, reduceRight
       (
         ReduceName(isLeft),
@@ -198,11 +198,22 @@ trait TraversalOpsMatchers
 
     def unapply(tree: Tree): Option[TraversalOp] = tree match {
       // Option.map[B](f)
+      case TypeApply(Select(collection, N(name)), List(tpt)) =>
+        Option(name) collect {
+          // case "sum" =>
+          //   new TraversalOp(SumOp(tree), collection, tpt.tpe, null, true, null)
+          // case "product" =>
+          //   new TraversalOp(ProductOp(tree), collection, tpt.tpe, null, true, null)
+          // case "min" =>
+          //   new TraversalOp(MinOp(tree), collection, tpt.tpe, null, true, null)
+          // case "max" =>
+          //   new TraversalOp(MaxOp(tree), collection, tpt.tpe, null, true, null)
+          case "toSet" =>
+            new TraversalOp(ToSetOp(tree), collection, tpt.tpe, tree.tpe, true, null)
+        }
       case BasicTypeApply(collection, N(name), typeArgs, args) =>
         // Having a separate matcher helps avoid "jump offset too large for 16 bits integers" errors when generating bytecode
         basicTypeApplyTraversalOp(tree, collection, name, typeArgs, args)
-      case TypeApply(Select(collection, N("toSet")), List(resultType)) =>
-        Some(new TraversalOp(ToSetOp(tree), collection, resultType.tpe, tree.tpe, true, null))
       // reverse, toList, toSeq, toIndexedSeq
       case Select(collection, N(n @ ("reverse" | "toList" | "toSeq" | "toIndexedSeq" | "toVector"))) =>
         traversalOpWithoutArg(n, tree).collect { case op => new TraversalOp(op, collection, null, null, true, null) }

@@ -48,27 +48,37 @@ class StreamTransformersTest
   // val toolbox = currentMirror.mkToolBox()
 
   def conv[T](x: Expr[T]) {
-    val original = typeCheck(x)
-    val result = newStreamTransformer(false) transform original
+    val original = x.tree
+    val result = newStreamTransformer(false) transform typeCheck(x)
 
     println(original)
     println(result)
     assertFalse(original.toString == result.toString)
 
-    val originalValue = toolbox.compile(original.asInstanceOf[toolbox.u.Tree])().asInstanceOf[T]
+    def comp[T](t: Tree, reset: Boolean): T = {
+      var tree = t
+      if (reset)
+        toolbox.compile(toolbox.resetAllAttrs(t.asInstanceOf[toolbox.u.Tree]))().asInstanceOf[T]
+      else
+        toolbox.compile(t.asInstanceOf[toolbox.u.Tree])().asInstanceOf[T]
+    }
 
-    val untyped = toolbox.resetAllAttrs(result.asInstanceOf[toolbox.u.Tree])
-    val resultValue = toolbox.compile(untyped)().asInstanceOf[T]
+    val originalValue = comp[T](original, false)
+    val resultValue = comp[T](result, true)
     assertEquals(originalValue, resultValue)
   }
 
-  @Ignore
-  @Test
-  def simple {
+  // @Ignore
+  @Test def simpleMap {
     conv(reify((0 to 10).map(i => i)))
-
+  }
+  @Test def simpleFilterMapMax {
     conv(reify((0 to 10).filter(_ % 2 == 0).map(_ * 10).max))
-
+  }
+  @Test def simpleFilterMapSum {
+    conv(reify((0 to 10).filter(_ % 2 == 0).map(_ * 10).sum))
+  }
+  @Test def simpleFilterMapToSet {
     conv(reify((0 to 10).filter(_ % 2 == 0).map(_ * 10).toSet))
   }
 }
