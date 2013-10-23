@@ -245,7 +245,7 @@ object Scalaxy extends Build {
   lazy val compilets =
     Project(
       id = "scalaxy-compilets",
-      base = file("Compilets"),
+      base = file("Obsolete/Compilets"),
       settings =
         standardSettings ++
         shadeSettings ++
@@ -260,23 +260,23 @@ object Scalaxy extends Build {
     .dependsOn(compiletsPlugin, compiletsApi, defaultCompilets)
     .aggregate(compiletsPlugin, compiletsApi, defaultCompilets)
 
+  lazy val components =
+    Project(id = "scalaxy-components", base = file("Components"), settings = reflectSettings ++ scalariformSettings)
+
   lazy val compiletsApi =
     Project(
       id = "scalaxy-compilets-api",
-      base = file("Compilets/API"),
+      base = file("Obsolete/Compilets/API"),
       settings = reflectSettings ++ Seq(
         scalacOptions ++= Seq(
           "-language:experimental.macros"
         )
       ))
 
-  lazy val components =
-    Project(id = "scalaxy-components", base = file("Components"), settings = reflectSettings ++ scalariformSettings)
-
   lazy val compiletsPlugin =
     Project(
       id = "scalaxy-compilets-plugin",
-      base = file("Compilets/Plugin"),
+      base = file("Obsolete/Compilets/Plugin"),
       settings =
         reflectSettings ++
         shadeSettings ++
@@ -290,12 +290,12 @@ object Scalaxy extends Build {
   lazy val defaultCompilets =
     Project(
       id = "scalaxy-default-compilets",
-      base = file("Compilets/DefaultCompilets"),
+      base = file("Obsolete/Compilets/DefaultCompilets"),
       settings = reflectSettings)
     .dependsOn(compiletsApi, compiletsPlugin % "test->test")
 
   lazy val extensions =
-    Project(id = "scalaxy-macro-extensions", base = file("MacroExtensions"), settings = reflectSettings ++ Seq(
+    Project(id = "scalaxy-macro-extensions", base = file("Obsolete/MacroExtensions"), settings = reflectSettings ++ Seq(
       watchSources <+= baseDirectory map { _ / "examples" }
     ))
     .dependsOn(debug)

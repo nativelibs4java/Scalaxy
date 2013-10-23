@@ -28,26 +28,6 @@ Collection of Scala Macro goodies ([BSD-licensed](https://github.com/ochafik/Sca
 
 - *[Parano](https://github.com/ochafik/Scalaxy/tree/master/Parano)* provides compile-time checks to avoid common naming mistakes (ambiguous or swapped case class field extractor names, ambiguous unnamed param names with same type...)
 
-- *[MacroExtensions](https://github.com/ochafik/Scalaxy/tree/master/MacroExtensions)* provides an extremely simple (and *experimental*) syntax to define extensions methods as macros:
-
-    ```scala
-    @scalaxy.extension[Any] 
-    def quoted(quote: String): String = 
-      quote + self + quote
-      
-    @scalaxy.extension[Int] 
-    def copiesOf[T : ClassTag](generator: => T): Array[T] = 
-      Array.fill[T](self)(generator)
-  
-    ...
-    println(10.quoted("'"))
-    // macro-expanded to `"'" + 10 + "'"`
-    
-    println(3 copiesOf new Entity)
-    // macro-expanded to `Array.fill(3)(new Entity)`
-    ```
-
-- *[Compilets](https://github.com/ochafik/Scalaxy/tree/master/Compilets)* provide an easy way to express AST rewrites, backed by a compiler plugin and an sbt plugin.
 - *[Beans](https://github.com/ochafik/Scalaxy/tree/master/Beans)* ([ScalaDoc](http://ochafik.github.io/Scalaxy/Beans/latest/api/index.html)) are a nifty combination of Dynamics and macros that provide a type-safe eye-candy syntax to set fields of regular Java Beans in a Scala way (without any runtime dependency at all!):
 
     ```scala
@@ -68,6 +48,29 @@ Collection of Scala Macro goodies ([BSD-licensed](https://github.com/ochafik/Sca
       }
     )
     ```
+
+- Obsolete experiments (mostly because of quasiquotes):
+
+  - *[MacroExtensions](https://github.com/ochafik/Scalaxy/tree/master/Obsolete/MacroExtensions)* provides an extremely simple (and *experimental*) syntax to define extensions methods as macros:
+
+      ```scala
+      @scalaxy.extension[Any] 
+      def quoted(quote: String): String = 
+        quote + self + quote
+        
+      @scalaxy.extension[Int] 
+      def copiesOf[T : ClassTag](generator: => T): Array[T] = 
+        Array.fill[T](self)(generator)
+    
+      ...
+      println(10.quoted("'"))
+      // macro-expanded to `"'" + 10 + "'"`
+      
+      println(3 copiesOf new Entity)
+      // macro-expanded to `Array.fill(3)(new Entity)`
+      ```
+
+  - *[Compilets](https://github.com/ochafik/Scalaxy/tree/master/Obsolete/Compilets)* provide an easy way to express AST rewrites, backed by a compiler plugin and an sbt plugin.
 
 # Discuss
 
