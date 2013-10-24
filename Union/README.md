@@ -1,3 +1,5 @@
+# Scalaxy/Union
+
 Scalaxy/Union provides a type-class-based type union mechanism.
 ```scala
 trait JSONType extends (String | Double | Array[JSONType] | Map[String, JSONType])
