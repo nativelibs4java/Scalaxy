@@ -36,7 +36,7 @@ Collection of Scala Macro goodies ([BSD-licensed](https://github.com/ochafik/Sca
     new MyBean().set(foo = 10, bar = 12)
     ```
 
-- *[Fx](https://github.com/ochafik/Scalaxy/tree/master/Fx)* ([ScalaDoc](http://ochafik.github.io/Scalaxy/Fx/latest/api/index.html)) contains an experimental JavaFX DSL (with virtually no runtime dependency) that makes it easy to build objects and define event handlers:
+- *[Fx](https://github.com/ochafik/Scalaxy/tree/master/Fx)* ([ScalaDoc](http://ochafik.github.io/Scalaxy/Fx/latest/api/index.html)) contains an experimental JavaFX DSL (with no runtime dependency) that makes it easy to build objects and define event handlers:
 
     ```scala
     new Button().set(
