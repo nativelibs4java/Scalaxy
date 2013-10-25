@@ -34,6 +34,13 @@ val arr2 = json"[$a, $b]"
 // Extraction also works, but currently requires some runtime parsing.
 // Runtime improvements will come in 2.11 using https://issues.scala-lang.org/browse/SI-5903.
 val json"{ x: $x, y: $y }" = obj
+
+
+// JSON syntax errors are reported as they should: as Scala compilation errors!
+json"{ x: $x, y': $y }"
+// error: Unexpected character ('''): was expecting a colon to separate field name and value
+//             json"{ x: $x, y': $y }"
+//                            ^
 ```
 
 For more examples, [have a look at the tests](https://github.com/ochafik/Scalaxy/blob/master/JSON/src/test/scala/scalaxy/json/JSONTest.scala).
