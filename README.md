@@ -24,7 +24,7 @@ Collection of Scala Macro goodies ([BSD-licensed](https://github.com/ochafik/Sca
 
 - *[Debug](https://github.com/ochafik/Scalaxy/tree/master/Debug)* ([ScalaDoc](http://ochafik.github.io/Scalaxy/Debug/latest/api/index.html)) provides `assert`, `require` and `assume` macros that automatically add a useful message to the regular [Predef](http://www.scala-lang.org/api/current/index.html#scala.Predef$) calls.
 
-- *[JSON](https://github.com/ochafik/Scalaxy/tree/master/JSON)* ([ScalaDoc](http://ochafik.github.io/Scalaxy/JSON/latest/api/index.html)) provides macro-based `json` string interpolation with smart error reporting, desconstruction and more.
+- *[JSON](https://github.com/ochafik/Scalaxy/tree/master/JSON)* ([ScalaDoc](http://ochafik.github.io/Scalaxy/JSON/latest/api/index.html)) provides macro-based `json` string interpolation with smart error reporting, compile-time renormalization, deconstruction and more.
 
 - *[Parano](https://github.com/ochafik/Scalaxy/tree/master/Parano)* provides compile-time checks to avoid common naming mistakes (ambiguous or swapped case class field extractor names, ambiguous unnamed param names with same type...)
 
