@@ -3,7 +3,7 @@
 Minimal set of Scala 2.10 macros, dynamics and implicits for maximal JavaFX eye-candy ([BSD-licensed](https://github.com/ochafik/Scalaxy/blob/master/LICENSE))!
 (does not depend on the rest of Scalaxy)
 
-_Important_: this "library" was designed as a DSL with no runtime dependency (with the exception of [one class](https://github.com/ochafik/Scalaxy/blob/master/Fx/Runtime/src/main/scala/scalaxy/fx/runtime/ScalaChangeListener.scala) I couldn't get rid of yet, because of a [bug / limitation of Scala macros](https://issues.scala-lang.org/browse/SI-6386)).
+_Important_: this "library" was designed as a DSL with no runtime dependency.
 
 This means that all the methods defined in the `scalaxy.fx` package are macros that rewrite the code to something pure-JavaFX, with no reference to any additional class. If you want to learn how to write non-trivial macros, [have a look at the code](https://github.com/ochafik/Scalaxy/tree/master/Fx/Macros/src/main/scala/scalaxy/fx)!
 
