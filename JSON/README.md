@@ -6,12 +6,11 @@ Currently uses [json4s](https://github.com/json4s/json4s), but decoupling is in 
 
 ```scala
 import org.json4s._
-
-import scalaxy.json.jackson._
 import org.json4s.jackson.JsonMethods._
+import scalaxy.json.json4s.jackson._
 
-// import scalaxy.json.native._
 // import org.json4s.native.JsonMethods._
+// import scalaxy.json.json4s.native._
 
 val a = 10
 val b = "123"
@@ -59,7 +58,9 @@ If you're using `sbt` 0.13.0+, just put the following lines in `build.sbt`:
 scalaVersion := "2.10.3"
 
 // Dependency at compilation-time only (not at runtime).
-libraryDependencies += "com.nativelibs4java" %% "scalaxy-json" % "0.3-SNAPSHOT" % "provided"
+libraryDependencies += "com.nativelibs4java" %% "scalaxy-json-json4s-jackson" % "0.3-SNAPSHOT" % "provided"
+
+// libraryDependencies += "com.nativelibs4java" %% "scalaxy-json-json4s-native" % "0.3-SNAPSHOT" % "provided"
 
 // Scalaxy/JSON snapshots are published on the Sonatype repository.
 resolvers += Resolver.sonatypeRepo("snapshots")

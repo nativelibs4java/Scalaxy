@@ -311,11 +311,32 @@ object Scalaxy extends Build {
 
   lazy val json =
     Project(id = "scalaxy-json", base = file("JSON"), settings = reflectSettings ++ Seq(
-      // libraryDependencies += "com.fasterxml.jackson.module" % "jackson-module-scala" % "2.2.2"
-      // libraryDependencies += "com.fasterxml.jackson.core" % "jackson-databind" % "2.2.3"
-      libraryDependencies += "org.json4s" %% "json4s-jackson" % "3.2.5",
+      publish := { }
+    )).aggregate(jsonCore, jsonJson4sCore, jsonJson4sJackson, jsonJson4sNative)
+
+  // libraryDependencies += "com.fasterxml.jackson.module" % "jackson-module-scala" % "2.2.2"
+  // libraryDependencies += "com.fasterxml.jackson.core" % "jackson-databind" % "2.2.3"
+  lazy val jsonCore =
+    Project(id = "scalaxy-json-core", base = file("JSON/Core"), settings = reflectSettings)
+
+  lazy val jsonJson4sCore =
+    Project(id = "scalaxy-json-json4s-core", base = file("JSON/Json4s/Core"), settings = reflectSettings ++ Seq(
+      libraryDependencies += "org.json4s" %% "json4s-core" % "3.2.5",
+      libraryDependencies += "org.json4s" %% "json4s-jackson" % "3.2.5" // TODO remove this.
+    ))
+    .dependsOn(jsonCore)
+
+  lazy val jsonJson4sNative =
+    Project(id = "scalaxy-json-json4s-native", base = file("JSON/Json4s/Native"), settings = reflectSettings ++ Seq(
       libraryDependencies += "org.json4s" %% "json4s-native" % "3.2.5"
     ))
+    .dependsOn(jsonJson4sCore)
+
+  lazy val jsonJson4sJackson =
+    Project(id = "scalaxy-json-json4s-jackson", base = file("JSON/Json4s/Jackson"), settings = reflectSettings ++ Seq(
+      libraryDependencies += "org.json4s" %% "json4s-jackson" % "3.2.5"
+    ))
+    .dependsOn(jsonJson4sCore)
 
   lazy val beans =
     Project(id = "scalaxy-beans", base = file("Beans"), settings = reflectSettings)
