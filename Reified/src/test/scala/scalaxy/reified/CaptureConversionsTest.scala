@@ -6,12 +6,12 @@ import org.junit.Assert._
 import scala.reflect.runtime.universe
 import scala.reflect.runtime.currentMirror
 
-import scalaxy.reified.reify
+import scalaxy.reified.reified
 
 class CaptureConversionsTest extends TestUtils {
 
   def testValue(v: Object, str: String = null, predicate: Any => Boolean = null) = {
-    val r = reify(if (true) v else 0)
+    val r = reified(if (true) v else 0)
     assertEquals(Seq(v), r.capturedValues)
     try {
       val value = r.compile()()

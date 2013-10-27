@@ -15,8 +15,8 @@ class DummyTest extends TestUtils {
   @Test
   def test {
     val x = 10
-    val r1 = reify { (y: Int) => x * y }
-    val r2 = reify { (y: Int) => x * y + r1(10) }
+    val r1 = reified { (y: Int) => x * y }
+    val r2 = reified { (y: Int) => x * y + r1(10) }
     println(r1)
     println(r2)
 

@@ -10,7 +10,7 @@ import scala.reflect.runtime.universe.TypeTag
 
 import scala.collection.mutable.ArrayBuffer
 
-import scalaxy.reified.{ reify, ReifiedValue }
+import scalaxy.reified.{ reified, ReifiedValue }
 
 trait TestUtils {
 

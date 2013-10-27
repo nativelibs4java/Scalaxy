@@ -23,7 +23,9 @@ object Optimizer {
   import definitions._
 
   def optimize(rawTree: Tree, toolbox: ToolBox[universe.type] = Utils.optimisingToolbox): Tree = {
-    val result = optimizeLoops(optimizeFunctionVals(rawTree, toolbox), toolbox)
+    var result = rawTree
+    // result = optimizeFunctionVals(result, toolbox)
+    result = optimizeLoops(result, toolbox)
     //val result = optimizeFunctionVals(rawTree, toolbox)
     //val result = reset(rawTree, toolbox)
     if (verbose) {
@@ -31,66 +33,6 @@ object Optimizer {
       println("Optimized tree:\n" + result)
     }
     result
-  }
-
-  private def newInlineAnnotation = {
-    Apply(
-      Select(
-        New(Ident(typeOf[scala.inline].typeSymbol)),
-        nme.CONSTRUCTOR),
-      Nil)
-  }
-
-  private def optimizeFunctionVals(rawTree: Tree, toolbox: ToolBox[universe.type]): Tree = {
-    val tree = typeCheckTree(safeReset(rawTree, toolbox))
-
-    val valDefs = tree collect {
-      case vd @ ValDef(mods, name, tpt, Function(vparams, body)) =>
-        vd
-    }
-
-    val symbolLessValDefs = valDefs.filter(v => v.symbol == null || v.symbol == NoSymbol)
-    if (!symbolLessValDefs.isEmpty)
-      sys.error("Some ValDefs have no symbol: " + symbolLessValDefs)
-
-    val functionSymbols = valDefs.map(_.symbol).toSet
-    val functionsUsedAsObjects = tree.collect {
-      case Select(t, m) if functionSymbols.contains(t.symbol) && m.toString != "apply" =>
-        t.symbol
-      case ValDef(_, _, _, rhs) if functionSymbols.contains(rhs.symbol) =>
-        rhs.symbol
-    }
-
-    val optimizableFunctions = functionSymbols -- functionsUsedAsObjects.toSet
-
-    //println(s"functionSymbols = $functionSymbols")
-    //println(s"functionsUsedAsObjects = $functionsUsedAsObjects")
-    //println(s"optimizableFunctions = $optimizableFunctions")
-    val functionsPromoter = new Transformer {
-      override def transform(tree: Tree) = tree match {
-
-        case ValDef(mods, name, tpt, Function(vparams, body)) if optimizableFunctions(tree.symbol) =>
-          //println(s"optimizing " + tree.symbol + " = " + tree)
-          DefDef(
-            mods.mapAnnotations(list => newInlineAnnotation :: list),
-            name,
-            Nil,
-            List(vparams),
-            TypeTree(NoType),
-            transform(body))
-
-        case Apply(Select(t, m), args) if optimizableFunctions.contains(t.symbol) && m.toString == "apply" =>
-          Apply(t, args.map(transform(_)))
-
-        case _ =>
-          super.transform(tree)
-      }
-    }
-    val optimized = functionsPromoter.transform(tree)
-    //println("Original tree:\n" + tree)
-    //println("Optimized tree:\n" + optimized)
-
-    optimized
   }
 
   def getFreshNameGenerator(tree: Tree): String => TermName = {
@@ -114,7 +56,8 @@ object Optimizer {
   private def optimizeLoops(rawTree: Tree, toolbox: ToolBox[universe.type]): Tree = {
     import toolbox.resetLocalAttrs
 
-    val tree = typeCheckTree(safeReset(rawTree, toolbox))
+    // val tree = typeCheckTree(safeReset(rawTree, toolbox))
+    val tree = typeCheckTree(resetLocalAttrs(rawTree))
     val freshName = getFreshNameGenerator(tree)
 
     val transformer = new Transformer {

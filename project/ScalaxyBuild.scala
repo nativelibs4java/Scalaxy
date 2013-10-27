@@ -88,6 +88,8 @@ object Scalaxy extends Build {
         "-encoding", "UTF-8",
         // "-optimise",
         "-deprecation",
+        "-Xlog-free-types",
+        // "-Xlog-free-terms",
         // "-Yinfer-debug",
         //"-Xlog-implicits",
         //"-Ymacro-debug-lite", "-Ydebug",

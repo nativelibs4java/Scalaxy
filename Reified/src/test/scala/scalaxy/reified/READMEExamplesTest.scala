@@ -20,8 +20,8 @@ class READMEExamplesTest extends TestUtils with PerfTestUtils {
     import scalaxy.reified._
     def comp(offset: Int) = {
       val values = Array(10, 20, 30)
-      val getter = reify((index: Int) => offset + values(index))
-      val square = reify((x: Int) => x * x)
+      val getter = reified((index: Int) => offset + values(index))
+      val square = reified((x: Int) => x * x)
       square.compose(getter)
     }
     val f: ReifiedValue[Int => Int] = comp(10)
@@ -76,7 +76,7 @@ class READMEExamplesTest extends TestUtils with PerfTestUtils {
     import scala.math._
 
     val factor = 2.0
-    val f = reify((x: Double, y: Double) => {
+    val f = reified((x: Double, y: Double) => {
       cos(x * factor) - sin(y / factor)
     })
     val fIntegrator = createDiscreteIntegrator2D(f, 0.1)
@@ -98,7 +98,7 @@ class READMEExamplesTest extends TestUtils with PerfTestUtils {
     val n = 3000
     val iterations = 3
 
-    compare("testDiscreteIntegrator", n, iterations)(reify(() => {
+    compare("testDiscreteIntegrator", n, iterations)(reified(() => {
       fIntegrator(0, 1, 0, 1) + fIntegrator(2, 5, 3, 4)
     }))
   }
@@ -128,8 +128,8 @@ class READMEExamplesTest extends TestUtils with PerfTestUtils {
     import scala.math._
 
     val factor = 1 / Pi
-    val f = reify(cos(_))
-    val g = reify(sin(_))
+    val f = reified(cos(_))
+    val g = reified(sin(_))
     val fgConvolver = createDiscreteConvolver1D(f, g)
 
     //println("fgConvolver.taggedExpr = " + fgConvolver.taggedExpr)
@@ -146,7 +146,7 @@ class READMEExamplesTest extends TestUtils with PerfTestUtils {
     val n = 3000
     val iterations = 3
 
-    compare("testDiscreteConvolver", n, iterations)(reify(() => {
+    compare("testDiscreteConvolver", n, iterations)(reified(() => {
       fgConvolver(0, 10) + fgConvolver(20, 30) + fgConvolver(30, 40)
     }))
   }
@@ -157,8 +157,8 @@ class READMEExamplesTest extends TestUtils with PerfTestUtils {
 
   @Test
   def poly {
-    val f = reify((x: Double) => 1 + x * (2 + x * (3 + x * 2))) // 1 + 2x + 3x^2 + 2x^3
-    val fDerivate = reify((x: Double) => 2 + x * (6 + x * 6))
+    val f = reified((x: Double) => 1 + x * (2 + x * (3 + x * 2))) // 1 + 2x + 3x^2 + 2x^3
+    val fDerivate = reified((x: Double) => 2 + x * (6 + x * 6))
     val fPrimitive = (x: Double) => x * (1 + x * (2 + x * (1 + x * 1 / 2.0)))
 
     val xMin = 0
@@ -185,7 +185,7 @@ class READMEExamplesTest extends TestUtils with PerfTestUtils {
     val n = 3000
     val iterations = 3
 
-    compare("poly", n, iterations)(reify(() => {
+    compare("poly", n, iterations)(reified(() => {
       fIntegrator(0, 10) + fIntegrator(20, 30) + fIntegrator(30, 40)
     }))
   }
