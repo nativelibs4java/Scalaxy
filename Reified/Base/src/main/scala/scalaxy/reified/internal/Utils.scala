@@ -5,7 +5,7 @@ import scala.reflect.runtime.universe._
 import scala.reflect.runtime.currentMirror
 import scala.tools.reflect.ToolBox
 
-import scalaxy.reified.ReifiedValue
+import scalaxy.reified.Reified
 
 object Utils {
 

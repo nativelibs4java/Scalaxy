@@ -31,8 +31,8 @@ private[reified] object CommonExtractors {
   object HasReifiedValueWrapperTree {
     import scalaxy.reified._
 
-    private def isReifiedValue(tpe: Type) = tpe != null && tpe <:< typeOf[ReifiedValue[_]]
-    private def isHasReifiedValue(tpe: Type) = tpe != null && tpe <:< typeOf[HasReifiedValue[_]]
+    private def isReifiedValue(tpe: Type) = tpe != null && tpe <:< typeOf[Reified[_]]
+    private def isHasReifiedValue(tpe: Type) = tpe != null && tpe <:< typeOf[HasReified[_]]
     def unapply(tree: Tree): Option[(Name, Tree)] = {
       val tpe = tree.tpe
       if (isHasReifiedValue(tpe) && !isReifiedValue(tpe)) {

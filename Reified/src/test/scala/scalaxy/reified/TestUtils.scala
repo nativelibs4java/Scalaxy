@@ -10,11 +10,11 @@ import scala.reflect.runtime.universe.TypeTag
 
 import scala.collection.mutable.ArrayBuffer
 
-import scalaxy.reified.{ reified, ReifiedValue }
+import scalaxy.reified.{ reified, Reified }
 
 trait TestUtils {
 
-  implicit class ReifiedValueExtensions[A](r: ReifiedValue[A]) {
+  implicit class ReifiedExtensions[A](r: Reified[A]) {
     private[test] def capturedValues: Seq[AnyRef] = {
       val b = ArrayBuffer[AnyRef]()
       import universe._
@@ -31,7 +31,7 @@ trait TestUtils {
     }
   }
 
-  def assertSameEvals[A: TypeTag, B: TypeTag](f: ReifiedValue[A => B], inputs: A*) {
+  def assertSameEvals[A: TypeTag, B: TypeTag](f: Reified[A => B], inputs: A*) {
     //val toolbox = currentMirror.mkToolBox()
     for (input <- inputs) {
       val directEval = f(input)

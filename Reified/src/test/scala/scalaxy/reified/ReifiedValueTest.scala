@@ -21,7 +21,7 @@ class ReifiedValueTest extends TestUtils {
   def testCaptureConstant {
     val x = 10
     val r = reified(100 * x)
-    assertTrue(r.isInstanceOf[ReifiedValue[_]])
+    assertTrue(r.isInstanceOf[Reified[_]])
     assertEquals(Seq(10), r.capturedValues)
     //assertEquals("100.*(10)", r.expr().tree.toString)
     assertEquals(100 * 10, r.compile()(), 0)
@@ -53,7 +53,7 @@ class ReifiedValueTest extends TestUtils {
     val a = reified(Seq(x, "blah"))
     val b = reified((y, a))
 
-    assertEquals(Seq(x), a.asInstanceOf[ReifiedValue[_]].capturedValues)
+    assertEquals(Seq(x), a.asInstanceOf[Reified[_]].capturedValues)
     assertEquals(Seq(y, a), b.capturedValues)
 
     assertEquals(b.value, b.compile()())

@@ -44,17 +44,17 @@ class ReifiedTest extends TestUtils {
 
   // case class GenericPolynomial[A: Generic: TypeTag](coefficients: A*) {
   //   import scalaxy.generic._
-  //   def computeGenericPolynomial(coefficients: List[A]): ReifiedValue[A => A] = coefficients match {
+  //   def computeGenericPolynomial(coefficients: List[A]): Reified[A => A] = coefficients match {
   //     case Nil =>
   //       reified((x: A) => zero[A])
   //     case c :: others =>
   //       val sub = computeGenericPolynomial(others)
   //       reified((x: A) => c + x * sub(x))
   //   }
-  //   lazy val function: ReifiedValue[A => A] = computeGenericPolynomial(coefficients.toList)
+  //   lazy val function: Reified[A => A] = computeGenericPolynomial(coefficients.toList)
   // }
 
-  def computeNumericPolynomial[A: Numeric: TypeTag](coefficients: List[A]): ReifiedValue[A => A] = coefficients match {
+  def computeNumericPolynomial[A: Numeric: TypeTag](coefficients: List[A]): Reified[A => A] = coefficients match {
     case Nil =>
       reified((x: A) => implicitly[Numeric[A]].zero)
     case c :: others =>
@@ -63,7 +63,7 @@ class ReifiedTest extends TestUtils {
       reified((x: A) => c + x * sub(x))
   }
   case class NumericPolynomial[A: Numeric: TypeTag](coefficients: A*) {
-    lazy val function: ReifiedValue[A => A] = computeNumericPolynomial(coefficients.toList)
+    lazy val function: Reified[A => A] = computeNumericPolynomial(coefficients.toList)
   }
 
   // @Ignore

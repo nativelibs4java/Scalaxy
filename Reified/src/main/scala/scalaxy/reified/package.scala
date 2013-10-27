@@ -27,14 +27,14 @@ package object reified {
    * which can be customized (by default, it handles constants, arrays, immutable collections,
    * tuples and options).
    */
-  implicit def reified[A: TypeTag](v: A): ReifiedValue[A] = macro internal.reifiedImpl[A]
+  implicit def reified[A: TypeTag](v: A): Reified[A] = macro internal.reifiedImpl[A]
 
   /**
    * Wrapper that provides Function1-like methods to a reified Function1 value.
    */
   implicit class ReifiedFunction1[T1: TypeTag, R: TypeTag](
-    override val reifiedValue: ReifiedValue[T1 => R])
-      extends HasReifiedValue[T1 => R] {
+    override val reifiedValue: Reified[T1 => R])
+      extends HasReified[T1 => R] {
 
     override def valueTag = typeTag[T1 => R]
 
@@ -89,8 +89,8 @@ package object reified {
    * Wrapper that provides Function2-like methods to a reified Function2 value.
    */
   implicit class ReifiedFunction2[T1: TypeTag, T2: TypeTag, R: TypeTag](
-    override val reifiedValue: ReifiedValue[Function2[T1, T2, R]])
-      extends HasReifiedValue[Function2[T1, T2, R]] {
+    override val reifiedValue: Reified[Function2[T1, T2, R]])
+      extends HasReified[Function2[T1, T2, R]] {
 
     override def valueTag = typeTag[Function2[T1, T2, R]]
 
@@ -140,11 +140,11 @@ package object reified {
   /**
    * Implicitly extract reified value from its wrappers (such as ReifiedFunction1, ReifiedFunction2).
    */
-  implicit def hasReifiedValueToReifiedValue[A: TypeTag](r: HasReifiedValue[A]): ReifiedValue[A] = macro internal.hasReifiedValueToReifiedValueImpl[A]
+  implicit def hasReifiedValueToReifiedValue[A: TypeTag](r: HasReified[A]): Reified[A] = macro internal.hasReifiedValueToReifiedValueImpl[A]
 
   /**
    * Implicitly convert reified value to their original non-reified value.
    */
-  implicit def hasReifiedValueToValue[A: TypeTag](r: HasReifiedValue[A]): A = macro internal.hasReifiedValueToValueImpl[A]
+  implicit def hasReifiedValueToValue[A: TypeTag](r: HasReified[A]): A = macro internal.hasReifiedValueToValueImpl[A]
 }
 

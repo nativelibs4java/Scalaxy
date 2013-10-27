@@ -49,7 +49,7 @@ trait PerfTestUtils {
     div
   }
 
-  def compare(title: String, n: Int, its: Int)(r: ReifiedValue[() => Unit]) {
+  def compare(title: String, n: Int, its: Int)(r: Reified[() => Unit]) {
     val f = r.value
     val (compiledF, compilationTime) = nanoTime { r.compile()() }
 

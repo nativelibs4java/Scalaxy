@@ -40,10 +40,10 @@ package object internal {
     )
   }
 
-  private[reified] def reifiedMacro[A: universe.TypeTag](v: A): ReifiedValue[A] = macro reifiedImpl[A]
-  private[reified] def reifiedWithDifferentRuntimeValue[A: universe.TypeTag](v: A, runtimeValue: A): ReifiedValue[A] = macro reifyWithDifferentRuntimeValueImpl[A]
+  private[reified] def reifiedMacro[A: universe.TypeTag](v: A): Reified[A] = macro reifiedImpl[A]
+  private[reified] def reifiedWithDifferentRuntimeValue[A: universe.TypeTag](v: A, runtimeValue: A): Reified[A] = macro reifyWithDifferentRuntimeValueImpl[A]
 
-  def reifiedImpl[A: c.WeakTypeTag](c: Context)(v: c.Expr[A])(tt: c.Expr[universe.TypeTag[A]]): c.Expr[ReifiedValue[A]] = {
+  def reifiedImpl[A: c.WeakTypeTag](c: Context)(v: c.Expr[A])(tt: c.Expr[universe.TypeTag[A]]): c.Expr[Reified[A]] = {
     import c.universe._
 
     val expr = runtimeExpr[A](c)(c.typeCheck(v.tree))
@@ -51,7 +51,7 @@ package object internal {
     // val expr = runtimeExpr[A](c)(v.tree)
     val res = reify({
       implicit val valueTag: universe.TypeTag[A] = tt.splice
-      new ReifiedValue[A](
+      new Reified[A](
         v.splice,
         // Utils.typeCheck(expr.splice, valueTag.tpe))
         expr.splice)
@@ -59,28 +59,28 @@ package object internal {
     res
   }
 
-  def hasReifiedValueToReifiedValueImpl[A: c.WeakTypeTag](c: Context)(r: c.Expr[HasReifiedValue[A]])(tt: c.Expr[universe.TypeTag[A]]): c.Expr[ReifiedValue[A]] = {
+  def hasReifiedValueToReifiedValueImpl[A: c.WeakTypeTag](c: Context)(r: c.Expr[HasReified[A]])(tt: c.Expr[universe.TypeTag[A]]): c.Expr[Reified[A]] = {
     import c.universe._
 
-    c.Expr[ReifiedValue[A]](
+    c.Expr[Reified[A]](
       Select(r.tree, "reifiedValue": TermName))
   }
 
-  def hasReifiedValueToValueImpl[A: c.WeakTypeTag](c: Context)(r: c.Expr[HasReifiedValue[A]])(tt: c.Expr[universe.TypeTag[A]]): c.Expr[A] = {
+  def hasReifiedValueToValueImpl[A: c.WeakTypeTag](c: Context)(r: c.Expr[HasReified[A]])(tt: c.Expr[universe.TypeTag[A]]): c.Expr[A] = {
     import c.universe._
 
     c.Expr[A](
       Select(Select(r.tree, "reifiedValue": TermName), "value": TermName))
   }
 
-  def reifyWithDifferentRuntimeValueImpl[A: c.WeakTypeTag](c: Context)(v: c.Expr[A], runtimeValue: c.Expr[A])(tt: c.Expr[universe.TypeTag[A]]): c.Expr[ReifiedValue[A]] = {
+  def reifyWithDifferentRuntimeValueImpl[A: c.WeakTypeTag](c: Context)(v: c.Expr[A], runtimeValue: c.Expr[A])(tt: c.Expr[universe.TypeTag[A]]): c.Expr[Reified[A]] = {
 
     import c.universe._
 
     val expr = runtimeExpr[A](c)(c.typeCheck(v.tree))
     reify({
       implicit val valueTag = tt.splice
-      new ReifiedValue[A](
+      new Reified[A](
         runtimeValue.splice,
         Utils.typeCheck(expr.splice, valueTag.tpe))
     })

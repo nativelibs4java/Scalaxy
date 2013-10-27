@@ -19,7 +19,7 @@ class SimpleTest extends TestUtils {
     println(g.compile()()(10))
     // val a = reified(100 * x)
     // val b = reified(100 * a)
-    // assertTrue(b.isInstanceOf[ReifiedValue[_]])
+    // assertTrue(b.isInstanceOf[Reified[_]])
     // assertEquals(Seq(10), a.capturedValues)
     // assertEquals(Seq(a), b.capturedValues)
     // //assertEquals("100.*(10)", r.expr().tree.toString)

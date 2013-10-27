@@ -19,8 +19,8 @@ import scalaxy.generic.trees._
 /**
  * Reified value wrapper.
  */
-private[reified] trait HasReifiedValue[A] {
-  private[reified] def reifiedValue: ReifiedValue[A]
+private[reified] trait HasReified[A] {
+  private[reified] def reifiedValue: Reified[A]
   def valueTag: TypeTag[A]
   override def toString = s"${getClass.getSimpleName}(${reifiedValue.value}, ${reifiedValue.expr})"
 }
@@ -30,7 +30,7 @@ private[reified] trait HasReifiedValue[A] {
  * This object retains the runtime value passed to {@link scalaxy.reified.reify} as well as its
  * compile-time AST.
  */
-final class ReifiedValue[A: TypeTag](
+final class Reified[A: TypeTag](
   /**
    * Original value passed to {@link scalaxy.reified.reify}
    */
@@ -39,7 +39,7 @@ final class ReifiedValue[A: TypeTag](
    * AST of the value.
    */
   exprGetter: => Expr[A])
-    extends HasReifiedValue[A] {
+    extends HasReified[A] {
 
   lazy val value = valueGetter
   lazy val expr = exprGetter
@@ -148,11 +148,11 @@ private[reified] object ReifiedValueUtils {
   }
   object ReifiedValueTree {
     private def get(sym: Symbol) = {
-      val reifiedValue = sym.asFreeTerm.value.asInstanceOf[HasReifiedValue[_]].reifiedValue
+      val reifiedValue = sym.asFreeTerm.value.asInstanceOf[HasReified[_]].reifiedValue
       reifiedValue.expr.tree -> reifiedValue.valueTag.tpe
     }
     private val hasReifiedValueTpe =
-      currentMirror.staticClass("scalaxy.reified.HasReifiedValue").asType.toType
+      currentMirror.staticClass("scalaxy.reified.HasReified").asType.toType
 
     private val reifiedPackageObject = currentMirror.staticModule("scalaxy.reified.package")
 

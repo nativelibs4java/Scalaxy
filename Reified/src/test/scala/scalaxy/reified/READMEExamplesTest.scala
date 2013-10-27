@@ -24,7 +24,7 @@ class READMEExamplesTest extends TestUtils with PerfTestUtils {
       val square = reified((x: Int) => x * x)
       square.compose(getter)
     }
-    val f: ReifiedValue[Int => Int] = comp(10)
+    val f: Reified[Int => Int] = comp(10)
     //println(f.taggedExpr)
     //println(f.capturedTerms)
 
@@ -35,7 +35,7 @@ class READMEExamplesTest extends TestUtils with PerfTestUtils {
   }
 
   import scalaxy.reified._
-  def createDiscreteIntegrator2D(f: ReifiedValue[(Double, Double) => Double], step: Double): ReifiedValue[(Double, Double, Double, Double) => Double] = {
+  def createDiscreteIntegrator2D(f: Reified[(Double, Double) => Double], step: Double): Reified[(Double, Double, Double, Double) => Double] = {
     (xMin: Double, xMax: Double, yMin: Double, yMax: Double) =>
       {
         val nx = ((xMax - xMin) / step).toInt
@@ -55,7 +55,7 @@ class READMEExamplesTest extends TestUtils with PerfTestUtils {
         step * sum
       }
   }
-  def createDiscreteIntegrator1D(f: ReifiedValue[Double => Double], step: Double): ReifiedValue[(Double, Double) => Double] = {
+  def createDiscreteIntegrator1D(f: Reified[Double => Double], step: Double): Reified[(Double, Double) => Double] = {
     (xMin: Double, xMax: Double) =>
       {
         val nx = ((xMax - xMin) / step).toInt
@@ -105,9 +105,9 @@ class READMEExamplesTest extends TestUtils with PerfTestUtils {
 
   import scalaxy.reified._
   def createDiscreteConvolver1D(
-    f: ReifiedValue[Double => Double],
-    g: ReifiedValue[Double => Double],
-    step: Double = 0.1): ReifiedValue[(Double, Double) => Double] = {
+    f: Reified[Double => Double],
+    g: Reified[Double => Double],
+    step: Double = 0.1): Reified[(Double, Double) => Double] = {
 
     (xMin: Double, xMax: Double) =>
       {
