@@ -50,7 +50,12 @@ private[reified] object CommonExtractors {
   object PredefTree {
     import CommonScalaNames._
 
-    def unapply(tree: Tree): Boolean = tree.symbol == PredefModule
+    def unapply(tree: Tree): Boolean =
+      PredefModule == tree.symbol ||
+        tree.symbol == null && (tree match {
+          case Ident(N("Predef")) => true
+          case _ => false
+        })
   }
 
   object NumRange {

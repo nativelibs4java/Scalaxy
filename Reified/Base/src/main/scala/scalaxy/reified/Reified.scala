@@ -14,6 +14,9 @@ import scala.tools.reflect.ToolBox
 
 import scala.reflect.NameTransformer.encode
 
+import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
+
 import scalaxy.generic.trees._
 
 /**
@@ -79,18 +82,72 @@ final class Reified[A: TypeTag](
       Nil)
   }
 
-  def flatExpr: Expr[A] = {
-    import ReifiedValueUtils._
-    val replacer = new Transformer {
-      private def buildValDef(valueTree: Tree, tpe: Type) = {
-        val n: TermName = internal.syntheticVariableNamePrefix
-        valueTree match {
-          case Function(vparams, body) =>
+  private class CapturesFlattener extends Transformer {
+    private var nextId = 1
+    private def nextName: TermName = {
+      val name = internal.syntheticVariableNamePrefix + nextId
+      nextId += 1
+      name
+    }
+    private val captureDefs = ArrayBuffer[() => ValOrDefDef]()
+    private val captureNames = mutable.HashMap[FreeTermSymbol, TermName]()
+
+    private val capturesUsedAsVals = mutable.HashSet[FreeTermSymbol]()
+
+    def flatten(tree: Tree) = {
+      val trans = transform(expr.tree)
+      val defs = captureDefs.map(_()).toList
+      if (defs.isEmpty)
+        trans
+      else
+        Block(defs, trans)
+    }
+    override def transform(tree: Tree) = {
+      import ReifiedValueUtils._
+      //val sym = tree.symbol
+      tree match {
+        //case Apply(Select(Ident(N("Predef")), N("intWrapper")), )
+        case Applyoid(ReifiedValueTree(sym, valueTree, tpe), params) =>
+          Apply(
+            Ident(getFreeTermName(sym, valueTree, tpe)),
+            params.map(transform _))
+        case Applyoid(TypeApply(ReifiedValueTree(sym, valueTree, tpe), tparams), params) =>
+          Apply(
+            TypeApply(
+              Ident(getFreeTermName(sym, valueTree, tpe)),
+              tparams.map(transform _)),
+            params.map(transform _))
+        case ReifiedValueTree(sym, valueTree, tpe) =>
+          capturesUsedAsVals += sym
+          Ident(getFreeTermName(sym, valueTree, tpe))
+        case _ =>
+          val sym = tree.symbol
+          if (sym != null && sym.isFreeTerm) {
+            val tsym = sym.asFreeTerm
+            if (tsym.isStable) {
+              capturesUsedAsVals += tsym
+              // println(s"tsym = $tsym (isStable = ${tsym.isStable})")
+              Ident(getFreeTermName(tsym, tree, sym.typeSignature))
+            } else {
+              super.transform(tree)
+            }
+          } else {
+            super.transform(tree)
+          }
+      }
+    }
+
+    private def getFreeTermName(sym: FreeTermSymbol, valueTree: Tree, tpe: Type) = {
+      captureNames.getOrElseUpdate(sym, {
+        val n = nextName
+        val resolved = super.transform(valueTree)
+        captureDefs += (() => resolved match {
+          case Function(vparams, body) if !capturesUsedAsVals(sym) =>
             // The problem here is that vparams don't have types yet (typer hasn't been run).
             // However we do have tpe at hand, so we extract arg types from it.
             val TypeRef(pre, sym, args) = tpe
             DefDef(
-              NoMods.mapAnnotations(list => newInlineAnnotation :: list),
+              Modifiers(Flag.PRIVATE | Flag.FINAL).mapAnnotations(list => newInlineAnnotation :: list),
               n,
               Nil,
               List(
@@ -103,40 +160,98 @@ final class Reified[A: TypeTag](
               transform(body))
 
           case _ =>
-            ValDef(Modifiers(Flag.LOCAL), n, TypeTree(tpe), transform(valueTree))
-        }
-      }
-
-      override def transform(tree: Tree): Tree = {
-        import ReifiedValueUtils._
-        val sym = tree.symbol
-        tree match {
-          case Applyoid(ReifiedValueTree(valueTree, tpe), params) =>
-            val vd = buildValDef(valueTree, tpe)
-            Block(
-              List(vd),
-              Apply(Ident(vd.name), params))
-          case Applyoid(TypeApply(ReifiedValueTree(valueTree, tpe), tparams), params) =>
-            val vd = buildValDef(valueTree, tpe)
-            Block(
-              List(vd),
-              Apply(TypeApply(Ident(vd.name), tparams), params))
-          case _ =>
-            super.transform(tree)
-        }
-      }
+            ValDef(Modifiers(Flag.LOCAL), n, TypeTree(tpe), resolved)
+        })
+        //captureNames += sym -> n
+        n
+      })
     }
-    val input = expr.tree
-    var result = replacer.transform(input)
-    // result = simplifyGenericTree(typeCheckTree(result, typeTag[A].tpe))
-    // println("RESULT: " + result)
+  }
 
+  def flatExpr: Expr[A] = {
+    import ReifiedValueUtils._
+    val result = new CapturesFlattener().flatten(expr.tree)
+
+    println("RESULT: " + result)
+    // for (
+    //   t <- result
+    // ) {
+    //   //s <- Option(result.symbol)) {
+    //   val tt = t.tpe;
+    //   val s = result.symbol
+    //   println(s"\t$t: $tt: $s")
+    // }
+    result.collect {
+      case t if isHasReifiedValueFreeTerm(t.symbol) =>
+        sys.error("RETAINED FREE TERM: " + t + " : " + t.symbol)
+    }
     newExpr[A](result)
   }
+  // def flatExpr0: Expr[A] = {
+  //   import ReifiedValueUtils._
+  //   val replacer = new Transformer {
+  //     private def buildValDef(valueTree: Tree, tpe: Type) = {
+  //       val n: TermName = internal.syntheticVariableNamePrefix
+  //       valueTree match {
+  //         case Function(vparams, body) =>
+  //           // The problem here is that vparams don't have types yet (typer hasn't been run).
+  //           // However we do have tpe at hand, so we extract arg types from it.
+  //           val TypeRef(pre, sym, args) = tpe
+  //           DefDef(
+  //             Modifiers(Flag.PRIVATE | Flag.FINAL).mapAnnotations(list => newInlineAnnotation :: list),
+  //             n,
+  //             Nil,
+  //             List(
+  //               vparams.zip(args) map {
+  //                 case (vparam, arg) =>
+  //                   ValDef(Modifiers(Flag.PARAM), vparam.name, TypeTree(arg), EmptyTree)
+  //               }
+  //             ),
+  //             TypeTree(NoType),
+  //             transform(body))
+
+  //         case _ =>
+  //           ValDef(Modifiers(Flag.LOCAL), n, TypeTree(tpe), transform(valueTree))
+  //       }
+  //     }
+
+  //     override def transform(tree: Tree): Tree = {
+  //       import ReifiedValueUtils._
+  //       tree match {
+  //         case Applyoid(ReifiedValueTree(sym, valueTree, tpe), params) =>
+  //           val vd = buildValDef(valueTree, tpe)
+  //           Block(
+  //             List(vd),
+  //             Apply(Ident(vd.name), params))
+  //         case Applyoid(TypeApply(ReifiedValueTree(sym, valueTree, tpe), tparams), params) =>
+  //           val vd = buildValDef(valueTree, tpe)
+  //           Block(
+  //             List(vd),
+  //             Apply(TypeApply(Ident(vd.name), tparams), params))
+  //         case _ =>
+  //           super.transform(tree)
+  //       }
+  //     }
+  //   }
+  //   val input = expr.tree
+  //   var result = replacer.transform(input)
+  //   // result = simplifyGenericTree(typeCheckTree(result, typeTag[A].tpe))
+  //   // println("RESULT: " + result)
+
+  //   newExpr[A](result)
+  // }
 }
 
 private[reified] object ReifiedValueUtils {
   val PredefObject = currentMirror.staticModule("scala.Predef")
+
+  private val hasReifiedValueTpe =
+    currentMirror.staticClass("scalaxy.reified.HasReified").asType.toType
+
+  private val reifiedPackageObject = currentMirror.staticModule("scalaxy.reified.package")
+
+  def isHasReifiedValueFreeTerm(s: Symbol): Boolean =
+    s != null && s.isFreeTerm && s.typeSignature <:< hasReifiedValueTpe
 
   object Applyoid {
     def unapply(tree: Tree): Option[(Tree, List[Tree])] = Option(tree) collect {
@@ -148,24 +263,20 @@ private[reified] object ReifiedValueUtils {
   }
   object ReifiedValueTree {
     private def get(sym: Symbol) = {
-      val reifiedValue = sym.asFreeTerm.value.asInstanceOf[HasReified[_]].reifiedValue
-      reifiedValue.expr.tree -> reifiedValue.valueTag.tpe
+      val fsym = sym.asFreeTerm
+      val reifiedValue = fsym.value.asInstanceOf[HasReified[_]].reifiedValue
+      (fsym, reifiedValue.expr.tree, reifiedValue.valueTag.tpe)
     }
-    private val hasReifiedValueTpe =
-      currentMirror.staticClass("scalaxy.reified.HasReified").asType.toType
-
-    private val reifiedPackageObject = currentMirror.staticModule("scalaxy.reified.package")
-
-    private def isHasReifiedValueFreeTerm(s: Symbol): Boolean =
-      s != null && s.isFreeTerm && s.typeSignature <:< hasReifiedValueTpe
-
     private object ReifiedFunctionConstructor {
       def unapply(tree: Tree) = tree match {
-        case Select(p, n) if reifiedPackageObject == p.symbol && n.toString.matches("ReifiedFunction\\d") => true
-        case _ => false
+        case Select(p, n) if /*reifiedPackageObject == p.symbol &&*/ n.toString.matches("ReifiedFunction\\d") =>
+          // println("REIFIED PACKAGE IS: " + p + ": " + p.symbol)
+          true
+        case _ =>
+          false
       }
     }
-    def unapply(tree: Tree): Option[(Tree, Type)] = Option(tree) collect {
+    def unapply(tree: Tree): Option[(FreeTermSymbol, Tree, Type)] = Option(tree) collect {
       case Apply(Apply(TypeApply(ReifiedFunctionConstructor(), _), List(f)), _) =>
         get(f.symbol)
       case Apply(Apply(ReifiedFunctionConstructor(), List(f)), _) =>
