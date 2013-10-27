@@ -44,4 +44,8 @@ class ParanoTest {
     Bar(a = 1, 2)
     Bar(1, 2)
   }
+  @Test
+  def deprecation {
+    List(1, 2, 3).removeDuplicates
+  }
 }
