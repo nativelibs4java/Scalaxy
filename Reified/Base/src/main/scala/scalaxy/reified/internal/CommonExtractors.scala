@@ -71,7 +71,7 @@ private[reified] object CommonExtractors {
       }
     }
     def unapply(tree: Tree): Option[(Type, Type, Tree, Tree, Option[Tree], Boolean, List[Tree])] = {
-      if (tree.tpe <:< typeOf[Range]) {
+      if (tree.tpe == null || tree.tpe <:< typeOf[Range]) {
         tree match {
           case Apply(
             Select(

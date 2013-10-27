@@ -137,4 +137,76 @@ object Optimizer {
     }
     transformer.transform(tree)
   }
+
+  def loopsTransformer(freshName: String => TermName, transform: Tree => Tree): PartialFunction[Tree, Tree] = {
+    case Apply(
+      TypeApply(
+        Select(
+          NumRange(rangeTpe, IntTpe, start, end, Step(step), isInclusive, filters),
+          foreachName()),
+        List(u)),
+      List(Function(List(param), body))) =>
+
+      def newIntVal(name: TermName, rhs: Tree) =
+        ValDef(NoMods, name, TypeTree(typeOf[Int]), rhs)
+
+      def newIntVar(name: TermName, rhs: Tree) =
+        ValDef(Modifiers(Flag.MUTABLE), name, TypeTree(typeOf[Int]), rhs)
+
+      // Body expects a local constant: create a var outside the loop + a val inside it.
+      val iVar = newIntVar(freshName("i"), start)
+      val iVal = newIntVal(param.name, Ident(iVar.name))
+      val stepVal = newIntVal(freshName("step"), Literal(Constant(step)))
+      val endVal = newIntVal(freshName("end"), end)
+      val condition =
+        Apply(
+          Select(
+            Ident(iVar.name),
+            encode(
+              if (step > 0) {
+                if (isInclusive) "<=" else "<"
+              } else {
+                if (isInclusive) ">=" else ">"
+              }
+            ): TermName
+          ),
+          List(Ident(endVal.name))
+        )
+
+      val iVarExpr = newExpr[Unit](iVar)
+      val iValExpr = newExpr[Unit](iVal)
+      val endValExpr = newExpr[Unit](endVal)
+      val stepValExpr = newExpr[Unit](stepVal)
+      val conditionExpr = newExpr[Boolean](condition)
+      // Body still refers to old function param symbol (which has same name as iVal).
+      // We must wipe it out (alas, it's not local, so we must reset all symbols).
+      // TODO: be less extreme, replacing only the param symbol (see branch replaceParamSymbols).
+      val bodyExpr = newExpr[Unit](transform(body))
+
+      val incrExpr = newExpr[Unit](
+        Assign(
+          Ident(iVar.name),
+          Apply(
+            Select(
+              Ident(iVar.name),
+              encode("+"): TermName
+            ),
+            List(Ident(stepVal.name))
+          )
+        )
+      )
+      val iVarRef = newExpr[Int](Ident(iVar.name))
+      val stepValRef = newExpr[Int](Ident(stepVal.name))
+
+      universe.reify({
+        iVarExpr.splice
+        endValExpr.splice
+        stepValExpr.splice
+        while (conditionExpr.splice) {
+          iValExpr.splice
+          bodyExpr.splice
+          incrExpr.splice
+        }
+      }).tree
+  }
 }

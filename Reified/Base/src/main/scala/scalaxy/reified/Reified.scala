@@ -82,7 +82,7 @@ final class Reified[A: TypeTag](
       Nil)
   }
 
-  private class CapturesFlattener extends Transformer {
+  private class CapturesFlattener(tree: Tree) extends Transformer {
     private var nextId = 1
     private def nextName: TermName = {
       val name = internal.syntheticVariableNamePrefix + nextId
@@ -94,8 +94,11 @@ final class Reified[A: TypeTag](
 
     private val capturesUsedAsVals = mutable.HashSet[FreeTermSymbol]()
 
-    def flatten(tree: Tree) = {
-      val trans = transform(expr.tree)
+    import Optimizer.{ getFreshNameGenerator, loopsTransformer }
+    val loops = loopsTransformer(getFreshNameGenerator(tree), transform _)
+
+    def flatten = {
+      val trans = transform(tree)
       val defs = captureDefs.map(_()).toList
       if (defs.isEmpty)
         trans
@@ -122,17 +125,13 @@ final class Reified[A: TypeTag](
           Ident(getFreeTermName(sym, valueTree, tpe))
         case _ =>
           val sym = tree.symbol
-          if (sym != null && sym.isFreeTerm) {
+          if (sym != null && sym.isFreeTerm && sym.asFreeTerm.isStable) {
             val tsym = sym.asFreeTerm
-            if (tsym.isStable) {
-              capturesUsedAsVals += tsym
-              // println(s"tsym = $tsym (isStable = ${tsym.isStable})")
-              Ident(getFreeTermName(tsym, tree, sym.typeSignature))
-            } else {
-              super.transform(tree)
-            }
+            capturesUsedAsVals += tsym
+            // println(s"tsym = $tsym (isStable = ${tsym.isStable})")
+            Ident(getFreeTermName(tsym, tree, sym.typeSignature))
           } else {
-            super.transform(tree)
+            loops.applyOrElse(tree, (tree: Tree) => super.transform(tree))
           }
       }
     }
@@ -170,7 +169,7 @@ final class Reified[A: TypeTag](
 
   def flatExpr: Expr[A] = {
     import ReifiedValueUtils._
-    val result = new CapturesFlattener().flatten(expr.tree)
+    val result = new CapturesFlattener(expr.tree).flatten
 
     println("RESULT: " + result)
     // for (
