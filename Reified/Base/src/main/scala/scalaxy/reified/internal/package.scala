@@ -19,17 +19,6 @@ package object internal {
 
   private def runtimeExpr[A: c.WeakTypeTag](c: Context)(tree: c.universe.Tree): c.Expr[universe.Expr[A]] = {
     import c.universe._
-    // new Traverser {
-    //   override def traverse(tree: Tree) {
-    //     if (tree.symbol != null) {
-    //       if (tree.symbol.isFreeTerm) {
-    //         println(s"tree $tree: ${tree.symbol}")
-    //         println("\tvalue = " + tree.symbol.asFreeTerm.value + ": " + tree.symbol.typeSignature)
-    //       }
-    //     }
-    //     super.traverse(tree)
-    //   }
-    // } traverse tree
 
     c.Expr[universe.Expr[A]](
       c.reifyTree(
