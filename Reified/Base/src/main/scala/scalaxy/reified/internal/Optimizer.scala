@@ -18,9 +18,17 @@ import scalaxy.reified.internal.CommonExtractors._
  * - transform function values into methods when they're only used as methods (frequent pattern with Scalaxy/Reified's function composition and capture of reified functions)
  * - TODO: add Range foreach loops optimizations from Scalaxy
  */
-object Optimizer {
+private[reified] object Optimizer {
   import universe._
   import definitions._
+
+  def newInlineAnnotation = {
+    Apply(
+      Select(
+        New(Ident(typeOf[scala.inline].typeSymbol)),
+        nme.CONSTRUCTOR),
+      Nil)
+  }
 
   def getFreshNameGenerator(tree: Tree): String => TermName = {
     val names = collection.mutable.HashSet[String]()
@@ -40,14 +48,27 @@ object Optimizer {
     }
   }
 
-  def loopsTransformer(freshName: String => TermName, transform: Tree => Tree): PartialFunction[Tree, Tree] = {
-    case Apply(
-      TypeApply(
+  object RangeForeach {
+    def unapply(tree: Tree) = Option(tree) collect {
+      case Apply(
+        TypeApply(
+          Select(
+            NumRange(rangeTpe, numTpe, start, end, Step(step), isInclusive, filters),
+            foreachName()),
+          List(u)),
+        List(Function(List(param), body))) =>
+        (rangeTpe, numTpe, start, end, step, isInclusive, filters, param, body)
+      case Apply(
         Select(
-          NumRange(rangeTpe, IntTpe, start, end, Step(step), isInclusive, filters),
+          NumRange(rangeTpe, numTpe, start, end, Step(step), isInclusive, filters),
           foreachName()),
-        List(u)),
-      List(Function(List(param), body))) =>
+        List(Function(List(param), body))) =>
+        (rangeTpe, numTpe, start, end, step, isInclusive, filters, param, body)
+    }
+  }
+
+  def loopsTransformer(freshName: String => TermName, transform: Tree => Tree): PartialFunction[Tree, Tree] = {
+    case RangeForeach(rangeTpe, IntTpe, start, end, step, isInclusive, filters, param, body) =>
 
       def newIntVal(name: TermName, rhs: Tree) =
         ValDef(NoMods, name, TypeTree(typeOf[Int]), rhs)

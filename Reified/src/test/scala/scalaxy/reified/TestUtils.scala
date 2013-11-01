@@ -1,4 +1,5 @@
-package scalaxy.reified.test
+package scalaxy.reified
+package test
 
 import org.junit._
 import org.junit.Assert._
@@ -21,12 +22,18 @@ trait TestUtils {
       new Traverser {
         override def traverse(tree: Tree) {
           if (tree.symbol != null && tree.symbol.isFreeTerm) {
-            b += tree.symbol.asFreeTerm.value.asInstanceOf[AnyRef]
+            val value = tree.symbol.asFreeTerm.value
+            b += value.asInstanceOf[AnyRef]
+            value match {
+              case hr: HasReified[_] =>
+                traverse(hr.reifiedValue.expr.tree)
+              case _ =>
+            }
           } else {
             super.traverse(tree)
           }
         }
-      } traverse r.flatExpr.tree
+      } traverse r.expr.tree
       b
     }
   }

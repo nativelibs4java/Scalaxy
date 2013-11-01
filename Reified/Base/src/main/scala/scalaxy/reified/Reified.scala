@@ -5,6 +5,7 @@ import scala.reflect.runtime.currentMirror
 import scala.reflect.runtime.universe._
 
 import scalaxy.reified.internal.Optimizer
+import scalaxy.reified.internal.Optimizer.newInlineAnnotation
 import scalaxy.reified.internal.CapturesFlattener
 import scalaxy.reified.internal.CompilerUtils
 import scalaxy.reified.internal.CommonExtractors._
@@ -47,6 +48,11 @@ final class Reified[A: TypeTag](
 
   lazy val value = valueGetter
   lazy val expr = exprGetter
+  // {
+  //   val x = exprGetter
+  //   println("EXPR[" + valueTag.tpe + "]: " + x)
+  //   x
+  // }
 
   override def reifiedValue = this
   override def valueTag = typeTag[A]
@@ -60,8 +66,25 @@ final class Reified[A: TypeTag](
 
     var ast: Tree = flatExpr.tree
     // println("AST: " + ast)
-    ast = toolbox.resetLocalAttrs(simplifyGenericTree(toolbox.typeCheck(ast, valueTag.tpe)))
+    ast = simplifyGenericTree(toolbox.typeCheck(ast, valueTag.tpe))
     // println("SIMPLIFIED AST: " + ast)
+    ast = toolbox.resetLocalAttrs(ast)
+    // println("RESET AST: " + ast)
+    def reinline(tree: Tree) = tree match {
+      case DefDef(mods, name, tparams, vparamss, tpt, rhs) =>
+        DefDef(
+          mods.mapAnnotations(list => newInlineAnnotation :: list),
+          name, tparams, vparamss, tpt, rhs)
+      case _ =>
+        tree
+    }
+    ast = ast match {
+      case Block(stats, expr) =>
+        Block(stats.map(reinline _), expr)
+      case _ =>
+        ast
+    }
+    // println("REINLINED AST: " + ast)
     val result = toolbox.compile(ast)
 
     () => result().asInstanceOf[A]

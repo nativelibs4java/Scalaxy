@@ -45,7 +45,7 @@ trait PerfTestUtils {
       }
     }
     val div = t / n.toDouble
-    println(s"$title: ${formatNanos(div)}")
+    // println(s"$title: ${formatNanos(div)}")
     div
   }
 
@@ -64,7 +64,7 @@ trait PerfTestUtils {
       val normal = nanoTimeAvg(n, pref + "normal")(f())
       val recompiled = nanoTimeAvg(n, pref + "recompiled")(compiledF())
       println(pref + "benefit: " + benef(normal, recompiled))
-      println()
+      // println()
       (normal, recompiled)
     }
     val (normal, recompiled) =
@@ -73,10 +73,11 @@ trait PerfTestUtils {
     val normalAvg = normal.sum / normal.size.toFloat * n
     val recompiledAvg = recompiled.sum / normal.size.toFloat * n
 
-    println(pref + "TOTAL:")
-    println(pref + "NORMAL avg: " + formatNanos(normalAvg))
-    println(pref + "RECOMPILED avg: " + formatNanos(recompiledAvg))
-    println(pref + "BENEFIT avg: " + benef(normalAvg, recompiledAvg))
+    // println(pref + "TOTAL:")
+    // println(pref + "NORMAL avg: " + formatNanos(normalAvg))
+    // println(pref + "RECOMPILED avg: " + formatNanos(recompiledAvg))
+    // println(pref + "BENEFIT avg: " + benef(normalAvg, recompiledAvg))
+    println(pref + "BENEFIT avg: " + benef(normalAvg, recompiledAvg) + " (" + formatNanos(normalAvg) + " -> " + formatNanos(recompiledAvg) + ")")
     println()
   }
 
