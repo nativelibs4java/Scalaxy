@@ -11,6 +11,7 @@ import scalaxy.reified.internal.Utils._
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
+import scalaxy.reified.internal.Optimizer.loopsTransformer
 import scalaxy.generic.trees._
 
 private[reified] class CapturesFlattener(tree: Tree) extends Transformer {
@@ -37,7 +38,6 @@ private[reified] class CapturesFlattener(tree: Tree) extends Transformer {
 
   private val capturesUsedAsVals = mutable.HashSet[FreeTermSymbol]()
 
-  import Optimizer.{ getFreshNameGenerator, loopsTransformer }
   private val loops = loopsTransformer(getFreshNameGenerator(tree), transform _)
 
   def flatten = {

@@ -19,7 +19,7 @@ import scala.reflect.NameTransformer.encode
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
-import scalaxy.generic.trees._
+import scalaxy.generic.trees.simplifyGenericTree
 
 /**
  * Reified value wrapper.

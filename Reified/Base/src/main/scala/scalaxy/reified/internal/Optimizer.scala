@@ -30,24 +30,6 @@ private[reified] object Optimizer {
       Nil)
   }
 
-  def getFreshNameGenerator(tree: Tree): String => TermName = {
-    val names = collection.mutable.HashSet[String]()
-    names ++= tree.collect {
-      case t if t.symbol != null && t.symbol.isTerm =>
-        t.symbol.name.toString
-    }
-
-    (base: String) => {
-      var i = 1;
-      var name: String = null
-      while ({ name = syntheticVariableNamePrefix + base + "$" + i; names.contains(name) }) {
-        i += 1
-      }
-      names.add(name)
-      name
-    }
-  }
-
   object RangeForeach {
     def unapply(tree: Tree) = Option(tree) collect {
       case Apply(
