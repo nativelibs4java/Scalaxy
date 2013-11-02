@@ -54,6 +54,10 @@ class QueryTest {
       update(d => d.rename(a = "blah", b = "hooh")))
 
     sameQuery(
+      "a".$type[BasicDBList],
+      update(d => d.a.isInstanceOf[BasicDBList]))
+
+    sameQuery(
       $or("foo" $lt "bar", "foo" $size 4),
       query(d => d.foo < "bar" || d.foo.size == 4))
   }

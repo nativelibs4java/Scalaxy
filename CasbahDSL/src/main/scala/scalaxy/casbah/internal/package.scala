@@ -27,6 +27,9 @@ package object internal {
         case Literal(Constant(s: String)) => s
       }
     }
+    object N {
+      def unapply(n: Name) = Option(n.toString)
+    }
     object Annotated {
       def unapply(tree: Tree) = {
         Option(tree.symbol).flatMap(_.annotations.headOption.map(a => {
@@ -36,7 +39,7 @@ package object internal {
     }
     object Eq {
       def unapply(tree: Tree) = Option(tree) collect {
-        case Apply(Select(a, n), List(b)) if n.toString == "$eq$eq" => (a, b)
+        case Apply(Select(a, N("$eq$eq")), List(b)) => (a, b)
       }
     }
     object Op {
@@ -109,6 +112,9 @@ package object internal {
 
               case Apply(Annotated(PeelTpe, Nil, Select(_, n)), List(a)) =>
                 transform(a)
+
+              case TypeApply(Select(a, N("isInstanceOf")), tparams) =>
+                TypeApply(Select(transform(a), "$type": TermName), tparams)
 
               case _ =>
                 super.transform(tree)
