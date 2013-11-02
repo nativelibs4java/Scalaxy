@@ -22,6 +22,7 @@ sealed trait Doc extends Dynamic {
   @peel def selectDynamic(name: String): Col = ???
   @updateDynFunc("$set") def updateDynamic(name: String)(value: Col): Col = ???
   @func1("$unset") def -=(n: String): Col = ???
+  @testMeth1("$exists") def contains(key: String): BoolCol = ???
 }
 
 sealed trait Col extends AnyRef {
@@ -46,6 +47,7 @@ sealed trait Col extends AnyRef {
 sealed trait BoolCol extends AnyRef {
   @func2("$and") def &&(b: BoolCol): BoolCol = ???
   @func2("$or") def ||(b: BoolCol): BoolCol = ???
+  def unary_! : BoolCol = ???
 }
 
 trait ColImplicits {

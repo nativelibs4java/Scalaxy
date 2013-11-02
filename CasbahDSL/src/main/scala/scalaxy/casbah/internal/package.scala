@@ -10,6 +10,7 @@ package object internal {
     import c.universe._
 
     // Annotation types.
+    val BoolColTpe = typeOf[BoolCol]
     val OpTpe = typeOf[op]
     val Func1Tpe = typeOf[func1]
     val Func2Tpe = typeOf[func2]
@@ -19,6 +20,7 @@ package object internal {
     val UpdateDynFuncTpe = typeOf[updateDynFunc]
     val PeelTpe = typeOf[peel]
     val TestOp0Tpe = typeOf[testOp0]
+    val TestMeth1 = typeOf[testMeth1]
     val TestOp1Tpe = typeOf[testOp1]
 
     // Some useful extractors.
@@ -42,6 +44,20 @@ package object internal {
         case Apply(Select(a, N("$eq$eq")), List(b)) => (a, b)
       }
     }
+    object Typed {
+      def unapply(tree: Tree) = if (tree.tpe != null) Some(tree.tpe, tree) else None
+    }
+    object NullaryApply {
+      def unapply(tree: Tree) = Option(tree) collect {
+        case Apply(s @ Select(_, _), Nil) => s
+        case Select(_, _) => tree
+      }
+    }
+    object Not {
+      def unapply(tree: Tree) = Option(tree) collect {
+        case Select(a, N("unary_$bang")) => a
+      }
+    }
     object Op {
       def unapply(tree: Tree) = Option(tree) collect {
         case Apply(Annotated(OpTpe, List(op), Select(a, n)), List(b)) =>
@@ -57,14 +73,18 @@ package object internal {
         c.Expr[MongoDBObject](
           new Transformer {
             override def transform(tree: Tree) = tree match {
-              case Eq(Annotated(TestOp0Tpe, List(op), Select(a, n)), b) =>
+
+              case Eq(NullaryApply(Annotated(TestOp0Tpe, List(op), Select(a, _))), b) =>
                 Apply(Select(transform(a), op: TermName), List(transform(b)))
 
-              case Eq(Apply(Annotated(TestOp0Tpe, List(op), Select(a, n)), List()), b) =>
-                Apply(Select(transform(a), op: TermName), List(transform(b)))
-
-              case Eq(Apply(Annotated(TestOp1Tpe, List(op), Select(a, n)), List(b)), c) =>
+              case Eq(Apply(Annotated(TestOp1Tpe, List(op), Select(a, _)), List(b)), c) =>
                 Apply(Select(transform(a), op: TermName), List(transform(b), transform(c)))
+
+              case Typed(BoolColTpe, Apply(Annotated(TestMeth1, List(func), Select(_, _)), List(b))) =>
+                Apply(Select(transform(b), func: TermName), List(Literal(Constant(true))))
+
+              case Not(Typed(BoolColTpe, Apply(Annotated(TestMeth1, List(func), Select(_, _)), List(b)))) =>
+                Apply(Select(transform(b), func: TermName), List(Literal(Constant(false))))
 
               case Op(a, op, b) =>
                 Apply(Select(transform(a), op), List(transform(b)))
@@ -75,14 +95,14 @@ package object internal {
               case Apply(Annotated(Func1Tpe, List(op), Select(_, _)), List(a)) =>
                 Apply(Ident(op: TermName), List(transform(a)))
 
-              case Apply(Annotated(FuncOpTpe, List(func, op), Select(a, n)), List(b)) =>
+              case Apply(Annotated(FuncOpTpe, List(func, op), Select(a, _)), List(b)) =>
                 Apply(
                   Select(
                     Apply(Ident(func: TermName), List(transform(a))),
                     op: TermName),
                   List(transform(b)))
 
-              case Apply(Annotated(OpFuncTpe, List(op, func), Select(a, n)), List(b)) =>
+              case Apply(Annotated(OpFuncTpe, List(op, func), Select(a, _)), List(b)) =>
                 Apply(
                   Ident(func: TermName),
                   List(Apply(Select(transform(a), op: TermName), List(transform(b)))))
@@ -101,7 +121,7 @@ package object internal {
                       transform(a)
                   })
 
-              case Apply(Apply(Annotated(UpdateDynFuncTpe, List(func), Select(_, n)), List(c)), List(v)) =>
+              case Apply(Apply(Annotated(UpdateDynFuncTpe, List(func), Select(_, _)), List(c)), List(v)) =>
 
                 Apply(
                   Ident(func: TermName),
@@ -110,7 +130,7 @@ package object internal {
                       Select(transform(c), "$minus$greater": TermName),
                       List(transform(v)))))
 
-              case Apply(Annotated(PeelTpe, Nil, Select(_, n)), List(a)) =>
+              case Apply(Annotated(PeelTpe, Nil, Select(_, _)), List(a)) =>
                 transform(a)
 
               case TypeApply(Select(a, N("isInstanceOf")), tparams) =>

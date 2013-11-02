@@ -22,6 +22,10 @@ class QueryTest {
       query(d => d.blah % 2 == 1))
 
     sameQuery(
+      $or("blah" $exists true, "foo" $exists false),
+      query(d => d.contains("blah") || !d.contains("foo"))) 
+
+    sameQuery(
       $or("blah" $mod (2, 1), "foo" $gt "bar"),
       query(d => d.blah % 2 == 1 || d.foo > d.bar))
 
