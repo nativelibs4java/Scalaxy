@@ -7,6 +7,8 @@ import com.mongodb.casbah.query.dsl._
 
 package object internal {
 
+  private val verbose = "1" == System.getenv("SCALAXY_CASBAH_VERBOSE")
+
   def queryImpl[A: c.WeakTypeTag](c: Context)(f: c.Expr[Doc => A]): c.Expr[MongoDBObject] = {
     import c.universe._
 
@@ -154,7 +156,8 @@ package object internal {
         c.error(f.tree.pos, "Query function must be a closure.")
         null
     }
-    println(result)
+    if (verbose)
+      println(result)
     result
   }
 }
