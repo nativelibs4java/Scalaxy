@@ -1,6 +1,7 @@
 package scalaxy.casbah.internal
 
 class peel extends scala.annotation.StaticAnnotation
+class path extends scala.annotation.StaticAnnotation
 class op(name: String) extends scala.annotation.StaticAnnotation
 class func1(name: String) extends scala.annotation.StaticAnnotation
 class func2(name: String) extends scala.annotation.StaticAnnotation

@@ -8,7 +8,7 @@ import scalaxy.casbah._
 
 class QueryTest {
 
-  def sameQuery(expected: MongoDBObject, actual: MongoDBObject) =
+  def sameQuery(expected: DBObject, actual: DBObject) =
     assertEquals(expected, actual)
 
   @Test
@@ -16,6 +16,10 @@ class QueryTest {
     sameQuery(
       $and("blah" $lt 10, "foo" $eq "bar"),
       query(d => d.blah < 10 && d.foo == "bar"))
+
+    sameQuery(
+      "a.b.c" $eq 10,
+      query(_.a.b.c == 10))
 
     sameQuery(
       "blah" $mod (2, 1),

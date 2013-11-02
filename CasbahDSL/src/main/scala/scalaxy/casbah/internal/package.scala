@@ -2,7 +2,8 @@ package scalaxy.casbah
 
 import scala.reflect.macros.Context
 
-import com.mongodb.casbah.Imports.MongoDBObject
+import com.mongodb.casbah.Imports._
+import com.mongodb.casbah.query.dsl._
 
 package object internal {
 
@@ -18,6 +19,7 @@ package object internal {
     val OpFuncTpe = typeOf[opFunc]
     val ApplyDynNamedFuncTpe = typeOf[applyDynNamedFunc]
     val UpdateDynFuncTpe = typeOf[updateDynFunc]
+    val PathTpe = typeOf[path]
     val PeelTpe = typeOf[peel]
     val TestOp0Tpe = typeOf[testOp0]
     val TestMeth1 = typeOf[testMeth1]
@@ -28,6 +30,7 @@ package object internal {
       def unapply(tree: Tree) = Option(tree) collect {
         case Literal(Constant(s: String)) => s
       }
+      def apply(s: String) = Literal(Constant(s))
     }
     object N {
       def unapply(n: Name) = Option(n.toString)
@@ -107,7 +110,7 @@ package object internal {
                   Ident(func: TermName),
                   List(Apply(Select(transform(a), op: TermName), List(transform(b)))))
 
-              case Apply(Apply(Annotated(ApplyDynNamedFuncTpe, List(func), s @ Select(_, n)), List(Str(m))), args) =>
+              case Apply(Apply(Annotated(ApplyDynNamedFuncTpe, List(func), s @ Select(_, _)), List(Str(m))), args) =>
 
                 if (m.toString != "apply")
                   c.error(s.pos, s"Expected `apply`, got `$m`")
@@ -121,7 +124,7 @@ package object internal {
                       transform(a)
                   })
 
-              case Apply(Apply(Annotated(UpdateDynFuncTpe, List(func), Select(_, _)), List(c)), List(v)) =>
+              case Apply(Apply(Annotated(UpdateDynFuncTpe, List(func), Select(_, N("updateDynamic"))), List(c)), List(v)) =>
 
                 Apply(
                   Ident(func: TermName),
@@ -132,6 +135,12 @@ package object internal {
 
               case Apply(Annotated(PeelTpe, Nil, Select(_, _)), List(a)) =>
                 transform(a)
+
+              case Apply(Annotated(PathTpe, Nil, s @ Select(a, N("selectDynamic"))), List(Str(b))) =>
+                transform(a) match {
+                  case Str(aa) => Str(aa + "." + b)
+                  case _ => s
+                }
 
               case TypeApply(Select(a, N("isInstanceOf")), tparams) =>
                 TypeApply(Select(transform(a), "$type": TermName), tparams)

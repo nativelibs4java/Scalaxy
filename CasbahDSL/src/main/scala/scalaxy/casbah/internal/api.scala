@@ -4,6 +4,9 @@ import scala.language.dynamics
 import scala.language.implicitConversions
 import scala.util.matching.Regex
 
+import com.mongodb.casbah.Imports._
+import com.mongodb.casbah.query.dsl._
+
 sealed trait Doc extends Dynamic {
 
   object set extends Dynamic {
@@ -32,7 +35,7 @@ sealed trait Doc extends Dynamic {
   @testMeth1("$exists") def contains(key: String): BoolCol = ???
 }
 
-sealed trait Col extends AnyRef {
+sealed trait Col extends AnyRef with Dynamic {
   // TODO: add missing update commands: addToSet, pop, pull, pullAll, push, pushAll
   // TODO: add missing geospatial queries.
   @op("$neq") def !=(b: Col): BoolCol = ???
@@ -55,6 +58,9 @@ sealed trait Col extends AnyRef {
   @testOp0("$size") def size(): Col = ???
   /** `a += b` => `$inc(a -> b)` */
   @opFunc("$minus$greater", "$inc") def +=(b: Col): Col = ???
+  /** `a.b.c` => `"a.b.c"` */
+  @path def selectDynamic(name: String): Col = ???
+  // TODO? def ++(b: Col): Col = ???
 }
 
 sealed trait BoolCol extends AnyRef {
@@ -68,4 +74,6 @@ sealed trait BoolCol extends AnyRef {
 trait ColImplicits {
   @peel implicit def booleanCasbahDSLColumn(b: Boolean): BoolCol = ???
   @peel implicit def casbahDSLColumn(a: Any): Col = ???
+  //@peel implicit def casbahDSLColumnToQuery(a: Col): MongoDBObject = ???
+  // @peel implicit def casbahDSLColumn(a: Any): Col = ???
 }
