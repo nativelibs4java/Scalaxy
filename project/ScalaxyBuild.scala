@@ -76,6 +76,11 @@ object Scalaxy extends Build {
       }
     )
 
+  lazy val macroParadiseSettings =
+    Seq(
+      addCompilerPlugin("org.scala-lang.plugins" % "macro-paradise" % "2.0.0-SNAPSHOT" cross CrossVersion.full)
+    )
+
   lazy val standardSettings =
     Defaults.defaultSettings ++
     infoSettings ++
@@ -194,6 +199,7 @@ object Scalaxy extends Build {
     "Loops" -> loops,
     //"Components" -> components,
     "Debug" -> debug,
+    // "CasbahDSL" -> casbahDSL,
     //"MacroExtensions" -> extensions,
     "Reified" -> reifiedDoc)
 
@@ -318,6 +324,14 @@ object Scalaxy extends Build {
       libraryDependencies += "org.json4s" %% "json4s-jackson" % "3.2.5",
       libraryDependencies += "org.json4s" %% "json4s-native" % "3.2.5"
     ))
+
+  lazy val rewriting =
+    Project(id = "scalaxy-rewriting", base = file("RewritingDSLs"), settings = reflectSettings)
+
+  lazy val casbahDSL =
+    Project(id = "scalaxy-casbah-dsl", base = file("CasbahDSL"), settings = reflectSettings ++ Seq(
+      libraryDependencies += "org.mongodb" %% "casbah" % "2.6.3"
+    ) ++ macroParadiseSettings)
 
   lazy val beans =
     Project(id = "scalaxy-beans", base = file("Beans"), settings = reflectSettings)

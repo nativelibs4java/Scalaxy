@@ -44,9 +44,16 @@ package object internal {
         }))
       }
     }
+    object TermsAnnotated {
+      def unapply(tree: Tree) = Annotated.unapply(tree).map {
+        case (tpe, names, tree) => (tpe, Option(names).map(_.map(newTermName(_))).orNull, tree)
+      }
+    }
     object Eq {
       def unapply(tree: Tree) = Option(tree) collect {
-        case Apply(Select(a, N("$eq$eq")), List(b)) => (a, b)
+        // case q"$a == $b" =>
+        case Apply(Select(a, N("$eq$eq")), List(b)) =>
+          (a, b)
       }
     }
     object Typed {
@@ -60,13 +67,14 @@ package object internal {
     }
     object Not {
       def unapply(tree: Tree) = Option(tree) collect {
-        case Select(a, N("unary_$bang")) => a
+        case q"!$a" => a
+        // case Select(a, N("unary_$bang")) => a
       }
     }
     object Op {
       def unapply(tree: Tree) = Option(tree) collect {
-        case Apply(Annotated(OpTpe, List(op), Select(a, n)), List(b)) =>
-          (a, op: TermName, b)
+        case Apply(TermsAnnotated(OpTpe, List(op), Select(a, n)), List(b)) =>
+          (a, op, b)
         case Eq(a, b) if a.tpe != null && a.tpe <:< typeOf[Col] =>
           (a, "$eq": TermName, b)
       }
@@ -79,61 +87,77 @@ package object internal {
           new Transformer {
             override def transform(tree: Tree) = tree match {
 
-              case Eq(NullaryApply(Annotated(TestOp0Tpe, List(op), Select(a, _))), b) =>
-                Apply(Select(transform(a), op: TermName), List(transform(b)))
+              case Eq(NullaryApply(TermsAnnotated(TestOp0Tpe, List(op), Select(a, _))), b) =>
+                q"${transform(a)} $op ${transform(b)}"
+                // Apply(Select(transform(a), op), List(transform(b)))
 
-              case Eq(Apply(Annotated(TestOp1Tpe, List(op), Select(a, _)), List(b)), c) =>
-                Apply(Select(transform(a), op: TermName), List(transform(b), transform(c)))
+              case Eq(Apply(TermsAnnotated(TestOp1Tpe, List(op), Select(a, _)), List(b)), c) =>
+                q"${transform(a)} $op (${transform(b)} , ${transform(c)}) "
+                // Apply(Select(transform(a), op), List(transform(b), transform(c)))
 
-              case Typed(BoolColTpe, Apply(Annotated(TestMeth1, List(func), Select(_, _)), List(b))) =>
-                Apply(Select(transform(b), func: TermName), List(Literal(Constant(true))))
-
-              case Not(Typed(BoolColTpe, Apply(Annotated(TestMeth1, List(func), Select(_, _)), List(b)))) =>
-                Apply(Select(transform(b), func: TermName), List(Literal(Constant(false))))
+              case Typed(BoolColTpe, Apply(TermsAnnotated(TestMeth1, List(func), Select(_, _)), List(b))) =>
+                q"${transform(b)} $func true"
+                // Apply(Select(transform(b), func), List(Literal(Constant(true))))
 
               case Op(a, op, b) =>
-                Apply(Select(transform(a), op), List(transform(b)))
+                q"${transform(a)} $op ${transform(b)}"
+                //Apply(Select(transform(a), op), List(transform(b)))
 
-              case Apply(Annotated(Func2Tpe, List(op), Select(a, _)), List(b)) =>
-                Apply(Ident(op: TermName), List(transform(a), transform(b)))
+              case Not(Typed(BoolColTpe, Apply(TermsAnnotated(TestMeth1, List(func), Select(_, _)), List(b)))) =>
+                q"${transform(b)} $func false"
+                //Apply(Select(transform(b), func), List(Literal(Constant(false))))
 
-              case Apply(Annotated(Func1Tpe, List(op), Select(_, _)), List(a)) =>
-                Apply(Ident(op: TermName), List(transform(a)))
+              case Apply(TermsAnnotated(Func2Tpe, List(op), Select(a, _)), List(b)) =>
+                q"$op(${transform(a)}, ${transform(b)})"
+                //Apply(Ident(op), List(transform(a), transform(b)))
 
-              case Apply(Annotated(FuncOpTpe, List(func, op), Select(a, _)), List(b)) =>
-                Apply(
-                  Select(
-                    Apply(Ident(func: TermName), List(transform(a))),
-                    op: TermName),
-                  List(transform(b)))
+              case Apply(TermsAnnotated(Func1Tpe, List(op), Select(_, _)), List(a)) =>
+                q"$op(${transform(a)})"
+                //Apply(Ident(op), List(transform(a)))
 
-              case Apply(Annotated(OpFuncTpe, List(op, func), Select(a, _)), List(b)) =>
-                Apply(
-                  Ident(func: TermName),
-                  List(Apply(Select(transform(a), op: TermName), List(transform(b)))))
+              case Apply(TermsAnnotated(FuncOpTpe, List(func, op), Select(a, _)), List(b)) =>
+                q"$func(${transform(a)}) $op ${transform(b)}"
+                // Apply(
+                //   Select(
+                //     Apply(Ident(func), List(transform(a))),
+                //     op),
+                //   List(transform(b)))
 
-              case Apply(Apply(Annotated(ApplyDynNamedFuncTpe, List(func), s @ Select(_, _)), List(Str(m))), args) =>
+              case Apply(TermsAnnotated(OpFuncTpe, List(op, func), Select(a, _)), List(b)) =>
+                q"$func(${transform(a)} $op ${transform(b)})"
+                // Apply(
+                //   Ident(func),
+                //   List(Apply(Select(transform(a), op: TermName), List(transform(b)))))
+
+              case Apply(Apply(TermsAnnotated(ApplyDynNamedFuncTpe, List(func), s @ Select(_, _)), List(Str(m))), args) =>
 
                 if (m.toString != "apply")
                   c.error(s.pos, s"Expected `apply`, got `$m`")
 
-                Apply(
-                  Ident(func: TermName),
-                  args.map {
-                    case a @ Apply(_, List(Str(n), v)) =>
-                      if (n == "")
-                        c.error(v.pos, "Please specify names for all arguments.")
-                      transform(a)
-                  })
+                val transformedArgs = args.map {
+                  case a @ Apply(_, List(Str(n), v)) =>
+                    if (n == "")
+                      c.error(v.pos, "Please specify names for all arguments.")
+                    transform(a)
+                }
+                q"$func(..$transformedArgs)"
+                // Apply(
+                //   Ident(func: TermName),
+                //   args.map {
+                //     case a @ Apply(_, List(Str(n), v)) =>
+                //       if (n == "")
+                //         c.error(v.pos, "Please specify names for all arguments.")
+                //       transform(a)
+                //   })
 
-              case Apply(Apply(Annotated(UpdateDynFuncTpe, List(func), Select(_, N("updateDynamic"))), List(c)), List(v)) =>
-
-                Apply(
-                  Ident(func: TermName),
-                  List(
-                    Apply(
-                      Select(transform(c), "$minus$greater": TermName),
-                      List(transform(v)))))
+              case Apply(Apply(TermsAnnotated(UpdateDynFuncTpe, List(func), Select(_, N("updateDynamic"))), List(c)), List(v)) =>
+                q"$func(${transform(c)} -> ${transform(v)})"
+                // Apply(
+                //   Ident(func: TermName),
+                //   List(
+                //     Apply(
+                //       Select(transform(c), "$minus$greater": TermName),
+                //       List(transform(v)))))
 
               case Apply(Annotated(PeelTpe, Nil, Select(_, _)), List(a)) =>
                 transform(a)
@@ -144,8 +168,11 @@ package object internal {
                   case _ => s
                 }
 
-              case TypeApply(Select(a, N("isInstanceOf")), tparams) =>
-                TypeApply(Select(transform(a), "$type": TermName), tparams)
+              case q"$a.isInstanceOf[..$tparams]" =>
+              //case TypeApply(Select(a, N("isInstanceOf")), tparams) =>
+                val n: TermName = "$type"
+                q"${transform(a)}.$n[..$tparams]"
+                // TypeApply(Select(transform(a), "$type": TermName), tparams)
 
               case _ =>
                 super.transform(tree)
