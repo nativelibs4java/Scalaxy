@@ -53,6 +53,7 @@ class PrivacyComponent(
             !n.contains("$") && !n.matches("res\\d+") && // Special cases for the console.
             !mods.annotations.exists(isPublicAnnotation _)
         }
+
         def alterPrivacy(mods: Modifiers, name: Name, pos: Position): Modifiers = {
           if (shouldPrivatize(mods, name)) {
             reporter.warning(pos, phaseName + " made " + name + " private.")
@@ -61,30 +62,20 @@ class PrivacyComponent(
             mods.mapAnnotations(anns => anns.filter(!isPublicAnnotation(_)))
           }
         }
-        override def transform(tree: Tree) = tree match {
 
-          case ValDef(mods, name, tpt, rhs) =>
-            val res = ValDef(
-              alterPrivacy(mods, name, tree.pos),
-              name,
-              transform(tpt),
-              transform(rhs))
-            res.symbol = tree.symbol
-            res.tpe = tree.tpe
-            res
+        override def transform(tree: Tree) = super.transform(tree) match {
 
-          case DefDef(mods, name, tparams, vparamss, tpt, rhs) =>
-            val res = DefDef(
-              alterPrivacy(mods, name, tree.pos),
-              name,
-              tparams.map(transform(_).asInstanceOf[TypeDef]),
-              vparamss.map(_.map(transform(_).asInstanceOf[ValDef])),
-              transform(tpt),
-              transform(rhs)
-            )
-            res.symbol = tree.symbol
-            res.tpe = tree.tpe
-            res
+          case d @ ValDef(mods, name, tpt, rhs) =>
+            d.copy(mods = alterPrivacy(mods, name, tree.pos))
+
+          case d @ DefDef(mods, name, tparams, vparamss, tpt, rhs) =>
+            d.copy(mods = alterPrivacy(mods, name, tree.pos))
+
+          case d @ ClassDef(mods, name, tparams, impl) =>
+            d.copy(mods = alterPrivacy(mods, name, tree.pos))
+
+          case d @ ModuleDef(mods, name, impl) =>
+            d.copy(mods = alterPrivacy(mods, name, tree.pos))
 
           case _ =>
             super.transform(tree)
