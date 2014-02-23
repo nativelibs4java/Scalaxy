@@ -12,7 +12,7 @@ object AlmostMath {
   class Sub {
     def almostCos(x: Double) = scala.math.cos(x) * 0.99
   }
-  val sub = new Sub
+  val sub = new Sub //
 }
 
 class ReifiedValueTest extends TestUtils {
@@ -20,8 +20,8 @@ class ReifiedValueTest extends TestUtils {
   @Test
   def testCaptureConstant {
     val x = 10
-    val r = reify(100 * x)
-    assertTrue(r.isInstanceOf[ReifiedValue[_]])
+    val r = reified(100 * x)
+    assertTrue(r.isInstanceOf[Reified[_]])
     assertEquals(Seq(10), r.capturedValues)
     //assertEquals("100.*(10)", r.expr().tree.toString)
     assertEquals(100 * 10, r.compile()(), 0)
@@ -30,7 +30,8 @@ class ReifiedValueTest extends TestUtils {
   @Test
   def testCaptureMap {
     val x = Map("a" -> 10, "b" -> 20)
-    val r = reify((s: String) => 100 * x(s))
+    val r = reified((s: String) => 100 * x(s))
+
     assertSameEvals(r, "a", "b")
   }
 
@@ -39,7 +40,7 @@ class ReifiedValueTest extends TestUtils {
     val x = 10
     import scala.math._
     import AlmostMath._
-    val r = reify(100 * math.cos(x) * sub.almostCos(x * x))
+    val r = reified(100 * math.cos(x) * sub.almostCos(x * x))
     assertEquals(r.value, r.compile()(), 0)
   }
 
@@ -49,10 +50,10 @@ class ReifiedValueTest extends TestUtils {
     val x = Seq(1, 2, 3)
     val y = 12 + " things"
 
-    val a = reify(Seq(x, "blah"))
-    val b = reify((y, a))
+    val a = reified(Seq(x, "blah"))
+    val b = reified((y, a))
 
-    assertEquals(Seq(x), a.asInstanceOf[ReifiedValue[_]].capturedValues)
+    assertEquals(Seq(x), a.asInstanceOf[Reified[_]].capturedValues)
     assertEquals(Seq(y, a), b.capturedValues)
 
     assertEquals(b.value, b.compile()())

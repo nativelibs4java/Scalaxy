@@ -18,7 +18,7 @@ class ReifiedTest extends TestUtils {
     import scala.language.implicitConversions
 
     val v = 2
-    val r = reify(10 + v)
+    val r = reified(10 + v)
     val i: Int = r.value
     assertEquals(12, i)
   }
@@ -28,7 +28,7 @@ class ReifiedTest extends TestUtils {
     import scala.language.implicitConversions
 
     val v = 2
-    val r = reify((x: Int) => x + v)
+    val r = reified((x: Int) => x + v)
 
     val f: Int => Int = r.value
     val rf: ReifiedFunction1[Int, Int] = r
@@ -44,26 +44,26 @@ class ReifiedTest extends TestUtils {
 
   // case class GenericPolynomial[A: Generic: TypeTag](coefficients: A*) {
   //   import scalaxy.generic._
-  //   def computeGenericPolynomial(coefficients: List[A]): ReifiedValue[A => A] = coefficients match {
+  //   def computeGenericPolynomial(coefficients: List[A]): Reified[A => A] = coefficients match {
   //     case Nil =>
-  //       reify((x: A) => zero[A])
+  //       reified((x: A) => zero[A])
   //     case c :: others =>
   //       val sub = computeGenericPolynomial(others)
-  //       reify((x: A) => c + x * sub(x))
+  //       reified((x: A) => c + x * sub(x))
   //   }
-  //   lazy val function: ReifiedValue[A => A] = computeGenericPolynomial(coefficients.toList)
+  //   lazy val function: Reified[A => A] = computeGenericPolynomial(coefficients.toList)
   // }
 
-  def computeNumericPolynomial[A: Numeric: TypeTag](coefficients: List[A]): ReifiedValue[A => A] = coefficients match {
+  def computeNumericPolynomial[A: Numeric: TypeTag](coefficients: List[A]): Reified[A => A] = coefficients match {
     case Nil =>
-      reify((x: A) => implicitly[Numeric[A]].zero)
+      reified((x: A) => implicitly[Numeric[A]].zero)
     case c :: others =>
       import Numeric.Implicits._
       val sub = computeNumericPolynomial(others)
-      reify((x: A) => c + x * sub(x))
+      reified((x: A) => c + x * sub(x))
   }
   case class NumericPolynomial[A: Numeric: TypeTag](coefficients: A*) {
-    lazy val function: ReifiedValue[A => A] = computeNumericPolynomial(coefficients.toList)
+    lazy val function: Reified[A => A] = computeNumericPolynomial(coefficients.toList)
   }
 
   // @Ignore

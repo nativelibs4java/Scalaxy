@@ -31,8 +31,8 @@ private[reified] object CommonExtractors {
   object HasReifiedValueWrapperTree {
     import scalaxy.reified._
 
-    private def isReifiedValue(tpe: Type) = tpe != null && tpe <:< typeOf[ReifiedValue[_]]
-    private def isHasReifiedValue(tpe: Type) = tpe != null && tpe <:< typeOf[HasReifiedValue[_]]
+    private def isReifiedValue(tpe: Type) = tpe != null && tpe <:< typeOf[Reified[_]]
+    private def isHasReifiedValue(tpe: Type) = tpe != null && tpe <:< typeOf[HasReified[_]]
     def unapply(tree: Tree): Option[(Name, Tree)] = {
       val tpe = tree.tpe
       if (isHasReifiedValue(tpe) && !isReifiedValue(tpe)) {
@@ -50,7 +50,12 @@ private[reified] object CommonExtractors {
   object PredefTree {
     import CommonScalaNames._
 
-    def unapply(tree: Tree): Boolean = tree.symbol == PredefModule
+    def unapply(tree: Tree): Boolean =
+      PredefModule == tree.symbol ||
+        tree.symbol == null && (tree match {
+          case Ident(N("Predef")) => true
+          case _ => false
+        })
   }
 
   object NumRange {
@@ -66,7 +71,7 @@ private[reified] object CommonExtractors {
       }
     }
     def unapply(tree: Tree): Option[(Type, Type, Tree, Tree, Option[Tree], Boolean, List[Tree])] = {
-      if (tree.tpe <:< typeOf[Range]) {
+      if (tree.tpe == null || tree.tpe <:< typeOf[Range]) {
         tree match {
           case Apply(
             Select(

@@ -13,8 +13,8 @@ class ReifiedFunctionTest extends TestUtils {
   @Test
   def testDummyFunction {
     try {
-      val r = reify((v: Int) => v * v)
-      assertEquals("((v: Int) => v.*(v))", r.expr()._1.tree.toString)
+      val r = reified((v: Int) => v * v)
+      assertEquals("((v: Int) => v.$times(v))", r.flatExpr.tree.toString)
       assertSameEvals(r, 0, 1, 2)
     } catch {
       case th: Throwable =>
@@ -28,7 +28,7 @@ class ReifiedFunctionTest extends TestUtils {
     try {
       val x = 10
       val y = 20
-      val r = reify((v: Int) => x * v * y)
+      val r = reified((v: Int) => x * v * y)
       assertEquals(Seq(10, 20), r.capturedValues)
       assertSameEvals(r, 0, 1, 2)
       //assertEquals("((v: Int) => 10.*(v).*(20))", r.expr().tree.toString)
@@ -41,11 +41,11 @@ class ReifiedFunctionTest extends TestUtils {
 
   @Test
   def testFunctionComposition {
-    def compose(capture1: Int): ReifiedValue[Int => Int] = {
+    def compose(capture1: Int): Reified[Int => Int] = {
       val capture2 = 666
-      val f = reify((x: Int) => x * x + capture2)
+      val f = reified((x: Int) => x * x + capture2)
       val capture3 = 1234
-      val g = reify((x: Int) => capture1 + capture3)
+      val g = reified((x: Int) => capture1 + capture3)
 
       val comp = f.compose(g)
       assertTrue(comp.isInstanceOf[ReifiedFunction1[_, _]])
@@ -69,8 +69,8 @@ class ReifiedFunctionTest extends TestUtils {
   def testCapture2 {
     def test(capture1: Int) = {
       val capture2 = Array(10, 20, 30)
-      val f = reify((x: Int) => capture1 + capture2(x))
-      val g = reify((x: Int) => x * x)
+      val f = reified((x: Int) => capture1 + capture2(x))
+      val g = reified((x: Int) => x * x)
 
       g.compose(f)
     }

@@ -10,8 +10,8 @@ object CompilerUtils {
   /** Try to compile an AST, with or without the attributes */
   def compile(tree: Tree, toolbox: ToolBox[universe.type] = Utils.optimisingToolbox): () => Any = {
     try {
-      val resetTree = Utils.safeReset(tree, toolbox)
-      // val resetTree =  toolbox.resetAllAttrs(tree))
+      // val resetTree = Utils.safeReset(tree, toolbox)
+      val resetTree = toolbox.resetLocalAttrs(tree)
       toolbox.compile(resetTree)
       // toolbox.compile(Utils.typeCheckTree(resetTree))
     } catch {

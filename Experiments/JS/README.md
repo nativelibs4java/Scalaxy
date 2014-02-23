@@ -8,19 +8,20 @@ Still very early experimentation, but the goal is to make Scala a first-class ci
 
 Here are the current design goals / constraints:
 
-- Calls from Scala to JavaScript should be very easy:
-  - Possibility to write inline JS with some string interpolation (+ translation of JS errors back to Scala ones)
-  - Full signatures of JavaScript externs to allow Scala typer to show its magic (using closure externs)
-  - *Dynamic* mode where everything is allowed (`obj.asDynamic.whatever = blah`)
 - The generated JavaScript code should:
   - Be human-readable,
   - Be obvious how to interface with from JavaScript,
   - Have full Closure type annotations
+  - Be about as small as if it had been written by hand, and not have too many libraries
 - The compiler should:
   - Be as fast as possible (resident compiler + sbt-style build manager?)
   - Provide a separate compilation model (+ linking = closure pass)
   - Support optional optimized mode
   - Output source maps to allow debugging of Scala sources from the browser
+- Calls from Scala to JavaScript should be very easy:
+  - Possibility to write inline JS with some string interpolation (+ translation of JS errors back to Scala ones)
+  - Full signatures of JavaScript externs to allow Scala typer to show its magic (using closure externs)
+  - *Dynamic* mode where everything is allowed (`obj.asDynamic.whatever = blah`)
 
 # Example
 

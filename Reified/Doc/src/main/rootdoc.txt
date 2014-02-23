@@ -2,7 +2,7 @@ Scalaxy/Reify provides a powerful reified values mechanism that deals well with 
 
 It preserves the original value that was reified, allowing for flexible mixed usage of runtime value and compile-time AST.
 
-Please look at documentation of [[scalaxy.reified.reify]] and [[scalaxy.reified.ReifiedValue]] first.
+Please look at documentation of [[scalaxy.reified.reify]] and [[scalaxy.reified.Reified]] first.
 
 {{{
 import scalaxy.reified._

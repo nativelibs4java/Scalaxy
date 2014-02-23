@@ -27,14 +27,14 @@ package object reified {
    * which can be customized (by default, it handles constants, arrays, immutable collections,
    * tuples and options).
    */
-  implicit def reify[A: TypeTag](v: A): ReifiedValue[A] = macro internal.reifyImpl[A]
+  implicit def reified[A: TypeTag](v: A): Reified[A] = macro internal.reifiedImpl[A]
 
   /**
    * Wrapper that provides Function1-like methods to a reified Function1 value.
    */
   implicit class ReifiedFunction1[T1: TypeTag, R: TypeTag](
-    override val reifiedValue: ReifiedValue[T1 => R])
-      extends HasReifiedValue[T1 => R] {
+    override val reifiedValue: Reified[T1 => R])
+      extends HasReified[T1 => R] {
 
     override def valueTag = typeTag[T1 => R]
 
@@ -55,12 +55,13 @@ package object reified {
     @annotation.unspecialized
     def compose[A: TypeTag](g: ReifiedFunction1[A, T1]): ReifiedFunction1[A, R] = {
       val f = this
-      //reify((c: A) => f(g(c)))
-      internal.reifyWithDifferentRuntimeValue[A => R](
-        // f.compose(g),
-        (c: A) => f(g(c)),
-        f.reifiedValue.value.compose(g.reifiedValue.value)
-      )
+      reified((c: A) => f(g(c)))
+      // internal.reifiedWithDifferentRuntimeValue[A => R](
+      //   // f.compose(g),
+      //   // f.value.compose(g.value),
+      //   (c: A) => f(g(c)),
+      //   f.reifiedValue.value.compose(g.reifiedValue.value)
+      // )
     }
 
     /**
@@ -74,12 +75,13 @@ package object reified {
     @annotation.unspecialized
     def andThen[A: TypeTag](g: ReifiedFunction1[R, A]): ReifiedFunction1[T1, A] = {
       val f = this
-      //reify((a: T1) => g(f(a)))
-      internal.reifyWithDifferentRuntimeValue[T1 => A](
-        // f.andThen(g),
-        (a: T1) => g(f(a)),
-        f.reifiedValue.value.andThen(g.reifiedValue.value)
-      )
+      reified((a: T1) => g(f(a)))
+      // internal.reifiedWithDifferentRuntimeValue[T1 => A](
+      //   // f.andThen(g),
+      //   // f.value.andThen(g.value),
+      //   (a: T1) => g(f(a)),
+      //   f.reifiedValue.value.andThen(g.reifiedValue.value)
+      // )
     }
   }
 
@@ -87,8 +89,8 @@ package object reified {
    * Wrapper that provides Function2-like methods to a reified Function2 value.
    */
   implicit class ReifiedFunction2[T1: TypeTag, T2: TypeTag, R: TypeTag](
-    override val reifiedValue: ReifiedValue[Function2[T1, T2, R]])
-      extends HasReifiedValue[Function2[T1, T2, R]] {
+    override val reifiedValue: Reified[Function2[T1, T2, R]])
+      extends HasReified[Function2[T1, T2, R]] {
 
     override def valueTag = typeTag[Function2[T1, T2, R]]
 
@@ -103,7 +105,7 @@ package object reified {
     // TODO fix this:
     def curried: ReifiedFunction1[T1, ReifiedFunction1[T2, R]] = {
       val f = this
-      internal.reifyWithDifferentRuntimeValue[T1 => ReifiedFunction1[T2, R]](
+      internal.reifiedWithDifferentRuntimeValue[T1 => ReifiedFunction1[T2, R]](
         (v1: T1) => {
           internal.reifyMacro((v2: T2) => f(v1, v2))
         },
@@ -120,26 +122,29 @@ package object reified {
      */
     def tupled: ReifiedFunction1[(T1, T2), R] = {
       val f = this
-      internal.reifyWithDifferentRuntimeValue[((T1, T2)) => R](
-        (p: (T1, T2)) => {
-          val (v1, v2) = p
-          f(v1, v2)
-        },
-        f.reifiedValue.value.tupled
-      )
+      reified((p: (T1, T2)) => {
+        val (v1, v2) = p
+        f(v1, v2)
+      })
+      // internal.reifiedWithDifferentRuntimeValue[((T1, T2)) => R](
+      //   // f.value.tupled,
+      //   (p: (T1, T2)) => {
+      //     val (v1, v2) = p
+      //     f(v1, v2)
+      //   },
+      //   f.reifiedValue.value.tupled
+      // )
     }
   }
 
   /**
    * Implicitly extract reified value from its wrappers (such as ReifiedFunction1, ReifiedFunction2).
    */
-  implicit def hasReifiedValueToReifiedValue[A](r: HasReifiedValue[A]): ReifiedValue[A] = {
-    r.reifiedValue
-  }
+  implicit def hasReifiedValueToReifiedValue[A: TypeTag](r: HasReified[A]): Reified[A] = macro internal.hasReifiedValueToReifiedValueImpl[A]
 
   /**
    * Implicitly convert reified value to their original non-reified value.
    */
-  implicit def hasReifiedValueToValue[A](r: HasReifiedValue[A]): A = r.reifiedValue.value
+  implicit def hasReifiedValueToValue[A: TypeTag](r: HasReified[A]): A = macro internal.hasReifiedValueToValueImpl[A]
 }
 
