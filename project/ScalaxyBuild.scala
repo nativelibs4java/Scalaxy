@@ -178,7 +178,7 @@ object Scalaxy extends Build {
       settings =
         standardSettings ++
         Seq(publish := { }))
-    .aggregate(integration, loops, compilets, fx, json, beans, components, debug, extensions, reified, scalaxyDoc, parano)
+    .aggregate(integration, loops, compilets, fx, json, beans, components, debug, extensions, reified, scalaxyDoc, parano, privacy)
 
   lazy val integration =
     Project(
@@ -187,7 +187,7 @@ object Scalaxy extends Build {
       settings =
         standardSettings ++
         Seq(publish := { }))
-    .dependsOn(loops, compilets, fx, json, beans, components, debug, extensions, reified, parano)
+    .dependsOn(loops, compilets, fx, json, beans, components, debug, extensions, reified, parano, privacy)
 
   lazy val docProjects = Map(
     // "Compilets" -> compilets,
@@ -328,6 +328,9 @@ object Scalaxy extends Build {
   lazy val rewriting =
     Project(id = "scalaxy-rewriting", base = file("RewritingDSLs"), settings = reflectSettings)
 
+  lazy val rewriting2 =
+    Project(id = "scalaxy-rewriting2", base = file("RewritingDSLs2"), settings = reflectSettings)
+
   lazy val casbahDSL =
     Project(id = "scalaxy-casbah-dsl", base = file("CasbahDSL"), settings = reflectSettings ++ Seq(
       libraryDependencies += "org.mongodb" %% "casbah" % "2.6.3"
@@ -350,8 +353,18 @@ object Scalaxy extends Build {
     .dependsOn(debug)
 
   lazy val parano =
-    Project(id = "scalaxy-parano", base = file("Parano"), settings = reflectSettings ++ scalariformSettings ++ Seq(
-      watchSources <+= baseDirectory map { _ / "examples" }))
+    Project(id = "scalaxy-parano", base = file("Parano"),
+      settings = reflectSettings ++ scalariformSettings ++ Seq(
+        watchSources <+= baseDirectory map { _ / "examples" },
+        scalacOptions in console in Compile <+= (packageBin in Compile) map("-Xplugin:" + _)
+      ))
+
+  lazy val privacy =
+    Project(id = "scalaxy-privacy", base = file("Privacy"),
+      settings = reflectSettings ++ scalariformSettings ++ Seq(
+        watchSources <+= baseDirectory map { _ / "examples" },
+        scalacOptions in console in Compile <+= (packageBin in Compile) map("-Xplugin:" + _)
+      ))
 
   lazy val generic =
     Project(id = "scalaxy-generic", base = file("Generic"), settings = reflectSettings ++ scalariformSettings)

@@ -25,9 +25,8 @@ class ParanoComponent(
 
   override val phaseName = "scalaxy-parano"
 
-  override val runsRightAfter = Some("typer")
-  override val runsAfter = runsRightAfter.toList
-  override val runsBefore = List[String]("patmat")
+  override val runsAfter = List("typer")
+  override val runsBefore = List("patmat")
 
   override def error(pos: Position, msg: String) = reporter.error(pos, msg)
 
