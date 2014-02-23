@@ -81,7 +81,7 @@ trait ParanoChecks {
 
       val sym = tree.symbol
       if (tree.isInstanceOf[RefTree] &&
-          sym.annotations.exists(a => Option(a.tpe).exists(_ =:= typeOf[scala.deprecated]))) {
+        sym.annotations.exists(a => Option(a.tpe).exists(_ =:= typeOf[scala.deprecated]))) {
         error(tree.pos, s"$sym is deprecated")
       }
 

@@ -5,6 +5,8 @@ object Test {
   }
 
   val foo = Foo(10, 12)
+  println(foo.theFirst)
+  println(foo.second)
   println(foo.pubVal)
   println(foo.privVal)
 }

@@ -28,6 +28,13 @@ class PrivacyComponent(
   override val runsAfter = runsRightAfter.toList
   override val runsBefore = List[String]("namer")
 
+  private val flagsThatPreventPrivatization = {
+    import Flags._
+    PRIVATE | PROTECTED |
+      OVERRIDE | ABSTRACT | SYNTHETIC |
+      CASEACCESSOR | PARAMACCESSOR | PARAM | MACRO
+  }
+
   def newPhase(prev: Phase): StdPhase = new StdPhase(prev) {
     def apply(unit: CompilationUnit) {
       unit.body = new Transformer {
@@ -37,19 +44,12 @@ class PrivacyComponent(
           case _ =>
             false
         }
+
         def shouldPrivatize(mods: Modifiers, name: Name): Boolean = {
           val n = name.toString
 
           name != nme.CONSTRUCTOR &&
-            !mods.hasFlag(Flags.CASEACCESSOR) &&
-            !mods.hasFlag(Flags.PARAMACCESSOR) &&
-            !mods.hasFlag(Flags.PRIVATE) &&
-            !mods.hasFlag(Flags.OVERRIDE) &&
-            !mods.hasFlag(Flags.SYNTHETIC) &&
-            !mods.hasFlag(Flags.PARAM) &&
-            !mods.hasFlag(Flags.MACRO) &&
-            !mods.hasFlag(Flags.ABSTRACT) &&
-            !mods.hasFlag(Flags.PROTECTED) &&
+            mods.hasNoFlags(flagsThatPreventPrivatization) &&
             !n.contains("$") && !n.matches("res\\d+") && // Special cases for the console.
             !mods.annotations.exists(isPublicAnnotation _)
         }
