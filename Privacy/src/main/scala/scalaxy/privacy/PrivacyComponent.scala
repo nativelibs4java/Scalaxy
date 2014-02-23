@@ -35,6 +35,13 @@ class PrivacyComponent(
   private val defaultVisibilityString = "private[this]"
   private val defaultVisibilityFlags = PRIVATE | LOCAL
 
+  lazy val printNoPrivacyHint: Unit = {
+    reporter.info(
+      NoPosition,
+      s"To prevent $phaseName from changing default visiblity to $defaultVisibilityString, use @$NoPrivacyName",
+      force = true)
+  }
+
   private object SimpleAnnotation {
     def unapply(ann: Tree): Option[String] = Option(ann) collect {
       case Apply(Select(New(Ident(tpt)), nme.CONSTRUCTOR), _) =>
@@ -77,13 +84,6 @@ class PrivacyComponent(
             !hasSimpleAnnotation(d.mods, PublicName) &&
             !isConsoleSpecialCase
 
-        }
-
-        lazy val printNoPrivacyHint: Unit = {
-          reporter.info(
-            NoPosition,
-            s"To prevent $phaseName from changing default visiblity to $defaultVisibilityString, use @$NoPrivacyName",
-            force = true)
         }
 
         def transformModifiers(d: MemberDef): Modifiers = {
