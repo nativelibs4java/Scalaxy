@@ -2,6 +2,8 @@
 
 Change default privacy of vals, vars and defs to private, unless `@public` is used.
 
+This is only at the early stages of experimentation, and since it alters the Scala semantics, well... you've been warned :-)
+
 ```scala
 object Foo {
   val privateByDefault = 10
