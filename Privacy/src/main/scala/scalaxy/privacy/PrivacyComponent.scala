@@ -26,70 +26,7 @@ class PrivacyComponent(
 
   override val runsRightAfter = Option("parser")
   override val runsAfter = runsRightAfter.toList
-  override val runsBefore = List[String]("name")
-
-  //lazy val PublicTpe = typeOf[scalaxy.privacy.public]
-
-  // def newPhase(prev: Phase): StdPhase = new StdPhase(prev) {
-  //   def apply(unit: CompilationUnit) {
-  //     unit.body = new Transformer {
-  //       def shouldBePublic(sym: Symbol): Boolean = sym.isCaseAccessor || {
-  //         val s = if (sym.isAccessor) sym.accessed else sym
-  //         s.annotations.exists(a => PublicTpe =:= a.tpe)
-  //       }
-  //       def alterPrivacy(mods: Modifiers, sym: Symbol, pos: Position): Modifiers = {
-  //         if (sym != null &&
-  //           sym != NoSymbol &&
-  //           !sym.isConstructor &&
-  //           !mods.hasFlag(Flags.PRIVATE) &&
-  //           !mods.hasFlag(Flags.OVERRIDE) &&
-  //           !mods.hasFlag(Flags.SYNTHETIC) &&
-  //           !mods.hasFlag(Flags.PARAM) &&
-  //           !shouldBePublic(sym)) {
-
-  //           val Modifiers(flags, privateWithin, annotations) = mods
-  //           reporter.info(pos, "Made " + sym + " private.", force = true)
-  //           val newMods = Modifiers(flags | Flags.PRIVATE, privateWithin, annotations)
-  //           sym.modifiers = newMods
-
-  //           newMods
-  //         } else {
-  //           mods
-  //         }
-  //       }
-  //       override def transform(tree: Tree) = tree match {
-
-  //         case ValDef(mods, name, tpt, rhs) =>
-  //           val res = ValDef(
-  //             alterPrivacy(mods, tree.symbol, tree.pos),
-  //             name,
-  //             transform(tpt),
-  //             transform(rhs))
-  //           res.symbol = tree.symbol
-  //           res.tpe = tree.tpe
-  //           res
-
-  //         case DefDef(mods, name, tparams, vparamss, tpt, rhs) =>
-  //           val res = DefDef(
-  //             alterPrivacy(mods, tree.symbol, tree.pos),
-  //             name,
-  //             tparams.map(transform(_).asInstanceOf[TypeDef]),
-  //             vparamss.map(_.map(transform(_).asInstanceOf[ValDef])),
-  //             transform(tpt),
-  //             transform(rhs)
-  //           )
-  //           res.symbol = tree.symbol
-  //           res.tpe = tree.tpe
-  //           res
-
-  //         case _ =>
-  //           super.transform(tree)
-  //       }
-  //     } transform unit.body
-  //   }
-  // }
-
-  // lazy val PublicTpe = typeOf[public]
+  override val runsBefore = List[String]("namer")
 
   def newPhase(prev: Phase): StdPhase = new StdPhase(prev) {
     def apply(unit: CompilationUnit) {
