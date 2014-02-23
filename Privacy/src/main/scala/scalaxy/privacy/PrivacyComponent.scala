@@ -29,8 +29,11 @@ class PrivacyComponent(
   override val runsAfter = runsRightAfter.toList
   override val runsBefore = List("namer")
 
-  private final val PUBLIC_NAME = "public"
-  private final val NOPRIVACY_NAME = "noprivacy"
+  private val PublicName = "public"
+  private val NoPrivacyName = "noprivacy"
+
+  private val defaultVisibilityString = "private[this]"
+  private val defaultVisibilityFlags = PRIVATE | LOCAL
 
   private object SimpleAnnotation {
     def unapply(ann: Tree): Option[String] = Option(ann) collect {
@@ -51,7 +54,7 @@ class PrivacyComponent(
 
         def removePrivacyAnnotations(mods: Modifiers): Modifiers =
           mods.mapAnnotations(_.filter({
-            case SimpleAnnotation(PUBLIC_NAME | NOPRIVACY_NAME) => false
+            case SimpleAnnotation(PublicName | NoPrivacyName) => false
             case _ => true
           }))
 
@@ -60,33 +63,44 @@ class PrivacyComponent(
             CASEACCESSOR | PARAMACCESSOR | PARAM | MACRO
 
         def shouldPrivatize(d: MemberDef): Boolean = {
+          def isConsoleSpecialCase = currentHierarchy match {
+            case name :: _ if name.matches("""res\d+|.*\$.*""") =>
+              true
+            case _ :: parentName :: _ if parentName.matches("""\$eval|\$iw""") =>
+              true
+            case _ =>
+              false
+          }
+
           d.mods.hasNoFlags(flagsThatPreventPrivatization) &&
             d.name != nme.CONSTRUCTOR &&
-            !d.name.toString.matches("""res\d+|.*\$.*""") && // Special cases for the console.
-            !hasSimpleAnnotation(d.mods, PUBLIC_NAME)
+            !hasSimpleAnnotation(d.mods, PublicName) &&
+            !isConsoleSpecialCase
+
         }
 
         lazy val printNoPrivacyHint: Unit = {
           reporter.info(
             NoPosition,
-            s"To prevent $phaseName from making things private by default, you can use @$NOPRIVACY_NAME",
+            s"To prevent $phaseName from changing default visiblity to $defaultVisibilityString, use @$NoPrivacyName",
             force = true)
         }
 
         def transformModifiers(d: MemberDef): Modifiers = {
           if (shouldPrivatize(d)) {
             printNoPrivacyHint
-            reporter.warning(d.pos, phaseName + " made " + d.name + " private[this].")
+            reporter.info(d.pos, s"$phaseName made `${d.name}` $defaultVisibilityString.", force = true)
+            // println(currentHierarchy.mkString(" <- "))
 
-            d.mods.copy(flags = d.mods.flags | PRIVATE | LOCAL)
+            d.mods.copy(flags = d.mods.flags | defaultVisibilityFlags)
           } else {
             removePrivacyAnnotations(d.mods)
           }
         }
 
         def transformOrSkip[T <: MemberDef](tree: T, cloner: (T, Modifiers) => T): T = {
-          if (hasSimpleAnnotation(tree.mods, NOPRIVACY_NAME)) {
-            reporter.info(tree.pos, phaseName + " won't alter privacy in " + tree.name + ".", force = true)
+          if (hasSimpleAnnotation(tree.mods, NoPrivacyName)) {
+            reporter.info(tree.pos, s"$phaseName won't alter privacy in `${tree.name}`.", force = true)
             // Just remove the @noprivacy modifier and skip the whole subtree:
             cloner(tree, removePrivacyAnnotations(tree.mods))
           } else {
@@ -96,18 +110,36 @@ class PrivacyComponent(
           }
         }
 
+        private[this] var currentHierarchy = List[String]()
+        def enter[T](name: Name)(b: => T): T = {
+          currentHierarchy = name.toString :: currentHierarchy
+          try {
+            b
+          } finally {
+            currentHierarchy = currentHierarchy.tail
+          }
+        }
+
         override def transform(tree: Tree) = tree match {
           case d @ ValDef(mods, name, tpt, rhs) =>
-            transformOrSkip(d, (t: ValDef, mods: Modifiers) => t.copy(mods = mods))
+            enter(name) {
+              transformOrSkip(d, (t: ValDef, mods: Modifiers) => t.copy(mods = mods))
+            }
 
           case d @ DefDef(mods, name, tparams, vparamss, tpt, rhs) =>
-            transformOrSkip(d, (t: DefDef, mods: Modifiers) => t.copy(mods = mods))
+            enter(name) {
+              transformOrSkip(d, (t: DefDef, mods: Modifiers) => t.copy(mods = mods))
+            }
 
           case d @ ClassDef(mods, name, tparams, impl) =>
-            transformOrSkip(d, (t: ClassDef, mods: Modifiers) => t.copy(mods = mods))
+            enter(name) {
+              transformOrSkip(d, (t: ClassDef, mods: Modifiers) => t.copy(mods = mods))
+            }
 
           case d @ ModuleDef(mods, name, impl) =>
-            transformOrSkip(d, (t: ModuleDef, mods: Modifiers) => t.copy(mods = mods))
+            enter(name) {
+              transformOrSkip(d, (t: ModuleDef, mods: Modifiers) => t.copy(mods = mods))
+            }
 
           case _ =>
             super.transform(tree)
