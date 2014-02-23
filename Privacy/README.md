@@ -1,8 +1,8 @@
 # Scalaxy/Privacy
 
-Change default privacy of vals, vars and defs to private, unless `@public` is used.
+Compiler plugin that changes default privacy of vals, vars and defs to private, unless `@public` is used.
 
-This is only at the early stages of experimentation, and since it alters the Scala semantics, well... you've been warned :-)
+This is only at the **early stages of experimentation**, and since it **may alter the Scala semantics** of your code, well... you've been warned :-)
 
 ```scala
 object Foo {
