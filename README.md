@@ -6,27 +6,14 @@ Collection of Scala Macro goodies ([BSD-licensed](https://github.com/ochafik/Sca
     
     for (i <- 0 until 100000000 optimized) { ... }
     ```
-- *[Reified](https://github.com/ochafik/Scalaxy/tree/master/Reified)* ([ScalaDoc](http://ochafik.github.io/Scalaxy/Reified/latest/api/index.html)) provides a powerful reified values mechanism that deals well with composition and captures of runtime values, allowing for complex ASTs to be generated during runtime for re-compilation or transformation purposes. It preserves the original value that was reified, allowing for flexible mixed usage of runtime value and compile-time AST.
-
-    ```scala
-    import scalaxy.reified._
-    
-    def comp(capture1: Int): ReifiedFunction1[Int, Int] = {
-      val capture2 = Seq(10, 20, 30)
-      val f = reify((x: Int) => capture1 + capture2(x))
-      val g = reify((x: Int) => x * x)
-      
-      g.compose(f)
-    }
-    
-    println("AST: " + comp(10).expr().tree)
-    ```
 
 - *[Debug](https://github.com/ochafik/Scalaxy/tree/master/Debug)* ([ScalaDoc](http://ochafik.github.io/Scalaxy/Debug/latest/api/index.html)) provides `assert`, `require` and `assume` macros that automatically add a useful message to the regular [Predef](http://www.scala-lang.org/api/current/index.html#scala.Predef$) calls.
 
 - *[JSON](https://github.com/ochafik/Scalaxy/tree/master/JSON)* ([ScalaDoc](http://ochafik.github.io/Scalaxy/JSON/latest/api/index.html)) provides macro-based `json` string interpolation with smart error reporting, compile-time renormalization, deconstruction and more.
 
 - *[Parano](https://github.com/ochafik/Scalaxy/tree/master/Parano)* provides compile-time checks to avoid common naming mistakes (ambiguous or swapped case class field extractor names, ambiguous unnamed param names with same type...)
+
+- *[Privacy](https://github.com/ochafik/Scalaxy/tree/master/Privacy)* changes the default member visibily from public to private (unless the `@public` annotation is used)
 
 - *[Beans](https://github.com/ochafik/Scalaxy/tree/master/Beans)* ([ScalaDoc](http://ochafik.github.io/Scalaxy/Beans/latest/api/index.html)) are a nifty combination of Dynamics and macros that provide a type-safe eye-candy syntax to set fields of regular Java Beans in a Scala way (without any runtime dependency at all!):
 
@@ -47,6 +34,22 @@ Collection of Scala Macro goodies ([BSD-licensed](https://github.com/ochafik/Sca
         println("Hello World!")
       }
     )
+    ```
+
+- *[Reified](https://github.com/ochafik/Scalaxy/tree/master/Reified)* ([ScalaDoc](http://ochafik.github.io/Scalaxy/Reified/latest/api/index.html)) provides a powerful reified values mechanism that deals well with composition and captures of runtime values, allowing for complex ASTs to be generated during runtime for re-compilation or transformation purposes. It preserves the original value that was reified, allowing for flexible mixed usage of runtime value and compile-time AST.
+
+    ```scala
+    import scalaxy.reified._
+    
+    def comp(capture1: Int): ReifiedFunction1[Int, Int] = {
+      val capture2 = Seq(10, 20, 30)
+      val f = reify((x: Int) => capture1 + capture2(x))
+      val g = reify((x: Int) => x * x)
+      
+      g.compose(f)
+    }
+    
+    println("AST: " + comp(10).expr().tree)
     ```
 
 - Obsolete experiments (mostly because of quasiquotes):
