@@ -7,7 +7,7 @@ import scala.tools.nsc.Settings
 import scala.tools.nsc.reporters.ConsoleReporter
 
 /**
- *  This compiler plugin enforces a "parano" mode.
+ *  This modified compiler enforces a "default-private" semantics, with a `@public` annotation to mark entities as public.
  */
 object PrivacyCompiler {
   def jarOf(c: Class[_]) =
@@ -28,6 +28,7 @@ object PrivacyCompiler {
         override protected def computeInternalPhases() {
           super.computeInternalPhases
           phasesSet += new PrivacyComponent(this)
+          phasesSet += new ExplicitTypeAnnotations(this)
         }
       }
       new global.Run().compile(command.files)

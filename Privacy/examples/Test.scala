@@ -1,4 +1,4 @@
-object Test {
+@public object Test {
   case class Foo(theFirst: Int, second: Int) {
     @public val pubVal = theFirst + second
     val privVal = pubVal
