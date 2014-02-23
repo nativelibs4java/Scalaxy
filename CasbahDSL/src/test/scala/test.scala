@@ -70,9 +70,22 @@ class QueryTest {
       query(d => d.foo < "bar" || d.foo.size == 4))
   }
 
-  @Ignore
+  @Ignore 
   @Test
   def testConnection {
-    val client =  MongoClient()
+    // val client =  MongoClient()
+
+    def makeEntry(word: String) =
+      $set ( (word + "_").iterator.mkString(".") -> word )
+
+    val dict = MongoConnection("localhost")("appdb")("dict")
+    val index = MongoDBObject("_id" -> "_index")
+    dict.update(index, makeEntry("applaud"), true, false)
+    dict.update(index, makeEntry("apple"), true, false)
+    dict.update(index, makeEntry("bad"), true, false)
+    dict.update(index, makeEntry("banana"), true, false)
+
+    val entry = dict.findOne(index ++ ("a.p.p" $exists true))
+    println(entry)
   }
 }
