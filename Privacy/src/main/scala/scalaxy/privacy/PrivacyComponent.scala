@@ -83,7 +83,6 @@ class PrivacyComponent(
             d.name != nme.CONSTRUCTOR &&
             !hasSimpleAnnotation(d.mods, PublicName) &&
             !isConsoleSpecialCase
-
         }
 
         def transformModifiers(d: MemberDef): Modifiers = {

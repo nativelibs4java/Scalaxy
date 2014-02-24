@@ -4,7 +4,7 @@ package scalaxy.privacy
 import scala.tools.nsc.CompilerCommand
 import scala.tools.nsc.Global
 import scala.tools.nsc.Settings
-import scala.tools.nsc.reporters.ConsoleReporter
+import scala.tools.nsc.reporters.{ ConsoleReporter, Reporter }
 
 /**
  *  This modified compiler enforces a "default-private" semantics, with a `@public` annotation to mark entities as public.
@@ -15,6 +15,9 @@ object PrivacyCompiler {
   val scalaLibraryJar = jarOf(classOf[List[_]])
 
   def main(args: Array[String]) {
+    compile(args, settings => new ConsoleReporter(settings))
+  }
+  def compile[R <: Reporter](args: Array[String], reporterGetter: Settings => R): R = {
     try {
       val settings = new Settings
       val command =
@@ -24,7 +27,8 @@ object PrivacyCompiler {
       if (!command.ok)
         System.exit(1)
 
-      val global = new Global(settings, new ConsoleReporter(settings)) {
+      val reporter = reporterGetter(settings)
+      val global = new Global(settings, reporter) {
         override protected def computeInternalPhases() {
           super.computeInternalPhases
           phasesSet += new PrivacyComponent(this)
@@ -32,10 +36,13 @@ object PrivacyCompiler {
         }
       }
       new global.Run().compile(command.files)
+
+      reporter
     } catch {
       case ex: Throwable =>
         ex.printStackTrace
         System.exit(2)
+        throw ex
     }
   }
 }
