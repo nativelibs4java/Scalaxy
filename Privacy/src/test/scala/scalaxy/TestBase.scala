@@ -3,6 +3,7 @@ package scalaxy.privacy.test
 import scala.language.existentials
 
 import scalaxy.privacy.PrivacyCompiler
+import scala.reflect.ClassTag
 import scala.tools.nsc.Global
 import scala.reflect.internal.util.Position
 import scala.tools.nsc.reporters.StoreReporter

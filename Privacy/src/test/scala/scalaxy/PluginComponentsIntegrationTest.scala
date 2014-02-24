@@ -14,17 +14,19 @@ class PluginComponentsIntegrationTest extends TestBase {
   override def getInternalPhases(global: Global) =
     PrivacyPlugin.getInternalPhases(global)
 
+  import ExplicitTypeAnnotationsTest.shouldHaveAnnotationMsg
+
   @Test
   def mixAllFeatures {
     assertEquals(
       List(
-        "Public member `ff` with non-trivial value should have a explicit type annotation",
-        "Public member `ffff` with non-trivial value should have a explicit type annotation",
-        "Public member `g` with non-trivial value should have a explicit type annotation",
-        "Public member `vvv` with non-trivial value should have a explicit type annotation",
-        "Public member `barf` with non-trivial value should have a explicit type annotation",
-        "Public member `barv` with non-trivial value should have a explicit type annotation",
-        "Public member `barvv` with non-trivial value should have a explicit type annotation"
+        shouldHaveAnnotationMsg("ff"),
+        shouldHaveAnnotationMsg("ffff"),
+        shouldHaveAnnotationMsg("g"),
+        shouldHaveAnnotationMsg("vvv"),
+        shouldHaveAnnotationMsg("barf"),
+        shouldHaveAnnotationMsg("barv"),
+        shouldHaveAnnotationMsg("barvv")
       ),
       compile("""
         @public class Foo {

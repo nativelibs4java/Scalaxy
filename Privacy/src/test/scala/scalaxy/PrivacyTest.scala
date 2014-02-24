@@ -80,7 +80,9 @@ class PrivacyTest extends TestBase {
   @Test
   def moduleMembers {
     assertEquals(
-      List("value privateByDefault is not a member of object Foo"),
+      List(
+        "value privateByDefault is not a member of object Foo"
+      ),
       compile("""
         object Foo {
           val privateByDefault = 10
