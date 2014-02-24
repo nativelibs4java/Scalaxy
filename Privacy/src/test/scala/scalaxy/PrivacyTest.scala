@@ -2,32 +2,16 @@ package scalaxy.privacy.test
 
 import scala.language.existentials
 
-import scalaxy.privacy.PrivacyCompiler
+import scala.tools.nsc.Global
+import scalaxy.privacy.PrivacyComponent
 import scala.tools.nsc.reporters.{ StoreReporter, Reporter }
 import org.junit._
 import org.junit.Assert._
 
-class PrivacyTest {
+class PrivacyTest extends TestBase {
 
-  def compile(src: String): List[String] = {
-    import java.io._
-    val f = File.createTempFile("test", ".scala")
-    try {
-      val out = new PrintWriter(f)
-      out.print(src)
-      out.close()
-
-      val reporter: StoreReporter =
-        PrivacyCompiler.compile(
-          Array(f.toString, "-d", f.getParent),
-          settings => new StoreReporter)
-      println(reporter.infos.mkString("\n"))
-
-      reporter.infos.toList.map(_.msg)
-    } finally {
-      f.delete()
-    }
-  }
+  override def getInternalPhases(global: Global) =
+    List(new PrivacyComponent(global))
 
   @Test
   def allPublic {
@@ -106,6 +90,22 @@ class PrivacyTest {
         object Bar {
           println(Foo.explicitlyPublic)
           println(Foo.privateByDefault)
+        }
+      """)
+    )
+  }
+  @Test
+  def locals {
+    assertEquals(
+      Nil,
+      compile("""
+        @public object Foo {
+          def f {
+            val v = 10
+            def ff: Int = v
+
+            v + ff
+          }
         }
       """)
     )

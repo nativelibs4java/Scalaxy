@@ -16,18 +16,24 @@ import scala.tools.nsc.symtab.Flags
  *  > nodeToString(ast)
  *  > val DefDef(mods, name, tparams, vparamss, tpt, rhs) = ast // play with extractors to explore the tree and its properties.
  */
+object PrivacyComponent {
+  val phaseName = "scalaxy-privacy"
+}
 class PrivacyComponent(
-  val global: Global)
+  val global: Global, runAfter: String = "parser")
     extends PluginComponent {
   import global._
   import definitions._
   import Flags._
 
-  override val phaseName = "scalaxy-privacy"
+  override val phaseName = PrivacyComponent.phaseName
 
-  override val runsRightAfter = Option("parser")
+  override val runsRightAfter = Option(runAfter)
   override val runsAfter = runsRightAfter.toList
   override val runsBefore = List("namer")
+
+  // override val runsAfter = List("parser")
+  // override val runsBefore = List("typer")
 
   private val PublicName = "public"
   private val NoPrivacyName = "noprivacy"
@@ -98,7 +104,7 @@ class PrivacyComponent(
         }
 
         def transformOrSkip[T <: MemberDef](tree: T, cloner: (T, Modifiers) => T): T = {
-          if (hasSimpleAnnotation(tree.mods, NoPrivacyName)) {
+          val res = if (hasSimpleAnnotation(tree.mods, NoPrivacyName)) {
             reporter.info(tree.pos, s"$phaseName won't alter privacy in `${tree.name}`.", force = true)
             // Just remove the @noprivacy modifier and skip the whole subtree:
             cloner(tree, removePrivacyAnnotations(tree.mods))
@@ -107,6 +113,9 @@ class PrivacyComponent(
             // Assume transform returns same type, which is true in our cases.
             cloner(super.transform(tree).asInstanceOf[T], transformModifiers(tree))
           }
+          res.pos = tree.pos
+
+          res
         }
 
         private[this] var currentHierarchy = List[String]()

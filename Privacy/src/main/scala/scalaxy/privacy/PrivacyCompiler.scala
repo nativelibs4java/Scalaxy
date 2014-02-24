@@ -4,6 +4,7 @@ package scalaxy.privacy
 import scala.tools.nsc.CompilerCommand
 import scala.tools.nsc.Global
 import scala.tools.nsc.Settings
+import scala.tools.nsc.plugins.PluginComponent
 import scala.tools.nsc.reporters.{ ConsoleReporter, Reporter }
 
 /**
@@ -15,9 +16,15 @@ object PrivacyCompiler {
   val scalaLibraryJar = jarOf(classOf[List[_]])
 
   def main(args: Array[String]) {
-    compile(args, settings => new ConsoleReporter(settings))
+    compile(
+      args,
+      settings => new ConsoleReporter(settings),
+      PrivacyPlugin.getInternalPhases _)
   }
-  def compile[R <: Reporter](args: Array[String], reporterGetter: Settings => R): R = {
+
+  def compile[R <: Reporter](args: Array[String],
+    reporterGetter: Settings => R,
+    internalPhasesGetter: Global => List[PluginComponent]): R = {
     try {
       val settings = new Settings
       val command =
@@ -31,8 +38,7 @@ object PrivacyCompiler {
       val global = new Global(settings, reporter) {
         override protected def computeInternalPhases() {
           super.computeInternalPhases
-          phasesSet += new PrivacyComponent(this)
-          phasesSet += new ExplicitTypeAnnotations(this)
+          phasesSet ++= internalPhasesGetter(this)
         }
       }
       new global.Run().compile(command.files)
