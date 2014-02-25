@@ -20,7 +20,7 @@ Scalaxy/Privacy is a Scala compiler plugin that:
 
 # Why, oh why??
 
-The default `public` visibility of Scala definitions is often at odds with the principle of [encapsulation](http://en.wikipedia.org/wiki/Encapsulation_(object-oriented_programming)).
+The default public visibility of Scala definitions is often at odds with the principle of [encapsulation](http://en.wikipedia.org/wiki/Encapsulation_(object-oriented_programming)).
 That's why some coding guidelines like Twitter's excellent [Effective Scala](http://twitter.github.io/effectivescala/) [recommend to mark methods and values that don't need to be public explicitly as `private[this]`](http://twitter.github.io/effectivescala/#Object oriented programming-Visibility).
 
 While this is great practice, it can quickly lead to lots of `private[this]` boilerplate, which this compiler plugin aims to remove the need of. The bet here is that with Scalaxy/Privacy:
@@ -31,6 +31,8 @@ While this is great practice, it can quickly lead to lots of `private[this]` boi
 Also, with the extra warnings about missing type annotations for public members with non-trivial bodies:
 * You'll make your code more readable,
 * You'll spot unintentional propagations of weird types (no more returning `Unit` or `MyPrivateLocalType` three levels deep by mistake)
+
+Now well... one may consider this as a language fork, which it might well be, somehow, but don't you worry: even if you convert all your code to using `@public` instead of `private`, the plugin will (soon) allow you to migrate all your code back to its equivalent traditional Scala, by generating the diffs you'll need to apply to it.
 
 # Longer examples
 
