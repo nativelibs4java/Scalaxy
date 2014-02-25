@@ -85,7 +85,7 @@ If that wasn't long enough, have a look at the following tests:
     }
   ```
 
-* Code that compiles with the plugin will most likely compile without, unless there's name clashes due to wildcards
+* Code that compiles with the plugin will most likely compile without, unless there's name clashes due to wildcard imports. This means that IDEs can grok code annotated with `@public` and `@noprivacy` without the need to run the plugin, because the code they'll see will also be valid Scala.
 
 ## Warnings on missing type annotations for public declarations
 
@@ -103,7 +103,10 @@ scalaVersion := "2.10.3"
 
 autoCompilerPlugins := true
 
-// Scalaxy/Privacy plugin
+// Scalaxy/Privacy annotations are only needed to avoid confusing IDEs.
+libraryDependencies += "com.nativelibs4java" %% "scalaxy-privacy" % "0.3-SNAPSHOT"
+
+// Scalaxy/Privacy compiler plugin.
 addCompilerPlugin("com.nativelibs4java" %% "scalaxy-privacy-plugin" % "0.3-SNAPSHOT")
 
 // Ensure Scalaxy/Privacy's plugin is used.
