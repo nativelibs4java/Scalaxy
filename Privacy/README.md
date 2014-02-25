@@ -74,6 +74,8 @@ If that wasn't long enough, have a look at the following tests:
 
 # More details
 
+## Private by default
+
 * `protected`, `private`, `override` and `abstract` definitions are unmodified
 * Accessors of case class canonical fields are unmodified:
 
@@ -84,6 +86,14 @@ If that wasn't long enough, have a look at the following tests:
   ```
 
 * Code that compiles with the plugin will most likely compile without, unless there's name clashes due to wildcards
+
+## Warnings on missing type annotations for public declarations
+
+* `val`s and `def`s which body is considered _trivial_ are not required to have a type annotation.
+  For instance, `def x = List(1, 2)` and `def y = List[Int]()` obviously have a return type of `List[Int]`, so no warning is needed.
+  However, `def z = List(1, "2")` is less trivial, so the plugin will warn about it.
+  The justification for these special cases (which affect `List`, `Set`, `Seq`, `Array`, `Iterable`, `Traversable` and to a lesser extent, `Map`) is that annotating return type of trivial methods brings no value to users, and the plugin aims to make your code more maintainable while cutting the boilerplate.
+* Method and value `override`s don't need to have type annotations: the risk of returning an unexpected type is very low, since the parent definition is likely to have a proper type annotation.
 
 # Usage
 
