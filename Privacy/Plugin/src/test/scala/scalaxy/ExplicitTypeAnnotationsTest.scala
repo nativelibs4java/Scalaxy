@@ -29,6 +29,10 @@ class ExplicitTypeAnnotationsTest extends TestBase {
           def f = 10
           def ff: Int = f
 
+          def unit {
+            // booh
+          }
+
           val v = 10
           val vv: Int = v
         }

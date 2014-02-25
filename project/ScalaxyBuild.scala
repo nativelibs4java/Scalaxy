@@ -178,7 +178,7 @@ object Scalaxy extends Build {
       settings =
         standardSettings ++
         Seq(publish := { }))
-    .aggregate(integration, loops, compilets, fx, json, beans, components, debug, extensions, reified, scalaxyDoc, parano, privacy)
+    .aggregate(integration, loops, compilets, fx, json, beans, components, debug, extensions, reified, scalaxyDoc, parano, privacyPlugin)
 
   lazy val integration =
     Project(
@@ -187,7 +187,7 @@ object Scalaxy extends Build {
       settings =
         standardSettings ++
         Seq(publish := { }))
-    .dependsOn(loops, compilets, fx, json, beans, components, debug, extensions, reified, parano, privacy)
+    .dependsOn(loops, compilets, fx, json, beans, components, debug, extensions, reified, parano, privacyPlugin)
 
   lazy val docProjects = Map(
     // "Compilets" -> compilets,
@@ -380,10 +380,18 @@ object Scalaxy extends Build {
         scalacOptions in console in Compile <+= (packageBin in Compile) map("-Xplugin:" + _)
       ))
 
+  lazy val privacyPlugin =
+    Project(id = "scalaxy-privacy-plugin", base = file("Privacy/Plugin"),
+      settings = reflectSettings ++ scalariformSettings ++ Seq(
+        watchSources <+= baseDirectory map { _ / "examples" },
+        scalacOptions in console in Compile <+= (packageBin in Compile) map("-Xplugin:" + _)
+      ))
+    .dependsOn(privacy)
+    .aggregate(privacy)
+
   lazy val privacy =
     Project(id = "scalaxy-privacy", base = file("Privacy"),
       settings = reflectSettings ++ scalariformSettings ++ Seq(
-        watchSources <+= baseDirectory map { _ / "examples" },
         scalacOptions in console in Compile <+= (packageBin in Compile) map("-Xplugin:" + _)
       ))
 
