@@ -4,13 +4,16 @@ Caveat: this is only at the **early stages of experimentation**, and since it **
 
 Scalaxy/Privacy is a Scala compiler plugin that:
 * Changes default visibility from public to `private[this]` (public requires a `@public` annotation).
+
   ```scala
     @public object Foo {
       val privateByDefault = 10
       @public val explicitlyPublic = 12
     }
   ```
+
 * Warns about non-trivial public methods and values without type annotations
+
   ```scala
     object Foo {
       // Warning: public `f` method has a non-trivial return type without type annotation.
@@ -72,11 +75,13 @@ If that wasn't long enough, have a look at the following tests:
 
 * `protected`, `private`, `override` and `abstract` definitions are unmodified
 * Accessors of case class canonical fields are unmodified:
+
   ```scala
     case class Foo(thisIsPublic: Int) {
       val thisIsPrivate = 10
     }
   ```
+
 * Code that compiles with the plugin will most likely compile without, unless there's name clashes due to wildcards
 
 # Usage
@@ -108,11 +113,12 @@ If you want to build / test / hack on this project:
 - Make sure to use [paulp's sbt script](https://github.com/paulp/sbt-extras) with `sbt` 0.12.2+
 - Use the following commands to checkout the sources and build the tests continuously:
 
-    ```
-    git clone git://github.com/ochafik/Scalaxy.git
-    cd Scalaxy
-    sbt "project scalaxy-privacy-plugin" "; clean ; ~test"
-    ```
+  ```
+  git clone git://github.com/ochafik/Scalaxy.git
+  cd Scalaxy
+  sbt "project scalaxy-privacy-plugin" "; clean ; ~test"
+  ```
+
 - Test with:
 
   ```
