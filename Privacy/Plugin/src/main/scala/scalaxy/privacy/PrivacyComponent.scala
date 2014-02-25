@@ -57,6 +57,12 @@ class PrivacyComponent(
 
   override def newPhase(prev: Phase) = new StdPhase(prev) {
     def apply(unit: CompilationUnit) {
+      //val diff = new collection.mutable.StringBuilder
+      //def addDiff
+      var privatizedPositions = List[Position]()
+
+      val diffDirectory = System.getProperty("scalaxy.privacy.diff")
+      val outputDiff = diffDirectory != null
 
       unit.body = new Transformer {
 
@@ -97,6 +103,9 @@ class PrivacyComponent(
             printNoPrivacyHint
             reporter.info(d.pos, s"$phaseName made `${d.name}` $defaultVisibilityString.", force = true)
             // println(currentHierarchy.mkString(" <- "))
+            if (outputDiff) {
+              privatizedPositions = d.pos :: privatizedPositions
+            }
 
             d.mods.copy(flags = d.mods.flags | defaultVisibilityFlags)
           } else {
@@ -154,6 +163,29 @@ class PrivacyComponent(
             super.transform(tree)
         }
       } transform unit.body
+
+      if (outputDiff) {
+        for ((line, poss) <- privatizedPositions.groupBy(_.line)) {
+          val original = poss.head.lineContent.stripLineEnd
+          var modified = original.reverse
+          for (pos <- poss.sortBy(_.column)) {
+            val rcol = original.length - pos.column
+            val start = modified.substring(0, rcol)
+            val end = modified.substring(rcol)
+
+            val memberRx = "trait|object|class|def|val|var"
+            val commentRx = """/\*(?:[^*]|\*[^/])*\*/"""
+            modified = start + end.replaceAll(
+              "(\\s*(:?" + commentRx + "\\s*)?(?:" + memberRx.reverse + "))\\b",
+              "$1 " + defaultVisibilityString.reverse)
+          }
+          modified = modified.reverse
+
+          println(s"@@ -$line,1 +$line,1 @@")
+          println(s"- $original")
+          println(s"+ $modified")
+        }
+      }
     }
   }
 }
