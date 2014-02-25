@@ -32,6 +32,17 @@ println(Foo.publicByDefault)   // Ok.
 println(Foo.explicitlyPrivate) // Error.
 ```
 
+# More details
+
+* `protected`, `private`, `override` and `abstract` definitions are unmodified
+* Accessors of case class canonical fields are unmodified:
+  ```scala
+    case class Foo(thisIsPublic: Int) {
+      val thisIsPrivate = 10
+    }
+  ```
+* Code that compiles with the plugin will most likely compile without, unless there's name clashes due to wildcards
+
 # Usage
 
 If you're using `sbt` 0.13.0+, just put the following lines in `build.sbt`:

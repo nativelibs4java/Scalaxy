@@ -57,6 +57,7 @@ class PrivacyComponent(
 
   override def newPhase(prev: Phase) = new StdPhase(prev) {
     def apply(unit: CompilationUnit) {
+
       unit.body = new Transformer {
 
         def hasSimpleAnnotation(mods: Modifiers, name: String): Boolean =
@@ -72,7 +73,7 @@ class PrivacyComponent(
           }))
 
         val flagsThatPreventPrivatization: FlagSet =
-          PRIVATE | PROTECTED | OVERRIDE | ABSTRACT | SYNTHETIC |
+          PRIVATE | PROTECTED | OVERRIDE | ABSTRACT | ABSOVERRIDE | DEFERRED | SYNTHETIC |
             CASEACCESSOR | PARAMACCESSOR | PARAM | MACRO
 
         def shouldPrivatize(d: MemberDef): Boolean = {

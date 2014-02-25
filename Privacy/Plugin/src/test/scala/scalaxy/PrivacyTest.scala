@@ -106,8 +106,31 @@ class PrivacyTest extends TestBase {
             val v = 10
             def ff: Int = v
 
-            v + ff
+            () => { v + ff }
           }
+        }
+      """)
+    )
+  }
+  @Test
+  def abstracts {
+    assertEquals(
+      Nil,
+      compile("""
+        @public trait A {
+          def f: Int
+        }
+        abstract class B {
+          def g: Int
+        }
+        @public class C extends B with A {
+          override def f = 10
+          override def g = 10
+        }
+        @public object Foo {
+          val c = new C
+          println(c.f)
+          println(c.g)
         }
       """)
     )
