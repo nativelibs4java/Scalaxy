@@ -103,8 +103,8 @@ scalaVersion := "2.10.3"
 
 autoCompilerPlugins := true
 
-// Scalaxy/Privacy annotations are only needed to avoid confusing IDEs.
-libraryDependencies += "com.nativelibs4java" %% "scalaxy-privacy" % "0.3-SNAPSHOT"
+// This compile-time dependency brings @public and @noprivacy, which are only needed to avoid confusing IDEs.
+libraryDependencies += "com.nativelibs4java" %% "scalaxy-privacy" % "0.3-SNAPSHOT" % "provided"
 
 // Scalaxy/Privacy compiler plugin.
 addCompilerPlugin("com.nativelibs4java" %% "scalaxy-privacy-plugin" % "0.3-SNAPSHOT")
