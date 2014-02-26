@@ -4,6 +4,7 @@ package scalaxy.privacy
 object MigrationDiffUtils {
 
   import PrivacyComponent.defaultVisibilityString
+  import java.util.regex.Pattern.quote
 
   case class SourcePos(file: String, line: Int, column: Int, lineContent: String)
 
@@ -29,15 +30,17 @@ object MigrationDiffUtils {
           val start = modified.substring(0, rcol)
           val end = modified.substring(rcol)
 
-          val spacesRx = "+s\\"
-          // Keep class before case class, this way when reversed it will try and match case class first.
-          val reverseMemberRx = s"trait|object|class|case${spacesRx.reverse}class|def|val|var".reverse
+          val spacesRx = "\\s+"
+          val reverseMemberRx = s"trait|object|class|case${spacesRx.reverse})class|object(|def|val|var".reverse
+          //val reverseMemberRx = s"trait|object|+?)case+s\\:?(class|def|val|var".reverse
           val commentRx = """/\*(?:[^*]|\*[^/])*\*/"""
 
+          val pattern = "^(\\s*(:?" + commentRx + "\\s*)?(?:" + reverseMemberRx + "|(?=\\s*[,(])))(?:\\s*esac|\\b)"
           // println(s"start = '$start'")
           // println(s"end = '$end'")
+          // println(s"pattern = '$pattern'")
           modified = start + end.replaceAll(
-            "^(\\s*(:?" + commentRx + "\\s*)?(?:" + reverseMemberRx + "|(?=\\s*[,)])))\\b",
+            pattern,
             "$1 " + defaultVisibilityString.reverse)
         }
         modified = modified.reverse

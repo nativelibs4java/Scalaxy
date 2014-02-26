@@ -15,11 +15,11 @@ class MigrationDiffUtilsTest {
     val lineContent1 = "def f"
     //           pos:       ^
     //       columns:       5
-    val lineContent3 = "def g"
-    //           pos:       ^
-    //       columns:       5
+    val lineContent3 = "case class Foo"
+    //           pos:              ^
+    //       columns:              12
     val mods = List(
-      PrivateModifier(SourcePos(file, line = 3, column = 5, lineContent = lineContent3)),
+      PrivateModifier(SourcePos(file, line = 3, column = 12, lineContent = lineContent3)),
       PrivateModifier(SourcePos(file, line = 1, column = 5, lineContent = lineContent1))
     )
 
@@ -31,8 +31,8 @@ class MigrationDiffUtilsTest {
         -def f
         +private[this] def f
         @@ -3,1 +3,1 @@
-        -def g
-        +private[this] def g
+        -case class Foo
+        +private[this] case class Foo
       """.trim.replaceAll("\n\\s+", "\n"),
       createRevertModificationsDiff(mods).trim)
   }
