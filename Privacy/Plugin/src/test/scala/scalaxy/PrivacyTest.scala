@@ -135,4 +135,14 @@ class PrivacyTest extends TestBase {
       """)
     )
   }
+  @Test
+  def diffs {
+    assertEquals(
+      Nil,
+      compile("""
+        @public object Foo { val x = 10 }
+        class Bar(x: Int, y: Int) { val z = 10 }
+      """)
+    )
+  }
 }

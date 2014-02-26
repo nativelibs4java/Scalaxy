@@ -55,14 +55,35 @@ class PrivacyComponent(
     }
   }
 
+  object DiffWriter {
+    import java.io._
+
+    val diffFileOpt: Option[File] =
+      Option(System.getProperty("scalaxy.privacy.diff"))
+        .map(new File(_))
+
+    for (diffFile <- diffFileOpt) {
+      assert(diffFile.isFile && diffFile.delete() || !diffFile.exists)
+
+      println(s"!!!\n!!! Migration diff = $diffFile\n!!!")
+    }
+
+    def appendDiff(s: => String) {
+      for (diffFile <- diffFileOpt) {
+        diffFile synchronized {
+          val out = new FileWriter(diffFile, true)
+          out.write(s.replaceAll("\n", System.lineSeparator))
+          out.close()
+        }
+      }
+    }
+  }
+
   override def newPhase(prev: Phase) = new StdPhase(prev) {
     def apply(unit: CompilationUnit) {
       //val diff = new collection.mutable.StringBuilder
       //def addDiff
       var privatizedPositions = List[Position]()
-
-      val diffDirectory = System.getProperty("scalaxy.privacy.diff")
-      val outputDiff = diffDirectory != null
 
       unit.body = new Transformer {
 
@@ -103,9 +124,7 @@ class PrivacyComponent(
             printNoPrivacyHint
             reporter.info(d.pos, s"$phaseName made `${d.name}` $defaultVisibilityString.", force = true)
             // println(currentHierarchy.mkString(" <- "))
-            if (outputDiff) {
-              privatizedPositions = d.pos :: privatizedPositions
-            }
+            privatizedPositions = d.pos :: privatizedPositions
 
             d.mods.copy(flags = d.mods.flags | defaultVisibilityFlags)
           } else {
@@ -164,26 +183,35 @@ class PrivacyComponent(
         }
       } transform unit.body
 
-      if (outputDiff) {
-        for ((line, poss) <- privatizedPositions.groupBy(_.line)) {
-          val original = poss.head.lineContent.stripLineEnd
-          var modified = original.reverse
-          for (pos <- poss.sortBy(_.column)) {
-            val rcol = original.length - pos.column
-            val start = modified.substring(0, rcol)
-            val end = modified.substring(rcol)
+      if (privatizedPositions.nonEmpty) {
+        DiffWriter.appendDiff {
+          val file = unit.source.file
+          val builder = new collection.mutable.StringBuilder
+          builder ++= s"--- $file\n"
+          builder ++= s"+++ $file\n"
+          for ((line, poss) <- privatizedPositions.groupBy(_.line)) {
+            val original = poss.head.lineContent.stripLineEnd
+            var modified = original.reverse
+            for (pos <- poss.sortBy(_.column)) {
+              val rcol = original.length - pos.column
+              val start = modified.substring(0, rcol)
+              val end = modified.substring(rcol)
 
-            val memberRx = "trait|object|class|def|val|var"
-            val commentRx = """/\*(?:[^*]|\*[^/])*\*/"""
-            modified = start + end.replaceAll(
-              "(\\s*(:?" + commentRx + "\\s*)?(?:" + memberRx.reverse + "))\\b",
-              "$1 " + defaultVisibilityString.reverse)
+              val spacesRx = "+s\\"
+              // Keep class before case class, this way when reversed it will try and match case class first.
+              val reverseMemberRx = s"trait|object|class|case${spacesRx.reverse}class|def|val|var".reverse
+              val commentRx = """/\*(?:[^*]|\*[^/])*\*/"""
+              modified = start + end.replaceAll(
+                "(\\s*(:?" + commentRx + "\\s*)?(?:" + reverseMemberRx + "))\\b",
+                "$1 " + defaultVisibilityString.reverse)
+            }
+            modified = modified.reverse
+
+            builder ++= s"@@ -$line,1 +$line,1 @@\n"
+            builder ++= s"-$original\n"
+            builder ++= s"+$modified\n"
           }
-          modified = modified.reverse
-
-          println(s"@@ -$line,1 +$line,1 @@")
-          println(s"- $original")
-          println(s"+ $modified")
+          builder.toString
         }
       }
     }

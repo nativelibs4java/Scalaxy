@@ -6,19 +6,19 @@ Scalaxy/Privacy is a Scala compiler plugin that:
 * Changes default visibility from public to `private[this]` (public requires a `@public` annotation).
 
   ```scala
-    @public object Foo {
-      val privateByDefault = 10
-      @public val explicitlyPublic = 12
-    }
+  @public object Foo {
+    val privateByDefault = 10
+    @public val explicitlyPublic = 12
+  }
   ```
 
 * Warns about non-trivial public methods and values without type annotations
 
   ```scala
-    object Foo {
-      // Warning: public `f` method has a non-trivial return type without type annotation.
-      @public def f(x: Int) = if (x < 0) "1" else 2
-    }
+  object Foo {
+    // Warning: public `f` method has a non-trivial return type without type annotation.
+    @public def f(x: Int) = if (x < 0) "1" else 2
+  }
   ```
 
 # Why, oh why??
@@ -42,8 +42,8 @@ Now well... one may consider this as a language fork, which it might well be, so
 
 ```scala
 @public object Foo {
-  // Any val, def, class or object not marked with @public is assumed to be private[this].
-  val privateByDefault = 10
+// Any val, def, class or object not marked with @public is assumed to be private[this].
+val privateByDefault = 10
 
   // The @public annotation is removed by the compiler plugin.
   @public val explicitlyPublic = 12
@@ -55,7 +55,7 @@ Now well... one may consider this as a language fork, which it might well be, so
   @public def g(x: Int): Int = f(x)
 }
 
-println(Foo.privateByDefault) // Error: Scalaxy/Privacy make that one private[this].
+println(l.privateByDefault) // Error: Scalaxy/Privacy make that one private[this].
 println(Foo.explicitlyPublic) // Ok.
 
 // Regular Scala visibility rules apply within elements tagged with @noprivacy
@@ -78,9 +78,9 @@ If that wasn't long enough, have a look at the following tests:
 * Accessors of case class canonical fields are unmodified:
 
   ```scala
-    case class Foo(thisIsPublic: Int) {
-      val thisIsPrivate = 10
-    }
+  case class Foo(thisIsPublic: Int) {
+    val thisIsPrivate = 10
+  }
   ```
 
 * Code that compiles with the plugin will most likely compile without, unless there's name clashes due to wildcards
@@ -105,7 +105,12 @@ resolvers += Resolver.sonatypeRepo("snapshots")
 
 # TODO
 
-- Tests
+- Fix issue of double modifiers:
+
+  ```scala
+  @public object Foo { val x = 10 }
+  class Bar(x: Int, y: Int) { val x = 10 }
+  ```
 - Check there aren't weird corner cases
 
 # Hacking
