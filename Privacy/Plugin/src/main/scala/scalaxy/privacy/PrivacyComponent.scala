@@ -18,6 +18,8 @@ import scala.tools.nsc.symtab.Flags
  */
 object PrivacyComponent {
   val phaseName = "scalaxy-privacy"
+
+  val defaultVisibilityString = "private[this]"
 }
 class PrivacyComponent(
   val global: Global, runAfter: String = "parser")
@@ -25,6 +27,8 @@ class PrivacyComponent(
   import global._
   import definitions._
   import Flags._
+
+  import PrivacyComponent.defaultVisibilityString
 
   override val phaseName = PrivacyComponent.phaseName
 
@@ -38,7 +42,6 @@ class PrivacyComponent(
   private val PublicName = "public"
   private val NoPrivacyName = "noprivacy"
 
-  private val defaultVisibilityString = "private[this]"
   private val defaultVisibilityFlags = PRIVATE | LOCAL
 
   lazy val printNoPrivacyHint: Unit = {
@@ -186,32 +189,16 @@ class PrivacyComponent(
       if (privatizedPositions.nonEmpty) {
         DiffWriter.appendDiff {
           val file = unit.source.file
-          val builder = new collection.mutable.StringBuilder
-          builder ++= s"--- $file\n"
-          builder ++= s"+++ $file\n"
-          for ((line, poss) <- privatizedPositions.groupBy(_.line)) {
-            val original = poss.head.lineContent.stripLineEnd
-            var modified = original.reverse
-            for (pos <- poss.sortBy(_.column)) {
-              val rcol = original.length - pos.column
-              val start = modified.substring(0, rcol)
-              val end = modified.substring(rcol)
 
-              val spacesRx = "+s\\"
-              // Keep class before case class, this way when reversed it will try and match case class first.
-              val reverseMemberRx = s"trait|object|class|case${spacesRx.reverse}class|def|val|var".reverse
-              val commentRx = """/\*(?:[^*]|\*[^/])*\*/"""
-              modified = start + end.replaceAll(
-                "(\\s*(:?" + commentRx + "\\s*)?(?:" + reverseMemberRx + "))\\b",
-                "$1 " + defaultVisibilityString.reverse)
-            }
-            modified = modified.reverse
+          import MigrationDiffUtils._
 
-            builder ++= s"@@ -$line,1 +$line,1 @@\n"
-            builder ++= s"-$original\n"
-            builder ++= s"+$modified\n"
-          }
-          builder.toString
+          def pos2sourcePos(pos: Position): SourcePos =
+            SourcePos(pos.source.path, line = pos.line, column = pos.column, lineContent = pos.lineContent)
+
+          val modifications =
+            for (pos <- privatizedPositions) yield PublicAnnotation(pos2sourcePos(pos))
+
+          createRevertModificationsDiff(modifications)
         }
       }
     }

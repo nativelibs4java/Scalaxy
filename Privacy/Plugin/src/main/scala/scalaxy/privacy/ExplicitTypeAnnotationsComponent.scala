@@ -102,9 +102,9 @@ class ExplicitTypeAnnotationsComponent(
             val pos = if (d.pos == NoPosition) d.rhs.pos else d.pos
             getTrivialTypeTree(d.rhs) match {
               case Some(tpt) =>
-                reporter.info(
-                  pos,
-                  s"Extracted trivial type $tpt", force = true)
+              // reporter.info(
+              //   pos,
+              //   s"Extracted trivial type $tpt", force = true)
 
               case _ =>
                 reporter.warning(
