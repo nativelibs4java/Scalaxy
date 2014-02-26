@@ -14,7 +14,15 @@ object MigrationDiffUtils {
   case class PublicAnnotation(pos: SourcePos) extends Modification
   case class PrivateModifier(pos: SourcePos) extends Modification
 
-  def createRevertModificationsDiff(modifications: List[Modification]): String = {
+  private val reverseDeclRx: String = {
+    val spacesRx = "\\s+"
+    val reverseDeclRx = s"trait|object|class|case${spacesRx.reverse})class|object(|def|val|var".reverse
+    val commentRx = """/\*(?:[^*]|\*[^/])*\*/"""
+
+    "^(\\s*(:?" + commentRx + "\\s*)?(?:" + reverseDeclRx + "|(?=\\s*[,(])))(?:\\s*esac|\\b)"
+  }
+
+  def createSingleFileRevertModificationsDiff(modifications: List[Modification]): String = {
     if (modifications.isEmpty) {
       ""
     } else {
@@ -30,17 +38,8 @@ object MigrationDiffUtils {
           val start = modified.substring(0, rcol)
           val end = modified.substring(rcol)
 
-          val spacesRx = "\\s+"
-          val reverseMemberRx = s"trait|object|class|case${spacesRx.reverse})class|object(|def|val|var".reverse
-          //val reverseMemberRx = s"trait|object|+?)case+s\\:?(class|def|val|var".reverse
-          val commentRx = """/\*(?:[^*]|\*[^/])*\*/"""
-
-          val pattern = "^(\\s*(:?" + commentRx + "\\s*)?(?:" + reverseMemberRx + "|(?=\\s*[,(])))(?:\\s*esac|\\b)"
-          // println(s"start = '$start'")
-          // println(s"end = '$end'")
-          // println(s"pattern = '$pattern'")
           modified = start + end.replaceAll(
-            pattern,
+            reverseDeclRx,
             "$1 " + defaultVisibilityString.reverse)
         }
         modified = modified.reverse

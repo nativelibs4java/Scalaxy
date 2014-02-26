@@ -198,7 +198,7 @@ class PrivacyComponent(
           val modifications =
             for (pos <- privatizedPositions) yield PublicAnnotation(pos2sourcePos(pos))
 
-          createRevertModificationsDiff(modifications)
+          createSingleFileRevertModificationsDiff(modifications)
         }
       }
     }

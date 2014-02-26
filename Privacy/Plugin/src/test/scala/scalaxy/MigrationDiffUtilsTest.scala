@@ -34,7 +34,7 @@ class MigrationDiffUtilsTest {
         -case class Foo
         +private[this] case class Foo
       """.trim.replaceAll("\n\\s+", "\n"),
-      createRevertModificationsDiff(mods).trim)
+      createSingleFileRevertModificationsDiff(mods).trim)
   }
 
   @Test
@@ -57,7 +57,7 @@ class MigrationDiffUtilsTest {
         -class Foo(val x: Int, y: Double)
         +private[this] class Foo(private[this] val x: Int, y: Double)
       """.trim.replaceAll("\n\\s+", "\n"),
-      createRevertModificationsDiff(mods).trim)
+      createSingleFileRevertModificationsDiff(mods).trim)
   }
 
   @Test
@@ -79,6 +79,6 @@ class MigrationDiffUtilsTest {
         -val x = 10, y = 12
         +private[this] val x = 10, y = 12
       """.trim.replaceAll("\n\\s+", "\n"),
-      createRevertModificationsDiff(mods).trim)
+      createSingleFileRevertModificationsDiff(mods).trim)
   }
 }
