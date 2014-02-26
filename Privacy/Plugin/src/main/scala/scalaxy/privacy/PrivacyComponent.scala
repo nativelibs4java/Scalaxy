@@ -104,7 +104,7 @@ class PrivacyComponent(
 
         val flagsThatPreventPrivatization: FlagSet =
           PRIVATE | PROTECTED | OVERRIDE | ABSTRACT | ABSOVERRIDE | DEFERRED | SYNTHETIC |
-            CASEACCESSOR | PARAMACCESSOR | PARAM | MACRO
+            PACKAGE | INCONSTRUCTOR | CASEACCESSOR | PARAMACCESSOR | PARAM | MACRO
 
         def shouldPrivatize(d: MemberDef): Boolean = {
           def isConsoleSpecialCase = currentHierarchy match {
@@ -117,6 +117,7 @@ class PrivacyComponent(
           }
 
           d.mods.hasNoFlags(flagsThatPreventPrivatization) &&
+            String.valueOf(d.mods.privateWithin) == "" &&
             d.name != nme.CONSTRUCTOR &&
             !hasSimpleAnnotation(d.mods, PublicName) &&
             !isConsoleSpecialCase
@@ -126,7 +127,6 @@ class PrivacyComponent(
           if (shouldPrivatize(d)) {
             printNoPrivacyHint
             reporter.info(d.pos, s"$phaseName made `${d.name}` $defaultVisibilityString.", force = true)
-            // println(currentHierarchy.mkString(" <- "))
             privatizedPositions = d.pos :: privatizedPositions
 
             d.mods.copy(flags = d.mods.flags | defaultVisibilityFlags)

@@ -97,7 +97,7 @@ class ExplicitTypeAnnotationsComponent(
           if (d.tpt.pos != NoPosition &&
             d.tpt.pos == d.pos &&
             d.name != nme.CONSTRUCTOR &&
-            d.mods.hasNoFlags(PRIVATE | PROTECTED | SYNTHETIC | OVERRIDE)) {
+            d.mods.hasNoFlags(PRIVATE | PROTECTED | SYNTHETIC | OVERRIDE | PARAM)) {
 
             val pos = if (d.pos == NoPosition) d.rhs.pos else d.pos
             getTrivialTypeTree(d.rhs) match {
