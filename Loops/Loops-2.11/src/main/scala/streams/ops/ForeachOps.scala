@@ -4,6 +4,12 @@ private[loops] trait ForeachOps extends StreamSources {
   val global: scala.reflect.api.Universe
   import global._
 
+  object ForeachOp {
+    def unapply(tree: Tree): Option[(Tree, ForeachOp)] = Option(tree) collect {
+      case q"$target.foreach[$_]((..$params) => $body)" =>
+        (target, ForeachOp(params, body))
+    }
+  }
   case class ForeachOp(params: List[ValDef], body: Tree)
       extends StreamOp
       with StreamSink

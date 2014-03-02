@@ -8,6 +8,13 @@ private[loops] trait MapOps
   val global: scala.reflect.api.Universe
   import global._
 
+
+  object MapOp {
+    def unapply(tree: Tree): Option[(Tree, MapOp)] = Option(tree) collect {
+      case q"$target.map[$_, $_](${f @ Function(_, _)})($canBuildFrom)" =>
+        (target, MapOp(f, canBuildFrom))
+    }
+  }
   case class MapOp(f: Function, canBuildFrom: Tree)
       extends StreamOp
       with CanBuildFromSink {

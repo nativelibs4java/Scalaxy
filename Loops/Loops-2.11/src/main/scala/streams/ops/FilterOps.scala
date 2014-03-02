@@ -4,6 +4,15 @@ private[loops] trait FilterOps extends StreamSources {
   val global: scala.reflect.api.Universe
   import global._
 
+  object FilterOp {
+    def unapply(tree: Tree): Option[(Tree, FilterOp)] = Option(tree) collect {
+      case q"$target.filter($param => $body)" =>
+        (target, FilterOp(param, body))
+
+      case q"$target.withFilter($param => $body)" =>
+        (target, FilterOp(param, body))
+    }
+  }
   case class FilterOp(param: ValDef, body: Tree) extends StreamOp {
     override def emitOp(
         streamVars: StreamVars,

@@ -98,7 +98,6 @@ class LoopsTest {
 
       println(parseTupleRewiringMapClosure(f))
     }
-
   }
 
   @Test
