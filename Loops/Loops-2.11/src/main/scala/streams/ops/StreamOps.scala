@@ -1,5 +1,6 @@
+package scalaxy.loops
 
-trait StreamOps
+private[loops] trait StreamOps
     extends StreamSources
     with ForeachOps
     with MapOps

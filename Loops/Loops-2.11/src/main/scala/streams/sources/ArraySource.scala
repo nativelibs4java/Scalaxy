@@ -1,5 +1,6 @@
+package scalaxy.loops
 
-trait ArrayStreamSources extends Streams {
+private[loops] trait ArrayStreamSources extends Streams {
   val global: scala.reflect.api.Universe
   import global._
 

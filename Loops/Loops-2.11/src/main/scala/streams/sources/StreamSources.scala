@@ -1,5 +1,6 @@
+package scalaxy.loops
 
-trait StreamSources
+private[loops] trait StreamSources
   extends Streams
   with InlineRangeStreamSources
   with ArrayStreamSources

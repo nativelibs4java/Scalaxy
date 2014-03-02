@@ -1,4 +1,6 @@
-trait TuploidValues extends Utils
+package scalaxy.loops
+
+private[loops] trait TuploidValues extends Utils
 {
   val global: scala.reflect.api.Universe
   import global._
@@ -120,7 +122,6 @@ trait TuploidValues extends Utils
             TuploidValue.extractValueFromBind(bind)
 
           case ident @ Ident(n) =>
-            println("WHAT THE HELL IS A RAW IDENT DOING IN A CASEDEF? " + ident)
             ScalarValue(ident.symbol)
         })
 
@@ -130,7 +131,6 @@ trait TuploidValues extends Utils
             TupleValue(alias = NoSymbol, values = sub(binds)) -> body
 
           case cq"($alias @ $tuple(..$binds)) => $body" =>
-            println(s"caseDef.pat.symbol = ${caseDef.pat.symbol}")
             TupleValue(alias = caseDef.pat.symbol, values = sub(binds)) -> body
         }
       }

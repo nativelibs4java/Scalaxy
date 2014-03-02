@@ -1,5 +1,6 @@
+package scalaxy.loops
 
-trait MapOps
+private[loops] trait MapOps
     extends StreamSources
     with CanBuildFromSinks
     with TuploidValues

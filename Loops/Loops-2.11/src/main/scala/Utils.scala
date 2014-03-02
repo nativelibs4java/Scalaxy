@@ -1,4 +1,6 @@
-trait Utils {
+package scalaxy.loops
+
+private[loops] trait Utils {
 
   def trySome[T](v: => T): Option[T] =
     try {

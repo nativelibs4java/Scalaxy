@@ -1,5 +1,6 @@
+package scalaxy.loops
 
-trait ForeachOps extends StreamSources {
+private[loops] trait ForeachOps extends StreamSources {
   val global: scala.reflect.api.Universe
   import global._
 

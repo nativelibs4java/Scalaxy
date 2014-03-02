@@ -1,8 +1,11 @@
+package scalaxy.loops.test
+
 import org.junit._
 import Assert._
 
 class LoopsTest {
-  import Loops.optimize
+  import scalaxy.loops.optimize
+  import scalaxy.loops.TuploidValues
 
   @Test
   def test {
