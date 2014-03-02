@@ -96,7 +96,8 @@ class LoopsTest {
         }
       """.asInstanceOf[toolbox.u.Tree]).asInstanceOf[Tree]
 
-      println(TransformationClosure.extract(f))
+      val SomeTransformationClosure(tc) = f
+      println(tc)
     }
   }
 
@@ -116,7 +117,8 @@ class LoopsTest {
         }
       """.asInstanceOf[toolbox.u.Tree]).asInstanceOf[Tree]
 
-      println(TransformationClosure.extract(f))
+      val SomeTransformationClosure(tc) = f
+      println(tc)
     }
 
   }

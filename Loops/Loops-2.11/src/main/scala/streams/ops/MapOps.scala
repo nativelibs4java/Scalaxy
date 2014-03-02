@@ -27,7 +27,7 @@ private[loops] trait MapOps
         fresh: String => TermName,
         transform: Tree => Tree): StreamOpResult =
     {
-      for (TransformationClosure(inputs, valDefs, outputs) <- TransformationClosure.extract(f)) {
+      for (SomeTransformationClosure(TransformationClosure(inputs, valDefs, outputs)) <- f) {
         println(s"""Rewiring Map:
           inputs = $inputs,
           valDefs = $valDefs,
