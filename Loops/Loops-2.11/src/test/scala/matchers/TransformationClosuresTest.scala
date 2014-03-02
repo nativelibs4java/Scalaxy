@@ -12,12 +12,11 @@ class TransformationClosureTest extends StreamComponentsTestBase with Transforma
     val f = typeCheck(q"""
       (p: (Int, Int)) => p match {
         case pp @ (x, y) =>
-
           (x, y)
       }
     """)
     val SomeTransformationClosure(tc) = f
-
+    println(tc)
   }
   /**
 

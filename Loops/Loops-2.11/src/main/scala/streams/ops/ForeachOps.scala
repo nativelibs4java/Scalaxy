@@ -1,12 +1,12 @@
 package scalaxy.loops
 
-private[loops] trait ForeachOps extends StreamSources with Blocks {
+private[loops] trait ForeachOps extends StreamSources with Strippers {
   val global: scala.reflect.api.Universe
   import global._
 
   object SomeForeachOp {
     def unapply(tree: Tree): Option[(Tree, ForeachOp)] = Option(tree) collect {
-      case q"$target.foreach[$_](${StripBlocks(Function(params, body))})" =>
+      case q"$target.foreach[$_](${Strip(Function(params, body))})" =>
         (target, ForeachOp(params, body))
     }
   }

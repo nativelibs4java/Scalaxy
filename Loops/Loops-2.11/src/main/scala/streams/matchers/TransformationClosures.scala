@@ -1,7 +1,7 @@
 package scalaxy.loops
 import scala.collection.breakOut
 
-private[loops] trait TransformationClosures extends TuploidValues with Blocks
+private[loops] trait TransformationClosures extends TuploidValues with Strippers
 {
   val global: scala.reflect.api.Universe
   import global._
@@ -68,23 +68,14 @@ private[loops] trait TransformationClosures extends TuploidValues with Blocks
   object SomeTransformationClosure {
     def unapply(closure: Tree): Option[TransformationClosure] = {
 
-      val inputValueAndBodyOpt = closure match {
-        case q"""($param) => (${paramRef @ Ident(_)}: $_) match { case $singleCase }"""
-            if param.name == paramRef.name =>
-          singleCase match {
-            case CaseTuploidValue(inputValue, body) =>
-              Some((inputValue, body))
+      val inputValueAndBodyOpt = Option(closure) collect {
+        case q"""($param) => ${Strip(pref @ Ident(_))} match {
+          case ${CaseTuploidValue(value, body)}
+        }""" if param.name == pref.name =>
+          (value, body)
 
-            case _ =>
-              None
-          }
-
-        case q"""($param) => $body""" =>
-          Some((ScalarValue(param.symbol), body))
-
-        case _ =>
-          println("COULDN'T RECOGNIZE closure: " + closure)
-          None
+        case q"($param) => $body" =>
+          (ScalarValue(param.symbol), body)
       }
       inputValueAndBodyOpt match {
         case Some((inputValue, BlockOrNot(statements, returnValue))) =>

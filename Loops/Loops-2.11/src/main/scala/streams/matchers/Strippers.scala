@@ -1,13 +1,16 @@
 package scalaxy.loops
 
-private[loops] trait Blocks
+private[loops] trait Strippers
 {
   val global: scala.reflect.api.Universe
   import global._
 
-  object StripBlocks {
+  object Strip {
     def unapply(tree: Tree): Option[Tree] = Some(tree match {
-      case Block(Nil, StripBlocks(value)) =>
+      case Block(Nil, Strip(value)) =>
+        value
+
+      case Typed(Strip(value), _) =>
         value
 
       case _ =>

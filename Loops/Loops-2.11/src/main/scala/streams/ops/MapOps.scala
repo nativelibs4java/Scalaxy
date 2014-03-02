@@ -5,14 +5,14 @@ private[loops] trait MapOps
     with CanBuildFromSinks
     with TuploidValues
     with TransformationClosures
-    with Blocks
+    with Strippers
 {
   val global: scala.reflect.api.Universe
   import global._
 
   object SomeMapOp {
     def unapply(tree: Tree): Option[(Tree, MapOp)] = Option(tree) collect {
-      case q"$target.map[$_, $_](${StripBlocks(f @ Function(_, _))})($canBuildFrom)" =>
+      case q"$target.map[$_, $_](${Strip(f @ Function(_, _))})($canBuildFrom)" =>
         (target, MapOp(f, canBuildFrom))
     }
   }
