@@ -14,6 +14,10 @@ class StreamComponentsTestBase {
 
   import global._
 
+  object S {
+    def unapply(symbol: Symbol): Option[String] =
+      Option(symbol).map(_.name.toString)
+  }
   def typeCheck(t: Tree): Tree =
     toolbox.typeCheck(t.asInstanceOf[toolbox.u.Tree]).asInstanceOf[Tree]
 }

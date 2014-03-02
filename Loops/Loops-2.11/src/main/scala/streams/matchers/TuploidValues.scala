@@ -16,6 +16,7 @@ private[loops] trait TuploidValues extends Utils
   }
 
   type TuploidPath = List[Int]
+  val RootTuploidPath = Nil
 
   /** A tuploid value is either a scalar or a tuple of tuploid values. */
   sealed trait TuploidValue {
@@ -36,10 +37,10 @@ private[loops] trait TuploidValues extends Utils
         Set()
 
     override def find(symbol: Symbol) =
-      Option(Nil).filter(_ => symbol == alias)
+      Option(RootTuploidPath).filter(_ => symbol == alias)
 
     override def get(path: TuploidPath) = {
-      val Nil = path
+      val RootTuploidPath = path
       this
     }
   }
@@ -62,7 +63,7 @@ private[loops] trait TuploidValues extends Utils
 
     override def find(symbol: Symbol) = {
       if (symbol == alias)
-        Some(Nil)
+        Some(RootTuploidPath)
       else
         values.toIterator.zipWithIndex.map {
           case (v, i) =>
@@ -74,7 +75,7 @@ private[loops] trait TuploidValues extends Utils
     }
 
     override def get(path: TuploidPath) = path match {
-      case Nil =>
+      case RootTuploidPath =>
         this
 
       case i :: subPath =>

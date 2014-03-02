@@ -23,78 +23,52 @@ private[loops] trait TransformationClosures extends TuploidValues with Strippers
     val usedInputs: Set[Symbol] = statements.flatMap(_.collect {
       case t: RefTree if inputSymbols(t.symbol) =>
         t.symbol
-    })(scala.collection.breakOut)
+    })(breakOut)
 
     val usedTupleAliasInputs: Set[Symbol] = statements.flatMap(_.collect {
       case t: RefTree if inputTupleAliasSymbols(t.symbol) =>
         t.symbol
-    })(scala.collection.breakOut)
+    })(breakOut)
 
     val producedOutputs: Set[Symbol] = statements.flatMap(_.collect {
       case t: DefTree if outputSymbols(t.symbol) =>
         t.symbol
-    })(scala.collection.breakOut)
+    })(breakOut)
 
     val producedOutputPaths: Set[TuploidPath] = producedOutputs.map(s => outputs.find(s).get)
 
     val outputPathToInputPath: Map[TuploidPath, TuploidPath] =
-      (for (s <- outputSymbols; if inputSymbols(s)) yield {
-        // val inputPath = inputs.find(s)
-        // val outputPath = outputs.find(s)
-        // if (inputPath.isEmpty || outputPath.isEmpty)
-        //   println(s"""
-        //     INPUT PATH($s) = $inputPath, OUTPUT = $outputPath
-        //     inputs = $inputs
-        //     outputs = $outputs
-        //   """)
+      outputSymbols.filter(inputSymbols).map(s =>
         outputs.find(s).get -> inputs.find(s).get
-      })(scala.collection.breakOut)
-  }
+      )(breakOut)
 
-  def getPreviousReferencedTupleAliasPaths(
-    closure: TransformationClosure,
-    nextReferencedTupleAliasPaths: Set[TuploidPath])
-      : Set[TuploidPath] =
-  {
-    val closureReferencePaths =
-      closure.usedTupleAliasInputs.map(s => closure.inputs.find(s).get)
+    def getPreviousReferencedTupleAliasPaths(nextReferencedTupleAliasPaths: Set[TuploidPath])
+        : Set[TuploidPath] =
+    {
+      val closureReferencePaths =
+        usedTupleAliasInputs.map(s => inputs.find(s).get)
 
-    val transposedPaths =
-      nextReferencedTupleAliasPaths.collect(closure.outputPathToInputPath)
+      val transposedPaths =
+        nextReferencedTupleAliasPaths.collect(outputPathToInputPath)
 
-    closureReferencePaths ++ transposedPaths
+      closureReferencePaths ++ transposedPaths
+    }
   }
 
   object SomeTransformationClosure {
     def unapply(closure: Tree): Option[TransformationClosure] = {
 
-      val inputValueAndBodyOpt = Option(closure) collect {
+      Option(closure) collect {
         case q"""($param) => ${Strip(pref @ Ident(_))} match {
-          case ${CaseTuploidValue(value, body)}
+          case ${CaseTuploidValue(inputValue, body)}
         }""" if param.name == pref.name =>
-          (value, body)
+          (inputValue, body)
 
         case q"($param) => $body" =>
           (ScalarValue(param.symbol), body)
-      }
-      inputValueAndBodyOpt match {
-        case Some((inputValue, BlockOrNot(statements, returnValue))) =>
-          returnValue match {
-            case TuploidValue(outputValue) =>
-              val result = TransformationClosure(inputValue, statements, outputValue)
-              Option(result).filterNot(_.hasTupleAliasReferencesInStatements)
-
-            case _ =>
-              println("COULDN'T RECOGNIZE return value of body: " + returnValue)
-              None
-          }
-
-        case Some((inputValue, body)) =>
-          println("COULDN'T RECOGNIZE TuploidValue case: (inputValue = " + inputValue + "): " + body)
-          None
-
-        case _ =>
-          None
+      } collect {
+        case (inputValue, BlockOrNot(statements, TuploidValue(outputValue))) =>
+          TransformationClosure(inputValue, statements, outputValue)
       }
     }
   }
