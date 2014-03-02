@@ -61,13 +61,16 @@ private[loops] trait TuploidValues extends Utils
       subSymbolsPlusAlias(_.collectSymbols)
 
     override def find(symbol: Symbol) = {
-      values.toIterator.zipWithIndex.map {
-        case (v, i) =>
-          v.find(symbol).map(i :: _)
-      } collectFirst {
-        case Some(path) =>
-          path
-      }
+      if (symbol == alias)
+        Some(Nil)
+      else
+        values.toIterator.zipWithIndex.map {
+          case (v, i) =>
+            v.find(symbol).map(i :: _)
+        } collectFirst {
+          case Some(path) =>
+            path
+        }
     }
 
     override def get(path: TuploidPath) = path match {
