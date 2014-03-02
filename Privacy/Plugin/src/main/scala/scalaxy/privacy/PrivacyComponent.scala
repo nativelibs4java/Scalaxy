@@ -20,6 +20,9 @@ object PrivacyComponent {
   val phaseName = "scalaxy-privacy"
 
   val defaultVisibilityString = "private[this]"
+
+  val PublicName = "public"
+  val NoPrivacyName = "noprivacy"
 }
 class PrivacyComponent(
   val global: Global, runAfter: String = "parser")
@@ -38,9 +41,6 @@ class PrivacyComponent(
 
   // override val runsAfter = List("parser")
   // override val runsBefore = List("typer")
-
-  private val PublicName = "public"
-  private val NoPrivacyName = "noprivacy"
 
   private val defaultVisibilityFlags = PRIVATE | LOCAL
 
@@ -118,7 +118,9 @@ class PrivacyComponent(
 
           d.mods.hasNoFlags(flagsThatPreventPrivatization) &&
             String.valueOf(d.mods.privateWithin) == "" &&
+            d.name != nme.PACKAGE &&
             d.name != nme.CONSTRUCTOR &&
+            // d.mods.annotations.nonEmpty &&
             !hasSimpleAnnotation(d.mods, PublicName) &&
             !isConsoleSpecialCase
         }
@@ -141,6 +143,8 @@ class PrivacyComponent(
             // Just remove the @noprivacy modifier and skip the whole subtree:
             cloner(tree, removePrivacyAnnotations(tree.mods))
           } else {
+            println(s"Decl ${tree.name} does not have some $NoPrivacyName: ${tree.mods} (annotations: ${tree.mods.annotations})")
+
             // Recursively transform the tree and alter its modifiers.
             // Assume transform returns same type, which is true in our cases.
             cloner(super.transform(tree).asInstanceOf[T], transformModifiers(tree))
