@@ -43,7 +43,7 @@ private[loops] trait Streams {
     def matchVars(streamVars: StreamVars, params: List[ValDef]): StreamVars = {
       // TODO
       streamVars
-    } 
+    }
   }
 
   trait StreamSource extends StreamComponent {
@@ -92,11 +92,11 @@ private[loops] trait Streams {
     def unapply(tree: Tree): Option[(StreamSource, List[StreamOp])]
   }
 
-  val StreamOp: StreamOpExtractor
+  val SomeStreamOp: StreamOpExtractor
 
   object Stream {
     def unapply(tree: Tree): Option[Stream] = tree match {
-      case StreamOp(source, ops @ (_ :: _)) =>
+      case SomeStreamOp(source, ops @ (_ :: _)) =>
         (source :: ops).reverse collectFirst {
           case sink: StreamSink =>
             new Stream(source, ops, sink)

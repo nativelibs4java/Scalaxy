@@ -4,17 +4,19 @@ private[loops] trait MapOps
     extends StreamSources
     with CanBuildFromSinks
     with TuploidValues
+    with TransformationClosures
+    with Blocks
 {
   val global: scala.reflect.api.Universe
   import global._
 
-
-  object MapOp {
+  object SomeMapOp {
     def unapply(tree: Tree): Option[(Tree, MapOp)] = Option(tree) collect {
-      case q"$target.map[$_, $_](${f @ Function(_, _)})($canBuildFrom)" =>
+      case q"$target.map[$_, $_](${StripBlocks(f @ Function(_, _))})($canBuildFrom)" =>
         (target, MapOp(f, canBuildFrom))
     }
   }
+  //params: List[ValDef], body: Tree, 
   case class MapOp(f: Function, canBuildFrom: Tree)
       extends StreamOp
       with CanBuildFromSink {
@@ -25,7 +27,7 @@ private[loops] trait MapOps
         fresh: String => TermName,
         transform: Tree => Tree): StreamOpResult =
     {
-      for ((inputs, valDefs, outputs) <- parseTupleRewiringMapClosure(f)) {
+      for (TransformationClosure(inputs, valDefs, outputs) <- TransformationClosure.extract(f)) {
         println(s"""Rewiring Map:
           inputs = $inputs,
           valDefs = $valDefs,

@@ -15,7 +15,7 @@ private[loops] trait ArrayStreamSources extends Streams {
     }
   }
 
-  object ArrayOps {
+  object SomeArrayOps {
     def unapply(tree: Tree): Option[Tree] = Option(tree) collect {
       case q"scala.this.Predef.${AnyValArrayOpsName()}($a)" =>
         // println("ARRAY ANYVAL: " + a)
@@ -27,9 +27,9 @@ private[loops] trait ArrayStreamSources extends Streams {
     }
   }
 
-  object ArrayStreamSource {
+  object SomeArrayStreamSource {
     def unapply(tree: Tree): Option[ArrayStreamSource] =
-      ArrayOps.unapply(tree).map(ArrayStreamSource.apply _)
+      SomeArrayOps.unapply(tree).map(ArrayStreamSource.apply _)
   }
 
   case class ArrayStreamSource(array: Tree)

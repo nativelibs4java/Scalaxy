@@ -5,7 +5,7 @@ import Assert._
 
 class LoopsTest {
   import scalaxy.loops.optimize
-  import scalaxy.loops.TuploidValues
+  import scalaxy.loops._
 
   @Test
   def test {
@@ -80,7 +80,7 @@ class LoopsTest {
 
   @Test
   def tupleMappedToTuple {
-    new TuploidValues {
+    new TransformationClosures {
       override val global = scala.reflect.runtime.universe
       import global._
       import scala.reflect.runtime.currentMirror
@@ -96,13 +96,13 @@ class LoopsTest {
         }
       """.asInstanceOf[toolbox.u.Tree]).asInstanceOf[Tree]
 
-      println(parseTupleRewiringMapClosure(f))
+      println(TransformationClosure.extract(f))
     }
   }
 
   @Test
   def scalarMappedToTuple {
-    new TuploidValues {
+    new TransformationClosures {
       override val global = scala.reflect.runtime.universe
       import global._
       import scala.reflect.runtime.currentMirror
@@ -116,7 +116,7 @@ class LoopsTest {
         }
       """.asInstanceOf[toolbox.u.Tree]).asInstanceOf[Tree]
 
-      println(parseTupleRewiringMapClosure(f))
+      println(TransformationClosure.extract(f))
     }
 
   }

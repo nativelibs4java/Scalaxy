@@ -8,12 +8,12 @@ private[loops] trait StreamSources
   val global: scala.reflect.api.Universe
   import global._
 
-  object StreamSource {
+  object SomeStreamSource {
     def unapply(tree: Tree): Option[StreamSource] = Option(tree) collect {
-      case InlineRangeStreamSource(source) =>
+      case SomeInlineRangeStreamSource(source) =>
         source
 
-      case ArrayStreamSource(source) =>
+      case SomeArrayStreamSource(source) =>
         source
     }
   }

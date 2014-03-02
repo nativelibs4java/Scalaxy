@@ -1,15 +1,15 @@
 package scalaxy.loops
 
-private[loops] trait FilterOps extends StreamSources {
+private[loops] trait FilterOps extends StreamSources with Blocks {
   val global: scala.reflect.api.Universe
   import global._
 
-  object FilterOp {
+  object SomeFilterOp {
     def unapply(tree: Tree): Option[(Tree, FilterOp)] = Option(tree) collect {
-      case q"$target.filter($param => $body)" =>
+      case q"$target.filter(${StripBlocks(Function(List(param), body))})" =>
         (target, FilterOp(param, body))
 
-      case q"$target.withFilter($param => $body)" =>
+      case q"$target.withFilter(${StripBlocks(Function(List(param), body))})" =>
         (target, FilterOp(param, body))
     }
   }
