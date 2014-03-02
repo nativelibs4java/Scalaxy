@@ -33,7 +33,7 @@ package loops {
 
         val result = new Transformer {
           override def transform(tree: Tree) = tree match {
-            case Stream(stream) =>
+            case SomeStream(stream) =>
               // println(s"source = $source")
               c.info(a.tree.pos, s"stream = $stream", force = true)
               val result = stream.emitStream(n => c.fresh(n): TermName, transform(_))
