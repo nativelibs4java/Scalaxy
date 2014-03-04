@@ -1,90 +1,92 @@
 package scalaxy.loops
 
-private[loops] trait Streams {
+private[loops] trait Streams extends TransformationClosures {
   val global: scala.reflect.api.Universe
   import global._
 
-  object TODO {
-    sealed trait StreamValueType
-    case class ScalarStreamValueType(tpe: Type) extends StreamValueType
-    case class TupleStreamValueType(elements: ScalarStreamValueType) extends StreamValueType
+  trait StreamComponent
+  {
+    def sinkOption: Option[StreamSink]
 
-    case class StreamFiber(path: List[Int])
-    case class StreamVars(fiberNames: Map[StreamFiber, TermName] = Map()) {
-      // zip, etc...
-    }
-  }
-  case class StreamVars(
-    valueName: TermName,
-    originalName: TermName = null,
-    originalSymbol: Symbol = NoSymbol)
-
-  trait StreamComponent {
-    def emitSub(streamVars: StreamVars,
-                ops: List[StreamOp],
-                sink: StreamSink,
+    def emitSub(inputVars: TuploidValue,
+                opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
                 fresh: String => TermName,
                 transform: Tree => Tree): StreamOpResult =
     {
-      ops match {
-        case firstOp :: otherOps =>
-          firstOp.emitOp(streamVars, otherOps, sink, fresh, transform)
+      opsAndOutputNeeds match {
+        case (firstOp, outputNeeds) :: otherOpsAndOutputNeeds =>
+          firstOp.emitOp(inputVars, outputNeeds, otherOpsAndOutputNeeds, fresh, transform)
 
         case Nil =>
-          sink.emitSink(streamVars, fresh, transform)
-          // NoStreamOpResult
+          sys.error("Cannot call emitSub at the end of an ops stream.")
       }
     }
-
-    def replaceClosureBody(streamVars: StreamVars, tree: Tree): Tree = {
-      // TODO
-      tree
-    }
-    def matchVars(streamVars: StreamVars, params: List[ValDef]): StreamVars = {
-      // TODO
-      streamVars
-    }
-  }
-
-  trait StreamSource extends StreamComponent {
-    def emitSource(ops: List[StreamOp],
-                   sink: StreamSink,
-                   fresh: String => TermName,
-                   transform: Tree => Tree): Tree
-  }
-
-  trait StreamSink extends StreamComponent {
-    def emitSink(streamVars: StreamVars,
-                 fresh: String => TermName,
-                 transform: Tree => Tree): StreamOpResult
   }
 
   case class StreamOpResult(prelude: List[Tree], body: List[Tree], ending: List[Tree])
 
   val NoStreamOpResult = StreamOpResult(prelude = Nil, body = Nil, ending = Nil)
 
-  trait StreamOp extends StreamComponent {
-    def emitOp(streamVars: StreamVars,
-               ops: List[StreamOp],
-               sink: StreamSink,
+  // type StreamOp <: StreamComponent
+  trait StreamOp extends StreamComponent
+  {
+    def transmitOutputNeedsBackwards(paths: Set[TuploidPath]): Set[TuploidPath]
+
+    def emitOp(inputVars: TuploidValue,
+               outputNeeds: Set[TuploidPath],
+               opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
                fresh: String => TermName,
                transform: Tree => Tree): StreamOpResult
+  }
+
+  trait StreamSource extends StreamComponent {
+    def emitSource(outputNeeds: Set[TuploidPath],
+                   opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
+                   fresh: String => TermName,
+                   transform: Tree => Tree): Tree
+  }
+
+  trait StreamSink extends StreamComponent {
+
+    def outputNeeds: Set[TuploidPath]
+
+    def emitSink(inputVars: TuploidValue,
+                 fresh: String => TermName,
+                 transform: Tree => Tree): StreamOpResult
+  }
+
+  case class SinkOp(sink: StreamSink) extends StreamOp
+  {
+    override val sinkOption = Some(sink)
+
+    override def transmitOutputNeedsBackwards(paths: Set[TuploidPath]) = ???
+
+    override def emitOp(
+        inputVars: TuploidValue,
+        outputNeeds: Set[TuploidPath],
+        opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
+        fresh: String => TermName,
+        transform: Tree => Tree): StreamOpResult =
+    {
+      require(opsAndOutputNeeds.isEmpty)
+
+      sink.emitSink(inputVars, fresh, transform)
+    }
   }
 
   case class Stream(source: StreamSource, ops: List[StreamOp], sink: StreamSink) {
     def emitStream(fresh: String => TermName,
                    transform: Tree => Tree): Tree =
     {
-      // val StreamOpResult(streamPrelude, streamBody, streamEnding) =
-      //   source.emitSource(ops, sink, fresh, transform)
-
-      // q"""
-      //   ..$streamPrelude
-      //   ..$streamBody
-      //   ..$streamEnding
-      // """
-
-      source.emitSource(ops, sink, fresh, transform)
+      val sinkNeeds = sink.outputNeeds
+      val sourceNeeds :: outputNeeds = ops.scanRight(sinkNeeds)({ case (op, refs) =>
+        op.transmitOutputNeedsBackwards(refs)
+      })
+      val opsAndOutputNeeds = ops.zip(outputNeeds) :+ ((SinkOp(sink), sinkNeeds))
+      println(s"source = $source")
+      println(s"""ops =\n\t${ops.mkString("\n\t")}""")
+      println(s"opsAndOutputNeeds = $opsAndOutputNeeds")
+      source.emitSource(sourceNeeds, opsAndOutputNeeds, fresh, transform)
     }
   }
 
@@ -97,8 +99,8 @@ private[loops] trait Streams {
   object SomeStream {
     def unapply(tree: Tree): Option[Stream] = tree match {
       case SomeStreamOp(source, ops @ (_ :: _)) =>
-        (source :: ops).reverse collectFirst {
-          case sink: StreamSink =>
+        (source :: ops).reverse.toIterator.map(_.sinkOption) collectFirst {
+          case Some(sink) =>
             new Stream(source, ops, sink)
         }
 

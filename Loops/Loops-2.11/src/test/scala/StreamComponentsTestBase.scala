@@ -18,6 +18,10 @@ class StreamComponentsTestBase {
     def unapply(symbol: Symbol): Option[String] =
       Option(symbol).map(_.name.toString)
   }
+  object N {
+    def unapply(name: Name): Option[String] =
+      Option(name).map(_.toString)
+  }
   def typeCheck(t: Tree): Tree =
     toolbox.typeCheck(t.asInstanceOf[toolbox.u.Tree]).asInstanceOf[Tree]
 }

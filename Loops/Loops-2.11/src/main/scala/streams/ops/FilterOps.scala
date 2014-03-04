@@ -1,6 +1,10 @@
 package scalaxy.loops
 
-private[loops] trait FilterOps extends StreamSources with Strippers {
+private[loops] trait FilterOps
+    extends StreamSources
+    with ClosureStreamOps
+    with Strippers
+{
   val global: scala.reflect.api.Universe
   import global._
 
@@ -13,25 +17,32 @@ private[loops] trait FilterOps extends StreamSources with Strippers {
         (target, FilterOp(param, body))
     }
   }
-  case class FilterOp(param: ValDef, body: Tree) extends StreamOp {
+  case class FilterOp(param: ValDef, body: Tree)
+      extends ClosureStreamOp
+  {
+    override def sinkOption = None
+
     override def emitOp(
-        streamVars: StreamVars,
-        ops: List[StreamOp],
-        sink: StreamSink,
+        inputVars: TuploidValue,
+        outputNeeds: Set[TuploidPath],
+        opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
         fresh: String => TermName,
         transform: Tree => Tree): StreamOpResult =
     {
-      val subVars = matchVars(streamVars, List(param))
+
+      val (replacedStatements, outputVars) = transformationClosure.replaceClosureBody(inputVars, fresh, transform)
+      println("TODO: check this is Boolean: " + outputVars)
+
       val StreamOpResult(streamPrelude, streamBody, streamEnding) =
-        emitSub(subVars, ops, sink, fresh, transform)
+        emitSub(inputVars, opsAndOutputNeeds, fresh, transform)
 
-      val test = replaceClosureBody(subVars, transform(body))
-
+      val test = outputVars.aliasName
       StreamOpResult(
         prelude = streamPrelude,
         // TODO match params and any tuple extraction in body with streamVars, replace symbols with streamVars values
         body = List(
           q"""
+            ..$replacedStatements
             if ($test) {
               ..$streamBody
             }

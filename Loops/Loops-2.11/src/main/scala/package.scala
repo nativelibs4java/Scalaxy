@@ -25,33 +25,39 @@ package object loops {
 package loops {
   object impl {
     def optimize[A : c.WeakTypeTag](c: Context)(a: c.Expr[A]): c.Expr[A] = {
-      object Optimize extends StreamOps {
-        override val global = c.universe
-        import global._
+      try {
+        object Optimize extends StreamOps {
+          override val global = c.universe
+          import global._
 
-        val original = a.tree.asInstanceOf[Tree]//c.typeCheck(a.tree)
+          val original = a.tree.asInstanceOf[Tree]//c.typeCheck(a.tree)
 
-        val result = new Transformer {
-          override def transform(tree: Tree) = tree match {
-            case SomeStream(stream) =>
-              // println(s"source = $source")
-              c.info(a.tree.pos, s"stream = $stream", force = true)
-              val result = stream.emitStream(n => c.fresh(n): TermName, transform(_))
-              println(result)
-              tree
-              // super.transform(tree)
+          val result = new Transformer {
+            override def transform(tree: Tree) = tree match {
+              case SomeStream(stream) =>
+                // println(s"source = $source")
+                c.info(a.tree.pos, s"stream = $stream", force = true)
+                val result = stream.emitStream(n => c.fresh(n): TermName, transform(_))
+                println(result)
+                tree
+                // super.transform(tree)
 
-            case _ =>
-              // println("Not matched: " + tree)
-              super.transform(tree)
-          }
-        } transform original
+              case _ =>
+                // println("Not matched: " + tree)
+                super.transform(tree)
+            }
+          } transform original
 
-        // println(s"Original: $original")
-        // println(s"Result: $result")
+          // println(s"Original: $original")
+          // println(s"Result: $result")
+        }
+
+        c.Expr[A](Optimize.result.asInstanceOf[c.universe.Tree])
+      } catch {
+        case ex: Throwable =>
+          ex.printStackTrace()
+          a
       }
-
-      c.Expr[A](Optimize.result.asInstanceOf[c.universe.Tree])
     }
   }
 }

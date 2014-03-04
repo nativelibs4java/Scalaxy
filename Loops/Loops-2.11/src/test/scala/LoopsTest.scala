@@ -16,6 +16,7 @@ class LoopsTest {
     //     (i - j) / (prod + 1) 
     //   }
     // }
+    
 
     optimize {
       for (i <- 0 to n) {

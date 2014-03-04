@@ -53,6 +53,15 @@ private[loops] trait TransformationClosures extends TuploidValues with Strippers
 
       closureReferencePaths ++ transposedPaths
     }
+
+    def replaceClosureBody(
+        inputVars: TuploidValue,
+        fresh: String => TermName,
+        transform: Tree => Tree): (List[Tree], TuploidValue) =
+    {
+      println("TODO replaceClosureBody !!!")
+      (statements.map(transform), inputVars)
+    }
   }
 
   object SomeTransformationClosure {
@@ -65,7 +74,7 @@ private[loops] trait TransformationClosures extends TuploidValues with Strippers
           (inputValue, body)
 
         case q"($param) => $body" =>
-          (ScalarValue(param.symbol), body)
+          (ScalarValue(alias = param.symbol), body)
       } collect {
         case (inputValue, BlockOrNot(statements, TuploidValue(outputValue))) =>
           TransformationClosure(inputValue, statements, outputValue)

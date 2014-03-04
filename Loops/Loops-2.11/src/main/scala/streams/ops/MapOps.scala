@@ -5,6 +5,7 @@ private[loops] trait MapOps
     with CanBuildFromSinks
     with TuploidValues
     with TransformationClosures
+    with ClosureStreamOps
     with Strippers
 {
   val global: scala.reflect.api.Universe
@@ -12,48 +13,31 @@ private[loops] trait MapOps
 
   object SomeMapOp {
     def unapply(tree: Tree): Option[(Tree, MapOp)] = Option(tree) collect {
-      case q"$target.map[$_, $_](${Strip(f @ Function(_, _))})($canBuildFrom)" =>
-        (target, MapOp(f, canBuildFrom))
+      case q"$target.map[$_, $_](${Strip(Function(List(param), body))})($canBuildFrom)" =>
+        (target, MapOp(param, body, canBuildFrom))
     }
   }
-  //params: List[ValDef], body: Tree, 
-  case class MapOp(f: Function, canBuildFrom: Tree)
-      extends StreamOp
-      with CanBuildFromSink {
+
+  case class MapOp(param: ValDef, body: Tree, canBuildFrom: Tree)
+      extends ClosureStreamOp
+  {
+    override val sinkOption = Some(CanBuildFromSink(canBuildFrom))
+
     override def emitOp(
-        streamVars: StreamVars,
-        ops: List[StreamOp],
-        sink: StreamSink,
+        inputVars: TuploidValue,
+        outputNeeds: Set[TuploidPath],
+        opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
         fresh: String => TermName,
         transform: Tree => Tree): StreamOpResult =
     {
-      for (SomeTransformationClosure(TransformationClosure(inputs, valDefs, outputs)) <- f) {
-        println(s"""Rewiring Map:
-          inputs = $inputs,
-          valDefs = $valDefs,
-          output = $outputs
-        """)
-      }
-
-      val q"(..$params) => $body" = f
-      //params: List[ValDef], body: Tree, 
-
-      // TODO wire input and output fiber vars 
-      val mapped = fresh("mapped")
-      // TODO inject mapped in vars
-      val subVars = matchVars(streamVars, params)
+      val (replacedStatements, outputVars) = transformationClosure.replaceClosureBody(inputVars, fresh, transform)
       val StreamOpResult(streamPrelude, streamBody, streamEnding) =
-        emitSub(subVars, ops, sink, fresh, transform)
+        emitSub(outputVars, opsAndOutputNeeds, fresh, transform)
 
-      val newBody = replaceClosureBody(subVars, transform(body))
-
-      val builder = fresh("builder")
       StreamOpResult(
-        // TODO pass source collection to canBuildFrom if it exists.
         prelude = streamPrelude,
-        // TODO match params and any tuple extraction in body with streamVars, replace symbols with streamVars values
         body = List(q"""
-          val $mapped = $newBody
+          ..$replacedStatements
           ..$streamBody
         """),
         ending = streamEnding

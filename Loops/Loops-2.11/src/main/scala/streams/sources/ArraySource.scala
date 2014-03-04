@@ -33,11 +33,16 @@ private[loops] trait ArrayStreamSources extends Streams {
   }
 
   case class ArrayStreamSource(array: Tree)
-      extends StreamSource {
+      extends StreamSource
+  {
+    override def sinkOption = {
+      println("TODO array sink")
+      None
+    }
 
     override def emitSource(
-        ops: List[StreamOp],
-        sink: StreamSink,
+        outputNeeds: Set[TuploidPath],
+        opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
         fresh: String => TermName,
         transform: Tree => Tree): Tree =
     {
@@ -46,10 +51,10 @@ private[loops] trait ArrayStreamSources extends Streams {
       val iVar = fresh("i")
       val itemVal = fresh("item")
 
-      val streamVars = StreamVars(valueName = itemVal)
+      val (extractionCode, outputVars) = createTuploidPathsExtractionDecls(itemVal, outputNeeds, fresh)
 
       val StreamOpResult(streamPrelude, streamBody, streamEnding) =
-        emitSub(streamVars, ops, sink, fresh, transform)
+        emitSub(outputVars, opsAndOutputNeeds, fresh, transform)
 
       q"""
         val $arrayVal = ${transform(array)}

@@ -4,20 +4,24 @@ private[loops] trait CanBuildFromSinks extends StreamSources {
   val global: scala.reflect.api.Universe
   import global._
 
-  trait CanBuildFromSink extends StreamSink {
+  case class CanBuildFromSink(canBuildFrom: Tree) extends StreamSink
+  {
+    override def sinkOption = Some(this)
 
-    def canBuildFrom: Tree
+    override def outputNeeds = Set(RootTuploidPath)
 
     override def emitSink(
-        streamVars: StreamVars,
+        inputVars: TuploidValue,
         fresh: String => TermName,
         transform: Tree => Tree): StreamOpResult =
     {
       val builder = fresh("builder")
+      require(inputVars.aliasName.toString != "", s"inputVars = $inputVars")
+
       StreamOpResult(
         // TODO pass source collection to canBuildFrom if it exists.
         prelude = List(q"val $builder = $canBuildFrom()"),
-        body = List(q"$builder += ${streamVars.valueName}"),
+        body = List(q"$builder += ${inputVars.aliasName}"),
         ending = List(q"$builder.result()")
       )
     }

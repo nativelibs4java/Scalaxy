@@ -4,7 +4,9 @@ private[loops] trait StreamOps
     extends StreamSources
     with ForeachOps
     with MapOps
+    with FlatMapOps // TODO
     with FilterOps
+    with ZipWithIndexOps
 {
   val global: scala.reflect.api.Universe
   import global._
@@ -17,7 +19,14 @@ private[loops] trait StreamOps
       case SomeMapOp(SomeStreamOp(src, ops), op) =>
         (src, ops :+ op)
 
+      case SomeFlatMapOp(SomeStreamOp(src, ops), op @ FlatMapOp(param, body, canBuildFrom)) =>
+        println("TODO: flatten flatMap !!!")
+        (src, ops :+ op)
+
       case SomeFilterOp(SomeStreamOp(src, ops), op) =>
+        (src, ops :+ op)
+
+      case SomeZipWithIndexOp(SomeStreamOp(src, ops), op) =>
         (src, ops :+ op)
 
       case SomeStreamSource(src) =>

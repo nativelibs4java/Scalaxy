@@ -4,7 +4,8 @@ private[loops] trait InlineRangeStreamSources extends Streams {
   val global: scala.reflect.api.Universe
   import global._
 
-  object ToUntil {
+  object ToUntil
+  {
     def apply(isInclusive: Boolean) = ???
     def unapply(name: Name): Option[Boolean] = if (name == null) None else name.toString match {
       case "to" => Some(true)
@@ -13,7 +14,8 @@ private[loops] trait InlineRangeStreamSources extends Streams {
     }
   }
 
-  object SomeInlineRangeStreamSource {
+  object SomeInlineRangeStreamSource
+  {
     def unapply(tree: Tree): Option[InlineRangeStreamSource[_]] = Option(tree) collect {
       case q"scala.this.Predef.intWrapper($start) ${ToUntil(isInclusive)} $end" =>
         InlineRangeStreamSource[Int](start, end, by = 1, isInclusive)
@@ -31,11 +33,16 @@ private[loops] trait InlineRangeStreamSources extends Streams {
 
   case class InlineRangeStreamSource[T <: AnyVal : Numeric : Liftable]
     (start: Tree, end: Tree, by: T, isInclusive: Boolean)
-      extends StreamSource {
+      extends StreamSource
+  {
+    override def sinkOption = {
+      println("TODO vector / range sink")
+      None
+    }
 
     override def emitSource(
-        ops: List[StreamOp],
-        sink: StreamSink,
+        outputNeeds: Set[TuploidPath],
+        opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
         fresh: String => TermName,
         transform: Tree => Tree): Tree =
     {
@@ -44,10 +51,10 @@ private[loops] trait InlineRangeStreamSources extends Streams {
       val iVar = fresh("i")
       val iVal = fresh("iVal")
 
-      val streamVars = StreamVars(valueName = iVal)
+      val outputVars = ScalarValue(aliasName = iVal)
 
       val StreamOpResult(streamPrelude, streamBody, streamEnding) =
-        emitSub(streamVars, ops, sink, fresh, transform)
+        emitSub(outputVars, opsAndOutputNeeds, fresh, transform)
 
       val testOperator: TermName =
         if (implicitly[Numeric[T]].signum(by) > 0) {
