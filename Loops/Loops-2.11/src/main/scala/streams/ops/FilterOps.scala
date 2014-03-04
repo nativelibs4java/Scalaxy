@@ -30,7 +30,7 @@ private[loops] trait FilterOps
         transform: Tree => Tree): StreamOpResult =
     {
 
-      val (replacedStatements, outputVars) = transformationClosure.replaceClosureBody(inputVars, fresh, transform)
+      val (replacedStatements, outputVars) = transformationClosure.replaceClosureBody(inputVars, outputNeeds, fresh, transform)
       println("TODO: check this is Boolean: " + outputVars)
 
       val StreamOpResult(streamPrelude, streamBody, streamEnding) =

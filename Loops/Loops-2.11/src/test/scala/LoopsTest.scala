@@ -26,12 +26,19 @@ class LoopsTest {
 
       val arrays = Array(Array(1, 2), Array(3, 4))
 
-      for (array <- arrays;
-           length = array.length * 30;
-           if length < 10;
-           v <- array)
-        yield
-          (length, v)
+      for ((a, i) <- Array(Array(1)).zipWithIndex; len = a.length; if len < i) {
+        println(s"$a, $len, $i")
+      }
+
+
+
+  
+      // for (array <- arrays;
+      //      length = array.length * 30;
+      //      if length < 10;
+      //      v <- array)
+      //   yield
+      //     (length, v)
 
       
         // scala.this.Predef.refArrayOps(scala.this.Predef.refArrayOps(arrays)

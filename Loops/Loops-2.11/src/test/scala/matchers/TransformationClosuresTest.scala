@@ -7,8 +7,6 @@ import Assert._
 class TransformationClosureTest extends StreamComponentsTestBase with TransformationClosures {
   import global._
 
-  val EmptyName: TermName = ""
-
   @Test
   def testNoOpTuple2 {
     val f = typeCheck(q"""
@@ -60,6 +58,15 @@ class TransformationClosureTest extends StreamComponentsTestBase with Transforma
     val SomeTransformationClosure(tc @ TransformationClosure(inputs, statements, outputs)) = f
     val ScalarValue(EmptyTree, S("x"), EmptyName) = inputs
     val ScalarValue(EmptyTree, S("x"), EmptyName) = outputs
+  }
+
+  @Test
+  def testScalarToPrintln {
+    val f = typeCheck(q"(x: Int) => println(x)")
+
+    val SomeTransformationClosure(tc @ TransformationClosure(inputs, statements, outputs)) = f
+    val ScalarValue(EmptyTree, S("x"), EmptyName) = inputs
+    val ScalarValue(q"scala.this.Predef.println(x)", NoSymbol, EmptyName) = outputs
   }
 
   @Test

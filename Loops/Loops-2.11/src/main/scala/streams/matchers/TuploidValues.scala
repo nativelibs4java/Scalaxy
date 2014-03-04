@@ -39,9 +39,47 @@ private[loops] trait TuploidValues extends Utils
   }
 
   /** A tuploid value is either a scalar or a tuple of tuploid values. */
-  sealed trait TuploidValue {
-    def collectTupleAliases: Set[Symbol]
-    def collectSymbols: Set[Symbol]
+  sealed trait TuploidValue
+  {
+    def collectSet[A](pf: PartialFunction[(TuploidPath, TuploidValue), A]): Set[A] =
+      collect(pf).toSet
+
+    def collect[A](pf: PartialFunction[(TuploidPath, TuploidValue), A]): List[A] = {
+      val res = collection.mutable.ListBuffer[A]()
+      foreachDefined(pf andThen {
+        case a =>
+          res += a
+      })
+      res.result
+    }
+
+    def foreachDefined(pf: PartialFunction[(TuploidPath, TuploidValue), Unit]) {
+      new TuploidTraverser {
+        override def traverse(path: TuploidPath, t: TuploidValue) {
+          super.traverse(path, t)
+          pf.applyOrElse((path, t), (_: (TuploidPath, TuploidValue)) => ())
+        }
+      } traverse (RootTuploidPath, this)
+    }
+
+    def collectTupleAliases: Set[Symbol] =
+      collectSet {
+        case (path, TupleValue(_, alias, _)) if alias != NoSymbol =>
+          alias
+      }
+
+    def collectSymbols =
+      collectSet {
+        case (path, t) if t.alias != NoSymbol =>
+          t.alias
+      }
+
+    def collectValues =
+      collect {
+        case (path, ScalarValue(value, _, _)) if value != EmptyTree =>
+          (path, value)
+      }
+
     def find(symbol: Symbol): Option[TuploidPath]
     def get(path: TuploidPath): TuploidValue
 
@@ -52,14 +90,6 @@ private[loops] trait TuploidValues extends Utils
   case class ScalarValue(value: Tree = EmptyTree, alias: Symbol = NoSymbol, aliasName: TermName = "")
       extends TuploidValue
   {
-    override def collectTupleAliases = Set()
-
-    override def collectSymbols =
-      if (alias != NoSymbol)
-        Set(alias)
-      else
-        Set()
-
     override def find(symbol: Symbol) =
       Option(RootTuploidPath).filter(_ => symbol == alias)
 
@@ -69,23 +99,37 @@ private[loops] trait TuploidValues extends Utils
     }
   }
 
+  class TuploidTraverser {
+    def traverse(path: TuploidPath, t: TuploidValue) {
+      t match {
+        case TupleValue(values, _, _) =>
+          for ((i, value) <- values) {
+            traverse(path :+ i, value)
+          }
+
+        case _ =>
+      }
+    }
+  }
+
+  class TuploidTransformer {
+    def transform(path: TuploidPath, t: TuploidValue): TuploidValue = {
+      t match {
+        case tuple @ TupleValue(values, _, _) =>
+          tuple.copy(
+            values = values.map({
+              case (i, value) =>
+                i -> transform(path :+ i, value)
+            }))
+
+        case scalar =>
+          scalar
+      }
+    }
+  }
   case class TupleValue(values: Map[Int, TuploidValue], alias: Symbol = NoSymbol, aliasName: TermName = "")
       extends TuploidValue
   {
-    private def subSymbolsPlusAlias(getSubs: TuploidValue => Set[Symbol]): Set[Symbol] = {
-      val subAliases = values.values.map(getSubs).reduce(_ ++ _)
-      if (alias != NoSymbol)
-        subAliases + alias
-      else
-        subAliases
-    }
-
-    override def collectTupleAliases: Set[Symbol] =
-      subSymbolsPlusAlias(_.collectTupleAliases)
-
-    override def collectSymbols =
-      subSymbolsPlusAlias(_.collectSymbols)
-
     override def find(symbol: Symbol) = {
       if (symbol == alias)
         Some(RootTuploidPath)
@@ -120,7 +164,12 @@ private[loops] trait TuploidValues extends Utils
         })(breakOut)
 
       tree match {
-        case q"$tuple(..$subs)" =>
+        case q"${Tuple()}[..$_](..$subs)" =>
+          // println(s"""
+          //     TUPLE:
+          //       $tuple: ${tuple.getClass.getName}
+          // """)
+          // val Tuple() = tuple
           TupleValue(values = sub(subs), alias = alias)
 
         case q"${Tuple()}.apply[..$_](..$subs)" =>
@@ -149,11 +198,17 @@ private[loops] trait TuploidValues extends Utils
     def unapply(caseDef: CaseDef): Option[(TuploidValue, Tree)] = {
       def sub(binds: List[Tree]): Map[Int, TuploidValue] =
         binds.zipWithIndex.map({
-          case (bind: Bind, i) =>
-            i -> TuploidValue.extractValueFromBind(bind)
+          case (b, i) =>
+            i -> (b match {
+              case bind: Bind =>
+                TuploidValue.extractValueFromBind(bind)
 
-          case (ident @ Ident(n), i) =>
-            i -> ScalarValue(alias = ident.symbol)
+              case ident @ Ident(n) =>
+                ScalarValue(alias = ident.symbol)
+
+              case TuploidValue(v) =>
+                v
+            })
         })(breakOut)
 
       trySome {

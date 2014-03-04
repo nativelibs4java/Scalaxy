@@ -84,8 +84,8 @@ private[loops] trait Streams extends TransformationClosures {
       })
       val opsAndOutputNeeds = ops.zip(outputNeeds) :+ ((SinkOp(sink), sinkNeeds))
       println(s"source = $source")
-      println(s"""ops =\n\t${ops.mkString("\n\t")}""")
-      println(s"opsAndOutputNeeds = $opsAndOutputNeeds")
+      println(s"""ops =\n\t${ops.map(_.getClass.getName).mkString("\n\t")}""")
+      println(s"outputNeeds = ${opsAndOutputNeeds.map(_._2)}")
       source.emitSource(sourceNeeds, opsAndOutputNeeds, fresh, transform)
     }
   }

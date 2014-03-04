@@ -29,7 +29,7 @@ private[loops] trait ForeachOps
     {
       val List((SinkOp(UnusableSink), _)) = opsAndOutputNeeds
 
-      val (replacedStatements, outputVars) = transformationClosure.replaceClosureBody(inputVars, fresh, transform)
+      val (replacedStatements, outputVars) = transformationClosure.replaceClosureBody(inputVars, outputNeeds, fresh, transform)
       println("TODO: check this is empty or Unit: " + outputVars)
 
       StreamOpResult(

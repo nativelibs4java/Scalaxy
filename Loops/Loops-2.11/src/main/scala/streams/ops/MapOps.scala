@@ -30,7 +30,7 @@ private[loops] trait MapOps
         fresh: String => TermName,
         transform: Tree => Tree): StreamOpResult =
     {
-      val (replacedStatements, outputVars) = transformationClosure.replaceClosureBody(inputVars, fresh, transform)
+      val (replacedStatements, outputVars) = transformationClosure.replaceClosureBody(inputVars, outputNeeds, fresh, transform)
       val StreamOpResult(streamPrelude, streamBody, streamEnding) =
         emitSub(outputVars, opsAndOutputNeeds, fresh, transform)
 
