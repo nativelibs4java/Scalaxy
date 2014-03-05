@@ -6,6 +6,10 @@ private[loops] trait Utils {
 
   lazy val EmptyName: TermName = ""
 
+  trait Extractor[From, To] {
+    def unapply(from: From): Option[To]
+  }
+
   implicit class SymbolExtensions(s: Symbol) {
     def asOption: Option[Symbol] =
       if (s == NoSymbol) None else Some(s)

@@ -90,11 +90,7 @@ private[loops] trait Streams extends TransformationClosures {
     }
   }
 
-  trait StreamOpExtractor {
-    def unapply(tree: Tree): Option[(StreamSource, List[StreamOp])]
-  }
-
-  val SomeStreamOp: StreamOpExtractor
+  val SomeStreamOp: Extractor[Tree, (StreamSource, List[StreamOp])]
 
   object SomeStream {
     def unapply(tree: Tree): Option[Stream] = tree match {

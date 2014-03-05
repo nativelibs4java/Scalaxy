@@ -16,7 +16,8 @@ class LoopsTest {
     //     (i - j) / (prod + 1)
     //   }
     // }
-    
+  
+
 
     optimize {
       for (i <- 0 to n) {
@@ -25,12 +26,16 @@ class LoopsTest {
       for (l <- 10L until 2L by -2) yield { l + 1 }
 
 
+      val a = Array(1, 2, 4)
+      a.map(_ + 2).map(_ * 10).filter(_ < 3)
+      
       val arrays = Array(Array(1, 2), Array(3, 4))
+
+      arrays.map(_.map(_ + 2).map(_ * 10).filter(_ < 3))
 
       for ((a, i) <- Array(Array(1)).zipWithIndex; len = a.length; if len < i) {
         println(s"$a, $len, $i")
       }
-
 
 
   

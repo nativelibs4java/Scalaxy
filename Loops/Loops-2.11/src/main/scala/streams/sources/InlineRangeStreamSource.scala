@@ -14,7 +14,7 @@ private[loops] trait InlineRangeStreamSources extends Streams {
     }
   }
 
-  object SomeInlineRangeStreamSource
+  object SomeInlineRangeStreamSource extends Extractor[Tree, InlineRangeStreamSource[_]]
   {
     def unapply(tree: Tree): Option[InlineRangeStreamSource[_]] = Option(tree) collect {
       case q"scala.this.Predef.intWrapper($start) ${ToUntil(isInclusive)} $end" =>
@@ -31,7 +31,7 @@ private[loops] trait InlineRangeStreamSources extends Streams {
     }
   }
 
-  case class InlineRangeStreamSource[T <: AnyVal : Numeric : Liftable]
+  case class InlineRangeStreamSource[T : Numeric : Liftable]
     (start: Tree, end: Tree, by: T, isInclusive: Boolean, tpe: Type)
       extends StreamSource
   {

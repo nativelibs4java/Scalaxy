@@ -1,6 +1,6 @@
 package scalaxy.loops
 
-private[loops] trait ArrayStreamSources extends Streams {
+private[loops] trait ArrayStreamSources extends Streams with ArrayBufferSinks {
   val global: scala.reflect.api.Universe
   import global._
 
@@ -15,19 +15,27 @@ private[loops] trait ArrayStreamSources extends Streams {
     }
   }
 
-  object SomeArrayOps {
+  lazy val ArraySym = rootMirror.staticClass("scala.Array")
+  // Testing the type would be so much better, but yields an awkward MissingRequirementError.
+  // lazy val ArrayTpe = typeOf[Array[_]]
+
+  object SomeArrayOps extends Extractor[Tree, Tree]
+  {
     def unapply(tree: Tree): Option[Tree] = Option(tree) collect {
+
+      case _ if Option(tree.tpe).filter(_ != NoSymbol).exists(_.typeSymbol == ArraySym) =>
+      // case _ if Option(tree.tpe).exists(_ == ArrayTpe) =>
+        tree
+
       case q"scala.this.Predef.${AnyValArrayOpsName()}($a)" =>
-        // println("ARRAY ANYVAL: " + a)
         a
 
       case q"scala.this.Predef.refArrayOps[$_]($a)" =>
-        // println("ARRAY REF: " + a)
         a
     }
   }
 
-  object SomeArrayStreamSource {
+  object SomeArrayStreamSource extends Extractor[Tree, ArrayStreamSource] {
     def unapply(tree: Tree): Option[ArrayStreamSource] =
       SomeArrayOps.unapply(tree).map(ArrayStreamSource.apply _)
   }
@@ -35,10 +43,7 @@ private[loops] trait ArrayStreamSources extends Streams {
   case class ArrayStreamSource(array: Tree)
       extends StreamSource
   {
-    override def sinkOption = {
-      println("TODO array sink")
-      None
-    }
+    override def sinkOption = Some(ArrayBufferSink)
 
     override def emitSource(
         outputNeeds: Set[TuploidPath],

@@ -4,8 +4,17 @@ package test
 import org.junit._
 import Assert._
 
-class StreamSourcesTest extends StreamComponentsTestBase with StreamOps {
+class StreamSourcesTest extends StreamComponentsTestBase with StreamOps with ArrayStreamSources {
   import global._
+
+  @Test
+  def testArrayExtractor {
+    val v1 @ SomeArrayStreamSource(_) = typeCheck(q"Array(1)")
+    val SomeStreamSource(_) = v1
+
+    val v2 @ SomeArrayStreamSource(_) = typeCheck(q"(null: Array[Int])")
+    val SomeStreamSource(_) = v2
+  }
 
   @Test
   def testInlineRangeExtractor {
