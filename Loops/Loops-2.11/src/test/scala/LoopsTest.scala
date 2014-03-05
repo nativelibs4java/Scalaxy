@@ -13,7 +13,7 @@ class LoopsTest {
     // val cols = for (i <- 0 to n) yield for (i <- 0)
     // val s: Seq[Int] = optimize {
     //   for (i <- 1 to n; j <- 0 to n; val prod = i * j; if prod < (i + j)) yield {
-    //     (i - j) / (prod + 1) 
+    //     (i - j) / (prod + 1)
     //   }
     // }
     
@@ -23,6 +23,7 @@ class LoopsTest {
         println(i)
       }
       for (l <- 10L until 2L by -2) yield { l + 1 }
+
 
       val arrays = Array(Array(1, 2), Array(3, 4))
 
