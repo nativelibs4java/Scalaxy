@@ -24,6 +24,7 @@ class LoopsTest {
       }
       for (l <- 10L until 2L by -2) yield { l + 1 }
 
+ 
       val arrays = Array(Array(1, 2), Array(3, 4))
 
       for ((a, i) <- Array(Array(1)).zipWithIndex; len = a.length; if len < i) {

@@ -51,7 +51,7 @@ private[loops] trait InlineRangeStreamSources extends Streams {
       val iVar = fresh("i")
       val iVal = fresh("iVal")
 
-      val outputVars = ScalarValue(aliasName = iVal)
+      val outputVars = ScalarValue[TermName](alias = Some(iVal))
 
       val StreamOpResult(streamPrelude, streamBody, streamEnding) =
         emitSub(outputVars, opsAndOutputNeeds, fresh, transform)

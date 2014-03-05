@@ -22,21 +22,24 @@ private[loops] trait FilterOps
   {
     override def sinkOption = None
 
+    override def isMapLike = false
+
     override def emitOp(
-        inputVars: TuploidValue,
+        inputVars: TuploidValue[TermName],
         outputNeeds: Set[TuploidPath],
         opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
         fresh: String => TermName,
         transform: Tree => Tree): StreamOpResult =
     {
 
-      val (replacedStatements, outputVars) = transformationClosure.replaceClosureBody(inputVars, outputNeeds, fresh, transform)
-      println("TODO: check this is Boolean: " + outputVars)
+      val (replacedStatements, outputVars) =
+        transformationClosure.replaceClosureBody(
+          inputVars, outputNeeds + RootTuploidPath, fresh, transform)
 
       val StreamOpResult(streamPrelude, streamBody, streamEnding) =
         emitSub(inputVars, opsAndOutputNeeds, fresh, transform)
 
-      val test = outputVars.aliasName
+      val test = outputVars.alias.get
       StreamOpResult(
         prelude = streamPrelude,
         // TODO match params and any tuple extraction in body with streamVars, replace symbols with streamVars values

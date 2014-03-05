@@ -24,7 +24,7 @@ private[loops] trait FlatMapOps
     override val sinkOption = Some(CanBuildFromSink(canBuildFrom))
 
     override def emitOp(
-        inputVars: TuploidValue,
+        inputVars: TuploidValue[TermName],
         outputNeeds: Set[TuploidPath],
         opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
         fresh: String => TermName,

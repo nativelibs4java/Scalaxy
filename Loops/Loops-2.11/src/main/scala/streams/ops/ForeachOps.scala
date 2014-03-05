@@ -21,7 +21,7 @@ private[loops] trait ForeachOps
     override def sinkOption = Some(UnusableSink)
 
     override def emitOp(
-        inputVars: TuploidValue,
+        inputVars: TuploidValue[TermName],
         outputNeeds: Set[TuploidPath],
         opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
         fresh: String => TermName,

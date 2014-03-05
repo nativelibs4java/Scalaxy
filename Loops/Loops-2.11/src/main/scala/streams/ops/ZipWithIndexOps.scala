@@ -27,7 +27,7 @@ private[loops] trait ZipWithIndexOps
     }
 
     override def emitOp(
-        inputVars: TuploidValue,
+        inputVars: TuploidValue[TermName],
         outputNeeds: Set[TuploidPath],
         opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
         fresh: String => TermName,
@@ -40,16 +40,16 @@ private[loops] trait ZipWithIndexOps
       val needsPair: Boolean = outputNeeds(RootTuploidPath)
       val pairName: TermName = if (needsPair) fresh("zipWithIndexPair") else ""
       val outputVars =
-        TupleValue(
+        TupleValue[TermName](
           Map(
             0 -> inputVars,
-            1 -> ScalarValue(aliasName = indexVal)),
-          aliasName = pairName)
+            1 -> ScalarValue(alias = Some(indexVal))),
+          alias = Some(pairName))
 
       val StreamOpResult(streamPrelude, streamBody, streamEnding) =
         emitSub(outputVars, opsAndOutputNeeds, fresh, transform)
 
-      def pairDef = q"val $pairName = ${inputVars.aliasName}"
+      def pairDef = q"val $pairName = ${inputVars.alias.get}"
 
       val builder = fresh("builder")
       StreamOpResult(

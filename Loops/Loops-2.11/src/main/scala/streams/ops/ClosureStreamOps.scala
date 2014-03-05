@@ -15,7 +15,9 @@ private[loops] trait ClosureStreamOps
       tc
     }
 
+    def isMapLike: Boolean = true
+
     override def transmitOutputNeedsBackwards(paths: Set[TuploidPath]) =
-      transformationClosure.getPreviousReferencedTupleAliasPaths(paths)
+      transformationClosure.getPreviousReferencedPaths(paths, isMapLike = isMapLike)
   }
 }

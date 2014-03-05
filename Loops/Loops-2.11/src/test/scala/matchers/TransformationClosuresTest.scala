@@ -19,21 +19,19 @@ class TransformationClosureTest extends StreamComponentsTestBase with Transforma
       tc @ TransformationClosure(
         TupleValue(
           inputValues,
-          S("pp"),
-          EmptyName),
+          S("pp")),
         Nil,
         TupleValue(
           outputValues,
-          NoSymbol,
-          EmptyName))) = f
+          None))) = f
 
     val List(
-      (0, ScalarValue(EmptyTree, S("x"), EmptyName)),
-      (1, ScalarValue(EmptyTree, S("y"), EmptyName))) = inputValues.toList
+      (0, ScalarValue(EmptyTree, S("x"))),
+      (1, ScalarValue(EmptyTree, S("y")))) = inputValues.toList
 
     assertEquals(inputValues, outputValues)
 
-    val List() = tc.getPreviousReferencedTupleAliasPaths(Set()).toList
+    val List() = tc.getPreviousReferencedPaths(Set()).toList
   }
 
   @Test
@@ -48,7 +46,7 @@ class TransformationClosureTest extends StreamComponentsTestBase with Transforma
     """)
     val SomeTransformationClosure(tc) = f
 
-    val List(RootTuploidPath) = tc.getPreviousReferencedTupleAliasPaths(Set()).toList
+    val List(RootTuploidPath) = tc.getPreviousReferencedPaths(Set()).toList
   }
 
   @Test
@@ -56,8 +54,8 @@ class TransformationClosureTest extends StreamComponentsTestBase with Transforma
     val f = typeCheck(q"(x: Int) => x")
 
     val SomeTransformationClosure(tc @ TransformationClosure(inputs, statements, outputs)) = f
-    val ScalarValue(EmptyTree, S("x"), EmptyName) = inputs
-    val ScalarValue(EmptyTree, S("x"), EmptyName) = outputs
+    val ScalarValue(EmptyTree, S("x")) = inputs
+    val ScalarValue(EmptyTree, S("x")) = outputs
   }
 
   @Test
@@ -65,8 +63,8 @@ class TransformationClosureTest extends StreamComponentsTestBase with Transforma
     val f = typeCheck(q"(x: Int) => println(x)")
 
     val SomeTransformationClosure(tc @ TransformationClosure(inputs, statements, outputs)) = f
-    val ScalarValue(EmptyTree, S("x"), EmptyName) = inputs
-    val ScalarValue(q"scala.this.Predef.println(x)", NoSymbol, EmptyName) = outputs
+    val ScalarValue(EmptyTree, S("x")) = inputs
+    val ScalarValue(q"scala.this.Predef.println(x)", None) = outputs
   }
 
   @Test
@@ -74,17 +72,16 @@ class TransformationClosureTest extends StreamComponentsTestBase with Transforma
     val f = typeCheck(q"(x: Int) => (1, x)")
 
     val SomeTransformationClosure(tc @ TransformationClosure(inputs, statements, outputs)) = f
-    val ScalarValue(EmptyTree, S("x"), EmptyName) = inputs
+    val ScalarValue(EmptyTree, S("x")) = inputs
     val TupleValue(
       values,
-      NoSymbol,
-      EmptyName) = outputs
+      None) = outputs
 
     val List(
-      (0, ScalarValue(Literal(Constant(1)), NoSymbol, EmptyName)),
-      (1, ScalarValue(EmptyTree, S("x"), EmptyName))) = values.toList
+      (0, ScalarValue(Literal(Constant(1)), None)),
+      (1, ScalarValue(EmptyTree, S("x")))) = values.toList
 
-    val List() = tc.getPreviousReferencedTupleAliasPaths(Set()).toList
+    val List() = tc.getPreviousReferencedPaths(Set()).toList
   }
   /**
 

@@ -11,17 +11,17 @@ private[loops] trait CanBuildFromSinks extends StreamSources {
     override def outputNeeds = Set(RootTuploidPath)
 
     override def emitSink(
-        inputVars: TuploidValue,
+        inputVars: TuploidValue[TermName],
         fresh: String => TermName,
         transform: Tree => Tree): StreamOpResult =
     {
       val builder = fresh("builder")
-      require(inputVars.aliasName.toString != "", s"inputVars = $inputVars")
+      require(inputVars.alias.nonEmpty, s"inputVars = $inputVars")
 
       StreamOpResult(
         // TODO pass source collection to canBuildFrom if it exists.
         prelude = List(q"val $builder = $canBuildFrom()"),
-        body = List(q"$builder += ${inputVars.aliasName}"),
+        body = List(q"$builder += ${inputVars.alias.get}"),
         ending = List(q"$builder.result()")
       )
     }
