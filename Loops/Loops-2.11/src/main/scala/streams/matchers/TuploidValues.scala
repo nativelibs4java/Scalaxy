@@ -37,7 +37,8 @@ private[loops] trait TuploidValues extends Utils
 
     (
       headToSubs.flatMap(_._1).toList,
-      TupleValue[TermName](headToSubs.map(_._2).toMap, alias = targetName.asOption)
+      // TODO fix type here
+      TupleValue[TermName](tpe = NoType, headToSubs.map(_._2).toMap, alias = targetName.asOption)
     )
   }
 
@@ -75,9 +76,10 @@ private[loops] trait TuploidValues extends Utils
     def get(path: TuploidPath): TuploidValue[A]
 
     def alias: Option[A]
+    def tpe: Type
   }
 
-  case class ScalarValue[A](value: Option[Tree] = None, alias: Option[A] = None)
+  case class ScalarValue[A](tpe: Type, value: Option[Tree] = None, alias: Option[A] = None)
       extends TuploidValue[A]
   {
     override def find(target: A) =
@@ -92,7 +94,7 @@ private[loops] trait TuploidValues extends Utils
   class TuploidTraverser[A] {
     def traverse(path: TuploidPath, t: TuploidValue[A]) {
       t match {
-        case TupleValue(values, _) =>
+        case TupleValue(_, values, _) =>
           for ((i, value) <- values) {
             traverse(path :+ i, value)
           }
@@ -105,7 +107,7 @@ private[loops] trait TuploidValues extends Utils
   trait TuploidTransformer[A, B] {
     def transform(path: TuploidPath, t: TuploidValue[A]): TuploidValue[B]
   }
-  case class TupleValue[A](values: Map[Int, TuploidValue[A]], alias: Option[A] = None)
+  case class TupleValue[A](tpe: Type, values: Map[Int, TuploidValue[A]], alias: Option[A] = None)
       extends TuploidValue[A]
   {
     override def find(target: A) = {
@@ -148,19 +150,19 @@ private[loops] trait TuploidValues extends Utils
           //       $tuple: ${tuple.getClass.getName}
           // """)
           // val Tuple() = tuple
-          TupleValue(values = sub(subs), alias = alias)
+          TupleValue(tree.tpe, values = sub(subs), alias = alias)
 
         case q"${Tuple()}.apply[..$_](..$subs)" =>
-          TupleValue(values = sub(subs), alias = alias)
+          TupleValue(tree.tpe, values = sub(subs), alias = alias)
 
         case Ident(nme.WILDCARD) =>
-          ScalarValue(alias = alias)
+          ScalarValue(tree.tpe, alias = alias)
 
         case Ident(n) if tree.symbol.name == n =>
-          ScalarValue(alias = tree.symbol.asOption)
+          ScalarValue(tree.tpe, alias = tree.symbol.asOption)
 
         case _ =>
-          ScalarValue(value = Some(tree))
+          ScalarValue(tree.tpe, value = Some(tree))
       }
     }
     def extractSymbolsFromBind(bind: Bind): TuploidValue[Symbol] = {
@@ -182,20 +184,25 @@ private[loops] trait TuploidValues extends Utils
                 TuploidValue.extractSymbolsFromBind(bind)
 
               case ident @ Ident(n) =>
-                ScalarValue[Symbol](alias = ident.symbol.asOption)
+                ScalarValue[Symbol](tpe = ident.tpe, alias = ident.symbol.asOption)
 
               case TuploidValue(v) =>
                 v
             })
         })(breakOut)
 
+      require(caseDef.tpe != null && caseDef.tpe != NoType)
       trySome {
         caseDef match {
           case cq"($tuple(..$binds)) => $body" =>
-            TupleValue[Symbol](values = sub(binds), alias = None) -> body
+            TupleValue[Symbol](
+              tpe = caseDef.tpe,
+              values = sub(binds), alias = None) -> body
 
           case cq"($alias @ $tuple(..$binds)) => $body" =>
-            TupleValue[Symbol](values = sub(binds), alias = caseDef.pat.symbol.asOption) -> body
+            TupleValue[Symbol](
+              tpe = caseDef.tpe,
+              values = sub(binds), alias = caseDef.pat.symbol.asOption) -> body
         }
       }
     }

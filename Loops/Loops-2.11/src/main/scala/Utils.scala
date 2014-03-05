@@ -23,4 +23,16 @@ private[loops] trait Utils {
       None
     }
 
+  private lazy val defaultValues = Map[Type, Any](
+    typeOf[Int] -> 0,
+    typeOf[Boolean] -> false,
+    typeOf[Byte] -> (0: Byte),
+    typeOf[Short] -> (0: Short),
+    typeOf[Char] -> '\0',
+    typeOf[Long] -> 0L,
+    typeOf[Float] -> 0.0f,
+    typeOf[Double] -> 0.0)
+
+  def defaultValue(tpe: Type): Any =
+    defaultValues.get(tpe.normalize).getOrElse(null)
 }

@@ -44,48 +44,72 @@ private[loops] trait TransformationClosures extends TuploidValues with Strippers
               None
             }
 
+          def generateVarIfNeeded(tpe: Type, value: => Tree): Option[TermName] = {
+            if (needed && reusableName.isEmpty) {
+              val name = fresh("_" + path.map(_ + 1).mkString("_"))
+              val uninitializedValue = Literal(Constant(defaultValue(tpe)))
+              pre += q"var $name: $tpe = $uninitializedValue"
+              post += q"$name = $value"
+
+              Some(name)
+            } else {
+              reusableName//.orElse(alias.map(_.name.asInstanceOf[TermName])
+            }
+          }
+
           t match {
-            case TupleValue(values, alias) =>
+            case TupleValue(tpe, values, alias) =>
               underNeededParent = needed :: underNeededParent
 
               val subValues = values.map({ case (i, value) =>
                 (i, transform(path :+ i, value))
               })
 
-              val newAlias = if (needed) {
+              val newAlias = generateVarIfNeeded(tpe, {
                 val tupleClass: TermName = "scala.Tuple" + subValues.size
                 val subRefs = subValues.toList.sortBy(_._1).map(_._2.alias.get).map(Ident(_))
-                val newName = fresh("tup")
-                // pre += q"var $newName: $t = _"
-                post += q"val $newName = $tupleClass(..$subRefs)"
+                q"$tupleClass(..$subRefs)"
+              })
+              // val newAlias = if (needed) {
+              //   val tupleClass: TermName = "scala.Tuple" + subValues.size
+              //   val subRefs = subValues.toList.sortBy(_._1).map(_._2.alias.get).map(Ident(_))
+              //   val newName = fresh("tup")
+              //   // pre += q"var $newName: $t = _"
+              //   post += q"val $newName = $tupleClass(..$subRefs)"
 
-                Some(newName)
-              } else {
-                None
-              }
+              //   Some(newName)
+              // } else {
+              //   None
+              // }
 
               underNeededParent = underNeededParent.tail
-              TupleValue(subValues, alias = newAlias)
+              TupleValue(tpe, subValues, alias = newAlias)
 
-            case ScalarValue(value, alias) =>
-              if (needed && reusableName.isEmpty) {
-                val aliasName = fresh("_" + path.map(_ + 1).mkString("_"))
+            case ScalarValue(tpe, value, alias) =>
+              val newAlias =
+                generateVarIfNeeded(
+                  tpe,
+                  value.map(transformer).getOrElse(Ident(alias.get.name)))
 
-                // TODO prepare `val $n = _ ; { ..$statements; $n = $aliasName }`
-                //pre += q"var $n: $t = _"
-                (value, alias) match {
-                  case (Some(value), _) =>
-                    post += q"val $aliasName = ${transformer(value)}"
+              ScalarValue(tpe, alias = newAlias)
+              // if (needed && reusableName.isEmpty) {
+              //   val aliasName = fresh("_" + path.map(_ + 1).mkString("_"))
 
-                  case (None, Some(alias)) =>
-                    post += q"val $aliasName = ${alias.name}"
-                }
+              //   // TODO prepare `val $n = _ ; { ..$statements; $n = $aliasName }`
+              //   //pre += q"var $n: $t = _"
+              //   (value, alias) match {
+              //     case (Some(value), _) =>
+              //       post += q"val $aliasName = ${transformer(value)}"
 
-                ScalarValue(alias = Some(aliasName))
-              } else {
-                ScalarValue(
-                  alias = reusableName.orElse(alias.map(_.name.asInstanceOf[TermName])))
-              }
+              //     case (None, Some(alias)) =>
+              //       post += q"val $aliasName = ${alias.name}"
+              //   }
+
+              //   ScalarValue(alias = Some(aliasName))
+              // } else {
+              //   ScalarValue(
+              //     alias = reusableName.orElse(alias.map(_.name.asInstanceOf[TermName])))
+              // }
           }
         }
       } transform (RootTuploidPath, outputs)
@@ -158,7 +182,7 @@ private[loops] trait TransformationClosures extends TuploidValues with Strippers
           }
 
         (symbols, names) match {
-          case (TupleValue(symbolValues, _), TupleValue(nameValues, _)) =>
+          case (TupleValue(_, symbolValues, _), TupleValue(_, nameValues, _)) =>
             symbolValues.keySet.intersect(nameValues.keySet)
               .flatMap(i => replacements(symbolValues(i), nameValues(i))).toList ++ pairOption
 
@@ -193,15 +217,15 @@ private[loops] trait TransformationClosures extends TuploidValues with Strippers
           fresh,
           fullTransform)
 
+      val blockStatements = statements.map(fullTransform) ++ post
       val results =
         pre ++
         (
-          if (statements.isEmpty)
+          if (blockStatements.isEmpty)
             Nil
           else
-            Block(statements.map(fullTransform), EmptyTree) :: Nil
-        ) ++
-        post
+            List(Block(blockStatements.dropRight(1), blockStatements.last))
+        )
 
       println(s"""
           Replaced: $statements
@@ -222,7 +246,7 @@ private[loops] trait TransformationClosures extends TuploidValues with Strippers
           (inputValue, body)
 
         case q"($param) => $body" =>
-          (ScalarValue(alias = param.symbol.asOption), body)
+          (ScalarValue(param.tpe, alias = param.symbol.asOption), body)
       } collect {
         case (inputValue, BlockOrNot(statements, TuploidValue(outputValue))) =>
           TransformationClosure(inputValue, statements, outputValue)

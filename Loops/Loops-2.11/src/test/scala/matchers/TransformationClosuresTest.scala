@@ -18,16 +18,18 @@ class TransformationClosureTest extends StreamComponentsTestBase with Transforma
     val SomeTransformationClosure(
       tc @ TransformationClosure(
         TupleValue(
+          _,
           inputValues,
           S("pp")),
         Nil,
         TupleValue(
+          _,
           outputValues,
           None))) = f
 
     val List(
-      (0, ScalarValue(EmptyTree, S("x"))),
-      (1, ScalarValue(EmptyTree, S("y")))) = inputValues.toList
+      (0, ScalarValue(_, EmptyTree, S("x"))),
+      (1, ScalarValue(_, EmptyTree, S("y")))) = inputValues.toList
 
     assertEquals(inputValues, outputValues)
 
@@ -54,8 +56,8 @@ class TransformationClosureTest extends StreamComponentsTestBase with Transforma
     val f = typeCheck(q"(x: Int) => x")
 
     val SomeTransformationClosure(tc @ TransformationClosure(inputs, statements, outputs)) = f
-    val ScalarValue(EmptyTree, S("x")) = inputs
-    val ScalarValue(EmptyTree, S("x")) = outputs
+    val ScalarValue(_, EmptyTree, S("x")) = inputs
+    val ScalarValue(_, EmptyTree, S("x")) = outputs
   }
 
   @Test
@@ -63,8 +65,8 @@ class TransformationClosureTest extends StreamComponentsTestBase with Transforma
     val f = typeCheck(q"(x: Int) => println(x)")
 
     val SomeTransformationClosure(tc @ TransformationClosure(inputs, statements, outputs)) = f
-    val ScalarValue(EmptyTree, S("x")) = inputs
-    val ScalarValue(q"scala.this.Predef.println(x)", None) = outputs
+    val ScalarValue(_, EmptyTree, S("x")) = inputs
+    val ScalarValue(_, q"scala.this.Predef.println(x)", None) = outputs
   }
 
   @Test
@@ -72,14 +74,15 @@ class TransformationClosureTest extends StreamComponentsTestBase with Transforma
     val f = typeCheck(q"(x: Int) => (1, x)")
 
     val SomeTransformationClosure(tc @ TransformationClosure(inputs, statements, outputs)) = f
-    val ScalarValue(EmptyTree, S("x")) = inputs
+    val ScalarValue(_, EmptyTree, S("x")) = inputs
     val TupleValue(
+      _,
       values,
       None) = outputs
 
     val List(
-      (0, ScalarValue(Literal(Constant(1)), None)),
-      (1, ScalarValue(EmptyTree, S("x")))) = values.toList
+      (0, ScalarValue(_, Literal(Constant(1)), None)),
+      (1, ScalarValue(_, EmptyTree, S("x")))) = values.toList
 
     val List() = tc.getPreviousReferencedPaths(Set()).toList
   }

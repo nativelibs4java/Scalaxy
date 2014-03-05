@@ -18,21 +18,21 @@ private[loops] trait InlineRangeStreamSources extends Streams {
   {
     def unapply(tree: Tree): Option[InlineRangeStreamSource[_]] = Option(tree) collect {
       case q"scala.this.Predef.intWrapper($start) ${ToUntil(isInclusive)} $end" =>
-        InlineRangeStreamSource[Int](start, end, by = 1, isInclusive)
+        InlineRangeStreamSource[Int](start, end, by = 1, isInclusive, tpe = typeOf[Int])
 
       case q"scala.this.Predef.intWrapper($start) ${ToUntil(isInclusive)} $end by ${Literal(Constant(by: Int))}" =>
-        InlineRangeStreamSource[Int](start, end, by, isInclusive)
+        InlineRangeStreamSource[Int](start, end, by, isInclusive, tpe = typeOf[Int])
 
       case q"scala.this.Predef.longWrapper($start) ${ToUntil(isInclusive)} $end" =>
-        InlineRangeStreamSource[Long](start, end, by = 1, isInclusive)
+        InlineRangeStreamSource[Long](start, end, by = 1, isInclusive, tpe = typeOf[Long])
 
       case q"scala.this.Predef.longWrapper($start) ${ToUntil(isInclusive)} $end by ${Literal(Constant(by: Long))}" =>
-        InlineRangeStreamSource[Long](start, end, by, isInclusive)
+        InlineRangeStreamSource[Long](start, end, by, isInclusive, tpe = typeOf[Long])
     }
   }
 
   case class InlineRangeStreamSource[T <: AnyVal : Numeric : Liftable]
-    (start: Tree, end: Tree, by: T, isInclusive: Boolean)
+    (start: Tree, end: Tree, by: T, isInclusive: Boolean, tpe: Type)
       extends StreamSource
   {
     override def sinkOption = {
@@ -51,7 +51,7 @@ private[loops] trait InlineRangeStreamSources extends Streams {
       val iVar = fresh("i")
       val iVal = fresh("iVal")
 
-      val outputVars = ScalarValue[TermName](alias = Some(iVal))
+      val outputVars = ScalarValue[TermName](tpe = tpe, alias = Some(iVal))
 
       val StreamOpResult(streamPrelude, streamBody, streamEnding) =
         emitSub(outputVars, opsAndOutputNeeds, fresh, transform)

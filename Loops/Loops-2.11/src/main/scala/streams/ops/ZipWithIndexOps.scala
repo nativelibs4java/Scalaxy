@@ -39,11 +39,15 @@ private[loops] trait ZipWithIndexOps
 
       val needsPair: Boolean = outputNeeds(RootTuploidPath)
       val pairName: TermName = if (needsPair) fresh("zipWithIndexPair") else ""
+
+      val tupleTpe = tq"scala.Tuple2[${inputVars.tpe}, Int]".tpe
+      require(tupleTpe != null && tupleTpe != NoType)
       val outputVars =
         TupleValue[TermName](
+          tupleTpe,
           Map(
             0 -> inputVars,
-            1 -> ScalarValue(alias = Some(indexVal))),
+            1 -> ScalarValue(typeOf[Int], alias = Some(indexVal))),
           alias = Some(pairName))
 
       val StreamOpResult(streamPrelude, streamBody, streamEnding) =
