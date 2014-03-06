@@ -32,10 +32,10 @@ private[loops] trait StreamOps
       case SomeZipWithIndexOp(SomeStreamOp(src, ops), op) =>
         (src, ops :+ op)
 
-      case SomeStreamSource(src) =>
-        (src, Nil)
+      case SomeArrayOps(SomeStreamOp(src, ops)) =>
+        (src, ops)
 
-      case SomeArrayOps(SomeStreamSource(src)) =>
+      case SomeStreamSource(src) =>
         (src, Nil)
     }
   }

@@ -22,22 +22,16 @@ private[loops] trait ArrayStreamSources extends Streams with ArrayBufferSinks {
   object SomeArrayOps extends Extractor[Tree, Tree]
   {
     def unapply(tree: Tree): Option[Tree] = Option(tree) collect {
-
-      case _ if Option(tree.tpe).filter(_ != NoSymbol).exists(_.typeSymbol == ArraySym) =>
-      // case _ if Option(tree.tpe).exists(_ == ArrayTpe) =>
-        tree
-
-      case q"scala.this.Predef.${AnyValArrayOpsName()}($a)" =>
-        a
-
-      case q"scala.this.Predef.refArrayOps[$_]($a)" =>
-        a
+      case q"scala.this.Predef.${AnyValArrayOpsName()}($a)" => a
+      case q"scala.this.Predef.refArrayOps[$_]($a)"         => a
     }
   }
 
   object SomeArrayStreamSource extends Extractor[Tree, ArrayStreamSource] {
-    def unapply(tree: Tree): Option[ArrayStreamSource] =
-      SomeArrayOps.unapply(tree).map(ArrayStreamSource.apply _)
+    def unapply(tree: Tree): Option[ArrayStreamSource] = Option(tree) collect {
+      case _ if tree.tpe != null && tree.tpe != NoSymbol && tree.tpe.typeSymbol == ArraySym =>
+        ArrayStreamSource(tree)
+    }
   }
 
   case class ArrayStreamSource(array: Tree)
