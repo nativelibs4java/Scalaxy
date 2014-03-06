@@ -40,8 +40,9 @@ private[loops] trait ZipWithIndexOps
       val needsPair: Boolean = outputNeeds(RootTuploidPath)
       val pairName: TermName = if (needsPair) fresh("zipWithIndexPair") else ""
 
+      import compat._
       val TypeRef(pre, sym, List(_, _)) = typeOf[(Int, Int)]
-      val tupleTpe = typeRef(pre, sym, List(inputVars.tpe, typeOf[Int]))
+      val tupleTpe = TypeRef(pre, sym, List(inputVars.tpe, typeOf[Int]))
       //tq"scala.Tuple2[${inputVars.tpe}, Int]".tpe
       require(tupleTpe != null && tupleTpe != NoType)
       val outputVars =
