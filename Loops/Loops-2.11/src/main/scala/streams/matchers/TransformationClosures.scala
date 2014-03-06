@@ -53,7 +53,11 @@ private[loops] trait TransformationClosures extends TuploidValues with Strippers
 
               Some(name)
             } else {
-              reusableName//.orElse(alias.map(_.name.asInstanceOf[TermName])
+              reusableName.orElse({
+                post += value
+
+                None
+              })
             }
           }
 
@@ -70,17 +74,6 @@ private[loops] trait TransformationClosures extends TuploidValues with Strippers
                 val subRefs = subValues.toList.sortBy(_._1).map(_._2.alias.get).map(Ident(_))
                 q"$tupleClass(..$subRefs)"
               })
-              // val newAlias = if (needed) {
-              //   val tupleClass: TermName = "scala.Tuple" + subValues.size
-              //   val subRefs = subValues.toList.sortBy(_._1).map(_._2.alias.get).map(Ident(_))
-              //   val newName = fresh("tup")
-              //   // pre += q"var $newName: $t = _"
-              //   post += q"val $newName = $tupleClass(..$subRefs)"
-
-              //   Some(newName)
-              // } else {
-              //   None
-              // }
 
               underNeededParent = underNeededParent.tail
               TupleValue(tpe, subValues, alias = newAlias)
@@ -92,24 +85,6 @@ private[loops] trait TransformationClosures extends TuploidValues with Strippers
                   value.map(transformer).getOrElse(Ident(alias.get.name)))
 
               ScalarValue(tpe, alias = newAlias)
-              // if (needed && reusableName.isEmpty) {
-              //   val aliasName = fresh("_" + path.map(_ + 1).mkString("_"))
-
-              //   // TODO prepare `val $n = _ ; { ..$statements; $n = $aliasName }`
-              //   //pre += q"var $n: $t = _"
-              //   (value, alias) match {
-              //     case (Some(value), _) =>
-              //       post += q"val $aliasName = ${transformer(value)}"
-
-              //     case (None, Some(alias)) =>
-              //       post += q"val $aliasName = ${alias.name}"
-              //   }
-
-              //   ScalarValue(alias = Some(aliasName))
-              // } else {
-              //   ScalarValue(
-              //     alias = reusableName.orElse(alias.map(_.name.asInstanceOf[TermName])))
-              // }
           }
         }
       } transform (RootTuploidPath, outputs)

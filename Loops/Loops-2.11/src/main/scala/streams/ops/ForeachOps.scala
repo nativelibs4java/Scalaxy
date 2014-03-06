@@ -30,7 +30,15 @@ private[loops] trait ForeachOps
       val List((SinkOp(UnusableSink), _)) = opsAndOutputNeeds
 
       val (replacedStatements, outputVars) = transformationClosure.replaceClosureBody(inputVars, outputNeeds, fresh, transform)
-      println("TODO: check this is empty or Unit: " + outputVars)
+
+      require(outputVars.tpe =:= typeOf[Unit], "Expected Unit, got " + outputVars.tpe)
+
+      println(s"""
+        body: $body,
+        transformationClosure: $transformationClosure,
+        statements = ${transformationClosure.statements},
+        replacedStatements = $replacedStatements
+      """)
 
       StreamOpResult(
         prelude = Nil,

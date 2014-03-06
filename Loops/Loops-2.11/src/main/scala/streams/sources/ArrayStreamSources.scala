@@ -63,6 +63,7 @@ private[loops] trait ArrayStreamSources extends Streams with ArrayBufferSinks {
         ..$streamPrelude
         while ($iVar < $lengthVal) {
           val $itemVal = $arrayVal($iVar)
+          ..$extractionCode
           ..$streamBody
           $iVar += 1
         }

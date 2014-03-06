@@ -16,26 +16,27 @@ class LoopsTest {
     //     (i - j) / (prod + 1)
     //   }
     // }
-  
+
 
 
     optimize {
       for (i <- 0 to n) {
         println(i)
       }
-      for (l <- 10L until 2L by -2) yield { l + 1 }
+        
+      // for (l <- 10L until 2L by -2) yield { l + 1 }
 
 
-      val a = Array(1, 2, 4)
-      a.map(_ + 2).map(_ * 10).filter(_ < 3)
+      // val a = Array(1, 2, 4)
+      // a.map(_ + 2).map(_ * 10).filter(_ < 3)
       
-      val arrays = Array(Array(1, 2), Array(3, 4))
+      // val arrays = Array(Array(1, 2), Array(3, 4))
 
-      arrays.map(_.map(_ + 2).map(_ * 10).filter(_ < 3))
+      // arrays.map(_.map(_ + 2).map(_ * 10).filter(_ < 3))
 
-      for ((a, i) <- Array(Array(1)).zipWithIndex; len = a.length; if len < i) {
-        println(s"$a, $len, $i")
-      }
+      // for ((a, i) <- Array(Array(1)).zipWithIndex; len = a.length; if len < i) {
+      //   println(s"$a, $len, $i")
+      // }
 
 
   
@@ -92,48 +93,4 @@ class LoopsTest {
     }
   }
 
-  @Test
-  def tupleMappedToTuple {
-    new TransformationClosures {
-      override val global = scala.reflect.runtime.universe
-      import global._
-      import scala.reflect.runtime.currentMirror
-      import scala.tools.reflect.ToolBox
-      val toolbox = currentMirror.mkToolBox()
-
-      val f = toolbox.typeCheck(q"""
-        (x2: (Int, Int)) => (x2: (Int, Int) @unchecked) match {
-          case (x1 @ ((v @ _), (i @ _))) => {
-            val c: Int = i.+(2);
-            scala.Tuple2.apply[(Int, Int), Int]((v, i), c)
-          }
-        }
-      """.asInstanceOf[toolbox.u.Tree]).asInstanceOf[Tree]
-
-      val SomeTransformationClosure(tc) = f
-      println(tc)
-    }
-  }
-
-  @Test
-  def scalarMappedToTuple {
-    new TransformationClosures {
-      override val global = scala.reflect.runtime.universe
-      import global._
-      import scala.reflect.runtime.currentMirror
-      import scala.tools.reflect.ToolBox
-      val toolbox = currentMirror.mkToolBox()
-
-      val f = toolbox.typeCheck(q"""
-        (array: Array[Int]) => {
-          val length: Int = array.length.*(30);
-          scala.Tuple2.apply[Array[Int], Int](array, length)
-        }
-      """.asInstanceOf[toolbox.u.Tree]).asInstanceOf[Tree]
-
-      val SomeTransformationClosure(tc) = f
-      println(tc)
-    }
-
-  }
 }
