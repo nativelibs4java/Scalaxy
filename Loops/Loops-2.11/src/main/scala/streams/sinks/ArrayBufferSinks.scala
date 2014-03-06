@@ -20,7 +20,7 @@ private[loops] trait ArrayBufferSinks extends StreamSources {
 
       StreamOpResult(
         // TODO pass source collection to canBuildFrom if it exists.
-        prelude = List(q"val $builder = scala.collection.mutable.ArrayBuffer[${inputVars.tpe}]()"),
+        prelude = List(q"private[this] val $builder = scala.collection.mutable.ArrayBuffer[${inputVars.tpe}]()"),
         body = List(q"$builder += ${inputVars.alias.get}"),
         ending = List(q"$builder.result()")
       )

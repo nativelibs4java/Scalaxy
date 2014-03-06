@@ -48,7 +48,7 @@ private[loops] trait TransformationClosures extends TuploidValues with Strippers
             if (needed && reusableName.isEmpty) {
               val name = fresh("_" + path.map(_ + 1).mkString("_"))
               val uninitializedValue = Literal(Constant(defaultValue(tpe)))
-              pre += q"var $name: $tpe = $uninitializedValue"
+              pre += q"private[this] var $name: $tpe = $uninitializedValue"
               post += q"$name = $value"
 
               Some(name)

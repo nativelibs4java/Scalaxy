@@ -56,9 +56,9 @@ private[loops] trait ArrayStreamSources extends Streams with ArrayBufferSinks {
         emitSub(outputVars, opsAndOutputNeeds, fresh, transform)
 
       q"""
-        val $arrayVal = ${transform(array)}
-        val $lengthVal = $arrayVal.length
-        var $iVar = 0
+        private[this] val $arrayVal = ${transform(array)}
+        private[this] val $lengthVal = $arrayVal.length
+        private[this] var $iVar = 0
 
         ..$streamPrelude
         while ($iVar < $lengthVal) {

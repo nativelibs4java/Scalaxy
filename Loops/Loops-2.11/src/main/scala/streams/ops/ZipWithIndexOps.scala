@@ -56,18 +56,18 @@ private[loops] trait ZipWithIndexOps
       val StreamOpResult(streamPrelude, streamBody, streamEnding) =
         emitSub(outputVars, opsAndOutputNeeds, fresh, transform)
 
-      def pairDef = q"val $pairName = ${inputVars.alias.get}"
+      def pairDef = q"private[this] val $pairName = ${inputVars.alias.get}"
 
       val builder = fresh("builder")
       StreamOpResult(
         // TODO pass source collection to canBuildFrom if it exists.
         prelude = List(q"""
           ..$streamPrelude
-          val $indexVar = 0
+          private[this] val $indexVar = 0
         """),
         // TODO match params and any tuple extraction in body with streamVars, replace symbols with streamVars values
         body = List(q"""
-          val $indexVal = $indexVar
+          private[this] val $indexVal = $indexVar
           ..${if (needsPair) List(pairDef) else Nil}
           ..$streamBody
           $indexVar += 1

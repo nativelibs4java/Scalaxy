@@ -20,7 +20,7 @@ private[loops] trait CanBuildFromSinks extends StreamSources {
 
       StreamOpResult(
         // TODO pass source collection to canBuildFrom if it exists.
-        prelude = List(q"val $builder = $canBuildFrom()"),
+        prelude = List(q"private[this] val $builder = $canBuildFrom()"),
         body = List(q"$builder += ${inputVars.alias.get}"),
         ending = List(q"$builder.result()")
       )

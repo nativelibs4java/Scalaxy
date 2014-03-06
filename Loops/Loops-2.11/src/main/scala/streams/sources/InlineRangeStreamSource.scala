@@ -64,9 +64,9 @@ private[loops] trait InlineRangeStreamSources extends Streams with StreamSources
         }
 
       q"""
-        val $startVal = ${transform(start)}
-        val $endVal = ${transform(end)}
-        var $iVar = $startVal
+        private[this] val $startVal = ${transform(start)}
+        private[this] val $endVal = ${transform(end)}
+        private[this] var $iVar = $startVal
 
         ..$streamPrelude
         while ($iVar $testOperator $endVal) {
