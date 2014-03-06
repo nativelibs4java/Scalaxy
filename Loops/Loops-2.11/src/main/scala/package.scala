@@ -32,6 +32,10 @@ package loops {
 
           val original = a.tree.asInstanceOf[Tree]//c.typeCheck(a.tree)
 
+          println(s"""
+            Original:
+              $original
+          """)
           val result = new Transformer {
             override def transform(tree: Tree) = tree match {
               case SomeStream(stream) =>
@@ -39,7 +43,9 @@ package loops {
                 c.info(a.tree.pos, s"stream = $stream", force = true)
                 val result = stream.emitStream(n => c.fresh(n): TermName, transform(_))
                 println(result)
-                tree
+
+                result
+                // tree
                 // super.transform(tree)
 
               case _ =>
@@ -48,8 +54,10 @@ package loops {
             }
           } transform original
 
-          // println(s"Original: $original")
-          // println(s"Result: $result")
+          println(s"""
+            Result:
+              $result
+          """)
         }
 
         c.Expr[A](Optimize.result.asInstanceOf[c.universe.Tree])

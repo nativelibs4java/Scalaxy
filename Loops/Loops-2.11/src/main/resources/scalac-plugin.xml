@@ -1,0 +1,4 @@
+<plugin>
+  <name>scalaxy-loops</name>
+  <classname>scalaxy.loops.LoopsPlugin</classname>
+</plugin>
