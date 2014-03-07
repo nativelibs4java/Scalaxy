@@ -18,10 +18,10 @@ class LoopsTest {
 
 
 
-    // optimize {
-    //   for (i <- 0 to n) {
-    //     println(i)
-    //   }
+    optimize {
+      for (i <- 0 to n) {
+        println(i)
+      }
         
       // for (l <- 10L until 2L by -2) yield { l + 1 }
 
@@ -89,7 +89,7 @@ class LoopsTest {
       {}
 
 
-    // }
+    }
   }
 
 }

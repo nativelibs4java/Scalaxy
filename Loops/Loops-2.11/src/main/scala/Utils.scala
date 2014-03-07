@@ -6,6 +6,8 @@ private[loops] trait Utils {
 
   lazy val EmptyName: TermName = ""
 
+  def typed(tree: Tree, tpe: Type = WildcardType): Tree
+
   trait Extractor[From, To] {
     def unapply(from: From): Option[To]
   }
@@ -13,6 +15,10 @@ private[loops] trait Utils {
   implicit class SymbolExtensions(s: Symbol) {
     def asOption: Option[Symbol] =
       if (s == NoSymbol) None else Some(s)
+  }
+  implicit class TreeExtensions(t: Tree) {
+    def asOption: Option[Tree] =
+      if (t == EmptyTree) None else Some(t)
   }
   implicit class NameExtensions(n: TermName) {
     def asOption: Option[TermName] =

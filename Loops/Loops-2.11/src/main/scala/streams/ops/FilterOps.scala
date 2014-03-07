@@ -25,7 +25,7 @@ private[loops] trait FilterOps
     override def isMapLike = false
 
     override def emitOp(
-        inputVars: TuploidValue[TermName],
+        inputVars: TuploidValue[Tree],
         outputNeeds: Set[TuploidPath],
         opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
         fresh: String => TermName,

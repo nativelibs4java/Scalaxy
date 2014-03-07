@@ -30,6 +30,9 @@ package loops {
           override val global = c.universe
           import global._
 
+          override def typed(tree: Tree, tpe: Type) =
+            c.typeCheck(tree.asInstanceOf[c.Tree], tpe.asInstanceOf[c.Type]).asInstanceOf[Tree]
+
           val original = a.tree.asInstanceOf[Tree]//c.typeCheck(a.tree)
 
           println(s"""
@@ -60,7 +63,7 @@ package loops {
           """)
         }
 
-        c.Expr[A](Optimize.result.asInstanceOf[c.universe.Tree])
+        c.Expr[A](c.typeCheck(Optimize.result.asInstanceOf[c.universe.Tree]))
       } catch {
         case ex: Throwable =>
           ex.printStackTrace()

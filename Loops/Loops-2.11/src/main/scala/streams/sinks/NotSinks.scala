@@ -11,7 +11,7 @@ private[loops] trait UnusableSinks extends StreamSources {
     override def outputNeeds = Set()
 
     override def emitSink(
-        inputVars: TuploidValue[TermName],
+        inputVars: TuploidValue[Tree],
         fresh: String => TermName,
         transform: Tree => Tree): StreamOpResult =
     {

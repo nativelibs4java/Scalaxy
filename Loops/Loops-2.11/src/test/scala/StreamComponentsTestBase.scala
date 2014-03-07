@@ -22,6 +22,8 @@ class StreamComponentsTestBase {
     def unapply(name: Name): Option[String] =
       Option(name).map(_.toString)
   }
-  def typeCheck(t: Tree): Tree =
-    toolbox.typeCheck(t.asInstanceOf[toolbox.u.Tree]).asInstanceOf[Tree]
+  def typeCheck(t: Tree, tpe: Type = WildcardType): Tree =
+    toolbox.typeCheck(t.asInstanceOf[toolbox.u.Tree], tpe.asInstanceOf[toolbox.u.Type]).asInstanceOf[Tree]
+
+  override def typed(tree: Tree, tpe: Type) = typeCheck(tree, tpe)
 }

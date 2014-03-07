@@ -1,4 +1,5 @@
 package scalaxy.loops
+import scala.reflect.NameTransformer.{ encode, decode }
 
 private[loops] trait InlineRangeStreamSources extends Streams with StreamSources {
   val global: scala.reflect.api.Universe
@@ -51,31 +52,63 @@ private[loops] trait InlineRangeStreamSources extends Streams with StreamSources
       val iVar = fresh("i")
       val iVal = fresh("iVal")
 
-      val outputVars = ScalarValue[TermName](tpe = tpe, alias = Some(iVal))
+      // Force typing of declarations and get typed references to various vars and vals.
+      val b @ Block(List(startValDef, endValDef, iVarDef, iValDef, iValRef, iVarRef, endValRef), _) = typed(q"""
+        private[this] val $startVal: $tpe = ${transform(start)};
+        private[this] val $endVal: $tpe = ${transform(end)};
+        private[this] var $iVar: $tpe = $startVal;
+        private[this] val $iVal: $tpe = $iVar;
+        $iVal;
+        $iVar;
+        $endVal;
+        {}
+      """)
+
+      println("FAKE TYPED BLOCK: " + b)
+
+      val outputVars = ScalarValue[Tree](tpe = tpe, alias = Some(iValRef))
 
       val StreamOpResult(streamPrelude, streamBody, streamEnding) =
         emitSub(outputVars, opsAndOutputNeeds, fresh, transform)
 
       val testOperator: TermName =
-        if (implicitly[Numeric[T]].signum(by) > 0) {
-          if (isInclusive) "<=" else "<"
-        } else {
-          if (isInclusive) ">=" else ">"
-        }
+        encode(
+          if (implicitly[Numeric[T]].signum(by) > 0) {
+            if (isInclusive) "<=" else "<"
+          } else {
+            if (isInclusive) ">=" else ">"
+          }
+        )
 
-      q"""
-        private[this] val $startVal = ${transform(start)}
-        private[this] val $endVal = ${transform(end)}
-        private[this] var $iVar = $startVal
+      // q"""
+      //   private[this] val $startVal = ${transform(start)}
+      //   private[this] val $endVal = ${transform(end)}
+      //   private[this] var $iVar = $startVal
 
-        ..$streamPrelude
-        while ($iVar $testOperator $endVal) {
-          val $iVal = $iVar
-          ..$streamBody
-          $iVar += $by
+      //   ..$streamPrelude
+      //   while ($iVar $testOperator $endVal) {
+      //     val $iVal = $iVar
+      //     ..$streamBody
+      //     $iVar += $by
+      //   }
+      //   ..$streamEnding
+      // """
+
+      val r = q"""
+        $startValDef
+        $endValDef
+        $iVarDef
+        ..$streamPrelude;
+        while ($iVarRef $testOperator $endValRef) {
+          $iValDef;
+          ..$streamBody;
+          $iVarRef += $by
         }
         ..$streamEnding
       """
+
+      println("RESULT: " + r)
+      r
     }
   }
 }

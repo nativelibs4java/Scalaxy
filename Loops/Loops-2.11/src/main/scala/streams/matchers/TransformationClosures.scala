@@ -10,7 +10,7 @@ private[loops] trait TransformationClosures extends TuploidValues with Strippers
   case class ClosureWiringResult(
     preStatements: List[Tree],
     postStatements: List[Tree],
-    outputVars: TuploidValue[TermName])
+    outputVars: TuploidValue[Tree])
 
   object TransformationClosure
   {
@@ -18,7 +18,7 @@ private[loops] trait TransformationClosures extends TuploidValues with Strippers
       inputs: TuploidValue[Symbol],
       inputSymbols: Set[Symbol],
       outputs: TuploidValue[Symbol],
-      inputVars: TuploidValue[TermName],
+      inputVars: TuploidValue[Tree],
       outputPathToInputPath: Map[TuploidPath, TuploidPath],
       outputNeeds: Set[TuploidPath],
       fresh: String => TermName,
@@ -29,29 +29,33 @@ private[loops] trait TransformationClosures extends TuploidValues with Strippers
       val pre = ListBuffer[Tree]()
       val post = ListBuffer[Tree]()
 
-      val outputVars = new TuploidTransformer[Symbol, TermName] {
+      val outputVars = new TuploidTransformer[Symbol, Tree] {
         var underNeededParent = List[Boolean](false)
         override def transform(path: TuploidPath, t: TuploidValue[Symbol]) = {
           val needed = outputNeeds(path) || underNeededParent.head
-          val reusableName: Option[TermName] =
+          val reusableName: Option[Tree] =
             if (t.alias.exists(inputSymbols)) {
               // t is already somewhere in inputs. find it.
               val inputPath = outputPathToInputPath(path)
               val inputVar = inputVars.get(inputPath)
 
-              inputVar.alias
+              inputVar.alias.map(_.duplicate)
             } else {
               None
             }
 
-          def generateVarIfNeeded(tpe: Type, value: => Tree): Option[TermName] = {
+          def generateVarIfNeeded(tpe: Type, value: => Tree): Option[Tree] = {
             if (needed && reusableName.isEmpty) {
               val name = fresh("_" + path.map(_ + 1).mkString("_"))
               val uninitializedValue = Literal(Constant(defaultValue(tpe)))
-              pre += q"private[this] var $name: $tpe = $uninitializedValue"
-              post += q"$name = $value"
+              val Block(List(decl), ref) = typed(q"""
+                private[this] var $name: $tpe = $uninitializedValue;
+                $name
+              """)
+              pre += decl
+              post += q"$ref = $value"
 
-              Some(name)
+              Some(ref)
             } else {
               reusableName.orElse({
                 post += value
@@ -71,12 +75,12 @@ private[loops] trait TransformationClosures extends TuploidValues with Strippers
 
               val newAlias = generateVarIfNeeded(tpe, {
                 val tupleClass: TermName = "scala.Tuple" + subValues.size
-                val subRefs = subValues.toList.sortBy(_._1).map(_._2.alias.get).map(Ident(_))
+                val subRefs = subValues.toList.sortBy(_._1).map(_._2.alias.get).map(_.duplicate)
                 q"$tupleClass(..$subRefs)"
               })
 
               underNeededParent = underNeededParent.tail
-              TupleValue(tpe, subValues, alias = newAlias)
+              TupleValue[Tree](tpe, subValues, alias = newAlias)
 
             case ScalarValue(tpe, value, alias) =>
               val newAlias =
@@ -142,13 +146,13 @@ private[loops] trait TransformationClosures extends TuploidValues with Strippers
     }
 
     def replaceClosureBody(
-        inputVars: TuploidValue[TermName],
+        inputVars: TuploidValue[Tree],
         outputNeeds: Set[TuploidPath],
         fresh: String => TermName,
-        transform: Tree => Tree): (List[Tree], TuploidValue[TermName]) =
+        transform: Tree => Tree): (List[Tree], TuploidValue[Tree]) =
     {
-      def replacements(symbols: TuploidValue[Symbol], names: TuploidValue[TermName]): List[(Symbol, Name)] = {
-        val pairOption: Option[(Symbol, Name)] =
+      def replacements(symbols: TuploidValue[Symbol], names: TuploidValue[Tree]): List[(Symbol, Tree)] = {
+        val pairOption: Option[(Symbol, Tree)] =
           (symbols.alias, names.alias) match {
             case (Some(symbol), Some(name)) =>
               Some(symbol -> name)
@@ -171,7 +175,7 @@ private[loops] trait TransformationClosures extends TuploidValues with Strippers
         override def transform(tree: Tree) = {
           repls.get(tree.symbol) match {
             case Some(by) =>
-              Ident(by)
+              by.duplicate
 
             case None =>
               super.transform(tree)

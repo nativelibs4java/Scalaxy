@@ -8,7 +8,7 @@ private[loops] trait Streams extends TransformationClosures {
   {
     def sinkOption: Option[StreamSink]
 
-    def emitSub(inputVars: TuploidValue[TermName],
+    def emitSub(inputVars: TuploidValue[Tree],
                 opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
                 fresh: String => TermName,
                 transform: Tree => Tree): StreamOpResult =
@@ -32,7 +32,7 @@ private[loops] trait Streams extends TransformationClosures {
   {
     def transmitOutputNeedsBackwards(paths: Set[TuploidPath]): Set[TuploidPath]
 
-    def emitOp(inputVars: TuploidValue[TermName],
+    def emitOp(inputVars: TuploidValue[Tree],
                outputNeeds: Set[TuploidPath],
                opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
                fresh: String => TermName,
@@ -50,7 +50,7 @@ private[loops] trait Streams extends TransformationClosures {
 
     def outputNeeds: Set[TuploidPath]
 
-    def emitSink(inputVars: TuploidValue[TermName],
+    def emitSink(inputVars: TuploidValue[Tree],
                  fresh: String => TermName,
                  transform: Tree => Tree): StreamOpResult
   }
@@ -62,7 +62,7 @@ private[loops] trait Streams extends TransformationClosures {
     override def transmitOutputNeedsBackwards(paths: Set[TuploidPath]) = ???
 
     override def emitOp(
-        inputVars: TuploidValue[TermName],
+        inputVars: TuploidValue[Tree],
         outputNeeds: Set[TuploidPath],
         opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
         fresh: String => TermName,

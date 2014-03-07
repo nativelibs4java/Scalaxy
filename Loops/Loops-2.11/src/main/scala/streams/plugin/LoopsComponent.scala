@@ -33,6 +33,9 @@ class LoopsComponent(
   override val runsAfter = runsRightAfter.toList
   override val runsBefore = List("patmat")
 
+  override def typed(tree: Tree, tpe: Type) =
+    typer.typed(tree, tpe)
+
   override def newPhase(prev: Phase) = new StdPhase(prev) {
     def apply(unit: CompilationUnit) {
       unit.body = new Transformer {
@@ -40,11 +43,13 @@ class LoopsComponent(
         override def transform(tree: Tree) = tree match {
           case SomeStream(stream) =>
             // println(s"source = $source")
-            // info(a.tree.pos, s"stream = $stream", force = true)
+            reporter.info(tree.pos, s"stream = $stream", force = true)
             val result = stream.emitStream(n => unit.fresh.newName(n): TermName, transform(_))
             println(result)
 
-            result
+            typer.typed {
+              result
+            }
 
           case _ =>
             super.transform(tree)

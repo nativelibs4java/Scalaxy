@@ -27,7 +27,7 @@ private[loops] trait ZipWithIndexOps
     }
 
     override def emitOp(
-        inputVars: TuploidValue[TermName],
+        inputVars: TuploidValue[Tree],
         outputNeeds: Set[TuploidPath],
         opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
         fresh: String => TermName,
@@ -40,37 +40,44 @@ private[loops] trait ZipWithIndexOps
       val needsPair: Boolean = outputNeeds(RootTuploidPath)
       val pairName: TermName = if (needsPair) fresh("zipWithIndexPair") else ""
 
+      // Early typing / symbolization.
+      val Block(List(indexValDef, indexVarDef, pairDef, indexVarRef, indexValRef, pairRef), EmptyTree) = typed(q"""
+        private[this] val $indexVar = 0;
+        private[this] val $indexVal = $indexVar;
+        private[this] val $pairName = ${inputVars.alias.get};
+        $indexVar;
+        $indexVal;
+        $pairName;
+        ()
+      """)
+
       import compat._
       val TypeRef(pre, sym, List(_, _)) = typeOf[(Int, Int)]
       val tupleTpe = TypeRef(pre, sym, List(inputVars.tpe, typeOf[Int]))
-      //tq"scala.Tuple2[${inputVars.tpe}, Int]".tpe
       require(tupleTpe != null && tupleTpe != NoType)
       val outputVars =
-        TupleValue[TermName](
+        TupleValue[Tree](
           tupleTpe,
           Map(
             0 -> inputVars,
-            1 -> ScalarValue(typeOf[Int], alias = Some(indexVal))),
-          alias = Some(pairName))
+            1 -> ScalarValue(typeOf[Int], alias = Some(indexValRef))),
+          alias = Some(pairRef))
 
       val StreamOpResult(streamPrelude, streamBody, streamEnding) =
         emitSub(outputVars, opsAndOutputNeeds, fresh, transform)
 
-      def pairDef = q"private[this] val $pairName = ${inputVars.alias.get}"
-
-      val builder = fresh("builder")
       StreamOpResult(
         // TODO pass source collection to canBuildFrom if it exists.
         prelude = List(q"""
           ..$streamPrelude
-          private[this] val $indexVar = 0
+          $indexVarDef
         """),
         // TODO match params and any tuple extraction in body with streamVars, replace symbols with streamVars values
         body = List(q"""
-          private[this] val $indexVal = $indexVar
+          $indexValDef
           ..${if (needsPair) List(pairDef) else Nil}
           ..$streamBody
-          $indexVar += 1
+          $indexVarRef += 1
         """),
         ending = streamEnding
       )

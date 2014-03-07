@@ -50,22 +50,47 @@ private[loops] trait ArrayStreamSources extends Streams with ArrayBufferSinks {
       val iVar = fresh("i")
       val itemVal = fresh("item")
 
-      val (extractionCode, outputVars) = createTuploidPathsExtractionDecls(itemVal, outputNeeds, fresh)
+      // Early typing / symbolization.
+      val Block(List(arrayValDef, lengthValDef, iVarDef, itemValDef, lengthValRef, iVarRef, itemValRef), _) = typed(q"""
+        private[this] val $arrayVal = ${transform(array)}
+        private[this] val $lengthVal = $arrayVal.length;
+        private[this] var $iVar = 0;
+        private[this] val $itemVal = $arrayVal($iVar);
+        $lengthVal;
+        $iVar;
+        $itemVal
+        {}
+      """)
+      val (extractionCode, outputVars) = createTuploidPathsExtractionDecls(itemValRef, outputNeeds, fresh)
 
       val StreamOpResult(streamPrelude, streamBody, streamEnding) =
         emitSub(outputVars, opsAndOutputNeeds, fresh, transform)
 
+      // q"""
+      //   private[this] val $arrayVal = ${transform(array)}
+      //   private[this] val $lengthVal = $arrayVal.length
+      //   private[this] var $iVar = 0
+
+      //   ..$streamPrelude
+      //   while ($iVar < $lengthVal) {
+      //     val $itemVal = $arrayVal($iVar)
+      //     ..$extractionCode
+      //     ..$streamBody
+      //     $iVar += 1
+      //   }
+      //   ..$streamEnding
+      // """
       q"""
-        private[this] val $arrayVal = ${transform(array)}
-        private[this] val $lengthVal = $arrayVal.length
-        private[this] var $iVar = 0
+        $arrayValDef
+        $lengthValDef
+        $iVarDef
 
         ..$streamPrelude
-        while ($iVar < $lengthVal) {
-          val $itemVal = $arrayVal($iVar)
+        while ($iVarRef < $lengthValRef) {
+          $itemValDef
           ..$extractionCode
           ..$streamBody
-          $iVar += 1
+          $iVarRef += 1
         }
         ..$streamEnding
       """
