@@ -16,18 +16,37 @@ private[loops] trait BuilderSinks extends StreamSources {
       val builder = fresh("builder")
       require(inputVars.alias.nonEmpty, s"inputVars = $inputVars")
 
-      // TODO pass source collection to the builder if it exists.
-      val Block(List(builderDef, builderRef), _) = typed(q"""
+      val Block(List(builderDef, builderAdd, result), _) = typed(q"""
         private[this] val $builder = ${createBuilder(inputVars)};
-        $builder;
+        $builder += ${inputVars.alias.get};
+        $builder.result();
         {}
       """)
 
       StreamOpResult(
         prelude = List(builderDef),
-        body = List(typed(q"$builderRef += ${inputVars.alias.get}")),
-        ending = List(typed(q"$builderRef.result()"))
+        body = List(builderAdd),
+        ending = List(result)
       )
     }
+  }
+
+  case object ArrayBuilderSink extends BuilderSink
+  {
+    // TODO build array of same size as source collection if it is known.
+    override def createBuilder(inputVars: TuploidValue[Tree]) =
+      q"scala.collection.mutable.ArrayBuilder[${inputVars.tpe}]()"
+  }
+
+  case object ListBufferSink extends BuilderSink
+  {
+    override def createBuilder(inputVars: TuploidValue[Tree]) =
+      q"scala.collection.mutable.ListBuffer[${inputVars.tpe}]()"
+  }
+
+  case object SetBuilderSink extends BuilderSink
+  {
+    override def createBuilder(inputVars: TuploidValue[Tree]) =
+      q"scala.collection.mutable.SetBuilder[${inputVars.tpe}]()"
   }
 }

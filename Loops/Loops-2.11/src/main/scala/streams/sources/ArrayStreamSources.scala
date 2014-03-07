@@ -1,6 +1,6 @@
 package scalaxy.loops
 
-private[loops] trait ArrayStreamSources extends Streams with ArrayBufferSinks {
+private[loops] trait ArrayStreamSources extends Streams with BuilderSinks {
   val global: scala.reflect.api.Universe
   import global._
 
@@ -34,11 +34,9 @@ private[loops] trait ArrayStreamSources extends Streams with ArrayBufferSinks {
     }
   }
 
-  case class ArrayStreamSource(array: Tree)
+  case class ArrayStreamSource(array: Tree, sinkOption: Option[StreamSink] = Some(ArrayBuilderSink))
       extends StreamSource
   {
-    override def sinkOption = Some(ArrayBufferSink)
-
     override def emitSource(
         outputNeeds: Set[TuploidPath],
         opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
