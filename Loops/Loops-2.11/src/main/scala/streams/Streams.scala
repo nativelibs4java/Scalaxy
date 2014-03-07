@@ -48,7 +48,9 @@ private[loops] trait Streams extends TransformationClosures {
 
   trait StreamSink extends StreamComponent {
 
-    def outputNeeds: Set[TuploidPath]
+    def sinkOption = Some(this)
+
+    def outputNeeds: Set[TuploidPath] = Set(RootTuploidPath)
 
     def emitSink(inputVars: TuploidValue[Tree],
                  fresh: String => TermName,
