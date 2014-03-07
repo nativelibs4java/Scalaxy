@@ -2,7 +2,7 @@ package scalaxy.loops
 package test
 
 import org.junit._
-import Assert._
+import org.junit.Assert._
 
 class TransformationClosureTest extends StreamComponentsTestBase with TransformationClosures {
   import global._

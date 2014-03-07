@@ -2,7 +2,7 @@ package scalaxy.loops
 package test
 
 import org.junit._
-import Assert._
+import org.junit.Assert._
 
 import scala.reflect.runtime.{ universe => ru }
 import scala.reflect.runtime.{ currentMirror => cm }

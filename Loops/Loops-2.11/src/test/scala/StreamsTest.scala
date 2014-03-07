@@ -3,7 +3,7 @@ package scalaxy.loops
 package test
 
 import org.junit._
-import Assert._
+import org.junit.Assert._
 
 class StreamsTest extends StreamComponentsTestBase with Streams with StreamOps {
   import global._

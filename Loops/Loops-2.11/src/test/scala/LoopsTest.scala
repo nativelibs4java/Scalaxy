@@ -1,7 +1,7 @@
 package scalaxy.loops.test
 
 import org.junit._
-import Assert._
+import org.junit.Assert._
 
 class LoopsTest {
   import scalaxy.loops.optimize
