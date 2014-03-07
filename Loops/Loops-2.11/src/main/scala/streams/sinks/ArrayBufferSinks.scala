@@ -18,11 +18,17 @@ private[loops] trait ArrayBufferSinks extends StreamSources {
       val builder = fresh("builder")
       require(inputVars.alias.nonEmpty, s"inputVars = $inputVars")
 
+      val Block(List(builderDef, builderRef), _) = typed(q"""
+        private[this] val $builder = scala.collection.mutable.ArrayBuffer[${inputVars.tpe}]();
+        $builder;
+        {}
+      """)
+
       StreamOpResult(
         // TODO pass source collection to canBuildFrom if it exists.
-        prelude = List(q"private[this] val $builder = scala.collection.mutable.ArrayBuffer[${inputVars.tpe}]()"),
-        body = List(q"$builder += ${inputVars.alias.get}"),
-        ending = List(q"$builder.result()")
+        prelude = List(builderDef),
+        body = List(q"$builderRef += ${inputVars.alias.get}"),
+        ending = List(q"$builderRef.result()")
       )
     }
   }

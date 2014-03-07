@@ -8,7 +8,7 @@ import scala.reflect.runtime.{ universe => ru }
 import scala.reflect.runtime.{ currentMirror => cm }
 import scala.tools.reflect.ToolBox
 
-class StreamComponentsTestBase {
+class StreamComponentsTestBase extends Utils {
   val global = ru
   val toolbox = cm.mkToolBox()
 

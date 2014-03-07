@@ -52,8 +52,17 @@ private[loops] trait InlineRangeStreamSources extends Streams with StreamSources
       val iVar = fresh("i")
       val iVal = fresh("iVal")
 
+      val testOperator: TermName =
+        encode(
+          if (implicitly[Numeric[T]].signum(by) > 0) {
+            if (isInclusive) "<=" else "<"
+          } else {
+            if (isInclusive) ">=" else ">"
+          }
+        )
+
       // Force typing of declarations and get typed references to various vars and vals.
-      val b @ Block(List(startValDef, endValDef, iVarDef, iValDef, iValRef, iVarRef, endValRef), _) = typed(q"""
+      val b @ Block(List(startValDef, endValDef, iVarDef, iValDef, iValRef, iVarRef, endValRef, test, iVarIncr), _) = typed(q"""
         private[this] val $startVal: $tpe = ${transform(start)};
         private[this] val $endVal: $tpe = ${transform(end)};
         private[this] var $iVar: $tpe = $startVal;
@@ -61,6 +70,8 @@ private[loops] trait InlineRangeStreamSources extends Streams with StreamSources
         $iVal;
         $iVar;
         $endVal;
+        $iVar $testOperator $endVal;
+        $iVar += $by;
         {}
       """)
 
@@ -71,14 +82,6 @@ private[loops] trait InlineRangeStreamSources extends Streams with StreamSources
       val StreamOpResult(streamPrelude, streamBody, streamEnding) =
         emitSub(outputVars, opsAndOutputNeeds, fresh, transform)
 
-      val testOperator: TermName =
-        encode(
-          if (implicitly[Numeric[T]].signum(by) > 0) {
-            if (isInclusive) "<=" else "<"
-          } else {
-            if (isInclusive) ">=" else ">"
-          }
-        )
 
       // q"""
       //   private[this] val $startVal = ${transform(start)}
@@ -94,18 +97,18 @@ private[loops] trait InlineRangeStreamSources extends Streams with StreamSources
       //   ..$streamEnding
       // """
 
-      val r = q"""
+      val r = typed(q"""
         $startValDef
         $endValDef
         $iVarDef
         ..$streamPrelude;
-        while ($iVarRef $testOperator $endValRef) {
+        while ($test) {
           $iValDef;
           ..$streamBody;
-          $iVarRef += $by
+          $iVarIncr
         }
         ..$streamEnding
-      """
+      """)
 
       println("RESULT: " + r)
       r

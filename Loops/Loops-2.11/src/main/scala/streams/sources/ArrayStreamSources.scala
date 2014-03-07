@@ -80,7 +80,7 @@ private[loops] trait ArrayStreamSources extends Streams with ArrayBufferSinks {
       //   }
       //   ..$streamEnding
       // """
-      q"""
+      typed(q"""
         $arrayValDef
         $lengthValDef
         $iVarDef
@@ -93,7 +93,7 @@ private[loops] trait ArrayStreamSources extends Streams with ArrayBufferSinks {
           $iVarRef += 1
         }
         ..$streamEnding
-      """
+      """)
     }
   }
 }
