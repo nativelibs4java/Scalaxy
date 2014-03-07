@@ -10,3 +10,7 @@ libraryDependencies ++= Seq(
 )
 
 watchSources <+= baseDirectory map { _ / "examples" }
+
+//scalacOptions in Test <++= (packageBin in Compile) map(path => Seq("-Xplugin:" + path, "-Dscalaxy.loops.jar=" + path))
+
+fork in Test := true

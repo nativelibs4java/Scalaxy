@@ -37,8 +37,8 @@ private[loops] trait MapOps
       StreamOpResult(
         prelude = streamPrelude,
         body = List(q"""
-          ..$replacedStatements
-          ..$streamBody
+          ..$replacedStatements;
+          ..$streamBody;
         """),
         ending = streamEnding
       )

@@ -10,11 +10,11 @@ class LoopsTest {
   def test {
     val n = 10
     // val cols = for (i <- 0 to n) yield for (i <- 0)
-    val s: Seq[Int] = optimize {
-      for (i <- 1 to n; j <- 0 to n; val prod = i * j; if prod < (i + j)) yield {
-        (i - j) / (prod + 1)
-      }
-    }
+    // val s: Seq[Int] = optimize {
+    //   for (i <- 1 to n; j <- 0 to n; val prod = i * j; if prod < (i + j)) yield {
+    //     (i - j) / (prod + 1)
+    //   }
+    // }
 
 
 

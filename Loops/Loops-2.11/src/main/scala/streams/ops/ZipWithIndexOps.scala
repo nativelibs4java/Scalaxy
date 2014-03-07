@@ -69,15 +69,15 @@ private[loops] trait ZipWithIndexOps
       StreamOpResult(
         // TODO pass source collection to canBuildFrom if it exists.
         prelude = List(q"""
-          ..$streamPrelude
-          $indexVarDef
+          ..$streamPrelude;
+          $indexVarDef;
         """),
         // TODO match params and any tuple extraction in body with streamVars, replace symbols with streamVars values
         body = List(q"""
-          $indexValDef
+          $indexValDef;
           ..${if (needsPair) List(pairDef) else Nil}
-          ..$streamBody
-          $indexVarRef += 1
+          ..$streamBody;
+          $indexVarRef += 1;
         """),
         ending = streamEnding
       )

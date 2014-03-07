@@ -35,24 +35,13 @@ package loops {
 
           val original = a.tree.asInstanceOf[Tree]//c.typeCheck(a.tree)
 
-          println(s"""
-            Original:
-              $original
-          """)
           val result = new Transformer {
             override def transform(tree: Tree) = tree match {
               case SomeStream(stream) =>
-                // println(s"source = $source")
                 c.info(a.tree.pos, s"stream = $stream", force = true)
-                val result = stream.emitStream(n => c.fresh(n): TermName, transform(_))
-                println(result)
-
-                result
-                // tree
-                // super.transform(tree)
+                stream.emitStream(n => c.fresh(n): TermName, transform(_))
 
               case _ =>
-                // println("Not matched: " + tree)
                 super.transform(tree)
             }
           } transform original

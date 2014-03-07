@@ -45,9 +45,9 @@ private[loops] trait FilterOps
         // TODO match params and any tuple extraction in body with streamVars, replace symbols with streamVars values
         body = List(
           q"""
-            ..$replacedStatements
+            ..$replacedStatements;
             if ($test) {
-              ..$streamBody
+              ..$streamBody;
             }
           """
         ),

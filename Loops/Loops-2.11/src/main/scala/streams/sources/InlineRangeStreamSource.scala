@@ -75,13 +75,10 @@ private[loops] trait InlineRangeStreamSources extends Streams with StreamSources
         {}
       """)
 
-      println("FAKE TYPED BLOCK: " + b)
-
       val outputVars = ScalarValue[Tree](tpe = tpe, alias = Some(iValRef))
 
       val StreamOpResult(streamPrelude, streamBody, streamEnding) =
         emitSub(outputVars, opsAndOutputNeeds, fresh, transform)
-
 
       // q"""
       //   private[this] val $startVal = ${transform(start)}
@@ -97,10 +94,10 @@ private[loops] trait InlineRangeStreamSources extends Streams with StreamSources
       //   ..$streamEnding
       // """
 
-      val r = typed(q"""
-        $startValDef
-        $endValDef
-        $iVarDef
+      typed(q"""
+        $startValDef;
+        $endValDef;
+        $iVarDef;
         ..$streamPrelude;
         while ($test) {
           $iValDef;
@@ -109,9 +106,6 @@ private[loops] trait InlineRangeStreamSources extends Streams with StreamSources
         }
         ..$streamEnding
       """)
-
-      println("RESULT: " + r)
-      r
     }
   }
 }
