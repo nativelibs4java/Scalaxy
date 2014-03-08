@@ -23,4 +23,10 @@ object Example1 extends App {
       i + 2
     }
   }
+
+  println {
+    for (i <- 0 to n; j <- i to 1 by -1; if i % 2 == 1) yield {
+      i + j
+    }
+  }
 }

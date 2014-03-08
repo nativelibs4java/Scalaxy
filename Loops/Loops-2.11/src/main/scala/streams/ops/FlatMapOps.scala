@@ -62,7 +62,7 @@ private[loops] trait FlatMapOps
   case class NestedFlatMapOp(tpe: Type, param: ValDef, subStream: Stream, canBuildFrom: Tree)
       extends StreamOp
   {
-    override def describe = Some("flatMap(" + subStream.describe + ")")
+    override def describe = Some("flatMap(" + subStream.describe(describeSink = false) + ")")
 
     override def transmitOutputNeedsBackwards(paths: Set[TuploidPath]) = {
       subStream.ops.foldRight(paths)({ case (op, refs) =>
@@ -79,13 +79,16 @@ private[loops] trait FlatMapOps
         fresh: String => TermName,
         transform: Tree => Tree): StreamOpResult =
     {
-      val subTransform = (tree: Tree) => {
-        if (tree.symbol == param.symbol) {
-          inputVars.alias.get.duplicate
-        } else {
-          transform(tree)
+      val subTransformer = new Transformer {
+        override def transform(tree: Tree) = {
+          if (tree.symbol == param.symbol) {
+            inputVars.alias.get.duplicate
+          } else {
+            super.transform(tree)
+          }
         }
       }
+      val subTransform = (tree: Tree) => subTransformer.transform(transform(tree))
       val Stream(source, ops, sink) = subStream
       val SinkOp(outerSink) :: outerOpsRev = opsAndOutputNeeds.map(_._1).reverse
       val outerOps = outerOpsRev.reverse
