@@ -4,26 +4,29 @@ package test
 import org.junit._
 import org.junit.Assert._
 
-import scala.reflect.runtime.{ universe => ru }
-import scala.reflect.runtime.{ currentMirror => cm }
 import scala.tools.reflect.ToolBox
 
 class StreamComponentsTestBase extends Utils {
-  val global = ru
-  val toolbox = cm.mkToolBox(options = "-usejavacp")
+  val global = scala.reflect.runtime.universe
+  val toolbox = scala.reflect.runtime.currentMirror.mkToolBox(options = "-usejavacp")
 
   object S {
     import global._
     def unapply(symbol: Symbol): Option[String] =
       Option(symbol).map(_.name.toString)
   }
+
   object N {
     import global._
     def unapply(name: Name): Option[String] =
       Option(name).map(_.toString)
   }
+
   def typeCheck(t: global.Tree, tpe: global.Type = global.WildcardType): global.Tree =
-    toolbox.typeCheck(t.asInstanceOf[toolbox.u.Tree], tpe.asInstanceOf[toolbox.u.Type]).asInstanceOf[global.Tree]
+    toolbox.typeCheck(
+      t.asInstanceOf[toolbox.u.Tree],
+      tpe.asInstanceOf[toolbox.u.Type])
+    .asInstanceOf[global.Tree]
 
   override def typed(tree: global.Tree, tpe: global.Type) = typeCheck(tree, tpe)
 
@@ -47,6 +50,8 @@ class StreamComponentsTestBase extends Utils {
         assertArrayEquals(source, expected, actual, 0)
       case (expected: Array[Double], actual: Array[Double]) =>
         assertArrayEquals(source, expected, actual, 0)
+      case (expected: Array[Boolean], actual: Array[Boolean]) =>
+        assertArrayEquals(source, expected.map(_.toString: AnyRef), actual.map(_.toString: AnyRef))
       case (expected, actual) =>
         assertEquals(source, expected, actual)
     }

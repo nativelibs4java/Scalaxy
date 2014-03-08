@@ -46,10 +46,10 @@ package loops {
             }
           } transform original
 
-          println(s"""
-            Result:
-              $result
-          """)
+          // println(s"""
+          //   Result:
+          //     $result
+          // """)
         }
 
         c.Expr[A](c.typeCheck(Optimize.result.asInstanceOf[c.universe.Tree]))

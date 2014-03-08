@@ -71,6 +71,12 @@ private[loops] trait TuploidValues extends Utils
           t.alias.get
       }
 
+    def collectValues: Seq[Tree] =
+      collect {
+        case (_, ScalarValue(_, Some(t), _)) =>
+          t
+      }
+
     def find(target: A): Option[TuploidPath]
     def get(path: TuploidPath): TuploidValue[A]
 

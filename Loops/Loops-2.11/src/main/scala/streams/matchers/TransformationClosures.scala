@@ -88,6 +88,12 @@ private[loops] trait TransformationClosures extends TuploidValues with Strippers
                   tpe,
                   value.map(transformer).getOrElse(Ident(alias.get.name)))
 
+              // println(s"""
+              //   t = $t
+              //   tpe = $tpe
+              //   newAlias = $newAlias
+              //   reusableName = $reusableName
+              // """)
               ScalarValue(tpe, alias = newAlias)
           }
         }
@@ -106,7 +112,7 @@ private[loops] trait TransformationClosures extends TuploidValues with Strippers
     val inputSymbols: Set[Symbol] = inputs.collectAliases
     val outputSymbols: Set[Symbol] = outputs.collectAliases
 
-    val usedInputs: Set[Symbol] = statements.flatMap(_.collect {
+    val usedInputs: Set[Symbol] = (statements ++ outputs.collectValues).flatMap(_.collect {
       case t: RefTree if inputSymbols(t.symbol) =>
         t.symbol
     })(breakOut)
@@ -129,7 +135,7 @@ private[loops] trait TransformationClosures extends TuploidValues with Strippers
       )(breakOut)
 
     def getPreviousReferencedPaths(
-      nextReferencedTupleAliasPaths: Set[TuploidPath],
+      nextReferencedPaths: Set[TuploidPath],
       isMapLike: Boolean = true)
         : Set[TuploidPath] =
     {
@@ -138,11 +144,36 @@ private[loops] trait TransformationClosures extends TuploidValues with Strippers
 
       val transposedPaths =
         if (isMapLike)
-          nextReferencedTupleAliasPaths.collect(outputPathToInputPath)
+          nextReferencedPaths.collect(outputPathToInputPath)
         else
-          nextReferencedTupleAliasPaths
+          nextReferencedPaths
 
+      // println(s"""
+      //   usedInputs = $usedInputs
+      //   inputs = $inputSymbols
+      //   outputPathToInputPath = $outputPathToInputPath
+      //   transposedPaths = $transposedPaths
+      // """)
       closureReferencePaths ++ transposedPaths
+    }
+
+    def replacements(symbols: TuploidValue[Symbol], names: TuploidValue[Tree]): List[(Symbol, Tree)] = {
+      val pairOption: Option[(Symbol, Tree)] =
+        (symbols.alias, names.alias) match {
+          case (Some(symbol), Some(name)) =>
+            Some(symbol -> name)
+          case _ =>
+            None
+        }
+
+      (symbols, names) match {
+        case (TupleValue(_, symbolValues, _), TupleValue(_, nameValues, _)) =>
+          symbolValues.keySet.intersect(nameValues.keySet)
+            .flatMap(i => replacements(symbolValues(i), nameValues(i))).toList ++ pairOption
+
+        case _ =>
+          pairOption.toList
+      }
     }
 
     def replaceClosureBody(
@@ -151,24 +182,6 @@ private[loops] trait TransformationClosures extends TuploidValues with Strippers
         fresh: String => TermName,
         transform: Tree => Tree): (List[Tree], TuploidValue[Tree]) =
     {
-      def replacements(symbols: TuploidValue[Symbol], names: TuploidValue[Tree]): List[(Symbol, Tree)] = {
-        val pairOption: Option[(Symbol, Tree)] =
-          (symbols.alias, names.alias) match {
-            case (Some(symbol), Some(name)) =>
-              Some(symbol -> name)
-            case _ =>
-              None
-          }
-
-        (symbols, names) match {
-          case (TupleValue(_, symbolValues, _), TupleValue(_, nameValues, _)) =>
-            symbolValues.keySet.intersect(nameValues.keySet)
-              .flatMap(i => replacements(symbolValues(i), nameValues(i))).toList ++ pairOption
-
-          case _ =>
-            pairOption.toList
-        }
-      }
       val repls = replacements(inputs, inputVars).toMap
 
       var replacer = new Transformer {
@@ -183,6 +196,12 @@ private[loops] trait TransformationClosures extends TuploidValues with Strippers
         }
       }
 
+      // println(s"""
+      //   repls = $repls
+      //   inputs = $inputs
+      //   outputs = $outputs
+      //   inputVars = $inputVars
+      // """)
       val fullTransform = (t: Tree) => transform(replacer.transform(t))
 
       val ClosureWiringResult(pre, post, outputVars) =
@@ -208,8 +227,9 @@ private[loops] trait TransformationClosures extends TuploidValues with Strippers
 
       // println(s"""
       //     Replaced: $statements
-      //     With: $results
+      //     By: $results
       //     Repls: $repls
+      //     InputVars: $inputVars
       // """)
       (results, outputVars)
     }

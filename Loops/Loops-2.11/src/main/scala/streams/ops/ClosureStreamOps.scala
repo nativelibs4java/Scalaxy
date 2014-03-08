@@ -9,13 +9,9 @@ private[loops] trait ClosureStreamOps
   trait ClosureStreamOp extends StreamOp {
     def param: ValDef
     def body: Tree
-
-    val transformationClosure = {
-      val SomeTransformationClosure(tc) = q"($param) => $body"
-      tc
-    }
-
     def isMapLike: Boolean = true
+
+    val SomeTransformationClosure(transformationClosure) = q"($param) => $body"
 
     override def transmitOutputNeedsBackwards(paths: Set[TuploidPath]) =
       transformationClosure.getPreviousReferencedPaths(paths, isMapLike = isMapLike)

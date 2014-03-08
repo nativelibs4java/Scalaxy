@@ -33,12 +33,12 @@ private[loops] trait ForeachOps
 
       require(outputVars.tpe =:= typeOf[Unit], "Expected Unit, got " + outputVars.tpe)
 
-      println(s"""
-        body: $body,
-        transformationClosure: $transformationClosure,
-        statements = ${transformationClosure.statements},
-        replacedStatements = $replacedStatements
-      """)
+      // println(s"""
+      //   body: $body,
+      //   transformationClosure: $transformationClosure,
+      //   statements = ${transformationClosure.statements},
+      //   replacedStatements = $replacedStatements
+      // """)
 
       StreamOpResult(
         prelude = Nil,
