@@ -42,7 +42,7 @@ class LoopsComponent(
 
         override def transform(tree: Tree) = tree match {
           case SomeStream(stream) =>
-            reporter.info(tree.pos, impl.optimizedStreamMessage(stream.describe), force = true)
+            reporter.info(tree.pos, impl.optimizedStreamMessage(stream.describe()), force = true)
             typer.typed {
               stream.emitStream(n => unit.fresh.newName(n): TermName, transform(_))
             }

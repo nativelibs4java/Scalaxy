@@ -85,9 +85,9 @@ private[loops] trait StreamComponents extends TransformationClosures {
 
   case class Stream(source: StreamSource, ops: List[StreamOp], sink: StreamSink)
   {
-    def describe =
+    def describe(describeSink: Boolean = true) =
       (source :: ops).flatMap(_.describe).mkString(".") +
-      sink.describe.map(" -> " + _).getOrElse("")
+      sink.describe.filter(_ => describeSink).map(" -> " + _).getOrElse("")
 
     def emitStream(fresh: String => TermName,
                    transform: Tree => Tree,
