@@ -11,11 +11,11 @@ import org.junit.runners.Parameterized.Parameters
 import scala.collection.JavaConversions._
 
 @RunWith(classOf[Parameterized])
-class MacroIntegrationTest(source: String) extends StreamComponentsTestBase with StreamOps {
+class MacroIntegrationTest(source: String) extends StreamComponentsTestBase with Streams {
   @Test def test = assertMacroCompilesToSameValue(source)
 }
 
-object MacroIntegrationTest extends StreamComponentsTestBase with StreamOps {
+object MacroIntegrationTest {
   @Parameters(name = "{0}") def data: java.util.Collection[Array[AnyRef]] = List[AnyRef](
     "Array(1, 2, 3).map(_ * 2).filter(_ < 3)",
     "(2 to 10).map(_ * 2).filter(_ < 3)",

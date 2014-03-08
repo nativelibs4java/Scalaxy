@@ -1,8 +1,7 @@
 package scalaxy.loops
 
 private[loops] trait ForeachOps
-    extends StreamComponents
-    with ClosureStreamOps
+    extends ClosureStreamOps
     with UnusableSinks
 {
   val global: scala.reflect.api.Universe

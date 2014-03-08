@@ -1,7 +1,6 @@
 package scalaxy.loops
 
-private[loops] trait ClosureStreamOps
-    extends StreamComponents
+private[loops] trait ClosureStreamOps extends StreamComponents
 {
   val global: scala.reflect.api.Universe
   import global._

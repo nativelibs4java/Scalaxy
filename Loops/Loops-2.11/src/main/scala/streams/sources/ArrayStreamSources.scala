@@ -1,30 +1,12 @@
 package scalaxy.loops
 
-private[loops] trait ArrayStreamSources extends StreamComponents with BuilderSinks {
+private[loops] trait ArrayStreamSources extends BuilderSinks with ArrayOps {
   val global: scala.reflect.api.Universe
   import global._
-
-  object AnyValArrayOpsName {
-    def unapply(name: Name): Boolean = String.valueOf(name) match {
-      case "intArrayOps" | "longArrayOps" | "byteArrayOps" | "shortArrayOps" |
-        "charArrayOps" | "booleanArrayOps" | "floatArrayOps" | "doubleArrayOps" =>
-        true
-
-      case _ =>
-        false
-    }
-  }
 
   lazy val ArraySym = rootMirror.staticClass("scala.Array")
   // Testing the type would be so much better, but yields an awkward MissingRequirementError.
   // lazy val ArrayTpe = typeOf[Array[_]]
-
-  object SomeArrayOps {
-    def unapply(tree: Tree): Option[Tree] = Option(tree) collect {
-      case q"scala.this.Predef.${AnyValArrayOpsName()}($a)" => a
-      case q"scala.this.Predef.refArrayOps[$_]($a)"         => a
-    }
-  }
 
   object SomeArrayStreamSource {
     def unapply(tree: Tree): Option[ArrayStreamSource] = Option(tree) collect {

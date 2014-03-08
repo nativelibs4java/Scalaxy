@@ -6,6 +6,7 @@ private[loops] trait StreamOps
     with FlatMapOps // TODO
     with FilterOps
     with ZipWithIndexOps
+    with ArrayOps
 {
   val global: scala.reflect.api.Universe
   import global._

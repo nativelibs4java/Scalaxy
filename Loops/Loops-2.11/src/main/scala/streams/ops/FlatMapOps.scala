@@ -1,8 +1,7 @@
 package scalaxy.loops
 
 private[loops] trait FlatMapOps
-    extends StreamComponents
-    with ClosureStreamOps
+    extends ClosureStreamOps
     with CanBuildFromSinks
 {
   val global: scala.reflect.api.Universe

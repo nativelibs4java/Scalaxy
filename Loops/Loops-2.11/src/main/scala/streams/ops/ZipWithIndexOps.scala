@@ -1,8 +1,6 @@
 package scalaxy.loops
 
-private[loops] trait ZipWithIndexOps
-    extends StreamSources
-    with TransformationClosures
+private[loops] trait ZipWithIndexOps extends StreamComponents with TransformationClosures
 {
   val global: scala.reflect.api.Universe
   import global._
