@@ -22,8 +22,13 @@ package object loops {
     tuple match + tuple apply + tupleNames => replacedBody + valdefs + newTupleNames
 
 */
-package loops {
-  object impl {
+package loops
+{
+  object impl
+  {
+    def optimizedStreamMessage(streamDescription: String): String =
+      "[Scalaxy] Optimized stream: " + streamDescription
+
     def optimize[A : c.WeakTypeTag](c: Context)(a: c.Expr[A]): c.Expr[A] = {
       try {
         object Optimize extends Streams {
@@ -38,7 +43,7 @@ package loops {
           val result = new Transformer {
             override def transform(tree: Tree) = tree match {
               case SomeStream(stream) =>
-                c.info(a.tree.pos, s"stream = $stream", force = true)
+                c.info(a.tree.pos, optimizedStreamMessage(stream.describe), force = true)
                 stream.emitStream(n => c.fresh(n): TermName, transform(_))
 
               case _ =>
