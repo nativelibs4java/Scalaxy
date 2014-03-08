@@ -1,22 +1,24 @@
 package scalaxy.loops
 
-private[loops] trait ZipWithIndexOps extends StreamComponents with TransformationClosures
+private[loops] trait ZipWithIndexOps
+  extends TransformationClosures
+  with CanBuildFromSinks
 {
   val global: scala.reflect.api.Universe
   import global._
 
   object SomeZipWithIndexOp {
-    def unapply(tree: Tree): Option[(Tree, ZipWithIndexOp.type)] = Option(tree) collect {
-      case q"$target.zipWithIndex" =>
-        (target, ZipWithIndexOp)
+    def unapply(tree: Tree): Option[(Tree, ZipWithIndexOp)] = Option(tree) collect {
+      case q"$target.zipWithIndex[$_, $_]($canBuildFrom)" =>
+        (target, ZipWithIndexOp(canBuildFrom))
     }
   }
 
-  case object ZipWithIndexOp extends StreamOp
+  case class ZipWithIndexOp(canBuildFrom: Tree) extends StreamOp
   {
     override def describe = Some("zipWithIndex")
 
-    override val sinkOption = None
+    override val sinkOption = Some(CanBuildFromSink(canBuildFrom))
 
     override def transmitOutputNeedsBackwards(paths: Set[TuploidPath]) = {
       paths collect {
