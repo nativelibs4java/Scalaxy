@@ -23,7 +23,10 @@ private[loops] trait StreamComponents extends TransformationClosures {
     }
   }
 
-  case class StreamOpResult(prelude: List[Tree], body: List[Tree], ending: List[Tree])
+  case class StreamOpResult(
+    prelude: List[Tree] = Nil,
+    body: List[Tree] = Nil,
+    ending: List[Tree] = Nil)
 
   val NoStreamOpResult = StreamOpResult(prelude = Nil, body = Nil, ending = Nil)
 
@@ -73,6 +76,22 @@ private[loops] trait StreamComponents extends TransformationClosures {
       require(opsAndOutputNeeds.isEmpty)
 
       sink.emitSink(inputVars, fresh, transform)
+    }
+  }
+
+  case class Stream(source: StreamSource, ops: List[StreamOp], sink: StreamSink) {
+    def emitStream(fresh: String => TermName,
+                   transform: Tree => Tree,
+                   sinkNeeds: Set[TuploidPath] = sink.outputNeeds): Tree =
+    {
+      val sourceNeeds :: outputNeeds = ops.scanRight(sinkNeeds)({ case (op, refs) =>
+        op.transmitOutputNeedsBackwards(refs)
+      })
+      val opsAndOutputNeeds = ops.zip(outputNeeds) :+ ((SinkOp(sink), sinkNeeds))
+      // println(s"source = $source")
+      // println(s"""ops =\n\t${ops.map(_.getClass.getName).mkString("\n\t")}""")
+      // println(s"outputNeeds = ${opsAndOutputNeeds.map(_._2)}")
+      source.emitSource(sourceNeeds, opsAndOutputNeeds, fresh, transform)
     }
   }
 }
