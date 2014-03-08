@@ -19,8 +19,7 @@ private[loops] trait StreamOps
       case SomeMapOp(SomeStreamOp(src, ops), op) =>
         (src, ops :+ op)
 
-      case SomeFlatMapOp(SomeStreamOp(src, ops), op @ FlatMapOp(param, body, canBuildFrom)) =>
-        println("TODO: flatten flatMap !!!")
+      case SomeFlatMapOp(SomeStreamOp(src, ops), op) =>
         (src, ops :+ op)
 
       case SomeFilterOp(SomeStreamOp(src, ops), op) =>
