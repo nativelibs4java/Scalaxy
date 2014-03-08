@@ -26,6 +26,10 @@ object MacroIntegrationTest extends StreamComponentsTestBase with StreamOps {
     "(10 to 20).map(_ + 1).map(i => () => i).map(_())",
     "(10 to 20).map(_ * 10).map(i => () => i).reverse.map(_())",
     "for ((v, i) <- (20 until 0 by -2).zipWithIndex) yield (v + i)",
-    "Array((1, 2), (3, 4)).map(_ match { case p @ (i, j) => (i * 10, j / 10.0) }).map({ case (k, l) => k + l })"
+    """
+      Array((1, 2), (3, 4))
+        .map(_ match { case p @ (i, j) => (i * 10, j / 10.0) })
+        .map({ case (k, l) => k + l })
+    """
   ).map(Array(_))
 }

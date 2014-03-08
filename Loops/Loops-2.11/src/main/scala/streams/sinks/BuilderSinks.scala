@@ -1,6 +1,6 @@
 package scalaxy.loops
 
-private[loops] trait BuilderSinks extends StreamSources {
+private[loops] trait BuilderSinks extends StreamComponents {
   val global: scala.reflect.api.Universe
   import global._
 

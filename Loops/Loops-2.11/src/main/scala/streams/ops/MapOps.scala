@@ -1,12 +1,9 @@
 package scalaxy.loops
 
 private[loops] trait MapOps
-    extends StreamSources
-    with CanBuildFromSinks
-    with TuploidValues
-    with TransformationClosures
+    extends StreamComponents
     with ClosureStreamOps
-    with Strippers
+    with CanBuildFromSinks
 {
   val global: scala.reflect.api.Universe
   import global._

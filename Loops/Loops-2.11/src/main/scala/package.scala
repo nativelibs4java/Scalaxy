@@ -26,7 +26,7 @@ package loops {
   object impl {
     def optimize[A : c.WeakTypeTag](c: Context)(a: c.Expr[A]): c.Expr[A] = {
       try {
-        object Optimize extends StreamOps {
+        object Optimize extends Streams {
           override val global = c.universe
           import global._
 

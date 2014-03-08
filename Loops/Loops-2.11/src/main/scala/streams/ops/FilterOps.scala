@@ -1,7 +1,7 @@
 package scalaxy.loops
 
 private[loops] trait FilterOps
-    extends StreamSources
+    extends StreamComponents
     with ClosureStreamOps
     with Strippers
 {

@@ -1,7 +1,7 @@
 package scalaxy.loops
 import scala.reflect.NameTransformer.{ encode, decode }
 
-private[loops] trait InlineRangeStreamSources extends Streams with StreamSources {
+private[loops] trait InlineRangeStreamSources extends StreamComponents {
   val global: scala.reflect.api.Universe
   import global._
 
@@ -15,7 +15,7 @@ private[loops] trait InlineRangeStreamSources extends Streams with StreamSources
     }
   }
 
-  object SomeInlineRangeStreamSource extends Extractor[Tree, InlineRangeStreamSource[_]]
+  object SomeInlineRangeStreamSource
   {
     def unapply(tree: Tree): Option[InlineRangeStreamSource[_]] = Option(tree) collect {
       case q"scala.this.Predef.intWrapper($start) ${ToUntil(isInclusive)} $end" =>
