@@ -74,9 +74,10 @@ private[loops] trait TransformationClosures extends TuploidValues with Strippers
               })
 
               val newAlias = generateVarIfNeeded(tpe, {
-                val tupleClass: TermName = "scala.Tuple" + subValues.size
+                val tupleClass = rootMirror.staticModule("scala.Tuple" + subValues.size)
+                // val tupleRef = typed(q"$tupleClass")
                 val subRefs = subValues.toList.sortBy(_._1).map(_._2.alias.get).map(_.duplicate)
-                q"$tupleClass(..$subRefs)"
+                typed(q"$tupleClass(..$subRefs)")
               })
 
               underNeededParent = underNeededParent.tail
@@ -86,7 +87,7 @@ private[loops] trait TransformationClosures extends TuploidValues with Strippers
               val newAlias =
                 generateVarIfNeeded(
                   tpe,
-                  value.map(transformer).getOrElse(Ident(alias.get.name)))
+                  value.map(transformer).getOrElse(typed(Ident(alias.get))))
 
               // println(s"""
               //   t = $t

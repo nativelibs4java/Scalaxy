@@ -42,7 +42,6 @@ private[loops] trait FilterOps
       val test = outputVars.alias.get
       StreamOpResult(
         prelude = streamPrelude,
-        // TODO match params and any tuple extraction in body with streamVars, replace symbols with streamVars values
         body = List(
           q"""
             ..$replacedStatements;

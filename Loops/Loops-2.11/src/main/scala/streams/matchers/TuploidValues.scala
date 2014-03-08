@@ -28,8 +28,12 @@ private[loops] trait TuploidValues extends Utils
       val subPaths = pathsWithSameHead.map(_.tail)
       val selector = "_" + (head + 1)
       val subName: TermName = fresh(selector)
-      val (subExtraction, subValue) = createTuploidPathsExtractionDecls(Ident(subName.toString), subPaths, fresh)
-      val subDecl: Tree = q"private[this] val $subName = $targetName.${selector: TermName}"
+      val Block(List(subDecl, subRef), _) = typed(q"""
+        private[this] val $subName = $targetName.${selector: TermName};
+        $subName;
+        {}
+      """)
+      val (subExtraction, subValue) = createTuploidPathsExtractionDecls(subRef, subPaths, fresh)
 
       (subDecl :: subExtraction, head -> subValue)
     }
