@@ -26,9 +26,12 @@ private[loops] trait StreamComponents extends TransformationClosures {
   }
 
   case class StreamOpResult(
-    prelude: List[Tree] = Nil,
-    body: List[Tree] = Nil,
-    ending: List[Tree] = Nil)
+      prelude: List[Tree] = Nil,
+      body: List[Tree] = Nil,
+      ending: List[Tree] = Nil)
+  {
+    def compose = typed(q"..${prelude ++ body ++ ending}")
+  }
 
   val NoStreamOpResult = StreamOpResult(prelude = Nil, body = Nil, ending = Nil)
 
@@ -48,7 +51,7 @@ private[loops] trait StreamComponents extends TransformationClosures {
     def emitSource(outputNeeds: Set[TuploidPath],
                    opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
                    fresh: String => TermName,
-                   transform: Tree => Tree): Tree
+                   transform: Tree => Tree): StreamOpResult
   }
 
   trait StreamSink extends StreamComponent {
@@ -91,7 +94,7 @@ private[loops] trait StreamComponents extends TransformationClosures {
 
     def emitStream(fresh: String => TermName,
                    transform: Tree => Tree,
-                   sinkNeeds: Set[TuploidPath] = sink.outputNeeds): Tree =
+                   sinkNeeds: Set[TuploidPath] = sink.outputNeeds): StreamOpResult =
     {
       val sourceNeeds :: outputNeeds = ops.scanRight(sinkNeeds)({ case (op, refs) =>
         op.transmitOutputNeedsBackwards(refs)

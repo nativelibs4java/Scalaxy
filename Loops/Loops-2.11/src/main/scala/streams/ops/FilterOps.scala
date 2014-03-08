@@ -33,7 +33,6 @@ private[loops] trait FilterOps extends ClosureStreamOps
         fresh: String => TermName,
         transform: Tree => Tree): StreamOpResult =
     {
-
       val (replacedStatements, outputVars) =
         transformationClosure.replaceClosureBody(
           inputVars, outputNeeds + RootTuploidPath, fresh, transform)

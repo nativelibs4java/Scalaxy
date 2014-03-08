@@ -47,7 +47,7 @@ private[loops] trait InlineRangeStreamSources extends StreamComponents {
         outputNeeds: Set[TuploidPath],
         opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
         fresh: String => TermName,
-        transform: Tree => Tree): Tree =
+        transform: Tree => Tree): StreamOpResult =
     {
       val startVal = fresh("start")
       val endVal = fresh("end")
@@ -105,18 +105,19 @@ private[loops] trait InlineRangeStreamSources extends StreamComponents {
       //   ..$streamEnding
       // """
 
-      typed(q"""
-        $startValDef;
-        $endValDef;
-        $iVarDef;
-        ..$streamPrelude;
-        while ($test) {
-          $iValDef;
-          ..$streamBody;
-          $iVarIncr
-        }
-        ..$streamEnding
-      """)
+      StreamOpResult(
+        prelude = streamPrelude,
+        body = List(typed(q"""
+          $startValDef;
+          $endValDef;
+          $iVarDef;
+          while ($test) {
+            $iValDef;
+            ..$streamBody;
+            $iVarIncr
+          }
+        """)),
+        ending = streamEnding)
     }
   }
 }

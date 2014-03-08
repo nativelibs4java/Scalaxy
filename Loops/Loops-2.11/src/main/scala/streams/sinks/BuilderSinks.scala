@@ -26,8 +26,7 @@ private[loops] trait BuilderSinks extends StreamComponents {
       StreamOpResult(
         prelude = List(builderDef),
         body = List(builderAdd),
-        ending = List(result)
-      )
+        ending = List(result))
     }
   }
 

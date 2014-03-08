@@ -44,17 +44,15 @@ package loops
             override def transform(tree: Tree) = tree match {
               case SomeStream(stream) =>
                 c.info(a.tree.pos, optimizedStreamMessage(stream.describe()), force = true)
-                stream.emitStream(n => c.fresh(n): TermName, transform(_))
+                val result = stream.emitStream(n => c.fresh(n): TermName, transform(_)).compose
+                // println(result)
+
+                result
 
               case _ =>
                 super.transform(tree)
             }
           } transform original
-
-          // println(s"""
-          //   Result:
-          //     $result
-          // """)
         }
 
         c.Expr[A](c.typeCheck(Optimize.result.asInstanceOf[c.universe.Tree]))

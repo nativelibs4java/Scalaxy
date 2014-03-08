@@ -49,12 +49,12 @@ object MacroIntegrationTest
     "for (p <- (20 until 0 by -2).zipWithIndex) yield p.toString"
       -> streamMsg("Range.zipWithIndex.map -> IndexedSeq", pureExpressions = 1),
     "for ((v, i) <- (20 until 0 by -2).zipWithIndex) yield (v + i)"
-      -> streamMsg("Range.zipWithIndex.withFilter.map -> IndexedSeq"),
+      -> streamMsg("Range.zipWithIndex.withFilter.map -> IndexedSeq", pureExpressions = 1),
     """Array((1, 2), (3, 4))
         .map(_ match { case p @ (i, j) => (i * 10, j / 10.0) })
         .map({ case (k, l) => k + l })"""
       -> streamMsg("Array.map.map -> Array", pureExpressions = 3),
     "val n = 10; for (i <- 0 to n; j <- i to 1 by -1; if i % 2 == 1) yield { i + j }"
-      -> streamMsg("Range.flatMap(Range.withFilter.map) -> IndexedSeq", pureExpressions = 3)
+      -> streamMsg("Range.flatMap(Range.withFilter.map) -> IndexedSeq")
   ).map({ case (src, msgs) => Array[AnyRef](src, msgs) })
 }

@@ -26,7 +26,7 @@ private[loops] trait ArrayStreamSources extends BuilderSinks with ArrayOps {
         outputNeeds: Set[TuploidPath],
         opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
         fresh: String => TermName,
-        transform: Tree => Tree): Tree =
+        transform: Tree => Tree): StreamOpResult =
     {
       val arrayVal = fresh("array")
       val lengthVal = fresh("length")
@@ -63,20 +63,21 @@ private[loops] trait ArrayStreamSources extends BuilderSinks with ArrayOps {
       //   }
       //   ..$streamEnding
       // """
-      typed(q"""
-        $arrayValDef;
-        $lengthValDef;
-        $iVarDef;
+      StreamOpResult(
+        prelude = streamPrelude,
+        body = List(typed(q"""
+          $arrayValDef;
+          $lengthValDef;
+          $iVarDef;
 
-        ..$streamPrelude;
-        while ($iVarRef < $lengthValRef) {
-          $itemValDef;
-          ..$extractionCode
-          ..$streamBody;
-          $iVarRef += 1
-        }
-        ..$streamEnding
-      """)
+          while ($iVarRef < $lengthValRef) {
+            $itemValDef;
+            ..$extractionCode
+            ..$streamBody;
+            $iVarRef += 1
+          }
+        """)),
+        ending = streamEnding)
     }
   }
 }

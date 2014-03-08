@@ -1,5 +1,7 @@
 package scalaxy.loops
 
+import scala.reflect.NameTransformer.{ encode, decode }
+
 private[loops] trait ZipWithIndexOps
   extends TransformationClosures
   with CanBuildFromSinks
@@ -45,19 +47,19 @@ private[loops] trait ZipWithIndexOps
       // Early typing / symbolization.
       val Block(List(
           indexVarDef,
-          indexValDef,
-          pairDef,
           indexVarRef,
+          indexVarIncr,
+          indexValDef,
           indexValRef,
-          pairRef,
-          indexVarIncr), _) = typed(q"""
-        private[this] val $indexVar = 0;
-        private[this] val $indexVal = $indexVar;
-        private[this] val $pairName = ${inputVars.alias.get};
+          pairDef,
+          pairRef), _) = typed(q"""
+        private[this] var $indexVar = 0;
         $indexVar;
-        $indexVal;
-        $pairName;
         $indexVar += 1;
+        private[this] val $indexVal = $indexVar;
+        $indexVal;
+        private[this] val $pairName = (${inputVars.alias.get}, $indexVal);
+        $pairName;
         ()
       """)
 
@@ -78,10 +80,7 @@ private[loops] trait ZipWithIndexOps
 
       StreamOpResult(
         // TODO pass source collection to canBuildFrom if it exists.
-        prelude = List(q"""
-          ..$streamPrelude;
-          $indexVarDef;
-        """),
+        prelude = streamPrelude :+ indexVarDef,
         // TODO match params and any tuple extraction in body with streamVars, replace symbols with streamVars values
         body = List(q"""
           $indexValDef;

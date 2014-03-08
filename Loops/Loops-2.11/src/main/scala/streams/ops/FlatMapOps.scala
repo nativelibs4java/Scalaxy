@@ -48,11 +48,9 @@ private[loops] trait FlatMapOps
         prelude = streamPrelude,
         body = List(typed(q"""
           ..$replacedStatements;
-          ..$streamPrelude;
           for ($itemVal <- ${outputVars.alias.get}) {
             ..$streamBody;
           }
-          ..$streamEnding
         """)),
         ending = streamEnding
       )
@@ -92,9 +90,7 @@ private[loops] trait FlatMapOps
       val Stream(source, ops, sink) = subStream
       val SinkOp(outerSink) :: outerOpsRev = opsAndOutputNeeds.map(_._1).reverse
       val outerOps = outerOpsRev.reverse
-      StreamOpResult(
-        body = List(
-          Stream(source, ops ++ outerOps, outerSink).emitStream(fresh, subTransform)))
+      Stream(source, ops ++ outerOps, outerSink).emitStream(fresh, subTransform)
     }
   }
 
