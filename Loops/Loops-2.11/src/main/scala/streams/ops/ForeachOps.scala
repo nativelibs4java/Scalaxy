@@ -16,6 +16,8 @@ private[loops] trait ForeachOps
   case class ForeachOp(param: ValDef, body: Tree)
       extends ClosureStreamOp
   {
+    override def describe = Some("foreach")
+
     override def sinkOption = Some(UnusableSink)
 
     override def emitOp(

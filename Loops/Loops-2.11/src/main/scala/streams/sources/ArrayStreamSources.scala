@@ -15,9 +15,13 @@ private[loops] trait ArrayStreamSources extends BuilderSinks with ArrayOps {
     }
   }
 
-  case class ArrayStreamSource(array: Tree, sinkOption: Option[StreamSink] = Some(ArrayBuilderSink))
-      extends StreamSource
+  case class ArrayStreamSource(
+      array: Tree,
+      sinkOption: Option[StreamSink] = Some(ArrayBuilderSink))
+    extends StreamSource
   {
+    override def describe = Some("Array")
+
     override def emitSource(
         outputNeeds: Set[TuploidPath],
         opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],

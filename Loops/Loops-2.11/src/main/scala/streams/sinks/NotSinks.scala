@@ -6,6 +6,8 @@ private[loops] trait UnusableSinks extends StreamComponents {
 
   case object UnusableSink extends StreamSink
   {
+    override def describe = None
+
     override def sinkOption = Some(this)
 
     override def outputNeeds = Set()

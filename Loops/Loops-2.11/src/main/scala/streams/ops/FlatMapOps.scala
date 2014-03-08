@@ -25,6 +25,8 @@ private[loops] trait FlatMapOps
   case class GenericFlatMapOp(tpe: Type, param: ValDef, body: Tree, canBuildFrom: Tree)
       extends ClosureStreamOp
   {
+    override def describe = Some("flatMap")
+
     override val sinkOption = Some(CanBuildFromSink(canBuildFrom))
 
     override def emitOp(
@@ -60,6 +62,8 @@ private[loops] trait FlatMapOps
   case class NestedFlatMapOp(tpe: Type, param: ValDef, subStream: Stream, canBuildFrom: Tree)
       extends StreamOp
   {
+    override def describe = Some("flatMap(" + subStream.describe + ")")
+
     override def transmitOutputNeedsBackwards(paths: Set[TuploidPath]) = {
       subStream.ops.foldRight(paths)({ case (op, refs) =>
         op.transmitOutputNeedsBackwards(refs)

@@ -36,6 +36,8 @@ private[loops] trait InlineRangeStreamSources extends StreamComponents {
     (start: Tree, end: Tree, by: T, isInclusive: Boolean, tpe: Type)
       extends StreamSource
   {
+    override def describe = Some("Range")
+
     override def sinkOption = {
       println("TODO vector / range sink")
       None

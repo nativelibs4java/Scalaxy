@@ -17,6 +17,8 @@ private[loops] trait MapOps
   case class MapOp(param: ValDef, body: Tree, canBuildFrom: Tree)
       extends ClosureStreamOp
   {
+    override def describe = Some("map")
+
     override val sinkOption = Some(CanBuildFromSink(canBuildFrom))
 
     override def emitOp(

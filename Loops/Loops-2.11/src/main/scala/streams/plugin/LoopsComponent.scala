@@ -42,13 +42,9 @@ class LoopsComponent(
 
         override def transform(tree: Tree) = tree match {
           case SomeStream(stream) =>
-            // println(s"source = $source")
-            reporter.info(tree.pos, s"stream = $stream", force = true)
-            val result = stream.emitStream(n => unit.fresh.newName(n): TermName, transform(_))
-            println(result)
-
+            reporter.info(tree.pos, "[Scalaxy] Optimized stream: " + stream.describe, force = true)
             typer.typed {
-              result
+              stream.emitStream(n => unit.fresh.newName(n): TermName, transform(_))
             }
 
           case _ =>

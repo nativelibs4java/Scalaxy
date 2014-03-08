@@ -14,6 +14,8 @@ private[loops] trait ZipWithIndexOps extends StreamComponents with Transformatio
 
   case object ZipWithIndexOp extends StreamOp
   {
+    override def describe = Some("zipWithIndex")
+
     override val sinkOption = None
 
     override def transmitOutputNeedsBackwards(paths: Set[TuploidPath]) = {

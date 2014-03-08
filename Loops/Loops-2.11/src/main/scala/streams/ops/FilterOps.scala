@@ -17,6 +17,8 @@ private[loops] trait FilterOps extends ClosureStreamOps
   case class FilterOp(param: ValDef, body: Tree)
       extends ClosureStreamOp
   {
+    override def describe = Some("filter")
+
     override def sinkOption = None
 
     override def isMapLike = false

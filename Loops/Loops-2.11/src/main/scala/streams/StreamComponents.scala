@@ -6,6 +6,8 @@ private[loops] trait StreamComponents extends TransformationClosures {
 
   trait StreamComponent
   {
+    def describe: Option[String]
+
     def sinkOption: Option[StreamSink]
 
     def emitSub(inputVars: TuploidValue[Tree],
@@ -62,6 +64,8 @@ private[loops] trait StreamComponents extends TransformationClosures {
 
   case class SinkOp(sink: StreamSink) extends StreamOp
   {
+    override def describe = sink.describe
+
     override val sinkOption = Some(sink)
 
     override def transmitOutputNeedsBackwards(paths: Set[TuploidPath]) = ???
@@ -79,7 +83,12 @@ private[loops] trait StreamComponents extends TransformationClosures {
     }
   }
 
-  case class Stream(source: StreamSource, ops: List[StreamOp], sink: StreamSink) {
+  case class Stream(source: StreamSource, ops: List[StreamOp], sink: StreamSink)
+  {
+    def describe =
+      (source :: ops).flatMap(_.describe).mkString(".") +
+      sink.describe.map(" -> " + _).getOrElse("")
+
     def emitStream(fresh: String => TermName,
                    transform: Tree => Tree,
                    sinkNeeds: Set[TuploidPath] = sink.outputNeeds): Tree =
