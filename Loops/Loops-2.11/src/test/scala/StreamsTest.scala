@@ -14,7 +14,7 @@ class StreamsTest extends StreamComponentsTestBase with Streams with StreamOps {
       Array(1).map(_ + 1).map(_ * 10).filter(_ < 10)
     """)
     // println(s"ops = " + ops.mkString("\n\t"))
-    val MapOp(_, _, _) :: MapOp(_, _, _) :: FilterOp(_, _) :: Nil = ops
+    val MapOp(_, _, _) :: MapOp(_, _, _) :: FilterOp(_, _, false, "filter") :: Nil = ops
   }
 
   @Test
@@ -23,7 +23,7 @@ class StreamsTest extends StreamComponentsTestBase with Streams with StreamOps {
       (1 to 10 by 2).map(_ + 1).map(_ * 10).filter(_ < 10)
     """)
     // println(s"ops = " + ops.mkString("\n\t"))
-    val MapOp(_, _, _) :: MapOp(_, _, _) :: FilterOp(_, _) :: Nil = ops
+    val MapOp(_, _, _) :: MapOp(_, _, _) :: FilterOp(_, _, false, "filter") :: Nil = ops
   }
 
   @Test

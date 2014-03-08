@@ -8,16 +8,19 @@ private[loops] trait FilterOps extends ClosureStreamOps
   object SomeFilterOp {
     def unapply(tree: Tree): Option[(Tree, FilterOp)] = Option(tree) collect {
       case q"$target.filter(${Strip(Function(List(param), body))})" =>
-        (target, FilterOp(param, body))
+        (target, FilterOp(param, body, false, "filter"))
+
+      case q"$target.filterNot(${Strip(Function(List(param), body))})" =>
+        (target, FilterOp(param, body, true, "filterNot"))
 
       case q"$target.withFilter(${Strip(Function(List(param), body))})" =>
-        (target, FilterOp(param, body))
+        (target, FilterOp(param, body, false, "withFilter"))
     }
   }
-  case class FilterOp(param: ValDef, body: Tree)
+  case class FilterOp(param: ValDef, body: Tree, isNegative: Boolean, name: String)
       extends ClosureStreamOp
   {
-    override def describe = Some("filter")
+    override def describe = Some(name)
 
     override def sinkOption = None
 
@@ -38,7 +41,10 @@ private[loops] trait FilterOps extends ClosureStreamOps
       val StreamOpResult(streamPrelude, streamBody, streamEnding) =
         emitSub(inputVars, opsAndOutputNeeds, fresh, transform)
 
-      val test = outputVars.alias.get
+      var test = outputVars.alias.get
+      if (isNegative) {
+        test = typed(q"!$test")
+      }
       StreamOpResult(
         prelude = streamPrelude,
         body = List(
