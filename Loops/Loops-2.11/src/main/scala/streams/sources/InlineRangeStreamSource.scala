@@ -64,7 +64,16 @@ private[loops] trait InlineRangeStreamSources extends StreamComponents {
         )
 
       // Force typing of declarations and get typed references to various vars and vals.
-      val b @ Block(List(startValDef, endValDef, iVarDef, iValDef, iValRef, iVarRef, endValRef, test, iVarIncr), _) = typed(q"""
+      val b @ Block(List(
+          startValDef,
+          endValDef,
+          iVarDef,
+          iValDef,
+          iValRef,
+          iVarRef,
+          endValRef,
+          test,
+          iVarIncr), _) = typed(q"""
         private[this] val $startVal: $tpe = ${transform(start)};
         private[this] val $endVal: $tpe = ${transform(end)};
         private[this] var $iVar: $tpe = $startVal;
@@ -73,7 +82,7 @@ private[loops] trait InlineRangeStreamSources extends StreamComponents {
         $iVar;
         $endVal;
         $iVar $testOperator $endVal;
-        $iVar += $by;
+        $iVar = $iVar + $by;
         {}
       """)
 

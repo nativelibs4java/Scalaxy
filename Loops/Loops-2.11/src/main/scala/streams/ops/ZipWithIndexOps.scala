@@ -43,13 +43,21 @@ private[loops] trait ZipWithIndexOps
       val pairName: TermName = if (needsPair) fresh("zipWithIndexPair") else ""
 
       // Early typing / symbolization.
-      val Block(List(indexValDef, indexVarDef, pairDef, indexVarRef, indexValRef, pairRef), EmptyTree) = typed(q"""
+      val Block(List(
+          indexVarDef,
+          indexValDef,
+          pairDef,
+          indexVarRef,
+          indexValRef,
+          pairRef,
+          indexVarIncr), _) = typed(q"""
         private[this] val $indexVar = 0;
         private[this] val $indexVal = $indexVar;
         private[this] val $pairName = ${inputVars.alias.get};
         $indexVar;
         $indexVal;
         $pairName;
+        $indexVar += 1;
         ()
       """)
 
@@ -79,7 +87,7 @@ private[loops] trait ZipWithIndexOps
           $indexValDef;
           ..${if (needsPair) List(pairDef) else Nil}
           ..$streamBody;
-          $indexVarRef += 1;
+          $indexVarIncr
         """),
         ending = streamEnding
       )
