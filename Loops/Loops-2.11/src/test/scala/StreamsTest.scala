@@ -43,4 +43,13 @@ class StreamsTest extends StreamComponentsTestBase with Streams with StreamOps {
     """)
     // println(s"ops = " + ops.mkString("\n\t"))
   }
+
+  // @Test
+  // def testNest {
+  //   val x = q"""
+  //     ((x$2: (Int, Int)) => (x$2: (Int, Int) @unchecked) match {
+  //       case (_1: Int, _2: Int)(Int, Int)((j @ _), (jj @ _)) => scala.this.Predef.intWrapper(i.+(j)).to(Example2.this.n).map[(Int, Int, Int), scala.collection.immutable.IndexedSeq[(Int, Int, Int)]](((k: Int) => scala.Tuple3.apply[Int, Int, Int](ii, jj, k)))(immutable.this.IndexedSeq.canBuildFrom[(Int, Int, Int)])
+  //     })
+  //   """
+  // }
 }

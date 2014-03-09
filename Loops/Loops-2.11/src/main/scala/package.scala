@@ -45,6 +45,7 @@ package loops
               case SomeStream(stream) =>
                 c.info(a.tree.pos, optimizedStreamMessage(stream.describe()), force = true)
                 val result = stream.emitStream(n => c.fresh(n): TermName, transform(_)).compose
+                // println(tree)
                 // println(result)
 
                 result

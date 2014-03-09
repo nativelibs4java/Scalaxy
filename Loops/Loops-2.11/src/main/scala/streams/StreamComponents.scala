@@ -31,6 +31,8 @@ private[loops] trait StreamComponents extends TransformationClosures {
       ending: List[Tree] = Nil)
   {
     def compose = typed(q"..${prelude ++ body ++ ending}")
+    def map(f: Tree => Tree): StreamOpResult =
+      copy(prelude = prelude.map(f), body = body.map(f), ending = ending.map(f))
   }
 
   val NoStreamOpResult = StreamOpResult(prelude = Nil, body = Nil, ending = Nil)

@@ -16,6 +16,7 @@ private[loops] trait BuilderSinks extends StreamComponents {
       val builder = fresh("builder")
       require(inputVars.alias.nonEmpty, s"inputVars = $inputVars")
 
+      // println("inputVars.alias.get = " + inputVars.alias.get + ": " + inputVars.tpe)
       val Block(List(builderDef, builderAdd, result), _) = typed(q"""
         private[this] val $builder = ${createBuilder(inputVars)};
         $builder += ${inputVars.alias.get};

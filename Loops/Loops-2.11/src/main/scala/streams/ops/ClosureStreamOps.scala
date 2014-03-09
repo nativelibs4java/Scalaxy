@@ -10,7 +10,7 @@ private[loops] trait ClosureStreamOps extends StreamComponents
     def body: Tree
     def isMapLike: Boolean = true
 
-    val SomeTransformationClosure(transformationClosure) = q"($param) => $body"
+    lazy val SomeTransformationClosure(transformationClosure) = q"($param) => $body"
 
     override def transmitOutputNeedsBackwards(paths: Set[TuploidPath]) =
       transformationClosure.getPreviousReferencedPaths(paths, isMapLike = isMapLike)

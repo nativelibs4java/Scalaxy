@@ -80,11 +80,23 @@ object MacroIntegrationTest
            j <- i to n;
            k <- j to n;
            l <- k to n;
-           if (i + j + k + l) % 3 == 0;
+           sum = i + j + k + l;
+           if sum % 3 == 0;
            m <- l to n)
-        yield { i + j + k + l + m }
+        yield { sum * m }
     """
-      -> streamMsg("Range.flatMap(Range.flatMap(Range.flatMap(Range.withFilter.flatMap(Range.map)))) -> IndexedSeq")
+      -> streamMsg("Range.flatMap(Range.flatMap(Range.flatMap(Range.withFilter.flatMap(Range.map)))) -> IndexedSeq"),
+
+    """val n = 20;
+      for (i <- 0 to n;
+           ii = i * i;
+           j <- i to n;
+           jj = j * j;
+           if (ii - jj) % 2 == 0;
+           k <- (i + j) to n)
+        yield { (ii, jj, k) }
+    """
+      -> streamMsg("Range.map.flatMap(Range.map.withFilter.flatMap(Range.map)) -> IndexedSeq")
 
   ).map({ case (src, msgs) => Array[AnyRef](src, msgs) })
 }

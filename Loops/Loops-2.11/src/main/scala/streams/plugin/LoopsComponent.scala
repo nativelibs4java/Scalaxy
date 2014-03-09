@@ -33,8 +33,13 @@ class LoopsComponent(
   override val runsAfter = runsRightAfter.toList
   override val runsBefore = List("patmat")
 
-  override def typed(tree: Tree, tpe: Type) =
-    typer.typed(tree, tpe)
+  override def typed(tree: Tree, tpe: Type) = {
+    try {
+      typer.typed(tree, tpe)
+    } catch { case ex: Throwable =>
+      throw new RuntimeException(tree.toString, ex)
+    }
+  }
 
   override def newPhase(prev: Phase) = new StdPhase(prev) {
     def apply(unit: CompilationUnit) {
@@ -46,6 +51,7 @@ class LoopsComponent(
             val result = typer.typed {
               stream.emitStream(n => unit.fresh.newName(n): TermName, transform(_)).compose
             }
+            // println(tree)
             // println(result)
 
             result

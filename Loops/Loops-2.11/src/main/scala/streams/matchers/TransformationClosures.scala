@@ -14,6 +14,19 @@ private[loops] trait TransformationClosures extends TuploidValues with Strippers
 
   object TransformationClosure
   {
+    def isSideEffectFreeRef(tree: Tree) = tree match {
+      case Ident(_) if {
+        val s = tree.symbol
+        s.isTerm && {
+          val ts = s.asTerm
+          ts.isVal && !ts.isLazy
+        }
+      } =>
+        true
+
+      case _ =>
+        false
+    }
     def wireInputsAndOutputs(
       inputs: TuploidValue[Symbol],
       inputSymbols: Set[Symbol],
@@ -44,7 +57,7 @@ private[loops] trait TransformationClosures extends TuploidValues with Strippers
               None
             }
 
-          def generateVarIfNeeded(tpe: Type, value: => Tree): Option[Tree] = {
+          def generateVarIfNeeded(tpe: Type, value: => Tree, sideEffectValues: => List[Tree]): Option[Tree] = {
             if (needed && reusableName.isEmpty) {
               val name = fresh("_" + path.map(_ + 1).mkString("_"))
               val uninitializedValue = Literal(Constant(defaultValue(tpe)))
@@ -58,7 +71,7 @@ private[loops] trait TransformationClosures extends TuploidValues with Strippers
               Some(ref)
             } else {
               reusableName.orElse({
-                post += value
+                post ++= sideEffectValues
 
                 None
               })
@@ -78,16 +91,25 @@ private[loops] trait TransformationClosures extends TuploidValues with Strippers
                 // val tupleRef = typed(q"$tupleClass")
                 val subRefs = subValues.toList.sortBy(_._1).map(_._2.alias.get).map(_.duplicate)
                 typed(q"$tupleClass(..$subRefs)")
+              }, {
+                // val subs = subValues.toList.sortBy(_._1).flatMap(_._2.alias)
+                // t.collect {
+                //   case tree if !isSideEffectFreeRef(tree) =>
+                //     tree
+                // }
+                Nil
               })
 
               underNeededParent = underNeededParent.tail
               TupleValue[Tree](tpe, subValues, alias = newAlias)
 
             case ScalarValue(tpe, value, alias) =>
+              val mappedValue = value.map(transformer)
               val newAlias =
                 generateVarIfNeeded(
                   tpe,
-                  value.map(transformer).getOrElse(typed(Ident(alias.get))))
+                  mappedValue.getOrElse(typed(Ident(alias.get))),
+                  mappedValue.filterNot(isSideEffectFreeRef(_)).toList)
 
               // println(s"""
               //   t = $t
@@ -177,12 +199,7 @@ private[loops] trait TransformationClosures extends TuploidValues with Strippers
       }
     }
 
-    def replaceClosureBody(
-        inputVars: TuploidValue[Tree],
-        outputNeeds: Set[TuploidPath],
-        fresh: String => TermName,
-        transform: Tree => Tree): (List[Tree], TuploidValue[Tree]) =
-    {
+    def getReplacer(inputVars: TuploidValue[Tree]): Tree => Tree = {
       val repls = replacements(inputs, inputVars).toMap
 
       var replacer = new Transformer {
@@ -203,7 +220,16 @@ private[loops] trait TransformationClosures extends TuploidValues with Strippers
       //   outputs = $outputs
       //   inputVars = $inputVars
       // """)
-      val fullTransform = (t: Tree) => transform(replacer.transform(t))
+      replacer.transform(_)
+    }
+    def replaceClosureBody(
+        inputVars: TuploidValue[Tree],
+        outputNeeds: Set[TuploidPath],
+        fresh: String => TermName,
+        transform: Tree => Tree): (List[Tree], TuploidValue[Tree]) =
+    {
+      val replacer = getReplacer(inputVars)
+      val fullTransform = (tree: Tree) => transform(replacer(tree))
 
       val ClosureWiringResult(pre, post, outputVars) =
         wireInputsAndOutputs(
@@ -229,8 +255,8 @@ private[loops] trait TransformationClosures extends TuploidValues with Strippers
       // println(s"""
       //     Replaced: $statements
       //     By: $results
-      //     Repls: $repls
       //     InputVars: $inputVars
+      //     OutputVars: $outputVars
       // """)
       (results, outputVars)
     }
