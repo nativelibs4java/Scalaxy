@@ -49,7 +49,7 @@ private[loops] trait FlatMapOps
 
       nestedStream match {
         case Some(stream) =>
-          val replacer = transformationClosure.getReplacer(input.vars)
+          val replacer = getReplacer(transformationClosure.inputs, input.vars)
           val subTransformer = new Transformer {
             override def transform(tree: Tree) = {
               if (tree.symbol == param.symbol) {
