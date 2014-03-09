@@ -43,7 +43,10 @@ private[loops] trait InlineRangeStreamSources extends StreamComponents {
       None
     }
 
-    override def emit(input: StreamInput, outputNeeds: OutputNeeds, nextOps: OpsAndOutputNeeds): StreamOutput = {
+    override def emit(input: StreamInput,
+                      outputNeeds: OutputNeeds,
+                      nextOps: OpsAndOutputNeeds): StreamOutput =
+    {
       import input.{ fresh, transform }
 
       val startVal = fresh("start")

@@ -13,25 +13,8 @@ private[loops] trait FlatMapOps
 
   object SomeFlatMapOp {
     def unapply(tree: Tree): Option[(Tree, StreamOp)] = Option(tree) collect {
-      case q"$target.flatMap[$tpt, $_](${fun @ Strip(Function(List(param), body))})($canBuildFrom)" =>
-        (target, FlatMapOp(tpt.tpe, param, body, canBuildFrom))
-        // (target, body match {
-        //   case SomeStream(stream) =>
-        //     NestedFlatMapOp(tpt.tpe, param, stream, canBuildFrom)
-
-        //   case _ =>
-        //     // println(s"""
-        //     //   GenericFlatMapOp {
-                
-        //     //     body: $body
-
-        //     //     fun: $fun
-
-        //     //     tree: $tree
-        //     //   }
-        //     // """)
-        //     GenericFlatMapOp(tpt.tpe, param, body, canBuildFrom)
-        // })
+      case q"$target.flatMap[$tpt, $_](${fun @ Strip(Function(List(param), body))})($cbf)" =>
+        (target, FlatMapOp(tpt.tpe, param, body, cbf))
     }
   }
 
@@ -58,7 +41,10 @@ private[loops] trait FlatMapOps
 
     override val sinkOption = Some(CanBuildFromSink(canBuildFrom))
 
-    override def emit(input: StreamInput, outputNeeds: OutputNeeds, nextOps: OpsAndOutputNeeds): StreamOutput = {
+    override def emit(input: StreamInput,
+                      outputNeeds: OutputNeeds,
+                      nextOps: OpsAndOutputNeeds): StreamOutput =
+    {
       import input.{ fresh, transform }
 
       nestedStream match {
@@ -81,10 +67,7 @@ private[loops] trait FlatMapOps
           modifiedStream.emitStream(fresh, subTransform).map(replacer)
 
         case None =>
-          // TODO: type this.
-          ???
           val itemVal = fresh("item")
-          // println("GenericFlatMapOp(tpe = " + tpe + ")")
           val (replacedStatements, outputVars) =
             transformationClosure.replaceClosureBody(
               input.copy(
@@ -103,78 +86,4 @@ private[loops] trait FlatMapOps
       }
     }
   }
-
-  // case class GenericFlatMapOp(tpe: Type, param: ValDef, body: Tree, canBuildFrom: Tree)
-  //     extends ClosureStreamOp
-  // {
-  //   override def describe = Some("flatMap")
-
-  //   override val sinkOption = Some(CanBuildFromSink(canBuildFrom))
-
-  //   override def emitOp(
-  //       inputVars: TuploidValue[Tree],
-  //       outputNeeds: Set[TuploidPath],
-  //       nextOps: List[(StreamOp, Set[TuploidPath])],
-  //       fresh: String => TermName,
-  //       transform: Tree => Tree): StreamOutput =
-  //   {
-  //     // TODO: type this.
-  //     val itemVal = fresh("item")
-  //     println("GenericFlatMapOp(tpe = " + tpe + ")")
-  //     val (replacedStatements, outputVars) = transformationClosure.replaceClosureBody(
-  //       inputVars = ScalarValue(tpe, alias = Some(Ident(itemVal.toString))),
-  //       outputNeeds, fresh, transform)
-  //     val StreamOutput(streamPrelude, streamBody, streamEnding) =
-  //       super.emit(outputVars, nextOps, fresh, transform)
-
-  //     StreamOutput(
-  //       prelude = streamPrelude,
-  //       body = List(typed(q"""
-  //         ..$replacedStatements;
-  //         for ($itemVal <- ${outputVars.alias.get}) {
-  //           ..$streamBody;
-  //         }
-  //       """)),
-  //       ending = streamEnding
-  //     )
-  //   }
-  // }
-
-  // case class NestedFlatMapOp(tpe: Type, param: ValDef, subStream: Stream, canBuildFrom: Tree)
-  //     extends StreamOp
-  // {
-  //   override def describe = Some("flatMap(" + subStream.describe(describeSink = false) + ")")
-
-  //   override def transmitOutputNeedsBackwards(paths: Set[TuploidPath]) = {
-  //     subStream.ops.foldRight(paths)({ case (op, refs) =>
-  //       op.transmitOutputNeedsBackwards(refs)
-  //     })
-  //   }
-
-  //   override val sinkOption = Some(CanBuildFromSink(canBuildFrom))
-
-  //   override def emitOp(
-  //       inputVars: TuploidValue[Tree],
-  //       outputNeeds: Set[TuploidPath],
-  //       nextOps: List[(StreamOp, Set[TuploidPath])],
-  //       fresh: String => TermName,
-  //       transform: Tree => Tree): StreamOutput =
-  //   {
-  //     val subTransformer = new Transformer {
-  //       override def transform(tree: Tree) = {
-  //         if (tree.symbol == param.symbol) {
-  //           inputVars.alias.get.duplicate
-  //         } else {
-  //           super.transform(tree)
-  //         }
-  //       }
-  //     }
-  //     val subTransform = (tree: Tree) => subTransformer.transform(transform(tree))
-  //     val Stream(source, ops, sink) = subStream
-  //     val SinkOp(outerSink) :: outerOpsRev = nextOps.map(_._1).reverse
-  //     val outerOps = outerOpsRev.reverse
-  //     Stream(source, ops ++ outerOps, outerSink).emitStream(fresh, subTransform)
-  //   }
-  // }
-
 }

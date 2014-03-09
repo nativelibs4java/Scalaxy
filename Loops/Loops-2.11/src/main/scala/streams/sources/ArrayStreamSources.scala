@@ -25,7 +25,10 @@ private[loops] trait ArrayStreamSources
   {
     override def describe = Some("Array")
 
-    override def emit(input: StreamInput, outputNeeds: OutputNeeds, nextOps: OpsAndOutputNeeds): StreamOutput = {
+    override def emit(input: StreamInput,
+                      outputNeeds: OutputNeeds,
+                      nextOps: OpsAndOutputNeeds): StreamOutput =
+    {
       import input.{ fresh, transform }
 
       val arrayVal = fresh("array")

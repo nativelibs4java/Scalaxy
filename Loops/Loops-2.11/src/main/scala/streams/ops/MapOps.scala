@@ -21,7 +21,9 @@ private[loops] trait MapOps
 
     override val sinkOption = Some(CanBuildFromSink(canBuildFrom))
 
-    override def emit(input: StreamInput, outputNeeds: OutputNeeds, nextOps: OpsAndOutputNeeds): StreamOutput =
+    override def emit(input: StreamInput,
+                      outputNeeds: OutputNeeds,
+                      nextOps: OpsAndOutputNeeds): StreamOutput =
     {
       val (replacedStatements, outputVars) =
         transformationClosure.replaceClosureBody(input, outputNeeds)

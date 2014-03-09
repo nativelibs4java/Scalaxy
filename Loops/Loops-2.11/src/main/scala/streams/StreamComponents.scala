@@ -12,12 +12,12 @@ private[loops] trait StreamComponents extends StreamResults {
 
     def sinkOption: Option[StreamSink]
 
-    def emit(input: StreamInput, outputNeeds: OutputNeeds, nextOps: OpsAndOutputNeeds): StreamOutput
+    def emit(input: StreamInput,
+             outputNeeds: OutputNeeds,
+             nextOps: OpsAndOutputNeeds): StreamOutput
 
     protected def emitSub(input: StreamInput, nextOps: OpsAndOutputNeeds): StreamOutput =
     {
-      // This method is meant to be overridden to take care of input and outputNeeds.
-      // By default it just processes next ops and their needs.
       nextOps match {
         case (firstOp, outputNeeds) :: otherOpsAndOutputNeeds =>
           firstOp.emit(input, outputNeeds, otherOpsAndOutputNeeds)
@@ -48,7 +48,9 @@ private[loops] trait StreamComponents extends StreamResults {
       needs
     }
 
-    def requireSinkInput(input: StreamInput, outputNeeds: OutputNeeds, nextOps: OpsAndOutputNeeds) {
+    def requireSinkInput(input: StreamInput,
+                         outputNeeds: OutputNeeds,
+                         nextOps: OpsAndOutputNeeds) {
       require(nextOps.isEmpty,
         "Cannot chain ops through a sink (got nextOps = " + nextOps + ")")
       require(outputNeeds == this.outputNeeds,

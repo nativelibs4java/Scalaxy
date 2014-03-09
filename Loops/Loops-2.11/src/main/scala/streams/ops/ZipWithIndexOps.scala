@@ -30,7 +30,10 @@ private[loops] trait ZipWithIndexOps
       }
     }
 
-    override def emit(input: StreamInput, outputNeeds: OutputNeeds, nextOps: OpsAndOutputNeeds): StreamOutput = {
+    override def emit(input: StreamInput,
+                      outputNeeds: OutputNeeds,
+                      nextOps: OpsAndOutputNeeds): StreamOutput =
+    {
       import input.{ fresh, transform }
 
       // TODO wire input and output fiber vars
@@ -75,7 +78,6 @@ private[loops] trait ZipWithIndexOps
       sub.copy(
         // TODO pass source collection to canBuildFrom if it exists.
         prelude = sub.prelude :+ indexVarDef,
-        // TODO match params and any tuple extraction in body with streamVars, replace symbols with streamVars values
         body = List(q"""
           $indexValDef;
           ..${if (needsPair) List(pairDef) else Nil}
