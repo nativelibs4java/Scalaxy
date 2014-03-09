@@ -3,6 +3,8 @@ package scalaxy.loops
 private[loops] trait FlatMapOps
     extends ClosureStreamOps
     with CanBuildFromSinks
+    with Streams
+    with Strippers
 {
   val global: scala.reflect.api.Universe
   import global._
@@ -76,7 +78,7 @@ private[loops] trait FlatMapOps
             }
           }
           val subTransform = (tree: Tree) => subTransformer.transform(transform(tree))
-          val SinkOp(outerSink) :: outerOpsRev = opsAndOutputNeeds.map(_._1).reverse
+          val (outerSink: StreamSink) :: outerOpsRev = opsAndOutputNeeds.map(_._1).reverse
           val outerOps = outerOpsRev.reverse
           val modifiedStream = stream.copy(ops = stream.ops ++ outerOps, sink = outerSink)
 

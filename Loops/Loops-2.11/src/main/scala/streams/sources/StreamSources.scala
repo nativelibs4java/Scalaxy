@@ -7,7 +7,7 @@ private[loops] trait StreamSources
   val global: scala.reflect.api.Universe
   import global._
 
-  object SomeStreamSource {
+  object SomeStreamSource extends Extractor[Tree, StreamSource] {
     def unapply(tree: Tree): Option[StreamSource] = Option(tree) collect {
       case SomeInlineRangeStreamSource(source) =>
         source

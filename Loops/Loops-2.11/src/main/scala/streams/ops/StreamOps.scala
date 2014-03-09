@@ -11,7 +11,7 @@ private[loops] trait StreamOps
   val global: scala.reflect.api.Universe
   import global._
 
-  object SomeStreamOp {
+  object SomeStreamOp extends Extractor[Tree, (Tree, List[StreamOp])]  {
     def unapply(tree: Tree): Option[(Tree, List[StreamOp])] = Option(tree) collect {
       case SomeForeachOp(SomeStreamOp(src, ops), op) =>
         (src, ops :+ op)

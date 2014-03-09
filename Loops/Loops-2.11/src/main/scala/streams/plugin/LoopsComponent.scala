@@ -22,7 +22,7 @@ object LoopsComponent {
 class LoopsComponent(
   val global: Global, runAfter: String = "typer")
     extends PluginComponent
-    with Streams {
+    with StreamTransforms {
   import global._
   import definitions._
   import Flags._

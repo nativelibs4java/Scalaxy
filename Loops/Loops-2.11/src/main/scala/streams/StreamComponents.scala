@@ -1,6 +1,6 @@
 package scalaxy.loops
 
-private[loops] trait StreamComponents extends TransformationClosures {
+private[loops] trait StreamComponents extends StreamResults {
   val global: scala.reflect.api.Universe
   import global._
 
@@ -25,18 +25,6 @@ private[loops] trait StreamComponents extends TransformationClosures {
     }
   }
 
-  case class StreamOpResult(
-      prelude: List[Tree] = Nil,
-      body: List[Tree] = Nil,
-      ending: List[Tree] = Nil)
-  {
-    def compose = typed(q"..${prelude ++ body ++ ending}")
-    def map(f: Tree => Tree): StreamOpResult =
-      copy(prelude = prelude.map(f), body = body.map(f), ending = ending.map(f))
-  }
-
-  val NoStreamOpResult = StreamOpResult(prelude = Nil, body = Nil, ending = Nil)
-
   // type StreamOp <: StreamComponent
   trait StreamOp extends StreamComponent
   {
@@ -56,24 +44,23 @@ private[loops] trait StreamComponents extends TransformationClosures {
                    transform: Tree => Tree): StreamOpResult
   }
 
-  trait StreamSink extends StreamComponent {
+  trait StreamSink extends StreamOp {
 
-    def sinkOption = Some(this)
+    override def sinkOption = Some(this)
 
+    // TODO override for ops that return Unit (then return Set())
     def outputNeeds: Set[TuploidPath] = Set(RootTuploidPath)
+
+    override def transmitOutputNeedsBackwards(paths: Set[TuploidPath]) = {
+      val needs = outputNeeds
+      require(paths.isEmpty || paths == needs)
+
+      needs
+    }
 
     def emitSink(inputVars: TuploidValue[Tree],
                  fresh: String => TermName,
                  transform: Tree => Tree): StreamOpResult
-  }
-
-  case class SinkOp(sink: StreamSink) extends StreamOp
-  {
-    override def describe = sink.describe
-
-    override val sinkOption = Some(sink)
-
-    override def transmitOutputNeedsBackwards(paths: Set[TuploidPath]) = ???
 
     override def emitOp(
         inputVars: TuploidValue[Tree],
@@ -82,30 +69,16 @@ private[loops] trait StreamComponents extends TransformationClosures {
         fresh: String => TermName,
         transform: Tree => Tree): StreamOpResult =
     {
-      require(opsAndOutputNeeds.isEmpty)
+      require(opsAndOutputNeeds.isEmpty,
+        "Cannot chain ops through a sink (got opsAndOutputNeeds = " + opsAndOutputNeeds + ")")
+      require(outputNeeds == this.outputNeeds,
+        "Expected outputNeeds " + this.outputNeeds + " for sink, got " + outputNeeds)
 
-      sink.emitSink(inputVars, fresh, transform)
+      emitSink(inputVars, fresh, transform)
     }
   }
 
-  case class Stream(source: StreamSource, ops: List[StreamOp], sink: StreamSink)
-  {
-    def describe(describeSink: Boolean = true) =
-      (source :: ops).flatMap(_.describe).mkString(".") +
-      sink.describe.filter(_ => describeSink).map(" -> " + _).getOrElse("")
-
-    def emitStream(fresh: String => TermName,
-                   transform: Tree => Tree,
-                   sinkNeeds: Set[TuploidPath] = sink.outputNeeds): StreamOpResult =
-    {
-      val sourceNeeds :: outputNeeds = ops.scanRight(sinkNeeds)({ case (op, refs) =>
-        op.transmitOutputNeedsBackwards(refs)
-      })
-      val opsAndOutputNeeds = ops.zip(outputNeeds) :+ ((SinkOp(sink), sinkNeeds))
-      // println(s"source = $source")
-      // println(s"""ops =\n\t${ops.map(_.getClass.getName).mkString("\n\t")}""")
-      // println(s"outputNeeds = ${opsAndOutputNeeds.map(_._2)}")
-      source.emitSource(sourceNeeds, opsAndOutputNeeds, fresh, transform)
-    }
-  }
+  val SomeStreamSource: Extractor[Tree, StreamSource]
+  val SomeStreamOp: Extractor[Tree, (Tree, List[StreamOp])]
+  val SomeStreamSink: Extractor[Tree, (Tree, StreamSink)]
 }

@@ -27,7 +27,7 @@ private[loops] trait ForeachOps
         fresh: String => TermName,
         transform: Tree => Tree): StreamOpResult =
     {
-      val List((SinkOp(UnusableSink), _)) = opsAndOutputNeeds
+      val List((UnusableSink, _)) = opsAndOutputNeeds
 
       val (replacedStatements, outputVars) = transformationClosure.replaceClosureBody(inputVars, outputNeeds, fresh, transform)
 

@@ -11,7 +11,7 @@ import org.junit.runners.Parameterized.Parameters
 import scala.collection.JavaConversions._
 
 @RunWith(classOf[Parameterized])
-class MacroIntegrationTest(source: String, expectedMessages: CompilerMessages) extends StreamComponentsTestBase with Streams {
+class MacroIntegrationTest(source: String, expectedMessages: CompilerMessages) extends StreamComponentsTestBase with StreamTransforms {
   @Test def test = {
     val actualMessages = assertMacroCompilesToSameValue(source)
     assertEquals(expectedMessages, actualMessages)

@@ -4,7 +4,7 @@ package test
 import org.junit._
 import org.junit.Assert._
 
-class StreamSourcesTest extends StreamComponentsTestBase with StreamSources {
+class StreamSourcesTest extends StreamComponentsTestBase with StreamTransforms {
   import global._
 
   @Test
