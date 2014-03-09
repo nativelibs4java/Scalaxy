@@ -9,23 +9,24 @@ private[loops] trait BuilderSinks extends StreamComponents {
   {
     def createBuilder(inputVars: TuploidValue[Tree]): Tree
 
-    override def emitSink(
-        inputVars: TuploidValue[Tree],
-        fresh: String => TermName,
-        transform: Tree => Tree): StreamOpOutput =
+    override def emit(input: StreamInput, outputNeeds: OutputNeeds, nextOps: OpsAndOutputNeeds): StreamOutput =
     {
+      import input._
+
+      requireSinkInput(input, outputNeeds, nextOps)
+
       val builder = fresh("builder")
-      require(inputVars.alias.nonEmpty, s"inputVars = $inputVars")
+      require(input.vars.alias.nonEmpty, s"input.vars = $input.vars")
 
       // println("inputVars.alias.get = " + inputVars.alias.get + ": " + inputVars.tpe)
       val Block(List(builderDef, builderAdd, result), _) = typed(q"""
-        private[this] val $builder = ${createBuilder(inputVars)};
-        $builder += ${inputVars.alias.get};
+        private[this] val $builder = ${createBuilder(input.vars)};
+        $builder += ${input.vars.alias.get};
         $builder.result();
         {}
       """)
 
-      StreamOpOutput(
+      StreamOutput(
         prelude = List(builderDef),
         body = List(builderAdd),
         ending = List(result))

@@ -25,12 +25,9 @@ private[loops] trait ArrayStreamSources
   {
     override def describe = Some("Array")
 
-    override def emitSource(
-        outputNeeds: Set[TuploidPath],
-        opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
-        fresh: String => TermName,
-        transform: Tree => Tree): StreamOpOutput =
-    {
+    override def emit(input: StreamInput, outputNeeds: OutputNeeds, nextOps: OpsAndOutputNeeds): StreamOutput = {
+      import input.{ fresh, transform }
+
       val arrayVal = fresh("array")
       val lengthVal = fresh("length")
       val iVar = fresh("i")
@@ -49,24 +46,19 @@ private[loops] trait ArrayStreamSources
       """)
       val (extractionCode, outputVars) = createTuploidPathsExtractionDecls(itemValRef, outputNeeds, fresh)
 
-      val StreamOpOutput(streamPrelude, streamBody, streamEnding) =
-        emitSub(outputVars, opsAndOutputNeeds, fresh, transform)
+      val sub = emitSub(input.copy(vars = outputVars), nextOps)
+      sub.copy(body = List(typed(q"""
+        $arrayValDef;
+        $lengthValDef;
+        $iVarDef;
 
-      StreamOpOutput(
-        prelude = streamPrelude,
-        body = List(typed(q"""
-          $arrayValDef;
-          $lengthValDef;
-          $iVarDef;
-
-          while ($iVarRef < $lengthValRef) {
-            $itemValDef;
-            ..$extractionCode
-            ..$streamBody;
-            $iVarRef += 1
-          }
-        """)),
-        ending = streamEnding)
+        while ($iVarRef < $lengthValRef) {
+          $itemValDef;
+          ..$extractionCode
+          ..${sub.body};
+          $iVarRef += 1
+        }
+      """)))
     }
   }
 }

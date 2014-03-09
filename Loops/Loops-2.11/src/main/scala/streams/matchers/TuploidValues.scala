@@ -100,6 +100,8 @@ private[loops] trait TuploidValues extends Utils
     }
   }
 
+  object UnitTreeScalarValue extends ScalarValue[Tree](typeOf[Unit])
+
   class TuploidTraverser[A] {
     def traverse(path: TuploidPath, t: TuploidValue[A]) {
       t match {

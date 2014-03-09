@@ -29,16 +29,22 @@ private[loops] trait Streams extends StreamComponents
 
     def emitStream(fresh: String => TermName,
                    transform: Tree => Tree,
-                   sinkNeeds: Set[TuploidPath] = sink.outputNeeds): StreamOpOutput =
+                   sinkNeeds: Set[TuploidPath] = sink.outputNeeds): StreamOutput =
     {
       val sourceNeeds :: outputNeeds = ops.scanRight(sinkNeeds)({ case (op, refs) =>
         op.transmitOutputNeedsBackwards(refs)
       })
-      val opsAndOutputNeeds = ops.zip(outputNeeds) :+ (sink, sinkNeeds)
+      val nextOps = ops.zip(outputNeeds) :+ (sink, sinkNeeds)
       // println(s"source = $source")
       // println(s"""ops =\n\t${ops.map(_.getClass.getName).mkString("\n\t")}""")
-      // println(s"outputNeeds = ${opsAndOutputNeeds.map(_._2)}")
-      source.emitSource(sourceNeeds, opsAndOutputNeeds, fresh, transform)
+      // println(s"outputNeeds = ${nextOps.map(_._2)}")
+      source.emit(
+        input = StreamInput(
+          vars = UnitTreeScalarValue,
+          fresh = fresh,
+          transform = transform),
+        outputNeeds = sourceNeeds,
+        nextOps = nextOps)
     }
   }
 }

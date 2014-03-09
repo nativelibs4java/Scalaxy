@@ -43,12 +43,9 @@ private[loops] trait InlineRangeStreamSources extends StreamComponents {
       None
     }
 
-    override def emitSource(
-        outputNeeds: Set[TuploidPath],
-        opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
-        fresh: String => TermName,
-        transform: Tree => Tree): StreamOpOutput =
-    {
+    override def emit(input: StreamInput, outputNeeds: OutputNeeds, nextOps: OpsAndOutputNeeds): StreamOutput = {
+      import input.{ fresh, transform }
+
       val startVal = fresh("start")
       val endVal = fresh("end")
       val iVar = fresh("i")
@@ -88,36 +85,17 @@ private[loops] trait InlineRangeStreamSources extends StreamComponents {
 
       val outputVars = ScalarValue[Tree](tpe = tpe, alias = Some(iValRef))
 
-      val StreamOpOutput(streamPrelude, streamBody, streamEnding) =
-        emitSub(outputVars, opsAndOutputNeeds, fresh, transform)
-
-      // q"""
-      //   private[this] val $startVal = ${transform(start)}
-      //   private[this] val $endVal = ${transform(end)}
-      //   private[this] var $iVar = $startVal
-
-      //   ..$streamPrelude
-      //   while ($iVar $testOperator $endVal) {
-      //     val $iVal = $iVar
-      //     ..$streamBody
-      //     $iVar += $by
-      //   }
-      //   ..$streamEnding
-      // """
-
-      StreamOpOutput(
-        prelude = streamPrelude,
-        body = List(typed(q"""
-          $startValDef;
-          $endValDef;
-          $iVarDef;
-          while ($test) {
-            $iValDef;
-            ..$streamBody;
-            $iVarIncr
-          }
-        """)),
-        ending = streamEnding)
+      val sub = emitSub(input.copy(vars = outputVars), nextOps)
+      sub.copy(body = List(typed(q"""
+        $startValDef;
+        $endValDef;
+        $iVarDef;
+        while ($test) {
+          $iValDef;
+          ..${sub.body};
+          $iVarIncr
+        }
+      """)))
     }
   }
 }

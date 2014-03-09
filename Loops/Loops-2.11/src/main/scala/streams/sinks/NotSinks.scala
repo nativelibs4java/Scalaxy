@@ -8,16 +8,9 @@ private[loops] trait UnusableSinks extends StreamComponents {
   {
     override def describe = None
 
-    override def sinkOption = Some(this)
-
     override def outputNeeds = Set()
 
-    override def emitSink(
-        inputVars: TuploidValue[Tree],
-        fresh: String => TermName,
-        transform: Tree => Tree): StreamOpOutput =
-    {
+    override def emit(input: StreamInput, outputNeeds: OutputNeeds, nextOps: OpsAndOutputNeeds): StreamOutput =
       ???
-    }
   }
 }

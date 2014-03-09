@@ -4,22 +4,24 @@ private[loops] trait StreamResults extends TuploidValues {
   val global: scala.reflect.api.Universe
   import global._
 
-  case class StreamOpOutput(
+  type OutputNeeds = Set[TuploidPath]
+
+  case class StreamOutput(
       prelude: List[Tree] = Nil,
       body: List[Tree] = Nil,
       ending: List[Tree] = Nil)
   {
     def compose = typed(q"..${prelude ++ body ++ ending}")
-    def map(f: Tree => Tree): StreamOpOutput =
+    def map(f: Tree => Tree): StreamOutput =
       copy(prelude = prelude.map(f), body = body.map(f), ending = ending.map(f))
   }
 
-  val NoStreamOpOutput = StreamOpOutput(prelude = Nil, body = Nil, ending = Nil)
+  val NoStreamOutput = StreamOutput(prelude = Nil, body = Nil, ending = Nil)
 
-  case class StreamOpInput(
-    values: TuploidValue[Tree],
-    outputSize: Option[Tree],
-    index: Option[Tree],
+  case class StreamInput(
+    vars: TuploidValue[Tree],
+    outputSize: Option[Tree] = None,
+    index: Option[Tree] = None,
     fresh: String => TermName,
     transform: Tree => Tree)
 }

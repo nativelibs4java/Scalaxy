@@ -2,7 +2,10 @@ package scalaxy.loops
 import scala.collection.breakOut
 import scala.collection.mutable.ListBuffer
 
-private[loops] trait TransformationClosures extends TuploidValues with Strippers
+private[loops] trait TransformationClosures
+  extends TuploidValues
+  with Strippers
+  with StreamResults
 {
   val global: scala.reflect.api.Universe
   import global._
@@ -28,16 +31,15 @@ private[loops] trait TransformationClosures extends TuploidValues with Strippers
         false
     }
     def wireInputsAndOutputs(
-      inputs: TuploidValue[Symbol],
-      inputSymbols: Set[Symbol],
-      outputs: TuploidValue[Symbol],
-      inputVars: TuploidValue[Tree],
-      outputPathToInputPath: Map[TuploidPath, TuploidPath],
-      outputNeeds: Set[TuploidPath],
-      fresh: String => TermName,
-      transformer: Tree => Tree)
-        : ClosureWiringResult =
+        inputs: TuploidValue[Symbol],
+        inputSymbols: Set[Symbol],
+        outputs: TuploidValue[Symbol],
+        outputPathToInputPath: Map[TuploidPath, TuploidPath],
+        streamInput: StreamInput,
+        outputNeeds: OutputNeeds)
+          : ClosureWiringResult =
     {
+      import streamInput.{ fresh, transform }
 
       val pre = ListBuffer[Tree]()
       val post = ListBuffer[Tree]()
@@ -50,7 +52,7 @@ private[loops] trait TransformationClosures extends TuploidValues with Strippers
             if (t.alias.exists(inputSymbols)) {
               // t is already somewhere in inputs. find it.
               val inputPath = outputPathToInputPath(path)
-              val inputVar = inputVars.get(inputPath)
+              val inputVar = streamInput.vars.get(inputPath)
 
               inputVar.alias.map(_.duplicate)
             } else {
@@ -104,7 +106,7 @@ private[loops] trait TransformationClosures extends TuploidValues with Strippers
               TupleValue[Tree](tpe, subValues, alias = newAlias)
 
             case ScalarValue(tpe, value, alias) =>
-              val mappedValue = value.map(transformer)
+              val mappedValue = value.map(streamInput.transform)
               val newAlias =
                 generateVarIfNeeded(
                   tpe,
@@ -222,13 +224,11 @@ private[loops] trait TransformationClosures extends TuploidValues with Strippers
       // """)
       replacer.transform(_)
     }
-    def replaceClosureBody(
-        inputVars: TuploidValue[Tree],
-        outputNeeds: Set[TuploidPath],
-        fresh: String => TermName,
-        transform: Tree => Tree): (List[Tree], TuploidValue[Tree]) =
+    def replaceClosureBody(streamInput: StreamInput, outputNeeds: OutputNeeds): (List[Tree], TuploidValue[Tree]) =
     {
-      val replacer = getReplacer(inputVars)
+      import streamInput.{ fresh, transform }
+
+      val replacer = getReplacer(streamInput.vars)
       val fullTransform = (tree: Tree) => transform(replacer(tree))
 
       val ClosureWiringResult(pre, post, outputVars) =
@@ -236,11 +236,9 @@ private[loops] trait TransformationClosures extends TuploidValues with Strippers
           inputs,
           inputSymbols,
           outputs,
-          inputVars,
           outputPathToInputPath,
-          outputNeeds,
-          fresh,
-          fullTransform)
+          streamInput.copy(transform = fullTransform),
+          outputNeeds)
 
       val blockStatements = statements.map(fullTransform) ++ post
       val results =
@@ -252,12 +250,6 @@ private[loops] trait TransformationClosures extends TuploidValues with Strippers
             List(Block(blockStatements.dropRight(1), blockStatements.last))
         )
 
-      // println(s"""
-      //     Replaced: $statements
-      //     By: $results
-      //     InputVars: $inputVars
-      //     OutputVars: $outputVars
-      // """)
       (results, outputVars)
     }
   }

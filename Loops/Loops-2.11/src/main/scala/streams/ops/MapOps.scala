@@ -21,25 +21,16 @@ private[loops] trait MapOps
 
     override val sinkOption = Some(CanBuildFromSink(canBuildFrom))
 
-    override def emitOp(
-        inputVars: TuploidValue[Tree],
-        outputNeeds: Set[TuploidPath],
-        opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
-        fresh: String => TermName,
-        transform: Tree => Tree): StreamOpOutput =
+    override def emit(input: StreamInput, outputNeeds: OutputNeeds, nextOps: OpsAndOutputNeeds): StreamOutput =
     {
-      val (replacedStatements, outputVars) = transformationClosure.replaceClosureBody(inputVars, outputNeeds, fresh, transform)
-      val StreamOpOutput(streamPrelude, streamBody, streamEnding) =
-        emitSub(outputVars, opsAndOutputNeeds, fresh, transform)
+      val (replacedStatements, outputVars) =
+        transformationClosure.replaceClosureBody(input, outputNeeds)
 
-      StreamOpOutput(
-        prelude = streamPrelude,
-        body = List(q"""
-          ..$replacedStatements;
-          ..$streamBody;
-        """),
-        ending = streamEnding
-      )
+      val sub = emitSub(input.copy(vars = outputVars), nextOps)
+      sub.copy(body = List(q"""
+        ..$replacedStatements;
+        ..${sub.body};
+      """))
     }
   }
 }

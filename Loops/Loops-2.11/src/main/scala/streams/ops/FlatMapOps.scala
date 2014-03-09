@@ -58,27 +58,23 @@ private[loops] trait FlatMapOps
 
     override val sinkOption = Some(CanBuildFromSink(canBuildFrom))
 
-    override def emitOp(
-        inputVars: TuploidValue[Tree],
-        outputNeeds: Set[TuploidPath],
-        opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
-        fresh: String => TermName,
-        transform: Tree => Tree): StreamOpOutput =
-    {
+    override def emit(input: StreamInput, outputNeeds: OutputNeeds, nextOps: OpsAndOutputNeeds): StreamOutput = {
+      import input.{ fresh, transform }
+
       nestedStream match {
         case Some(stream) =>
-          val replacer = transformationClosure.getReplacer(inputVars)
+          val replacer = transformationClosure.getReplacer(input.vars)
           val subTransformer = new Transformer {
             override def transform(tree: Tree) = {
               if (tree.symbol == param.symbol) {
-                inputVars.alias.get.duplicate
+                input.vars.alias.get.duplicate
               } else {
                 super.transform(tree)
               }
             }
           }
           val subTransform = (tree: Tree) => subTransformer.transform(transform(tree))
-          val (outerSink: StreamSink) :: outerOpsRev = opsAndOutputNeeds.map(_._1).reverse
+          val (outerSink: StreamSink) :: outerOpsRev = nextOps.map(_._1).reverse
           val outerOps = outerOpsRev.reverse
           val modifiedStream = stream.copy(ops = stream.ops ++ outerOps, sink = outerSink)
 
@@ -89,22 +85,21 @@ private[loops] trait FlatMapOps
           ???
           val itemVal = fresh("item")
           // println("GenericFlatMapOp(tpe = " + tpe + ")")
-          val (replacedStatements, outputVars) = transformationClosure.replaceClosureBody(
-            inputVars = ScalarValue(tpe, alias = Some(Ident(itemVal.toString))),
-            outputNeeds, fresh, transform)
-          val StreamOpOutput(streamPrelude, streamBody, streamEnding) =
-            emitSub(outputVars, opsAndOutputNeeds, fresh, transform)
+          val (replacedStatements, outputVars) =
+            transformationClosure.replaceClosureBody(
+              input.copy(
+                vars = ScalarValue(tpe, alias = Some(Ident(itemVal.toString))),
+                outputSize = None,
+                index = None),
+              outputNeeds)
 
-          StreamOpOutput(
-            prelude = streamPrelude,
-            body = List(typed(q"""
-              ..$replacedStatements;
-              for ($itemVal <- ${outputVars.alias.get}) {
-                ..$streamBody;
-              }
-            """)),
-            ending = streamEnding
-          )
+          val sub = emitSub(input.copy(vars = outputVars), nextOps)
+          sub.copy(body = List(typed(q"""
+            ..$replacedStatements;
+            for ($itemVal <- ${outputVars.alias.get}) {
+              ..${sub.body};
+            }
+          """)))
       }
     }
   }
@@ -119,9 +114,9 @@ private[loops] trait FlatMapOps
   //   override def emitOp(
   //       inputVars: TuploidValue[Tree],
   //       outputNeeds: Set[TuploidPath],
-  //       opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
+  //       nextOps: List[(StreamOp, Set[TuploidPath])],
   //       fresh: String => TermName,
-  //       transform: Tree => Tree): StreamOpOutput =
+  //       transform: Tree => Tree): StreamOutput =
   //   {
   //     // TODO: type this.
   //     val itemVal = fresh("item")
@@ -129,10 +124,10 @@ private[loops] trait FlatMapOps
   //     val (replacedStatements, outputVars) = transformationClosure.replaceClosureBody(
   //       inputVars = ScalarValue(tpe, alias = Some(Ident(itemVal.toString))),
   //       outputNeeds, fresh, transform)
-  //     val StreamOpOutput(streamPrelude, streamBody, streamEnding) =
-  //       emitSub(outputVars, opsAndOutputNeeds, fresh, transform)
+  //     val StreamOutput(streamPrelude, streamBody, streamEnding) =
+  //       super.emit(outputVars, nextOps, fresh, transform)
 
-  //     StreamOpOutput(
+  //     StreamOutput(
   //       prelude = streamPrelude,
   //       body = List(typed(q"""
   //         ..$replacedStatements;
@@ -161,9 +156,9 @@ private[loops] trait FlatMapOps
   //   override def emitOp(
   //       inputVars: TuploidValue[Tree],
   //       outputNeeds: Set[TuploidPath],
-  //       opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
+  //       nextOps: List[(StreamOp, Set[TuploidPath])],
   //       fresh: String => TermName,
-  //       transform: Tree => Tree): StreamOpOutput =
+  //       transform: Tree => Tree): StreamOutput =
   //   {
   //     val subTransformer = new Transformer {
   //       override def transform(tree: Tree) = {
@@ -176,7 +171,7 @@ private[loops] trait FlatMapOps
   //     }
   //     val subTransform = (tree: Tree) => subTransformer.transform(transform(tree))
   //     val Stream(source, ops, sink) = subStream
-  //     val SinkOp(outerSink) :: outerOpsRev = opsAndOutputNeeds.map(_._1).reverse
+  //     val SinkOp(outerSink) :: outerOpsRev = nextOps.map(_._1).reverse
   //     val outerOps = outerOpsRev.reverse
   //     Stream(source, ops ++ outerOps, outerSink).emitStream(fresh, subTransform)
   //   }

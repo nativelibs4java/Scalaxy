@@ -30,14 +30,10 @@ private[loops] trait ZipWithIndexOps
       }
     }
 
-    override def emitOp(
-        inputVars: TuploidValue[Tree],
-        outputNeeds: Set[TuploidPath],
-        opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
-        fresh: String => TermName,
-        transform: Tree => Tree): StreamOpOutput =
-    {
-      // TODO wire input and output fiber vars 
+    override def emit(input: StreamInput, outputNeeds: OutputNeeds, nextOps: OpsAndOutputNeeds): StreamOutput = {
+      import input.{ fresh, transform }
+
+      // TODO wire input and output fiber vars
       val indexVar = fresh("indexVar")
       val indexVal = fresh("indexVal")
 
@@ -58,38 +54,34 @@ private[loops] trait ZipWithIndexOps
         $indexVar += 1;
         private[this] val $indexVal = $indexVar;
         $indexVal;
-        private[this] val $pairName = (${inputVars.alias.get}, $indexVal);
+        private[this] val $pairName = (${input.vars.alias.getOrElse(EmptyTree)}, $indexVal);
         $pairName;
         ()
       """)
 
       import compat._
       val TypeRef(pre, sym, List(_, _)) = typeOf[(Int, Int)]
-      val tupleTpe = TypeRef(pre, sym, List(inputVars.tpe, typeOf[Int]))
+      val tupleTpe = TypeRef(pre, sym, List(input.vars.tpe, typeOf[Int]))
       require(tupleTpe != null && tupleTpe != NoType)
       val outputVars =
         TupleValue[Tree](
           tupleTpe,
           Map(
-            0 -> inputVars,
+            0 -> input.vars,
             1 -> ScalarValue(typeOf[Int], alias = Some(indexValRef))),
           alias = Some(pairRef))
 
-      val StreamOpOutput(streamPrelude, streamBody, streamEnding) =
-        emitSub(outputVars, opsAndOutputNeeds, fresh, transform)
-
-      StreamOpOutput(
+      val sub = emitSub(input.copy(vars = outputVars), nextOps)
+      sub.copy(
         // TODO pass source collection to canBuildFrom if it exists.
-        prelude = streamPrelude :+ indexVarDef,
+        prelude = sub.prelude :+ indexVarDef,
         // TODO match params and any tuple extraction in body with streamVars, replace symbols with streamVars values
         body = List(q"""
           $indexValDef;
           ..${if (needsPair) List(pairDef) else Nil}
-          ..$streamBody;
+          ..${sub.body};
           $indexVarIncr
-        """),
-        ending = streamEnding
-      )
+        """))
     }
   }
 }

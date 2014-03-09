@@ -26,36 +26,23 @@ private[loops] trait FilterOps extends ClosureStreamOps with Strippers
 
     override def isMapLike = false
 
-    override def emitOp(
-        inputVars: TuploidValue[Tree],
-        outputNeeds: Set[TuploidPath],
-        opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
-        fresh: String => TermName,
-        transform: Tree => Tree): StreamOpOutput =
+    override def emit(input: StreamInput, outputNeeds: OutputNeeds, nextOps: OpsAndOutputNeeds): StreamOutput =
     {
       val (replacedStatements, outputVars) =
-        transformationClosure.replaceClosureBody(
-          inputVars, outputNeeds + RootTuploidPath, fresh, transform)
-
-      val StreamOpOutput(streamPrelude, streamBody, streamEnding) =
-        emitSub(inputVars, opsAndOutputNeeds, fresh, transform)
+        transformationClosure.replaceClosureBody(input, outputNeeds + RootTuploidPath)
 
       var test = outputVars.alias.get
       if (isNegative) {
         test = typed(q"!$test")
       }
-      StreamOpOutput(
-        prelude = streamPrelude,
-        body = List(
-          q"""
-            ..$replacedStatements;
-            if ($test) {
-              ..$streamBody;
-            }
-          """
-        ),
-        ending = streamEnding
-      )
+
+      var sub = emitSub(input, nextOps)
+      sub.copy(body = List(q"""
+        ..$replacedStatements;
+        if ($test) {
+          ..${sub.body};
+        }
+      """))
     }
   }
 }

@@ -20,16 +20,12 @@ private[loops] trait ForeachOps
 
     override def sinkOption = Some(UnusableSink)
 
-    override def emitOp(
-        inputVars: TuploidValue[Tree],
-        outputNeeds: Set[TuploidPath],
-        opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
-        fresh: String => TermName,
-        transform: Tree => Tree): StreamOpOutput =
+    override def emit(input: StreamInput, outputNeeds: OutputNeeds, nextOps: OpsAndOutputNeeds): StreamOutput =
     {
-      val List((UnusableSink, _)) = opsAndOutputNeeds
+      val List((UnusableSink, _)) = nextOps
 
-      val (replacedStatements, outputVars) = transformationClosure.replaceClosureBody(inputVars, outputNeeds, fresh, transform)
+      val (replacedStatements, outputVars) =
+        transformationClosure.replaceClosureBody(input, outputNeeds)
 
       require(outputVars.tpe =:= typeOf[Unit], "Expected Unit, got " + outputVars.tpe)
 
@@ -40,7 +36,7 @@ private[loops] trait ForeachOps
       //   replacedStatements = $replacedStatements
       // """)
 
-      StreamOpOutput(
+      StreamOutput(
         prelude = Nil,
         // TODO match params and any tuple extraction in body with streamVars, replace symbols with streamVars values
         body = replacedStatements,

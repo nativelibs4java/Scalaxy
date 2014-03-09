@@ -4,51 +4,41 @@ private[loops] trait StreamComponents extends StreamResults {
   val global: scala.reflect.api.Universe
   import global._
 
+  type OpsAndOutputNeeds = List[(StreamOp, OutputNeeds)]
+
   trait StreamComponent
   {
     def describe: Option[String]
 
     def sinkOption: Option[StreamSink]
 
-    def emitSub(inputVars: TuploidValue[Tree],
-                opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
-                fresh: String => TermName,
-                transform: Tree => Tree): StreamOpOutput =
+    def emit(input: StreamInput, outputNeeds: OutputNeeds, nextOps: OpsAndOutputNeeds): StreamOutput
+
+    protected def emitSub(input: StreamInput, nextOps: OpsAndOutputNeeds): StreamOutput =
     {
-      opsAndOutputNeeds match {
+      // This method is meant to be overridden to take care of input and outputNeeds.
+      // By default it just processes next ops and their needs.
+      nextOps match {
         case (firstOp, outputNeeds) :: otherOpsAndOutputNeeds =>
-          firstOp.emitOp(inputVars, outputNeeds, otherOpsAndOutputNeeds, fresh, transform)
+          firstOp.emit(input, outputNeeds, otherOpsAndOutputNeeds)
 
         case Nil =>
-          sys.error("Cannot call emitSub at the end of an ops stream.")
+          sys.error("Cannot call base emit at the end of an ops stream.")
       }
     }
   }
 
-  // type StreamOp <: StreamComponent
+  trait StreamSource extends StreamComponent
+
   trait StreamOp extends StreamComponent
   {
     def transmitOutputNeedsBackwards(paths: Set[TuploidPath]): Set[TuploidPath]
-
-    def emitOp(inputVars: TuploidValue[Tree],
-               outputNeeds: Set[TuploidPath],
-               opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
-               fresh: String => TermName,
-               transform: Tree => Tree): StreamOpOutput
   }
 
-  trait StreamSource extends StreamComponent {
-    def emitSource(outputNeeds: Set[TuploidPath],
-                   opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
-                   fresh: String => TermName,
-                   transform: Tree => Tree): StreamOpOutput
-  }
-
-  trait StreamSink extends StreamOp {
-
+  trait StreamSink extends StreamOp
+  {
     override def sinkOption = Some(this)
 
-    // TODO override for ops that return Unit (then return Set())
     def outputNeeds: Set[TuploidPath] = Set(RootTuploidPath)
 
     override def transmitOutputNeedsBackwards(paths: Set[TuploidPath]) = {
@@ -58,26 +48,15 @@ private[loops] trait StreamComponents extends StreamResults {
       needs
     }
 
-    def emitSink(inputVars: TuploidValue[Tree],
-                 fresh: String => TermName,
-                 transform: Tree => Tree): StreamOpOutput
-
-    override def emitOp(
-        inputVars: TuploidValue[Tree],
-        outputNeeds: Set[TuploidPath],
-        opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
-        fresh: String => TermName,
-        transform: Tree => Tree): StreamOpOutput =
-    {
-      require(opsAndOutputNeeds.isEmpty,
-        "Cannot chain ops through a sink (got opsAndOutputNeeds = " + opsAndOutputNeeds + ")")
+    def requireSinkInput(input: StreamInput, outputNeeds: OutputNeeds, nextOps: OpsAndOutputNeeds) {
+      require(nextOps.isEmpty,
+        "Cannot chain ops through a sink (got nextOps = " + nextOps + ")")
       require(outputNeeds == this.outputNeeds,
         "Expected outputNeeds " + this.outputNeeds + " for sink, got " + outputNeeds)
-
-      emitSink(inputVars, fresh, transform)
     }
   }
 
+  // Allow loose coupling between sources, ops and sinks traits:
   val SomeStreamSource: Extractor[Tree, StreamSource]
   val SomeStreamOp: Extractor[Tree, (Tree, List[StreamOp])]
   val SomeStreamSink: Extractor[Tree, (Tree, StreamSink)]
