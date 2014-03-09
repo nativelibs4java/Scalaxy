@@ -9,7 +9,7 @@ libraryDependencies ++= Seq(
   "com.novocode" % "junit-interface" % "0.10" % "test"
 )
 
-watchSources <+= baseDirectory map { _ / "examples" }
+watchSources <++= baseDirectory map { path => (path / "examples" ** "*.scala").get }
 
 //scalacOptions in Test <++= (packageBin in Compile) map(path => Seq("-Xplugin:" + path, "-Dscalaxy.loops.jar=" + path))
 
