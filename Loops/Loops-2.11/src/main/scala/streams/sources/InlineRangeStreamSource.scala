@@ -5,7 +5,7 @@ private[loops] trait InlineRangeStreamSources extends StreamComponents {
   val global: scala.reflect.api.Universe
   import global._
 
-  object ToUntil
+  private[this] object ToUntil
   {
     def apply(isInclusive: Boolean) = ???
     def unapply(name: Name): Option[Boolean] = if (name == null) None else name.toString match {
@@ -47,7 +47,7 @@ private[loops] trait InlineRangeStreamSources extends StreamComponents {
         outputNeeds: Set[TuploidPath],
         opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
         fresh: String => TermName,
-        transform: Tree => Tree): StreamOpResult =
+        transform: Tree => Tree): StreamOpOutput =
     {
       val startVal = fresh("start")
       val endVal = fresh("end")
@@ -88,7 +88,7 @@ private[loops] trait InlineRangeStreamSources extends StreamComponents {
 
       val outputVars = ScalarValue[Tree](tpe = tpe, alias = Some(iValRef))
 
-      val StreamOpResult(streamPrelude, streamBody, streamEnding) =
+      val StreamOpOutput(streamPrelude, streamBody, streamEnding) =
         emitSub(outputVars, opsAndOutputNeeds, fresh, transform)
 
       // q"""
@@ -105,7 +105,7 @@ private[loops] trait InlineRangeStreamSources extends StreamComponents {
       //   ..$streamEnding
       // """
 
-      StreamOpResult(
+      StreamOpOutput(
         prelude = streamPrelude,
         body = List(typed(q"""
           $startValDef;

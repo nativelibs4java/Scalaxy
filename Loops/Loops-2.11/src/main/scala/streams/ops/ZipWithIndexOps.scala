@@ -35,7 +35,7 @@ private[loops] trait ZipWithIndexOps
         outputNeeds: Set[TuploidPath],
         opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
         fresh: String => TermName,
-        transform: Tree => Tree): StreamOpResult =
+        transform: Tree => Tree): StreamOpOutput =
     {
       // TODO wire input and output fiber vars 
       val indexVar = fresh("indexVar")
@@ -75,10 +75,10 @@ private[loops] trait ZipWithIndexOps
             1 -> ScalarValue(typeOf[Int], alias = Some(indexValRef))),
           alias = Some(pairRef))
 
-      val StreamOpResult(streamPrelude, streamBody, streamEnding) =
+      val StreamOpOutput(streamPrelude, streamBody, streamEnding) =
         emitSub(outputVars, opsAndOutputNeeds, fresh, transform)
 
-      StreamOpResult(
+      StreamOpOutput(
         // TODO pass source collection to canBuildFrom if it exists.
         prelude = streamPrelude :+ indexVarDef,
         // TODO match params and any tuple extraction in body with streamVars, replace symbols with streamVars values

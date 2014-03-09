@@ -4,6 +4,7 @@ private[loops] trait BuilderSinks extends StreamComponents {
   val global: scala.reflect.api.Universe
   import global._
 
+  // Base class for builder-based sinks.
   trait BuilderSink extends StreamSink
   {
     def createBuilder(inputVars: TuploidValue[Tree]): Tree
@@ -11,7 +12,7 @@ private[loops] trait BuilderSinks extends StreamComponents {
     override def emitSink(
         inputVars: TuploidValue[Tree],
         fresh: String => TermName,
-        transform: Tree => Tree): StreamOpResult =
+        transform: Tree => Tree): StreamOpOutput =
     {
       val builder = fresh("builder")
       require(inputVars.alias.nonEmpty, s"inputVars = $inputVars")
@@ -24,7 +25,7 @@ private[loops] trait BuilderSinks extends StreamComponents {
         {}
       """)
 
-      StreamOpResult(
+      StreamOpOutput(
         prelude = List(builderDef),
         body = List(builderAdd),
         ending = List(result))

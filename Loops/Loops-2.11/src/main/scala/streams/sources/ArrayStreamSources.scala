@@ -7,7 +7,7 @@ private[loops] trait ArrayStreamSources
   val global: scala.reflect.api.Universe
   import global._
 
-  lazy val ArraySym = rootMirror.staticClass("scala.Array")
+  private[this] lazy val ArraySym = rootMirror.staticClass("scala.Array")
   // Testing the type would be so much better, but yields an awkward MissingRequirementError.
   // lazy val ArrayTpe = typeOf[Array[_]]
 
@@ -29,7 +29,7 @@ private[loops] trait ArrayStreamSources
         outputNeeds: Set[TuploidPath],
         opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
         fresh: String => TermName,
-        transform: Tree => Tree): StreamOpResult =
+        transform: Tree => Tree): StreamOpOutput =
     {
       val arrayVal = fresh("array")
       val lengthVal = fresh("length")
@@ -49,24 +49,10 @@ private[loops] trait ArrayStreamSources
       """)
       val (extractionCode, outputVars) = createTuploidPathsExtractionDecls(itemValRef, outputNeeds, fresh)
 
-      val StreamOpResult(streamPrelude, streamBody, streamEnding) =
+      val StreamOpOutput(streamPrelude, streamBody, streamEnding) =
         emitSub(outputVars, opsAndOutputNeeds, fresh, transform)
 
-      // q"""
-      //   private[this] val $arrayVal = ${transform(array)}
-      //   private[this] val $lengthVal = $arrayVal.length
-      //   private[this] var $iVar = 0
-
-      //   ..$streamPrelude
-      //   while ($iVar < $lengthVal) {
-      //     val $itemVal = $arrayVal($iVar)
-      //     ..$extractionCode
-      //     ..$streamBody
-      //     $iVar += 1
-      //   }
-      //   ..$streamEnding
-      // """
-      StreamOpResult(
+      StreamOpOutput(
         prelude = streamPrelude,
         body = List(typed(q"""
           $arrayValDef;

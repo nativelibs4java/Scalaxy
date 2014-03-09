@@ -13,7 +13,7 @@ private[loops] trait StreamComponents extends StreamResults {
     def emitSub(inputVars: TuploidValue[Tree],
                 opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
                 fresh: String => TermName,
-                transform: Tree => Tree): StreamOpResult =
+                transform: Tree => Tree): StreamOpOutput =
     {
       opsAndOutputNeeds match {
         case (firstOp, outputNeeds) :: otherOpsAndOutputNeeds =>
@@ -34,14 +34,14 @@ private[loops] trait StreamComponents extends StreamResults {
                outputNeeds: Set[TuploidPath],
                opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
                fresh: String => TermName,
-               transform: Tree => Tree): StreamOpResult
+               transform: Tree => Tree): StreamOpOutput
   }
 
   trait StreamSource extends StreamComponent {
     def emitSource(outputNeeds: Set[TuploidPath],
                    opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
                    fresh: String => TermName,
-                   transform: Tree => Tree): StreamOpResult
+                   transform: Tree => Tree): StreamOpOutput
   }
 
   trait StreamSink extends StreamOp {
@@ -60,14 +60,14 @@ private[loops] trait StreamComponents extends StreamResults {
 
     def emitSink(inputVars: TuploidValue[Tree],
                  fresh: String => TermName,
-                 transform: Tree => Tree): StreamOpResult
+                 transform: Tree => Tree): StreamOpOutput
 
     override def emitOp(
         inputVars: TuploidValue[Tree],
         outputNeeds: Set[TuploidPath],
         opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
         fresh: String => TermName,
-        transform: Tree => Tree): StreamOpResult =
+        transform: Tree => Tree): StreamOpOutput =
     {
       require(opsAndOutputNeeds.isEmpty,
         "Cannot chain ops through a sink (got opsAndOutputNeeds = " + opsAndOutputNeeds + ")")

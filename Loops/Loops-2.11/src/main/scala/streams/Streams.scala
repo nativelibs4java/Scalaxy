@@ -29,7 +29,7 @@ private[loops] trait Streams extends StreamComponents
 
     def emitStream(fresh: String => TermName,
                    transform: Tree => Tree,
-                   sinkNeeds: Set[TuploidPath] = sink.outputNeeds): StreamOpResult =
+                   sinkNeeds: Set[TuploidPath] = sink.outputNeeds): StreamOpOutput =
     {
       val sourceNeeds :: outputNeeds = ops.scanRight(sinkNeeds)({ case (op, refs) =>
         op.transmitOutputNeedsBackwards(refs)

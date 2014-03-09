@@ -31,20 +31,20 @@ private[loops] trait FilterOps extends ClosureStreamOps with Strippers
         outputNeeds: Set[TuploidPath],
         opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
         fresh: String => TermName,
-        transform: Tree => Tree): StreamOpResult =
+        transform: Tree => Tree): StreamOpOutput =
     {
       val (replacedStatements, outputVars) =
         transformationClosure.replaceClosureBody(
           inputVars, outputNeeds + RootTuploidPath, fresh, transform)
 
-      val StreamOpResult(streamPrelude, streamBody, streamEnding) =
+      val StreamOpOutput(streamPrelude, streamBody, streamEnding) =
         emitSub(inputVars, opsAndOutputNeeds, fresh, transform)
 
       var test = outputVars.alias.get
       if (isNegative) {
         test = typed(q"!$test")
       }
-      StreamOpResult(
+      StreamOpOutput(
         prelude = streamPrelude,
         body = List(
           q"""

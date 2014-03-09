@@ -63,7 +63,7 @@ private[loops] trait FlatMapOps
         outputNeeds: Set[TuploidPath],
         opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
         fresh: String => TermName,
-        transform: Tree => Tree): StreamOpResult =
+        transform: Tree => Tree): StreamOpOutput =
     {
       nestedStream match {
         case Some(stream) =>
@@ -92,10 +92,10 @@ private[loops] trait FlatMapOps
           val (replacedStatements, outputVars) = transformationClosure.replaceClosureBody(
             inputVars = ScalarValue(tpe, alias = Some(Ident(itemVal.toString))),
             outputNeeds, fresh, transform)
-          val StreamOpResult(streamPrelude, streamBody, streamEnding) =
+          val StreamOpOutput(streamPrelude, streamBody, streamEnding) =
             emitSub(outputVars, opsAndOutputNeeds, fresh, transform)
 
-          StreamOpResult(
+          StreamOpOutput(
             prelude = streamPrelude,
             body = List(typed(q"""
               ..$replacedStatements;
@@ -121,7 +121,7 @@ private[loops] trait FlatMapOps
   //       outputNeeds: Set[TuploidPath],
   //       opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
   //       fresh: String => TermName,
-  //       transform: Tree => Tree): StreamOpResult =
+  //       transform: Tree => Tree): StreamOpOutput =
   //   {
   //     // TODO: type this.
   //     val itemVal = fresh("item")
@@ -129,10 +129,10 @@ private[loops] trait FlatMapOps
   //     val (replacedStatements, outputVars) = transformationClosure.replaceClosureBody(
   //       inputVars = ScalarValue(tpe, alias = Some(Ident(itemVal.toString))),
   //       outputNeeds, fresh, transform)
-  //     val StreamOpResult(streamPrelude, streamBody, streamEnding) =
+  //     val StreamOpOutput(streamPrelude, streamBody, streamEnding) =
   //       emitSub(outputVars, opsAndOutputNeeds, fresh, transform)
 
-  //     StreamOpResult(
+  //     StreamOpOutput(
   //       prelude = streamPrelude,
   //       body = List(typed(q"""
   //         ..$replacedStatements;
@@ -163,7 +163,7 @@ private[loops] trait FlatMapOps
   //       outputNeeds: Set[TuploidPath],
   //       opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
   //       fresh: String => TermName,
-  //       transform: Tree => Tree): StreamOpResult =
+  //       transform: Tree => Tree): StreamOpOutput =
   //   {
   //     val subTransformer = new Transformer {
   //       override def transform(tree: Tree) = {

@@ -25,7 +25,7 @@ private[loops] trait ForeachOps
         outputNeeds: Set[TuploidPath],
         opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
         fresh: String => TermName,
-        transform: Tree => Tree): StreamOpResult =
+        transform: Tree => Tree): StreamOpOutput =
     {
       val List((UnusableSink, _)) = opsAndOutputNeeds
 
@@ -40,7 +40,7 @@ private[loops] trait ForeachOps
       //   replacedStatements = $replacedStatements
       // """)
 
-      StreamOpResult(
+      StreamOpOutput(
         prelude = Nil,
         // TODO match params and any tuple extraction in body with streamVars, replace symbols with streamVars values
         body = replacedStatements,

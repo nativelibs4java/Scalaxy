@@ -26,13 +26,13 @@ private[loops] trait MapOps
         outputNeeds: Set[TuploidPath],
         opsAndOutputNeeds: List[(StreamOp, Set[TuploidPath])],
         fresh: String => TermName,
-        transform: Tree => Tree): StreamOpResult =
+        transform: Tree => Tree): StreamOpOutput =
     {
       val (replacedStatements, outputVars) = transformationClosure.replaceClosureBody(inputVars, outputNeeds, fresh, transform)
-      val StreamOpResult(streamPrelude, streamBody, streamEnding) =
+      val StreamOpOutput(streamPrelude, streamBody, streamEnding) =
         emitSub(outputVars, opsAndOutputNeeds, fresh, transform)
 
-      StreamOpResult(
+      StreamOpOutput(
         prelude = streamPrelude,
         body = List(q"""
           ..$replacedStatements;
