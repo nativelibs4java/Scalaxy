@@ -85,7 +85,7 @@ object MacroIntegrationTest
            m <- l to n)
         yield { sum * m }
     """
-      -> streamMsg("Range.flatMap(Range.flatMap(Range.flatMap(Range.withFilter.flatMap(Range.map)))) -> IndexedSeq"),
+      -> streamMsg("Range.flatMap(Range.flatMap(Range.flatMap(Range.map.withFilter.flatMap(Range.map)))) -> IndexedSeq"),
 
     """val n = 20;
       for (i <- 0 to n;
