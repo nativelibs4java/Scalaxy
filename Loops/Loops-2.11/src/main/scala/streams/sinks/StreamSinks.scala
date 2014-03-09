@@ -1,6 +1,11 @@
 package scalaxy.loops
 
-private[loops] trait StreamSinks extends StreamComponents with BuilderSinks {
+private[loops] trait StreamSinks
+    extends StreamComponents
+    with ArrayBuilderSinks
+    with ListBufferSinks
+    with SetBuilderSinks
+{
   val global: scala.reflect.api.Universe
   import global._
 
@@ -12,7 +17,7 @@ private[loops] trait StreamSinks extends StreamComponents with BuilderSinks {
       case q"$target.toArray[$_]($_)" =>
         (target, ArrayBuilderSink)
 
-      case q"$target.toSet" =>
+      case q"$target.toSet[$_]" =>
         (target, SetBuilderSink)
     }
   }

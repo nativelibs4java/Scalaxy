@@ -1,6 +1,9 @@
 package scalaxy.loops
 
-private[loops] trait ArrayStreamSources extends BuilderSinks with ArrayOps {
+private[loops] trait ArrayStreamSources
+    extends ArrayBuilderSinks
+    with ArrayOps
+{
   val global: scala.reflect.api.Universe
   import global._
 

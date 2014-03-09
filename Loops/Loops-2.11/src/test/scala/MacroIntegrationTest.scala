@@ -32,6 +32,15 @@ object MacroIntegrationTest
     "Array(1, 2, 3).map(_ * 2).filter(_ < 3)"
       -> streamMsg("Array.map.filter -> Array", pureExpressions = 1),
 
+    "Array(1, 2, 3).map(_ * 2).filter(_ < 3).toSet"
+      -> streamMsg("Array.map.filter -> Set", pureExpressions = 1),
+
+    "Array(1, 2, 3).map(_ * 2).filter(_ < 3).toList"
+      -> streamMsg("Array.map.filter -> List", pureExpressions = 1),
+
+    "(1 to 3).map(_ * 2).filter(_ < 3).toArray"
+      -> streamMsg("Range.map.filter -> Array"),
+
     "Array(1, 2, 3).map(_ * 2).filterNot(_ < 3)"
       -> streamMsg("Array.map.filterNot -> Array", pureExpressions = 1),
 

@@ -30,29 +30,4 @@ private[loops] trait BuilderSinks extends StreamComponents {
         ending = List(result))
     }
   }
-
-  case object ArrayBuilderSink extends BuilderSink
-  {
-    override def describe = Some("Array")
-
-    // TODO build array of same size as source collection if it is known.
-    override def createBuilder(inputVars: TuploidValue[Tree]) =
-      q"scala.collection.mutable.ArrayBuilder[${inputVars.tpe}]()"
-  }
-
-  case object ListBufferSink extends BuilderSink
-  {
-    override def describe = Some("List")
-
-    override def createBuilder(inputVars: TuploidValue[Tree]) =
-      q"scala.collection.mutable.ListBuffer[${inputVars.tpe}]()"
-  }
-
-  case object SetBuilderSink extends BuilderSink
-  {
-    override def describe = Some("Set")
-
-    override def createBuilder(inputVars: TuploidValue[Tree]) =
-      q"scala.collection.mutable.SetBuilder[${inputVars.tpe}]()"
-  }
 }
