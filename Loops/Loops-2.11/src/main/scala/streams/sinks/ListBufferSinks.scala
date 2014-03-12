@@ -11,7 +11,8 @@ private[loops] trait ListBufferSinks extends BuilderSinks {
     override def describe = Some("List")
 
     override def createBuilder(inputVars: TuploidValue[Tree]) = {
-      val builderModule = rootMirror.staticModule("scala.collection.mutable.ListBuffer")
+      val builderModule =
+        rootMirror.staticModule("scala.collection.mutable.ListBuffer")
       typed(q"$builderModule[${inputVars.tpe}]()")
     }
   }

@@ -5,7 +5,7 @@ private[loops] trait Strippers
   val global: scala.reflect.api.Universe
   import global._
 
-  /** Strip no-op or quasi-no-op trees (blocks without statements, type ascriptions...). */
+  /** Strip quasi-no-op trees (blocks without statements, type ascriptions...). */
   object Strip {
     def unapply(tree: Tree): Option[Tree] = Some(tree match {
       case Block(Nil, Strip(value)) =>

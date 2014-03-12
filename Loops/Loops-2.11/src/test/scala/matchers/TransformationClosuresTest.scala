@@ -99,7 +99,7 @@ class TransformationClosureTest extends StreamComponentsTestBase with Transforma
       }
     """)
     val SomeTransformationClosure(tc) = f
-    println(tc)
+    // println(tc)
   }
 
   @Test
@@ -112,7 +112,7 @@ class TransformationClosureTest extends StreamComponentsTestBase with Transforma
     """)
 
     val SomeTransformationClosure(tc) = f
-    println(tc)
+    // println(tc)
   }
   /**
 

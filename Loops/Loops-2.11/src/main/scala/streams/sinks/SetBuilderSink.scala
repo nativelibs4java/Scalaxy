@@ -11,7 +11,8 @@ private[loops] trait SetBuilderSinks extends BuilderSinks {
     override def describe = Some("Set")
 
     override def createBuilder(inputVars: TuploidValue[Tree]) = {
-      val setModule = rootMirror.staticModule("scala.collection.immutable.Set")
+      val setModule =
+        rootMirror.staticModule("scala.collection.immutable.Set")
       typed(q"$setModule.canBuildFrom[${inputVars.tpe}]()")
     }
   }
