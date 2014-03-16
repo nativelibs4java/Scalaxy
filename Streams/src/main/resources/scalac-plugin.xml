@@ -1,0 +1,4 @@
+<plugin>
+  <name>scalaxy-streams</name>
+  <classname>scalaxy.streams.StreamsPlugin</classname>
+</plugin>
