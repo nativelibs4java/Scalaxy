@@ -24,8 +24,31 @@ object MacroIntegrationTest
     CompilerMessages(
       infos = List(impl.optimizedStreamMessage(streamDescription)),
       // TODO investigate why these happen!
+      // warnings = Nil)
       warnings = (1 to pureExpressions).toList.map(_ =>
         "a pure expression does nothing in statement position; you may be omitting necessary parentheses"))
+
+  // def ranges = List(
+  //   "(0 until n)",
+  //   "(1 to 3)",
+  //   "(2 until 10 by 2)",
+  //   "(20 to 7 by -3)")
+
+  // def intArrays = List(
+  //   "Array(1, 2, 3)",
+  //   """ "1,2,3".split(",").map(_.toInt) """)
+
+  // def refArrays = List(
+  //   "Array((1, 2), (3, 4))",
+  //   """ "1,2,3".split(",") """)
+
+  // def intOps = List(
+  //   "map(_ * 2)" -> "map",
+  //   "filter(_ < 2)" -> "filter",
+  //   "filter(_ % 2 == 0)" -> "filter")
+
+  // def mkIntOps(n: Int): Seq[String] =
+  //   for (in <- ranges ++ intArrays)
 
   @Parameters(name = "{0}") def data: java.util.Collection[Array[AnyRef]] = List[(String, CompilerMessages)](
 
@@ -40,6 +63,9 @@ object MacroIntegrationTest
 
     "(1 to 3).map(_ * 2).filter(_ < 3).toArray"
       -> streamMsg("Range.map.filter -> Array"),
+
+    "val n = 10; for (v <- 0 to n) yield v"
+      -> streamMsg("Range.map -> IndexedSeq"),
 
     "Array(1, 2, 3).map(_ * 2).filterNot(_ < 3)"
       -> streamMsg("Array.map.filterNot -> Array", pureExpressions = 1),

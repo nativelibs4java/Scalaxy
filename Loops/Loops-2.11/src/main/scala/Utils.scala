@@ -6,8 +6,6 @@ private[loops] trait Utils {
 
   lazy val EmptyName: TermName = ""
 
-  def typed(tree: Tree, tpe: Type = WildcardType): Tree
-
   trait Extractor[From, To] {
     def unapply(from: From): Option[To]
   }

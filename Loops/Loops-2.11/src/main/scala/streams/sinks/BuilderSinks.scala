@@ -7,7 +7,7 @@ private[loops] trait BuilderSinks extends StreamComponents {
   // Base class for builder-based sinks.
   trait BuilderSink extends StreamSink
   {
-    def createBuilder(inputVars: TuploidValue[Tree]): Tree
+    def createBuilder(inputVars: TuploidValue[Tree], typed: Tree => Tree): Tree
 
     override def emit(input: StreamInput, outputNeeds: OutputNeeds, nextOps: OpsAndOutputNeeds): StreamOutput =
     {
@@ -20,7 +20,7 @@ private[loops] trait BuilderSinks extends StreamComponents {
 
       // println("inputVars.alias.get = " + inputVars.alias.get + ": " + inputVars.tpe)
       val Block(List(builderDef, builderAdd, result), _) = typed(q"""
-        private[this] val $builder = ${createBuilder(input.vars)};
+        private[this] val $builder = ${createBuilder(input.vars, typed)};
         $builder += ${input.vars.alias.get};
         $builder.result();
         {}

@@ -15,7 +15,8 @@ private[loops] trait CanBuildFromSinks extends BuilderSinks {
 
     override def describe = Some(toTpe.typeSymbol.name.toString)
 
-    override def createBuilder(inputVars: TuploidValue[Tree]) =
-      q"$canBuildFrom()"
+    override def createBuilder(inputVars: TuploidValue[Tree], typed: Tree => Tree) = {
+      typed(q"$canBuildFrom()")
+    }
   }
 }

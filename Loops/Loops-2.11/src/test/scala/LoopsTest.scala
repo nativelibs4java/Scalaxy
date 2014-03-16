@@ -16,9 +16,11 @@ class LoopsTest {
     //   }
     // }
 
-
-
     optimize {
+      // def ff {
+        val n = 3;
+        println(for (v <- 0 to n) yield v)
+      // }
       // for (i <- 0 to n) {
       //   println(i)
       // }

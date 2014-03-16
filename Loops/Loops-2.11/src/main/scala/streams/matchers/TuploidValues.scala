@@ -22,7 +22,7 @@ private[loops] trait TuploidValues extends Utils
   // def tupleTypeComponents(tpe: Type): List[Type] = {
   //   ???
   // }
-  def createTuploidPathsExtractionDecls(targetName: Tree, paths: Set[TuploidPath], fresh: String => TermName): (List[Tree], TuploidValue[Tree]) = {
+  def createTuploidPathsExtractionDecls(targetName: Tree, paths: Set[TuploidPath], fresh: String => TermName, typed: Tree => Tree): (List[Tree], TuploidValue[Tree]) = {
 
     val headToSubs = for ((head, pathsWithSameHead) <- paths.filter(_.nonEmpty).groupBy(_.head)) yield {
       val subPaths = pathsWithSameHead.map(_.tail)
@@ -33,7 +33,7 @@ private[loops] trait TuploidValues extends Utils
         $subName;
         {}
       """)
-      val (subExtraction, subValue) = createTuploidPathsExtractionDecls(subRef, subPaths, fresh)
+      val (subExtraction, subValue) = createTuploidPathsExtractionDecls(subRef, subPaths, fresh, typed)
 
       (subDecl :: subExtraction, head -> subValue)
     }

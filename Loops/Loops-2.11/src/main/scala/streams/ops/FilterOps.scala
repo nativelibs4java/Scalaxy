@@ -30,6 +30,8 @@ private[loops] trait FilterOps extends ClosureStreamOps with Strippers
                       outputNeeds: OutputNeeds,
                       nextOps: OpsAndOutputNeeds): StreamOutput =
     {
+      import input.typed
+
       val (replacedStatements, outputVars) =
         transformationClosure.replaceClosureBody(input, outputNeeds + RootTuploidPath)
 

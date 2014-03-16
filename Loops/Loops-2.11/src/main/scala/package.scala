@@ -35,8 +35,13 @@ package loops
           override val global = c.universe
           import global._
 
-          override def typed(tree: Tree, tpe: Type) =
-            c.typeCheck(tree.asInstanceOf[c.Tree], tpe.asInstanceOf[c.Type]).asInstanceOf[Tree]
+          def typed(tree: Tree) = {
+            // tree
+            c.typeCheck(
+              tree.asInstanceOf[c.Tree])
+              // tpe.asInstanceOf[c.Type])
+            .asInstanceOf[Tree]
+          }
 
           val original = a.tree.asInstanceOf[Tree]//c.typeCheck(a.tree)
 
@@ -44,11 +49,14 @@ package loops
             override def transform(tree: Tree) = tree match {
               case SomeStream(stream) =>
                 c.info(a.tree.pos, optimizedStreamMessage(stream.describe()), force = true)
-                val result = stream.emitStream(n => c.fresh(n): TermName, transform(_)).compose
+                val result: Tree = stream.emitStream(n => c.fresh(n): TermName, transform(_), typed(_)).compose(typed(_))
                 // println(tree)
                 // println(result)
 
-                result
+                //c.typeCheck(c.resetLocalAttrs(result.asInstanceOf[c.Tree]).asInstanceOf[c.Tree]).asInstanceOf[Tree]
+
+                // result
+                typed(tree)
 
               case _ =>
                 super.transform(tree)

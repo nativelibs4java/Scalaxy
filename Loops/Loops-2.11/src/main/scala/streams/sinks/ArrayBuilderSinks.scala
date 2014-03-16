@@ -11,10 +11,10 @@ private[loops] trait ArrayBuilderSinks extends BuilderSinks {
     override def describe = Some("Array")
 
     // TODO build array of same size as source collection if it is known.
-    override def createBuilder(inputVars: TuploidValue[Tree]) = {
+    override def createBuilder(inputVars: TuploidValue[Tree], typed: Tree => Tree) = {
       val builderModule =
         rootMirror.staticModule("scala.collection.mutable.ArrayBuilder")
-      q"$builderModule.make[${inputVars.tpe}]"
+      typed(q"$builderModule.make[${inputVars.tpe}]")
     }
   }
 }

@@ -65,7 +65,7 @@ private[loops] trait TransformationClosures
 
     def replaceClosureBody(streamInput: StreamInput, outputNeeds: OutputNeeds): (List[Tree], TuploidValue[Tree]) =
     {
-      import streamInput.{ fresh, transform }
+      import streamInput.{ fresh, transform, typed }
 
       val replacer = getReplacer(inputs, streamInput.vars)
       val fullTransform = (tree: Tree) => transform(replacer(tree))

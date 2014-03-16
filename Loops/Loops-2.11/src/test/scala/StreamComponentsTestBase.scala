@@ -30,15 +30,10 @@ class StreamComponentsTestBase extends Utils {
       Option(name).map(_.toString)
   }
 
-  def typeCheck(t: global.Tree, tpe: global.Type = global.WildcardType): global.Tree = {
+  def typeCheck(t: global.Tree): global.Tree = {
     val toolbox = currentMirror.mkToolBox(options = commonOptions)
-    toolbox.typeCheck(
-      t.asInstanceOf[toolbox.u.Tree],
-      tpe.asInstanceOf[toolbox.u.Type])
-    .asInstanceOf[global.Tree]
+    toolbox.typeCheck(t.asInstanceOf[toolbox.u.Tree]).asInstanceOf[global.Tree]
   }
-
-  override def typed(tree: global.Tree, tpe: global.Type) = typeCheck(tree, tpe)
 
   def compile(source: String): (() => Any, CompilerMessages) = {
     val infosBuilder = ListBuffer[String]()

@@ -34,7 +34,7 @@ private[loops] trait ZipWithIndexOps
                       outputNeeds: OutputNeeds,
                       nextOps: OpsAndOutputNeeds): StreamOutput =
     {
-      import input.{ fresh, transform }
+      import input.{ fresh, transform, typed }
 
       // TODO wire input and output fiber vars
       val indexVar = fresh("indexVar")

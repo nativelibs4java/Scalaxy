@@ -36,7 +36,7 @@ private[loops] trait SymbolMatchers
       outputNeeds: OutputNeeds)
         : ClosureWiringResult =
   {
-    import streamInput.{ fresh, transform }
+    import streamInput.{ fresh, transform, typed }
 
     val pre = ListBuffer[Tree]()
     val post = ListBuffer[Tree]()

@@ -29,7 +29,7 @@ private[loops] trait ArrayStreamSources
                       outputNeeds: OutputNeeds,
                       nextOps: OpsAndOutputNeeds): StreamOutput =
     {
-      import input.{ fresh, transform }
+      import input.{ fresh, transform, typed }
 
       val arrayVal = fresh("array")
       val lengthVal = fresh("length")
@@ -47,7 +47,7 @@ private[loops] trait ArrayStreamSources
         $itemVal;
         {}
       """)
-      val (extractionCode, outputVars) = createTuploidPathsExtractionDecls(itemValRef, outputNeeds, fresh)
+      val (extractionCode, outputVars) = createTuploidPathsExtractionDecls(itemValRef, outputNeeds, fresh, typed)
 
       val sub = emitSub(input.copy(vars = outputVars), nextOps)
       sub.copy(body = List(typed(q"""

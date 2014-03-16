@@ -29,6 +29,7 @@ private[loops] trait Streams extends StreamComponents
 
     def emitStream(fresh: String => TermName,
                    transform: Tree => Tree,
+                   typed: Tree => Tree,
                    sinkNeeds: Set[TuploidPath] = sink.outputNeeds): StreamOutput =
     {
       val sourceNeeds :: outputNeeds = ops.scanRight(sinkNeeds)({ case (op, refs) =>
@@ -42,7 +43,8 @@ private[loops] trait Streams extends StreamComponents
         input = StreamInput(
           vars = UnitTreeScalarValue,
           fresh = fresh,
-          transform = transform),
+          transform = transform,
+          typed = typed),
         outputNeeds = sourceNeeds,
         nextOps = nextOps)
     }

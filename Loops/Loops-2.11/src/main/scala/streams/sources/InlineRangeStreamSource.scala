@@ -47,7 +47,7 @@ private[loops] trait InlineRangeStreamSources extends StreamComponents {
                       outputNeeds: OutputNeeds,
                       nextOps: OpsAndOutputNeeds): StreamOutput =
     {
-      import input.{ fresh, transform }
+      import input.{ fresh, transform, typed }
 
       val startVal = fresh("start")
       val endVal = fresh("end")

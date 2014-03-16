@@ -45,7 +45,7 @@ private[loops] trait FlatMapOps
                       outputNeeds: OutputNeeds,
                       nextOps: OpsAndOutputNeeds): StreamOutput =
     {
-      import input.{ fresh, transform }
+      import input.{ fresh, transform, typed }
 
       nestedStream match {
         case Some(stream) =>
@@ -64,7 +64,7 @@ private[loops] trait FlatMapOps
           val outerOps = outerOpsRev.reverse
           val modifiedStream = stream.copy(ops = stream.ops ++ outerOps, sink = outerSink)
 
-          modifiedStream.emitStream(fresh, subTransform).map(replacer)
+          modifiedStream.emitStream(fresh, subTransform, typed).map(replacer)
 
         case None =>
           val itemVal = fresh("item")
