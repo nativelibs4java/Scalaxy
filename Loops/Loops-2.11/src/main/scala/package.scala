@@ -36,7 +36,6 @@ package loops
           import global._
 
           def typed(tree: Tree) = {
-            // tree
             c.typeCheck(
               tree.asInstanceOf[c.Tree])
               // tpe.asInstanceOf[c.Type])

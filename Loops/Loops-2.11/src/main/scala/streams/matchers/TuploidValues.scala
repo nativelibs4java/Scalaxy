@@ -19,9 +19,6 @@ private[loops] trait TuploidValues extends Utils
   type TuploidPath = List[Int]
   val RootTuploidPath = Nil
 
-  // def tupleTypeComponents(tpe: Type): List[Type] = {
-  //   ???
-  // }
   def createTuploidPathsExtractionDecls(targetName: Tree, paths: Set[TuploidPath], fresh: String => TermName, typed: Tree => Tree): (List[Tree], TuploidValue[Tree]) = {
 
     val headToSubs = for ((head, pathsWithSameHead) <- paths.filter(_.nonEmpty).groupBy(_.head)) yield {

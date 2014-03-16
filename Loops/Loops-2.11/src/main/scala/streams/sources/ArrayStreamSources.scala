@@ -37,7 +37,14 @@ private[loops] trait ArrayStreamSources
       val itemVal = fresh("item")
 
       // Early typing / symbolization.
-      val Block(List(arrayValDef, lengthValDef, iVarDef, itemValDef, lengthValRef, iVarRef, itemValRef), _) = typed(q"""
+      val Block(List(
+          arrayValDef,
+          lengthValDef,
+          iVarDef,
+          itemValDef,
+          lengthValRef,
+          iVarRef,
+          itemValRef), _) = typed(q"""
         private[this] val $arrayVal = ${transform(array)};
         private[this] val $lengthVal = $arrayVal.length;
         private[this] var $iVar = 0;

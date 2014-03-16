@@ -35,44 +35,6 @@ class LoopsComponent(
   override val runsAfter = runsRightAfter.toList
   override val runsBefore = List("patmat")
 
-  // var nextTypedHolderId = 0
-  // override def typed(tree: Tree, tpe: Type) = {
-  //   try {
-  //     // val out = new Transformer {
-  //     //   override def transform(tree: Tree) = tree match {
-  //     //     case ValDef(mods, name, tpt, rhs)
-  //     //         if tree.symbol == null || tree.symbol == NoSymbol =>
-  //     //       val rtpt = transform(tpt)
-  //     //       val trhs = transform(rhs)
-  //     //       val owner = NoSymbol
-  //     //       val sym = owner.newTermSymbol(name)
-  //     //       if (mods.hasFlag(Flag.MUTABLE))
-  //     //         q"$mods var $sym: $rtpt = $trhs"
-  //     //       else
-  //     //         q"$mods val $sym: $rtpt = $trhs"
-
-  //     //     case _ =>
-  //     //       super.transform(tree)
-  //     //   }
-  //     // } transform tree
-  //     typer.typed(tree, tpe)
-  //     // tree
-
-  //     // val n: TypeName = "typedHolder" + nextTypedHolderId
-  //     // nextTypedHolderId += 1
-  //     // val DefDef(_, _, _, _, _, Block(List(typed),  _)) = typer.typed(q"def $n { $tree }", tpe)
-  //     // val ClassDef(_, _, _,
-  //     //   Template(_, _, List(_,
-  //     //     DefDef(_, _, _, _, _, Block(List(typed), _))))) = typer.typed(q"class $n { def f = { $tree } }", tpe)
-  //     // typed
-  //     // val Block(List(typed), _) = typer.typed(q"{ $tree; () }", tpe)
-  //     // typed
-  //     // tree
-  //   } catch { case ex: Throwable =>
-  //     throw new RuntimeException(tree.toString, ex)
-  //   }
-  // }
-
   override def newPhase(prev: Phase) = new StdPhase(prev) {
     def apply(unit: CompilationUnit) {
       val transformer = new TypingTransformer(unit) {
@@ -80,38 +42,14 @@ class LoopsComponent(
         override def transform(tree: Tree) = tree match {
           case SomeStream(stream) =>
             reporter.info(tree.pos, impl.optimizedStreamMessage(stream.describe()), force = true)
-            // val result = typer.typed {
-            // val result = resetAttrs {
             val result = {
-            // val result = resetLocalAttrs({
               stream
-                .emitStream(n => unit.fresh.newName(n): TermName, transform(_), localTyper.typed(_))
+                .emitStream(
+                  n => unit.fresh.newName(n): TermName,
+                  transform(_),
+                  localTyper.typed(_))
                 .compose(localTyper.typed(_))
             }
-
-            // val removedSymbols = collection.mutable.Set[Symbol]()
-            // for (t <- result; if t.symbol != null) {
-            //   t match {
-            //     case DefDef(_, _, _, _, _, _)  =>
-            //       removedSymbols += t.symbol
-            //       t.symbol = NoSymbol
-            //     case ValDef(_, _, _, _) =>
-            //       removedSymbols += t.symbol
-            //       t.symbol = NoSymbol
-            //     case _ =>
-            //   }
-            // }
-            // for (t <- result; if removedSymbols(t.symbol)) {
-            //   t.symbol = NoSymbol
-            // }
-
-            // for (i @ Ident(n) <- result; if i.symbol != null && i.symbol != NoSymbol) {
-            //   println(s"FOUND $i: ${i.symbol.owner.logicallyEnclosingMember}")
-            // }
-            // println(tree)
-            // println(result)
-
-            // typed(result)
             result
 
           case _ =>
