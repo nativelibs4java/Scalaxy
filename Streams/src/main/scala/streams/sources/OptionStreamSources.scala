@@ -6,15 +6,18 @@ private[streams] trait OptionStreamSources
   val global: scala.reflect.api.Universe
   import global._
 
-  private[this] lazy val OptionSym = rootMirror.staticClass("scala.Option")
-  // Testing the type would be so much better, but yields an awkward MissingRequirementError.
-  // lazy val OptionTpe = typeOf[Option[_]]
-
   object SomeOptionStreamSource {
-    def hasOptionType(tree: Tree): Boolean =
-      tree.tpe != null &&
-      tree.tpe != NoType &&
-      tree.tpe.typeSymbol == OptionSym
+    // Testing the type would be so much better, but yields an awkward MissingRequirementError.
+    // lazy val OptionTpe = typeOf[Option[_]]
+    private[this] lazy val OptionSym = rootMirror.staticClass("scala.Option");
+    private[this] lazy val SomeSym = rootMirror.staticClass("scala.Some");
+
+    def hasOptionType(tree: Tree): Boolean = {
+      val tpe = tree.tpe
+
+      tpe != null && tpe != NoType &&
+      (tpe.typeSymbol == OptionSym || tpe.typeSymbol == SomeSym)
+    }
 
     def unapply(tree: Tree): Option[StreamSource] = Option(tree).filter(hasOptionType(_)) collect {
       case q"scala.Option.apply[$_]($value)" =>

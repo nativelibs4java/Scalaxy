@@ -7,11 +7,11 @@ private[streams] trait ArrayStreamSources
   val global: scala.reflect.api.Universe
   import global._
 
-  private[this] lazy val ArraySym = rootMirror.staticClass("scala.Array")
-  // Testing the type would be so much better, but yields an awkward MissingRequirementError.
-  // lazy val ArrayTpe = typeOf[Array[_]]
-
   object SomeArrayStreamSource {
+    // Testing the type would be so much better, but yields an awkward MissingRequirementError.
+    // lazy val ArrayTpe = typeOf[Array[_]]
+    private[this] lazy val ArraySym = rootMirror.staticClass("scala.Array")
+
     def unapply(tree: Tree): Option[ArrayStreamSource] = Option(tree) collect {
       case _ if tree.tpe != null && tree.tpe != NoSymbol && tree.tpe.typeSymbol == ArraySym =>
         ArrayStreamSource(tree)
