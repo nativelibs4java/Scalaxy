@@ -3,6 +3,7 @@ package scalaxy.streams
 private[streams] trait StreamSources
   extends InlineRangeStreamSources
   with ArrayStreamSources
+  with OptionStreamSources
 {
   val global: scala.reflect.api.Universe
   import global._
@@ -13,6 +14,9 @@ private[streams] trait StreamSources
         source
 
       case SomeArrayStreamSource(source) =>
+        source
+
+      case SomeOptionStreamSource(source) =>
         source
     }
   }

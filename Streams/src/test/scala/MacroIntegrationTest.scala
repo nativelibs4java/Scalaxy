@@ -52,6 +52,12 @@ object MacroIntegrationTest
 
   @Parameters(name = "{0}") def data: java.util.Collection[Array[AnyRef]] = List[(String, CompilerMessages)](
 
+    "Option(1).map(_ * 2).filter(_ < 3)"
+      -> streamMsg("Array.map.filter -> Array", pureExpressions = 1),
+
+    "Some(1).map(_ * 2).filter(_ < 3)"
+      -> streamMsg("Array.map.filter -> Array", pureExpressions = 1),
+
     "Array(1, 2, 3).map(_ * 2).filter(_ < 3)"
       -> streamMsg("Array.map.filter -> Array", pureExpressions = 1),
 

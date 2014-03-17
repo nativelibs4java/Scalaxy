@@ -7,6 +7,18 @@ object Example3 {
   def main(args: Array[String]) {
     val n = 20;
     for (v <- 0 to n) yield v
+
+    println(Array(1, 3, 4).map(_ + 1).map(_ * 2))
+
+    val o = Option(10)
+    for (oo <- o; if oo < 10) {
+      println(oo)
+    }
+    
+    for (oo <- Option(10); if oo < 10) {
+      println(oo)
+    }
+    println(Option("a").map(_ + " b"))
     // for (v <- 0 to n) println(v)
     // optimized {
     // }
