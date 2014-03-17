@@ -33,7 +33,9 @@ private[streams] trait FilterOps extends ClosureStreamOps with Strippers
       import input.typed
 
       val (replacedStatements, outputVars) =
-        transformationClosure.replaceClosureBody(input, outputNeeds + RootTuploidPath)
+        transformationClosure.replaceClosureBody(
+          input.copy(outputSize = None),
+          outputNeeds + RootTuploidPath)
 
       var test = outputVars.alias.get
       if (isNegative) {

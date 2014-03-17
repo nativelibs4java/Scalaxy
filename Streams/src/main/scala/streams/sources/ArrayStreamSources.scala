@@ -56,7 +56,11 @@ private[streams] trait ArrayStreamSources
       """)
       val (extractionCode, outputVars) = createTuploidPathsExtractionDecls(itemValRef, outputNeeds, fresh, typed)
 
-      val sub = emitSub(input.copy(vars = outputVars), nextOps)
+      val sub = emitSub(
+        input.copy(
+          vars = outputVars,
+          outputSize = Some(lengthValRef)),
+        nextOps)
       sub.copy(body = List(typed(q"""
         $arrayValDef;
         $lengthValDef;

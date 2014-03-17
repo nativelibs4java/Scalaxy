@@ -19,8 +19,14 @@ private[streams] trait BuilderSinks extends StreamComponents {
       require(input.vars.alias.nonEmpty, s"input.vars = $input.vars")
 
       // println("inputVars.alias.get = " + inputVars.alias.get + ": " + inputVars.tpe)
-      val Block(List(builderDef, builderAdd, result), _) = typed(q"""
+      val sizeHintOpt = input.outputSize.map(s => q"$builder.sizeHint($s)")
+      val Block(List(
+          builderDef,
+          sizeHint,
+          builderAdd,
+          result), _) = typed(q"""
         private[this] val $builder = ${createBuilder(input.vars, typed)};
+        ${sizeHintOpt.getOrElse(Literal(Constant("")))};
         $builder += ${input.vars.alias.get};
         $builder.result();
         {}
@@ -28,7 +34,7 @@ private[streams] trait BuilderSinks extends StreamComponents {
 
       StreamOutput(
         prelude = List(builderDef),
-        body = List(builderAdd),
+        body = input.outputSize.map(_ => sizeHint).toList :+ builderAdd,
         ending = List(result))
     }
   }
