@@ -2,28 +2,23 @@
 
 Scalaxy/Streams makes your Scala collections code faster:
 * Fuses collection streams down to while loops
-* Avoids unnecessary tuples
+* Avoids many unnecessary tuples (for instance, those introduced by `zipWithIndex`).
 * Usable as a compiler plugin (whole project) or as a macro (surgical strikes)
 
-# TODO
-
-* Null tests for tuple unapply withFilter calls
-* Fix `a pure expression does nothing in statement position` warnings.
-* Publish artifacts
-* Performance tests, including peak memory usage measurements:
+Caveat: Scalaxy/Streams is an **experimental work in progress**, so:
+* Don't use it in production yet
+  (if you insist on doing it, please test your code thoroughly and make sure your tests aren't compiled with it!).
+* Be aware that optimized code might behave differently than normal code, especially with regards to side-effects: for instance, streams typically become lazy (akin to chained Iterators), so values that aren't used to compute the stream output won't be evaluated.
 
   ```scala
+  // Without optimizations, this will print number from 0 to 100 and return `Seq(0)`:
+  (0 to 100).map(i => println(i); i).filter(_ == 0)
 
-  import java.lang.management.{ ManagementFactory, MemoryMXBean, MemoryPoolMXBean }
-  import collection.JavaConversions._
-
-  for (pool <- ManagementFactory.getMemoryPoolMXBeans) {
-    println(String.format("%s: %,d", pool.getName, pool.getPeakUsage.getUsed.asInstanceOf[AnyRef]))
-  }
+  // With optimizations, this *semantically* amounts to the following (albeit much faster):
+  (0 to 100).toIterator.map(i => println(i); i).filter(_ == 0).toSeq
+  // Will only print "0" and return Seq(0)
   ```
-
-* Test plugin as well as macros
-* Support @optimize(true) / @optimize(false) / -Dscalaxy.streams.optimize=true/false/never/always
+* If you're unsure about side effects in your loops, just take it easy and introduce Scalaxy/Stream optimizations on a case-per-case basis, using its `optimized` macro (see below).
 
 # Usage
 
@@ -162,6 +157,24 @@ Of course, this assumes you have something like this:
     </dependency>
   </dependencies>
 ```
+
+# TODO
+
+* Null tests for tuple unapply withFilter calls
+* Fix `a pure expression does nothing in statement position` warnings.
+* Performance tests, including peak memory usage measurements:
+
+  ```scala
+
+  import java.lang.management.{ ManagementFactory, MemoryMXBean, MemoryPoolMXBean }
+  import collection.JavaConversions._
+
+  for (pool <- ManagementFactory.getMemoryPoolMXBeans) {
+    println(String.format("%s: %,d", pool.getName, pool.getPeakUsage.getUsed.asInstanceOf[AnyRef]))
+  }
+  ```
+* Test plugin as well as macros
+* Support @optimize(true) / @optimize(false) / -Dscalaxy.streams.optimize=true/false/never/always
 
 # Hacking
 
