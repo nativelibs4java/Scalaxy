@@ -1,6 +1,6 @@
 scalaVersion := "2.11.0-RC1"
 
-name := "scalaxy-stream"
+name := "scalaxy-streams"
 
 libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-compiler" % _)
 
