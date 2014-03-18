@@ -5,9 +5,43 @@ Scalaxy/Streams makes your Scala collections code faster:
 * Avoids many unnecessary tuples (for instance, those introduced by `zipWithIndex`).
 * Usable as a compiler plugin (whole project) or as a macro (surgical strikes)
 
+```scala
+// For instance, given the following array:
+val array = Array(1, 2, 3, 4)
+
+// The following for comprehension:
+for ((item, i) <- array.zipWithIndex; if item % 2 == 0) {
+  println(s"array[$i] = $item")
+}
+
+// Is desugared by Scala to (slightly simplified):
+array.zipWithIndex.withFilter((pair: (Int, Int)) => pair match {
+  case (item: Int, i: Int) => true
+  case _ => false
+}).withFilter((pair: (Int, Int)) => pair match {
+  case (item, i) =>
+    item % 2 == 0
+}).foreach((pair: (Int, Int)) => pair match {
+  case (item, i) =>
+    println(s"array[$i] = $item")
+})
+// Which will perform as badly and generate as many class files as you might fear.
+
+// Scalaxy/Streams will simply rewrite it to something like:
+val array = Array(1, 2, 3, 4)
+var i = 0;
+val length = array.length
+while (i < length) {
+  val item = array(i)
+  if (item % 2 == 0) {
+    println(s"array[$i] = $item")
+  }
+}
+```
+
 **Caveat**: Scalaxy/Streams is an **experimental work in progress**, so:
 * Don't use it in production yet. If you insist on doing it, please test your code thoroughly and make sure your tests aren't compiled with it, maybe with something like this in your `build.sbt`:
-  ```scala
+  ```
   scalacOptions in Test += "-Xplugin-disable:scalaxy-streams"
   ```
 * Be aware that optimized code might behave differently than normal code, especially with regards to side-effects: for instance, streams typically become lazy (akin to chained Iterators), so values that aren't used to compute the stream output won't be evaluated.
@@ -31,6 +65,7 @@ Scalaxy/Streams makes your Scala collections code faster:
   // It will hence print:
   //   first map, 1
   //   second map, 1
+}
   ```
 * If you're unsure about side effects in your streamed operations, just take it easy and introduce Scalaxy/Stream optimizations on a case-per-case basis, using its `optimized` macro (see below).
 * If you try and run micro-benchmarks, don't forget to use the following scalac optimization flags:
