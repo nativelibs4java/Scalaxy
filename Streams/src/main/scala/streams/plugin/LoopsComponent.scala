@@ -39,6 +39,15 @@ class StreamsComponent(
     def apply(unit: CompilationUnit) {
       val transformer = new TypingTransformer(unit) {
 
+        // val typed: Tree => Tree = localTyper.typed(_)
+        private[this] val typed: Tree => Tree =
+          (tree: Tree) => try {
+            localTyper.typed(tree)
+          } catch { case ex: Throwable =>
+            println("Failed to type " + tree)
+            throw ex
+          }
+
         override def transform(tree: Tree) = tree match {
           case SomeStream(stream) =>
             reporter.info(tree.pos, impl.optimizedStreamMessage(stream.describe()), force = true)
@@ -47,9 +56,11 @@ class StreamsComponent(
                 .emitStream(
                   n => unit.fresh.newName(n): TermName,
                   transform(_),
-                  localTyper.typed(_))
+                  typed)
                 .compose(localTyper.typed(_))
             }
+            // println(result)
+
             result
 
           case _ =>
