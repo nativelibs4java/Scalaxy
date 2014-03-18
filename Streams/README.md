@@ -19,6 +19,11 @@ Caveat: Scalaxy/Streams is an **experimental work in progress**, so:
   // Will only print "0" and return Seq(0)
   ```
 * If you're unsure about side effects in your loops, just take it easy and introduce Scalaxy/Stream optimizations on a case-per-case basis, using its `optimized` macro (see below).
+* If you try and run micro-benchmarks, don't forget to use the following scalac optimization flags:
+
+  ```
+  -optimise -Yclosure-elim -Yinline
+  ```
 
 # Usage
 
