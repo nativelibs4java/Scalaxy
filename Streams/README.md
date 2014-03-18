@@ -12,10 +12,10 @@ Caveat: Scalaxy/Streams is an **experimental work in progress**, so:
 
   ```scala
   // Without optimizations, this will print number from 0 to 100 and return `Seq(0)`:
-  (0 to 100).map(i => println(i); i).filter(_ == 0)
+  (0 to 100).map(i => { println(i); i }).filter(_ == 0)
 
   // With optimizations, this *semantically* amounts to the following (albeit much faster):
-  (0 to 100).toIterator.map(i => println(i); i).filter(_ == 0).toSeq
+  (0 to 100).toIterator.map(i => { println(i); i }).filter(_ == 0).toSeq
   // Will only print "0" and return Seq(0)
   ```
 * If you're unsure about side effects in your loops, just take it easy and introduce Scalaxy/Stream optimizations on a case-per-case basis, using its `optimized` macro (see below).
