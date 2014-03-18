@@ -14,11 +14,15 @@ private[streams] trait FlatMapOps
   object SomeFlatMapOp {
     def unapply(tree: Tree): Option[(Tree, StreamOp)] = Option(tree) collect {
       case q"$target.flatMap[$tpt, $_](${fun @ Strip(Function(List(param), body))})($cbf)" =>
-        (target, FlatMapOp(tpt.tpe, param, body, cbf))
+        (target, FlatMapOp(tpt.tpe, param, body, Some(cbf)))
+
+      // Option.flatMap doesn't take a CanBuildFrom.
+      case q"$target.flatMap[$tpt](${fun @ Strip(Function(List(param), body))})" =>
+        (target, FlatMapOp(tpt.tpe, param, body, None))
     }
   }
 
-  case class FlatMapOp(tpe: Type, param: ValDef, body: Tree, canBuildFrom: Tree)
+  case class FlatMapOp(tpe: Type, param: ValDef, body: Tree, canBuildFrom: Option[Tree])
       extends ClosureStreamOp
   {
     val nestedStream: Option[Stream] = q"($param) => $body" match {
@@ -39,7 +43,7 @@ private[streams] trait FlatMapOps
       }))
     }
 
-    override val sinkOption = Some(CanBuildFromSink(canBuildFrom))
+    override val sinkOption = canBuildFrom.map(CanBuildFromSink(_))
 
     override def emit(input: StreamInput,
                       outputNeeds: OutputNeeds,

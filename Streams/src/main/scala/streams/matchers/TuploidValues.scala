@@ -19,14 +19,14 @@ private[streams] trait TuploidValues extends Utils
   type TuploidPath = List[Int]
   val RootTuploidPath = Nil
 
-  def createTuploidPathsExtractionDecls(targetName: Tree, paths: Set[TuploidPath], fresh: String => TermName, typed: Tree => Tree): (List[Tree], TuploidValue[Tree]) = {
+  def createTuploidPathsExtractionDecls(target: Tree, paths: Set[TuploidPath], fresh: String => TermName, typed: Tree => Tree): (List[Tree], TuploidValue[Tree]) = {
 
     val headToSubs = for ((head, pathsWithSameHead) <- paths.filter(_.nonEmpty).groupBy(_.head)) yield {
       val subPaths = pathsWithSameHead.map(_.tail)
       val selector = "_" + (head + 1)
       val subName: TermName = fresh(selector)
       val Block(List(subDecl, subRef), _) = typed(q"""
-        private[this] val $subName = $targetName.${selector: TermName};
+        private[this] val $subName = $target.${selector: TermName};
         $subName;
         {}
       """)
@@ -37,8 +37,7 @@ private[streams] trait TuploidValues extends Utils
 
     (
       headToSubs.flatMap(_._1).toList,
-      // TODO fix type here
-      TupleValue[Tree](tpe = NoType, headToSubs.map(_._2).toMap, alias = targetName.asOption)
+      TupleValue[Tree](tpe = target.tpe, headToSubs.map(_._2).toMap, alias = target.asOption)
     )
   }
 
@@ -88,6 +87,7 @@ private[streams] trait TuploidValues extends Utils
   case class ScalarValue[A](tpe: Type, value: Option[Tree] = None, alias: Option[A] = None)
       extends TuploidValue[A]
   {
+    assert((tpe + "") != "Null" && tpe != NoType)
     override def find(target: A) =
       alias.filter(_ == target).map(_ => RootTuploidPath)
 
@@ -118,6 +118,7 @@ private[streams] trait TuploidValues extends Utils
   case class TupleValue[A](tpe: Type, values: Map[Int, TuploidValue[A]], alias: Option[A] = None)
       extends TuploidValue[A]
   {
+    assert((tpe + "") != "Null" && tpe != NoType)
     override def find(target: A) = {
       if (alias.exists(_ == target))
         Some(RootTuploidPath)

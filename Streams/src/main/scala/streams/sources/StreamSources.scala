@@ -4,6 +4,7 @@ private[streams] trait StreamSources
   extends InlineRangeStreamSources
   with ArrayStreamSources
   with OptionStreamSources
+  with SeqStreamSources
 {
   val global: scala.reflect.api.Universe
   import global._
@@ -17,6 +18,9 @@ private[streams] trait StreamSources
         source
 
       case SomeOptionStreamSource(source) =>
+        source
+
+      case SomeSeqStreamSource(source) =>
         source
     }
   }

@@ -21,7 +21,7 @@ private[streams] trait TransformationClosures
           (inputValue, body)
 
         case q"($param) => $body" =>
-          (ScalarValue(param.tpe, alias = param.symbol.asOption), body)
+          (ScalarValue(param.symbol.typeSignature, alias = param.symbol.asOption), body)
       } collect {
         case (inputValue, BlockOrNot(statements, TuploidValue(outputValue))) =>
           TransformationClosure(inputValue, statements, outputValue)

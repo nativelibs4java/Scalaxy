@@ -10,7 +10,7 @@ class StreamsTest extends StreamComponentsTestBase with StreamTransforms {
 
   @Test
   def testArrayMapMapFilterMap {
-    val SomeStream(Stream(ArrayStreamSource(_, _), ops, CanBuildFromSink(_))) = typeCheck(q"""
+    val SomeStream(Stream(ArrayStreamSource(_, _, _), ops, CanBuildFromSink(_))) = typeCheck(q"""
       Array(1).map(_ + 1).map(_ * 10).filter(_ < 10)
     """)
     // println(s"ops = " + ops.mkString("\n\t"))

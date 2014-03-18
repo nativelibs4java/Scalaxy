@@ -7,8 +7,21 @@ Scalaxy/Streams makes your Scala collections code faster:
 
 # TODO
 
-* Transmit and use collection size though to builder hintSize
-* Performance tests
+* Null tests for tuple unapply withFilter calls
+* Fix `a pure expression does nothing in statement position` warnings.
+* Publish artifacts
+* Performance tests, including peak memory usage measurements:
+
+  ```scala
+
+  import java.lang.management.{ ManagementFactory, MemoryMXBean, MemoryPoolMXBean }
+  import collection.JavaConversions._
+
+  for (pool <- ManagementFactory.getMemoryPoolMXBeans) {
+    println(String.format("%s: %,d", pool.getName, pool.getPeakUsage.getUsed.asInstanceOf[AnyRef]))
+  }
+  ```
+
 * Test plugin as well as macros
 * Support @optimize(true) / @optimize(false) / -Dscalaxy.streams.optimize=true/false/never/always
 

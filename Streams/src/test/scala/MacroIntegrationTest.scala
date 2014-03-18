@@ -55,8 +55,17 @@ object MacroIntegrationTest
     "Option(1).map(_ * 2).filter(_ < 3)"
       -> streamMsg("Option.map.filter -> Option", pureExpressions = 1),
 
+    """Option("a").flatMap(v => Option(v).filter(_ != null))"""
+      -> streamMsg("Option.flatMap(Option.filter) -> Option", pureExpressions = 2),
+
+    "(None: Option[String]).map(_ * 2)"
+      -> streamMsg("Option.map -> Option", pureExpressions = 1),
+
     "Some(1).map(_ * 2).filter(_ < 3)"
       -> streamMsg("Some.map.filter -> Option", pureExpressions = 1),
+
+    "Seq(0, 1, 2, 3).map(_ * 2).filter(_ < 3)"
+      -> streamMsg("Seq.map.filter -> List", pureExpressions = 1),
 
     "Array(1, 2, 3).map(_ * 2).filter(_ < 3)"
       -> streamMsg("Array.map.filter -> Array", pureExpressions = 1),
@@ -68,40 +77,40 @@ object MacroIntegrationTest
       -> streamMsg("Array.map.filter -> List", pureExpressions = 1),
 
     "(1 to 3).map(_ * 2).filter(_ < 3).toArray"
-      -> streamMsg("Range.map.filter -> Array"),
+      -> streamMsg("Range.map.filter -> Array", pureExpressions = 1),
 
     "val n = 10; for (v <- 0 to n) yield v"
-      -> streamMsg("Range.map -> IndexedSeq"),
+      -> streamMsg("Range.map -> IndexedSeq", pureExpressions = 1),
 
     "Array(1, 2, 3).map(_ * 2).filterNot(_ < 3)"
       -> streamMsg("Array.map.filterNot -> Array", pureExpressions = 1),
 
     "(2 to 10).map(_ * 2).filter(_ < 3)"
-      -> streamMsg("Range.map.filter -> IndexedSeq"),
+      -> streamMsg("Range.map.filter -> IndexedSeq", pureExpressions = 1),
 
     "(2 until 10 by 2).map(_ * 2)"
-      -> streamMsg("Range.map -> IndexedSeq"),
+      -> streamMsg("Range.map -> IndexedSeq", pureExpressions = 1),
 
     "(20 to 7 by -3).map(_ * 2).filter(_ < 3)"
-      -> streamMsg("Range.map.filter -> IndexedSeq"),
+      -> streamMsg("Range.map.filter -> IndexedSeq", pureExpressions = 1),
 
     "Array(1, 2, 3).map(_ * 2).map(_ < 3)"
       -> streamMsg("Array.map.map -> Array", pureExpressions = 1),
 
     "(10 to 20).map(i => () => i).map(_())"
-      -> streamMsg("Range.map.map -> IndexedSeq"),
+      -> streamMsg("Range.map.map -> IndexedSeq", pureExpressions = 1),
 
     "(10 to 20).map(_ + 1).map(i => () => i).map(_())"
-      -> streamMsg("Range.map.map.map -> IndexedSeq"),
+      -> streamMsg("Range.map.map.map -> IndexedSeq", pureExpressions = 1),
 
     "(10 to 20).map(_ * 10).map(i => () => i).reverse.map(_())"
-      -> streamMsg("Range.map.map -> IndexedSeq"),
+      -> streamMsg("Range.map.map -> IndexedSeq", pureExpressions = 1),
 
     "for (p <- (20 until 0 by -2).zipWithIndex) yield p.toString"
-      -> streamMsg("Range.zipWithIndex.map -> IndexedSeq", pureExpressions = 1),
+      -> streamMsg("Range.zipWithIndex.map -> IndexedSeq", pureExpressions = 2),
 
     "for ((v, i) <- (20 until 0 by -2).zipWithIndex) yield (v + i)"
-      -> streamMsg("Range.zipWithIndex.withFilter.map -> IndexedSeq", pureExpressions = 1),
+      -> streamMsg("Range.zipWithIndex.withFilter.map -> IndexedSeq", pureExpressions = 2),
 
     """Array((1, 2), (3, 4))
         .map(_ match { case p @ (i, j) => (i * 10, j / 10.0) })
@@ -114,7 +123,7 @@ object MacroIntegrationTest
            if i % 2 == 1)
         yield { i + j }
     """
-      -> streamMsg("Range.flatMap(Range.withFilter.map) -> IndexedSeq"),
+      -> streamMsg("Range.flatMap(Range.withFilter.map) -> IndexedSeq", pureExpressions = 1),
 
     """val n = 20;
       for (i <- 0 to n;
@@ -126,7 +135,7 @@ object MacroIntegrationTest
            m <- l to n)
         yield { sum * m }
     """
-      -> streamMsg("Range.flatMap(Range.flatMap(Range.flatMap(Range.map.withFilter.flatMap(Range.map)))) -> IndexedSeq"),
+      -> streamMsg("Range.flatMap(Range.flatMap(Range.flatMap(Range.map.withFilter.flatMap(Range.map)))) -> IndexedSeq", pureExpressions = 1),
 
     """val n = 20;
       for (i <- 0 to n;
@@ -137,7 +146,7 @@ object MacroIntegrationTest
            k <- (i + j) to n)
         yield { (ii, jj, k) }
     """
-      -> streamMsg("Range.map.flatMap(Range.map.withFilter.flatMap(Range.map)) -> IndexedSeq")
+      -> streamMsg("Range.map.flatMap(Range.map.withFilter.flatMap(Range.map)) -> IndexedSeq", pureExpressions = 1)
 
   ).map({ case (src, msgs) => Array[AnyRef](src, msgs) })
 }

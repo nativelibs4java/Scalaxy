@@ -12,6 +12,7 @@ private[streams] trait MapOps
       case q"$target.map[$_, $_](${Strip(Function(List(param), body))})($canBuildFrom)" =>
         (target, MapOp(param, body, canBuildFrom = Some(canBuildFrom)))
 
+      // Option.map doesn't take a CanBuildFrom.
       case q"$target.map[$_](${Strip(Function(List(param), body))})" =>
         (target, MapOp(param, body, canBuildFrom = None))
     }

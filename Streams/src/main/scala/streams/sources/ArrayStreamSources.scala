@@ -13,18 +13,17 @@ private[streams] trait ArrayStreamSources
     private[this] lazy val ArraySym = rootMirror.staticClass("scala.Array")
 
     def unapply(tree: Tree): Option[ArrayStreamSource] = Option(tree) collect {
-      case _ if tree.tpe != null && tree.tpe != NoSymbol && tree.tpe.typeSymbol == ArraySym =>
+      case _ if tree.tpe != null && tree.tpe != NoType && tree.tpe.typeSymbol == ArraySym =>
         ArrayStreamSource(tree)
     }
   }
 
   case class ArrayStreamSource(
       array: Tree,
+      describe: Option[String] = Some("Array"),
       sinkOption: Option[StreamSink] = Some(ArrayBuilderSink))
     extends StreamSource
   {
-    override def describe = Some("Array")
-
     override def emit(input: StreamInput,
                       outputNeeds: OutputNeeds,
                       nextOps: OpsAndOutputNeeds): StreamOutput =
