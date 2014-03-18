@@ -42,7 +42,7 @@ scalac -J-Dscalaxy.streams.optimize=false ...
 
 If you're using `sbt` 0.13.0+, just put the following lines in `build.sbt`:
 
-* Using the macro (to decide which parts of your code are optimized):
+* To use the macro (manually decide which parts of your code are optimized):
 
   ```scala
   // Only works with 2.11.0-RC1
@@ -63,8 +63,8 @@ If you're using `sbt` 0.13.0+, just put the following lines in `build.sbt`:
       ...
     }
   }
-  ```
-* Using the compiler plugin (to optimize all of your code):
+  ``` 
+* To use the compiler plugin (optimizes all of your code):
 
   ```scala
   // Only works with 2.11.0-RC1
@@ -89,7 +89,7 @@ scalacOptions += "-optimise -Yclosure-elim -Yinline"
 
 With Maven, you'll need this in your `pom.xml` file:
 
-* Using the macro (to decide which parts of your code are optimized):
+* To use the macro (manually decide which parts of your code are optimized):
 
   ```xml
   <dependencies>
@@ -108,7 +108,7 @@ With Maven, you'll need this in your `pom.xml` file:
   </repositories>
   ```
 
-* Using the compiler plugin (to optimize all of your code):
+* To use the compiler plugin (optimizes all of your code):
 
   ```xml
   <build>
