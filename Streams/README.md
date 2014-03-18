@@ -114,9 +114,9 @@ With Maven, you'll need this in your `pom.xml` file:
   <build>
     <plugins>
       <plugin>
-        <groupId>org.scala-tools</groupId>
-        <artifactId>maven-scala-plugin</artifactId>
-        <version>2.15.2</version>
+        <groupId>net.alchim31.maven</groupId>
+        <artifactId>scala-maven-plugin</artifactId>
+        <version>3.1.6</version>
         <executions>
           <execution>
             <goals>
@@ -126,10 +126,11 @@ With Maven, you'll need this in your `pom.xml` file:
           </execution>
         </executions>
         <configuration>
+          <scalaVersion>${scala.version}</scalaVersion>
           <compilerPlugins>
             <compilerPlugin>
               <groupId>com.nativelibs4java</groupId>
-              <artifactId>scalaxy-streams_2.11</artifactId>
+              <artifactId>scalaxy-streams_${scala.major.minor.version}</artifactId>
               <version>0.3-SNAPSHOT</version>
             </compilerPlugin>
           </compilerPlugins>
@@ -140,10 +141,27 @@ With Maven, you'll need this in your `pom.xml` file:
   <repositories>
     <repository>
       <id>sonatype-oss-public</id>
+      <name>Sonatype Snapshots</name>
       <url>https://oss.sonatype.org/content/groups/public/</url>
     </repository>
   </repositories>
   ```
+
+Of course, this assumes you have something like this:
+```xml
+  <properties>
+    <scala.major.minor.version>2.10</scala.major.minor.version>
+    <scala.patch.version>0-RC1</scala.patch.version>
+    <scala.version>${scala.major.minor.version}.${scala.patch.version}</scala.version>
+  </properties>
+  <dependencies>
+    <dependency>
+      <groupId>org.scala-lang</groupId>
+      <artifactId>scala-library</artifactId>
+      <version>${scala.version}</version>
+    </dependency>
+  </dependencies>
+```
 
 # Hacking
 
