@@ -1,7 +1,7 @@
 # Scalaxy/Streams
 
 Scalaxy/Streams makes your Scala collections code faster:
-* Fuses collection streams down to while loops
+* Fuses collection streams down to while loops (see [some examples](https://github.com/ochafik/Scalaxy/blob/master/Streams/src/test/scala/MacroIntegrationTest.scala#L55))
 * Avoids many unnecessary tuples (for instance, those introduced by `zipWithIndex`).
 * Usable as a compiler plugin (whole project) or as a macro (surgical strikes)
 
