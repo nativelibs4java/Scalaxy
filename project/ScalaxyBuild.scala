@@ -31,7 +31,8 @@ object Scalaxy extends Build {
 
   lazy val scalaSettings = Seq(
     //exportJars := true, // use jars in classpath
-    scalaVersion := "2.10.3"
+    // scalaVersion := "2.10.3"
+    scalaVersion := "2.11.0-RC1"
     //scalaVersion := "2.11.0-M4",
     //scalaVersion := "2.11.0-SNAPSHOT",
     // crossScalaVersions := Seq("2.11.0-SNAPSHOT")
@@ -107,8 +108,8 @@ object Scalaxy extends Build {
       fork := true,
       parallelExecution in Test := false,
       libraryDependencies ++= Seq(
-        "junit" % "junit" % "4.10" % "test",
-        "com.novocode" % "junit-interface" % "0.8" % "test"
+        "junit" % "junit" % "4.11" % "test",
+        "com.novocode" % "junit-interface" % "0.10" % "test"
       )
     )
 
@@ -197,6 +198,7 @@ object Scalaxy extends Build {
     "JSON" -> json,
     // "Parano" -> parano,
     "Loops" -> loops,
+    "Streams" -> streams,
     //"Components" -> components,
     "Debug" -> debug,
     // "CasbahDSL" -> casbahDSL,
@@ -361,7 +363,15 @@ object Scalaxy extends Build {
     Project(id = "scalaxy-beans", base = file("Beans"), settings = reflectSettings)
 
   lazy val loops =
-    Project(id = "scalaxy-loops", base = file("Loops"), settings = reflectSettings)
+    Project(id = "scalaxy-loops", base = file("Loops"), settings = reflectSettings ++ Seq(
+      addCompilerPlugin("com.nativelibs4java" %% "scalaxy-privacy-plugin" % "0.3-SNAPSHOT")
+    ))
+    .dependsOn(privacy)
+
+  lazy val streams =
+    Project(id = "scalaxy-streams", base = file("Streams"), settings = reflectSettings ++ Seq(
+      scalaVersion := "2.11.0-RC1"
+    ))
 
   lazy val debug =
     Project(id = "scalaxy-debug", base = file("Debug"), settings = reflectSettings)

@@ -36,7 +36,7 @@ private[streams] trait Utils {
     typeOf[Boolean] -> false,
     typeOf[Byte] -> (0: Byte),
     typeOf[Short] -> (0: Short),
-    typeOf[Char] -> '\0',
+    typeOf[Char] -> '\u0000',
     typeOf[Long] -> 0L,
     typeOf[Float] -> 0.0f,
     typeOf[Double] -> 0.0)

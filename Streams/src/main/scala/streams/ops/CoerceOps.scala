@@ -26,13 +26,6 @@ private[streams] trait CoerceOps
 
       case _ =>
         None
-        // q"""
-        //   (item2: (Array[Int], Int)) => (item2: (Array[Int], Int) @unchecked) match {
-        //     case ((a @ _), (i @ _)) => true
-        //     case _ => false
-        //   }
-        // """
-        // ???
     }
   }
 

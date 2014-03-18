@@ -37,38 +37,40 @@ class StreamsComponent(
 
   override def newPhase(prev: Phase) = new StdPhase(prev) {
     def apply(unit: CompilationUnit) {
-      val transformer = new TypingTransformer(unit) {
+      if (!impl.disabled) {
+        val transformer = new TypingTransformer(unit) {
 
-        // val typed: Tree => Tree = localTyper.typed(_)
-        private[this] val typed: Tree => Tree =
-          (tree: Tree) => try {
-            localTyper.typed(tree)
-          } catch { case ex: Throwable =>
-            println("Failed to type " + tree)
-            throw ex
-          }
-
-        override def transform(tree: Tree) = tree match {
-          case SomeStream(stream) =>
-            reporter.info(tree.pos, impl.optimizedStreamMessage(stream.describe()), force = true)
-            val result = {
-              stream
-                .emitStream(
-                  n => unit.fresh.newName(n): TermName,
-                  transform(_),
-                  typed)
-                .compose(localTyper.typed(_))
+          // val typed: Tree => Tree = localTyper.typed(_)
+          private[this] val typed: Tree => Tree =
+            (tree: Tree) => try {
+              localTyper.typed(tree)
+            } catch { case ex: Throwable =>
+              println("Failed to type " + tree)
+              throw ex
             }
-            // println(result)
 
-            result
+          override def transform(tree: Tree) = tree match {
+            case SomeStream(stream) =>
+              reporter.info(tree.pos, impl.optimizedStreamMessage(stream.describe()), force = true)
+              val result = {
+                stream
+                  .emitStream(
+                    n => unit.fresh.newName(n): TermName,
+                    transform(_),
+                    typed)
+                  .compose(localTyper.typed(_))
+              }
+              // println(result)
 
-          case _ =>
-            super.transform(tree)
+              result
+
+            case _ =>
+              super.transform(tree)
+          }
         }
-      }
 
-      unit.body = transformer transform unit.body
+        unit.body = transformer transform unit.body
+      }
     }
   }
 }

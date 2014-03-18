@@ -15,7 +15,7 @@ case class CompilerMessages(
 
 class StreamComponentsTestBase extends Utils {
   val global = scala.reflect.runtime.universe
-  val commonOptions = "-usejavacp"
+  val commonOptions = "-usejavacp -optimise -Yclosure-elim -Yinline "
   import scala.reflect.runtime.currentMirror
 
   object S {
