@@ -221,47 +221,17 @@ Of course, this assumes you have something like this:
   </dependencies>
 ```
 
-# TODO
-
-* Null tests for tuple unapply withFilter calls
-* Fix `a pure expression does nothing in statement position` warnings.
-* Performance tests, including peak memory usage measurements:
-
-  ```scala
-
-  import java.lang.management.{ ManagementFactory, MemoryMXBean, MemoryPoolMXBean }
-  import collection.JavaConversions._
-
-  for (pool <- ManagementFactory.getMemoryPoolMXBeans) {
-    println(String.format("%s: %,d", pool.getName, pool.getPeakUsage.getUsed.asInstanceOf[AnyRef]))
-  }
-  ```
-* Test plugin as well as macros
-* Support @optimize(true) / @optimize(false) / -Dscalaxy.streams.optimize=true/false/never/always
-
-# Hacking
-
-If you want to build / test / hack on this project:
-- Make sure to use [paulp's sbt script](https://github.com/paulp/sbt-extras) with `sbt` 0.13.0+
-- Use the following commands to checkout the sources and build the tests continuously: 
-
-    ```
-    git clone git://github.com/ochafik/Scalaxy.git
-    cd Scalaxy
-    sbt "project scalaxy-streams" "; clean ; ~test"
-    ```
-
 ## A note on architecture
 
-Scalaxy/Streams is a rewrite of [ScalaCL](https://code.google.com/p/scalacl/) using the awesome new (and experimental) reflection APIs from Scala 2.10, and the awesome quasiquotes from Scala 2.11.
+Scalaxy/Streams is a rewrite of [ScalaCL](https://code.google.com/p/scalacl/) using the awesome new (and experimental) reflection APIs from Scala 2.10, and the awesome [quasiquotes](http://docs.scala-lang.org/overviews/macros/quasiquotes.html) from Scala 2.11.
 
 The architecture is very simple: Scalaxy/Streams deals with... streams. A stream is comprised of:
 * A stream source (e.g. ArrayStreamSource, InlineRangeStreamSource...)
 * A list of 1 or more stream operations (e.g. MapOp, FilterOp...)
 * A stream sink (e.g. ListBufferSink, OptionSink...)
-Each of these three kinds of stream components is able to emit the equivalent code of the rest of the stream.
+Each of these three kinds of stream components is able to emit the equivalent code of the rest of the stream, and generally has a corresponding extractor to recognize it in a `Tree` (e.g. SomeArrayStreamSource, SomeOptionSink, SomeFlatMapOp...).
 
-One particular op, FlatMapOp, may contain nested streams, which allows for the chaining of complex for comprehensions:
+One particular operation, `FlatMapOp`, may contain nested streams, which allows for the chaining of complex for comprehensions:
 ```scala
 val n = 20;
 // The following for comprehension:
@@ -283,5 +253,34 @@ Careful tracking of input, transformation and output of tuploids across stream c
 
 Finally, the cake pattern is used to assemble the source, ops, sink and stream extractors together with macro or compiler plugin universes.
 
+# Hacking
 
+If you want to build / test / hack on this project:
+- Make sure to use [paulp's sbt script](https://github.com/paulp/sbt-extras) with `sbt` 0.13.0+
+- Use the following commands to checkout the sources and build the tests continuously: 
 
+    ```
+    git clone git://github.com/ochafik/Scalaxy.git
+    cd Scalaxy
+    sbt "project scalaxy-streams" "; clean ; ~test"
+    ```
+
+Found a bug? Please [report it](https://github.com/ochafik/Scalaxy/issues/new) (your help will be much appreciated!).
+
+# TODO
+
+* Null tests for tuple unapply withFilter calls
+* Fix `a pure expression does nothing in statement position` warnings.
+* Performance tests, including peak memory usage measurements:
+
+  ```scala
+
+  import java.lang.management.{ ManagementFactory, MemoryMXBean, MemoryPoolMXBean }
+  import collection.JavaConversions._
+
+  for (pool <- ManagementFactory.getMemoryPoolMXBeans) {
+    println(String.format("%s: %,d", pool.getName, pool.getPeakUsage.getUsed.asInstanceOf[AnyRef]))
+  }
+  ```
+* Test plugin as well as macros
+* Support @optimize(true) / @optimize(false) / -Dscalaxy.streams.optimize=true/false/never/always
