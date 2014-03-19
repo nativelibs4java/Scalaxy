@@ -15,6 +15,9 @@ private[streams] trait TuploidValues extends Utils
         false
     }
   }
+  object TupleType {
+    def unapply(tpe: Type): Boolean = tpe.typeSymbol.fullName.toString.matches("scala\\.Tuple\\d+")
+  }
 
   type TuploidPath = List[Int]
   val RootTuploidPath = Nil
@@ -97,24 +100,6 @@ private[streams] trait TuploidValues extends Utils
     }
   }
 
-  object UnitTreeScalarValue extends ScalarValue[Tree](typeOf[Unit])
-
-  class TuploidTraverser[A] {
-    def traverse(path: TuploidPath, t: TuploidValue[A]) {
-      t match {
-        case TupleValue(_, values, _) =>
-          for ((i, value) <- values) {
-            traverse(path :+ i, value)
-          }
-
-        case _ =>
-      }
-    }
-  }
-
-  trait TuploidTransformer[A, B] {
-    def transform(path: TuploidPath, t: TuploidValue[A]): TuploidValue[B]
-  }
   case class TupleValue[A](tpe: Type, values: Map[Int, TuploidValue[A]], alias: Option[A] = None)
       extends TuploidValue[A]
   {
@@ -138,6 +123,38 @@ private[streams] trait TuploidValues extends Utils
 
       case i :: subPath =>
         values(i).get(subPath)
+    }
+  }
+
+  // object BindList {
+  //   def unapply(trees: List[Tree]): Option[List[Bind]] = {
+  //     var success = true
+  //     val result = trees map {
+  //       case b @ Bind(_, _) => b
+  //       case _ =>
+  //         success = false
+  //         null
+  //     }
+  //     if (success)
+  //       Some(result)
+  //     else
+  //       None
+  //   }
+  // }
+
+  object MethodTypeTree {
+    def unapply(tree: Tree): Option[(List[Symbol], Type)] = tree match {
+      case TypeTree() =>
+        tree.tpe match {
+          case MethodType(params, restpe) =>
+            Some(params, restpe)
+
+          case _ =>
+            None
+        }
+
+      case _ =>
+        None
     }
   }
 
@@ -170,8 +187,15 @@ private[streams] trait TuploidValues extends Utils
         case Ident(n) if tree.symbol.name == n =>
           ScalarValue(tree.tpe, alias = tree.symbol.asOption)
 
+        case Apply(MethodTypeTree(_, restpe @ TupleType()), binds)
+            if binds.forall({ case Bind(_, _) => true case _ => false }) =>
+          val values = for ((bind: Bind, i) <- binds.zipWithIndex) yield {
+            i -> extractSymbolsFromBind(bind)
+          }
+          TupleValue(restpe, values.toMap)
+
         case _ =>
-          ScalarValue(tree.tpe, value = Some(tree))
+          ScalarValue(tree.tpe, value = Some(tree), alias = alias)
       }
     }
     def extractSymbolsFromBind(bind: Bind): TuploidValue[Symbol] = {
@@ -180,6 +204,25 @@ private[streams] trait TuploidValues extends Utils
 
     def unapply(tree: Tree): Option[TuploidValue[Symbol]] =
       trySome(extractSymbols(tree))
+  }
+
+  object UnitTreeScalarValue extends ScalarValue[Tree](typeOf[Unit])
+
+  class TuploidTraverser[A] {
+    def traverse(path: TuploidPath, t: TuploidValue[A]) {
+      t match {
+        case TupleValue(_, values, _) =>
+          for ((i, value) <- values) {
+            traverse(path :+ i, value)
+          }
+
+        case _ =>
+      }
+    }
+  }
+
+  trait TuploidTransformer[A, B] {
+    def transform(path: TuploidPath, t: TuploidValue[A]): TuploidValue[B]
   }
 
   /** Extract TuploidValue from a CaseDef */
@@ -205,12 +248,12 @@ private[streams] trait TuploidValues extends Utils
         caseDef match {
           case cq"($tuple(..$binds)) => $body" =>
             TupleValue[Symbol](
-              tpe = caseDef.tpe,
+              tpe = caseDef.pat.tpe,
               values = sub(binds), alias = None) -> body
 
           case cq"($alias @ $tuple(..$binds)) => $body" =>
             TupleValue[Symbol](
-              tpe = caseDef.tpe,
+              tpe = caseDef.pat.tpe,
               values = sub(binds), alias = caseDef.pat.symbol.asOption) -> body
         }
       }

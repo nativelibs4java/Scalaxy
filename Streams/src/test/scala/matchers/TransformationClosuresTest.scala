@@ -114,6 +114,32 @@ class TransformationClosureTest extends StreamComponentsTestBase with Transforma
     val SomeTransformationClosure(tc) = f
     // println(tc)
   }
+
+  @Test
+  def simple3Tuple {
+    val f = typeCheck(q"""
+      ((t: ((Int, Int), Int)) => (t: ((Int, Int), Int) @unchecked) match {
+        case (((x @ (_: Int)), (y @ (_: Int))), (i @ (_: Int))) =>
+          (x + y) % 2 == 0
+      })
+    """)
+    val SomeTransformationClosure(tc) = f
+    val TransformationClosure(inputs, statements, outputs) = tc
+
+    val IntTpe = typeOf[Int]
+    val IntIntTpe = typeOf[(Int, Int)]
+    val IntIntIntTpe = typeOf[((Int, Int), Int)]
+
+    val TupleValue(IntIntIntTpe, inputValues, None) = inputs
+    val Seq(0, 1) = inputValues.keys.toSeq.sorted
+
+    val TupleValue(IntIntTpe, subInputValues, None) = inputValues(0)
+    val Seq(0, 1) = subInputValues.keys.toSeq.sorted
+    val ScalarValue(IntTpe, _, Some(S("i"))) = inputValues(1)
+
+    val ScalarValue(IntTpe, _, Some(S("x"))) = subInputValues(0)
+    val ScalarValue(IntTpe, _, Some(S("y"))) = subInputValues(1)
+  }
   /**
 
   val f = toolbox.typeCheck(q"""
