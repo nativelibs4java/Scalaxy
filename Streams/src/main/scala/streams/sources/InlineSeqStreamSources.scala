@@ -8,17 +8,20 @@ private[streams] trait SeqStreamSources
   import global._
 
   object SomeSeqStreamSource {
-    // Testing the type would be so much better, but yields an awkward MissingRequirementError.
-    // lazy val ArrayTpe = typeOf[Array[_]]
-    //private[this] lazy val SeqSym = rootMirror.staticClass("scala.collection.Seq")
     private[this] lazy val SeqModuleSym = rootMirror.staticModule("scala.collection.Seq")
+    private[this] lazy val ListModuleSym = rootMirror.staticModule("scala.collection.immutable.List")
 
     def unapply(tree: Tree): Option[StreamSource] = Option(tree) collect {
       case q"$seq.apply[$tpe](..$elements)" if seq.symbol == SeqModuleSym =>
-          // if tree.tpe != null && tree.tpe != NoType && tree.tpe.typeSymbol == SeqSym =>
         ArrayStreamSource(
           q"scala.Array.apply[$tpe](..$elements)",
           describe = Some("Seq"),
+          sinkOption = Some(ListBufferSink))
+
+      case q"$list.apply[$tpe](..$elements)" if list.symbol == ListModuleSym =>
+        ArrayStreamSource(
+          q"scala.List.apply[$tpe](..$elements)",
+          describe = Some("List"),
           sinkOption = Some(ListBufferSink))
     }
   }

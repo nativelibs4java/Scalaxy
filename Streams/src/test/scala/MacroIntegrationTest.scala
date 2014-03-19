@@ -67,6 +67,9 @@ object MacroIntegrationTest
     "Seq(0, 1, 2, 3).map(_ * 2).filter(_ < 3)"
       -> streamMsg("Seq.map.filter -> Seq", pureExpressions = 1),
 
+    "List(0, 1, 2, 3).map(_ * 2).filter(_ < 3)"
+      -> streamMsg("List.map.filter -> List", pureExpressions = 1),
+
     "Array(1, 2, 3).map(_ * 2).filter(_ < 3)"
       -> streamMsg("Array.map.filter -> Array", pureExpressions = 1),
 
