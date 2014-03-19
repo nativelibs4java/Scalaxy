@@ -1,6 +1,6 @@
 # Scalaxy/Streams
 
-Scalaxy/Streams makes your Scala collections code faster:
+Scalaxy/Streams makes your Scala collections code faster (official heir to [ScalaCL](https://code.google.com/p/scalacl/), by same author):
 * Fuses collection streams down to while loops (see [some examples](https://github.com/ochafik/Scalaxy/blob/master/Streams/src/test/scala/MacroIntegrationTest.scala#L55))
 * Avoids many unnecessary tuples (for instance, those introduced by `zipWithIndex`).
 * Usable as a compiler plugin (whole project) or as a macro (surgical strikes)
@@ -40,11 +40,11 @@ while (i < length) {
 ```
 
 **Caveat**: Scalaxy/Streams is an **experimental work in progress**, so:
-* Don't use it in production yet. If you insist on doing it, please test your code thoroughly and make sure your tests aren't compiled with it, maybe with something like this in your `build.sbt`:
+* Don't use it in production yet. If you insist on doing it, please test your code thoroughly and make sure your tests aren't compiled with it, maybe with something (untested) like this in your `build.sbt`:
   ```
   scalacOptions in Test += "-Xplugin-disable:scalaxy-streams"
   ```
-* Be aware that optimized code might behave differently than normal code, especially with regards to side-effects: for instance, streams typically become lazy (akin to chained Iterators), so values that aren't used to compute the stream output won't be evaluated.
+* Be aware that *optimized code might behave differently* than normal code, especially with regards to side-effects: for instance, streams typically become lazy (akin to chained Iterators), so the optimization might change the number and order of side-effects (if there are any):
 
   ```scala
   (1 to 2).map(i => { println("first map, " + i); i })
@@ -73,6 +73,15 @@ while (i < length) {
   ```
   -optimise -Yclosure-elim -Yinline
   ```
+
+# Scope
+
+Scalaxy/Streams rewrites streams with the following components:
+* Stream sources: `Array`, inline `Range`, `Option` (with special case for explicit `Option(x)`), explicit `Seq(a, b, ...)`, explicit `List(a, b, ...)`
+  (TODO: extend to any `List`)
+* Stream operations: `filter`, `filterNot`, `withFilter`, `map`, `flatMap` (with or without nested streams), `zipWithIndex`
+
+The output type of each optimized stream is always the same as the original, but when nested streams are encountered in `flatMap` operations many intermediate outputs can typically be skipped, saving up on memory usage and execution time.
 
 # Usage
 
@@ -241,3 +250,38 @@ If you want to build / test / hack on this project:
     cd Scalaxy
     sbt "project scalaxy-streams" "; clean ; ~test"
     ```
+
+## A note on architecture
+
+Scalaxy/Streams is a rewrite of [ScalaCL](https://code.google.com/p/scalacl/) using the awesome new (and experimental) reflection APIs from Scala 2.10, and the awesome quasiquotes from Scala 2.11.
+
+The architecture is very simple: Scalaxy/Streams deals with... streams. A stream is comprised of:
+* A stream source (e.g. ArrayStreamSource, InlineRangeStreamSource...)
+* A list of 1 or more stream operations (e.g. MapOp, FilterOp...)
+* A stream sink (e.g. ListBufferSink, OptionSink...)
+Each of these three kinds of stream components is able to emit the equivalent code of the rest of the stream.
+
+One particular op, FlatMapOp, may contain nested streams, which allows for the chaining of complex for comprehensions:
+```scala
+val n = 20;
+// The following for comprehension:
+for (i <- 0 to n;
+     ii = i * i;
+     j <- i to n;
+     jj = j * j;
+     if (ii - jj) % 2 == 0;
+     k <- (i + j) to n)
+  yield { (ii, jj, k) }
+
+// Is recognized by Scalaxy/Stream as the following stream:
+// Range.map.flatMap(Range.map.withFilter.flatMap(Range.map)) -> IndexedSeq
+```
+
+Special care is taken of tuples, by representing input and output values of stream components as *tuploids* (a tuploid is recursively defined as either a scalar or a tuple of tuploids).
+
+Careful tracking of input, transformation and output of tuploids across stream components allows to optimize unneeded tuples away, while materializing or preserving needed ones (making `TransformationClosure` the most complex piece of code of the project).
+
+Finally, the cake pattern is used to assemble the source, ops, sink and stream extractors together with macro or compiler plugin universes.
+
+
+
