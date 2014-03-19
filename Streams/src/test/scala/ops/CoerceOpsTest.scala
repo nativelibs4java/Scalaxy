@@ -4,7 +4,10 @@ package test
 import org.junit._
 import org.junit.Assert._
 
-class CoerceOpsTest extends StreamComponentsTestBase with StreamTransforms with CoerceOps {
+class CoerceOpsTest extends StreamComponentsTestBase
+    with StreamTransforms
+    with CoerceOps
+{
   import global._
 
   @Test
@@ -15,7 +18,6 @@ class CoerceOpsTest extends StreamComponentsTestBase with StreamTransforms with 
         case _ => false
       }
     )""")
-    val SomeStreamOp(_, ops) = v
-    val (_: CoerceOp) :: Nil = ops
+    val SomeStreamOp(_, List(ZipWithIndexOp(_), CoerceOp(_))) = v
   }
 }

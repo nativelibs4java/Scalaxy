@@ -1,12 +1,13 @@
 package scalaxy.streams
 
 private[streams] trait StreamOps
-    extends ForeachOps
-    with MapOps
-    with FlatMapOps // TODO
+    extends ArrayOps
+    with CoerceOps
     with FilterOps
+    with FlatMapOps
+    with ForeachOps
+    with MapOps
     with ZipWithIndexOps
-    with ArrayOps
 {
   val global: scala.reflect.api.Universe
   import global._
@@ -14,6 +15,9 @@ private[streams] trait StreamOps
   object SomeStreamOp extends Extractor[Tree, (Tree, List[StreamOp])]  {
     def unapply(tree: Tree): Option[(Tree, List[StreamOp])] = Option(tree) collect {
       case SomeForeachOp(SomeStreamOp(src, ops), op) =>
+        (src, ops :+ op)
+
+      case SomeCoerceOp(SomeStreamOp(src, ops), op) =>
         (src, ops :+ op)
 
       case SomeMapOp(SomeStreamOp(src, ops), op) =>

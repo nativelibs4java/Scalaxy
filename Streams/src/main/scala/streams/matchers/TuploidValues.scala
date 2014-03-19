@@ -62,8 +62,8 @@ private[streams] trait TuploidValues extends Utils
     def foreachDefined(pf: PartialFunction[(TuploidPath, TuploidValue[A]), Unit]) {
       new TuploidTraverser[A] {
         override def traverse(path: TuploidPath, t: TuploidValue[A]) {
-          super.traverse(path, t)
           pf.applyOrElse((path, t), (_: (TuploidPath, TuploidValue[A])) => ())
+          super.traverse(path, t)
         }
       } traverse (RootTuploidPath, this)
     }

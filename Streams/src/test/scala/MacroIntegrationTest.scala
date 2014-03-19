@@ -115,6 +115,9 @@ object MacroIntegrationTest
     "for ((v, i) <- (20 until 0 by -2).zipWithIndex) yield (v + i)"
       -> streamMsg("Range.zipWithIndex.withFilter.map -> IndexedSeq", pureExpressions = 2),
 
+    "Array((1, 2)).map({ case (x, y) => x + y })"
+      -> streamMsg("Array.map -> Array", pureExpressions = 3),
+
     """Array((1, 2), (3, 4))
         .map(_ match { case p @ (i, j) => (i * 10, j / 10.0) })
         .map({ case (k, l) => k + l })"""

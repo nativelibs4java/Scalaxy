@@ -29,7 +29,7 @@ private[streams] trait CoerceOps
   }
 
   case class CoerceOp(inputValue: TuploidValue[Symbol]) extends StreamOp {
-    override def describe = Some("<coerce>") //None
+    override def describe = Some("withFilter") // Some("withFilter(checkIfRefutable)") //None
     override def sinkOption = None
 
     override def transmitOutputNeedsBackwards(paths: Set[TuploidPath]) =
@@ -41,13 +41,13 @@ private[streams] trait CoerceOps
     {
       import input.typed
 
+      val sub = emitSub(input, nextOps)
+
       val pathsThatNeedToBeNullChecked = inputValue.collect({
         case (path @ (_ :: _), _) =>
           path.dropRight(1)
       }).distinct
 
-
-      val sub = emitSub(input, nextOps)
       if (pathsThatNeedToBeNullChecked.isEmpty) {
         sub
       } else {
@@ -59,7 +59,7 @@ private[streams] trait CoerceOps
           }
           q"$expr != null"
         })
-        val condition = conditions.reduceLeft((a, b) => q"a && b")
+        val condition = conditions.reduceLeft((a, b) => q"$a && $b")
 
         sub.copy(body = List(typed(q"""
           if ($condition) {
