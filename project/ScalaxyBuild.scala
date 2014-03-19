@@ -32,9 +32,10 @@ object Scalaxy extends Build {
   lazy val scalaSettings = Seq(
     //exportJars := true, // use jars in classpath
     // scalaVersion := "2.10.3"
-    scalaVersion := "2.11.0-RC1"
+    scalaVersion := "2.11.0-RC1",
     //scalaVersion := "2.11.0-M4",
     //scalaVersion := "2.11.0-SNAPSHOT",
+    crossScalaVersions := Seq("2.10.3")
     // crossScalaVersions := Seq("2.11.0-SNAPSHOT")
   )
 
@@ -365,13 +366,14 @@ object Scalaxy extends Build {
 
   lazy val loops =
     Project(id = "scalaxy-loops", base = file("Loops"), settings = reflectSettings ++ Seq(
-      addCompilerPlugin("com.nativelibs4java" %% "scalaxy-privacy-plugin" % "0.3-SNAPSHOT")
+      version := "0.1"
+      // addCompilerPlugin("com.nativelibs4java" %% "scalaxy-privacy-plugin" % "0.3-SNAPSHOT")
     ))
     .dependsOn(privacy)
 
   lazy val streams =
     Project(id = "scalaxy-streams", base = file("Streams"), settings = reflectSettings ++ Seq(
-      scalaVersion := "2.11.0-RC1",
+      // addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.0-SNAPSHOT" cross CrossVersion.full),
       watchSources <++= baseDirectory map { path => (path / "examples" ** "*.scala").get }
     ))
 
