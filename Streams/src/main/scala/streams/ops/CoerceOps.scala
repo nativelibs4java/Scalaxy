@@ -28,12 +28,15 @@ private[streams] trait CoerceOps
     }
   }
 
-  case class CoerceOp(inputValue: TuploidValue[Symbol]) extends StreamOp {
+  case class CoerceOp(coercedInputValue: TuploidValue[Symbol]) extends StreamOp {
     override def describe = Some("withFilter") // Some("withFilter(checkIfRefutable)") //None
     override def sinkOption = None
 
     override def transmitOutputNeedsBackwards(paths: Set[TuploidPath]) =
-      paths + RootTuploidPath
+      if (paths.isEmpty)
+        Set(RootTuploidPath)
+      else
+        paths
 
     override def emit(input: StreamInput,
                       outputNeeds: OutputNeeds,
@@ -43,10 +46,17 @@ private[streams] trait CoerceOps
 
       val sub = emitSub(input, nextOps)
 
-      val pathsThatNeedToBeNullChecked = inputValue.collect({
+      val pathsThatCantBeNull = input.vars.collect({
+        case (path, t @ TupleValue(_, _, _, false)) =>
+          path
+      }).toSet
+
+      val coercedTuplePaths = coercedInputValue.collect({
         case (path @ (_ :: _), _) =>
           path.dropRight(1)
       }).distinct
+
+      val pathsThatNeedToBeNullChecked = coercedTuplePaths.filterNot(pathsThatCantBeNull)
 
       if (pathsThatNeedToBeNullChecked.isEmpty) {
         sub

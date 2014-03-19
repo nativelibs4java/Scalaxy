@@ -78,7 +78,7 @@ private[streams] trait SymbolMatchers
         }
 
         t match {
-          case TupleValue(tpe, values, alias) =>
+          case TupleValue(tpe, values, alias, _) =>
             underNeededParent = needed :: underNeededParent
 
             val subValues = values.map({ case (i, value) =>
@@ -145,7 +145,7 @@ private[streams] trait SymbolMatchers
       }
 
     (symbols, names) match {
-      case (TupleValue(_, symbolValues, _), TupleValue(_, nameValues, _)) =>
+      case (TupleValue(_, symbolValues, _, _), TupleValue(_, nameValues, _, _)) =>
         symbolValues.keySet.intersect(nameValues.keySet)
           .flatMap(i => getReplacements(symbolValues(i), nameValues(i))).toList ++ pairOption
 

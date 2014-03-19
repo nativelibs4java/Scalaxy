@@ -20,12 +20,14 @@ class TransformationClosureTest extends StreamComponentsTestBase with Transforma
         TupleValue(
           _,
           inputValues,
-          Some(S("pp"))),
+          Some(S("pp")),
+          true),
         Nil,
         TupleValue(
           _,
           outputValues,
-          None))) = f
+          None,
+          false))) = f
 
     val List(
       (0, ScalarValue(_, None, Some(S("x")))),
@@ -78,7 +80,8 @@ class TransformationClosureTest extends StreamComponentsTestBase with Transforma
     val TupleValue(
       _,
       values,
-      None) = outputs
+      None,
+      false) = outputs
 
     val List(
       (0, ScalarValue(_, Some(Literal(Constant(1))), None)),
@@ -130,10 +133,10 @@ class TransformationClosureTest extends StreamComponentsTestBase with Transforma
     val IntIntTpe = typeOf[(Int, Int)]
     val IntIntIntTpe = typeOf[((Int, Int), Int)]
 
-    val TupleValue(IntIntIntTpe, inputValues, None) = inputs
+    val TupleValue(IntIntIntTpe, inputValues, None, true) = inputs
     val Seq(0, 1) = inputValues.keys.toSeq.sorted
 
-    val TupleValue(IntIntTpe, subInputValues, None) = inputValues(0)
+    val TupleValue(IntIntTpe, subInputValues, None, true) = inputValues(0)
     val Seq(0, 1) = subInputValues.keys.toSeq.sorted
     val ScalarValue(IntTpe, _, Some(S("i"))) = inputValues(1)
 

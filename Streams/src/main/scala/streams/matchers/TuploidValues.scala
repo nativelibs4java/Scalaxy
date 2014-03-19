@@ -40,7 +40,11 @@ private[streams] trait TuploidValues extends Utils
 
     (
       headToSubs.flatMap(_._1).toList,
-      TupleValue[Tree](tpe = target.tpe, headToSubs.map(_._2).toMap, alias = target.asOption)
+      TupleValue[Tree](
+        tpe = target.tpe,
+        values = headToSubs.map(_._2).toMap,
+        alias = target.asOption,
+        couldBeNull = false)
     )
   }
 
@@ -100,7 +104,11 @@ private[streams] trait TuploidValues extends Utils
     }
   }
 
-  case class TupleValue[A](tpe: Type, values: Map[Int, TuploidValue[A]], alias: Option[A] = None)
+  case class TupleValue[A](
+    tpe: Type,
+    values: Map[Int, TuploidValue[A]],
+    alias: Option[A] = None,
+    couldBeNull: Boolean = true)
       extends TuploidValue[A]
   {
     assert((tpe + "") != "Null" && tpe != NoType)
@@ -159,27 +167,22 @@ private[streams] trait TuploidValues extends Utils
   }
 
   object TuploidValue {
-    def extractSymbols(tree: Tree, alias: Option[Symbol] = None): TuploidValue[Symbol] = {
+    def extractSymbols(tree: Tree, alias: Option[Symbol] = None, isInsideCasePattern: Boolean = false): TuploidValue[Symbol] = {
       def sub(subs: List[Tree]): Map[Int, TuploidValue[Symbol]] =
         (subs.zipWithIndex.map {
           case (b @ Bind(_, _), i) =>
             i -> extractSymbolsFromBind(b)
 
           case (t, i) =>
-            i -> extractSymbols(t)
+            i -> extractSymbols(t, isInsideCasePattern = isInsideCasePattern)
         })(breakOut)
 
       tree match {
         case q"${Tuple()}[..$_](..$subs)" =>
-          // println(s"""
-          //     TUPLE:
-          //       $tuple: ${tuple.getClass.getName}
-          // """)
-          // val Tuple() = tuple
-          TupleValue(tree.tpe, values = sub(subs), alias = alias)
+          TupleValue(tree.tpe, values = sub(subs), alias = alias, couldBeNull = isInsideCasePattern)
 
         case q"${Tuple()}.apply[..$_](..$subs)" =>
-          TupleValue(tree.tpe, values = sub(subs), alias = alias)
+          TupleValue(tree.tpe, values = sub(subs), alias = alias, couldBeNull = isInsideCasePattern)
 
         case Ident(nme.WILDCARD) =>
           ScalarValue(tree.tpe, alias = alias)
@@ -199,7 +202,7 @@ private[streams] trait TuploidValues extends Utils
       }
     }
     def extractSymbolsFromBind(bind: Bind): TuploidValue[Symbol] = {
-      extractSymbols(bind.body, bind.symbol.asOption)
+      extractSymbols(bind.body, bind.symbol.asOption, isInsideCasePattern = true)
     }
 
     def unapply(tree: Tree): Option[TuploidValue[Symbol]] =
@@ -211,7 +214,7 @@ private[streams] trait TuploidValues extends Utils
   class TuploidTraverser[A] {
     def traverse(path: TuploidPath, t: TuploidValue[A]) {
       t match {
-        case TupleValue(_, values, _) =>
+        case TupleValue(_, values, _, _) =>
           for ((i, value) <- values) {
             traverse(path :+ i, value)
           }
@@ -247,12 +250,12 @@ private[streams] trait TuploidValues extends Utils
       trySome {
         caseDef match {
           case cq"($tuple(..$binds)) => $body" =>
-            TupleValue[Symbol](
+            TupleValue(
               tpe = caseDef.pat.tpe,
               values = sub(binds), alias = None) -> body
 
           case cq"($alias @ $tuple(..$binds)) => $body" =>
-            TupleValue[Symbol](
+            TupleValue(
               tpe = caseDef.pat.tpe,
               values = sub(binds), alias = caseDef.pat.symbol.asOption) -> body
         }

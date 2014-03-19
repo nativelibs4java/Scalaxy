@@ -68,11 +68,12 @@ private[streams] trait ZipWithIndexOps
       require(tupleTpe != null && tupleTpe != NoType)
       val outputVars =
         TupleValue[Tree](
-          tupleTpe,
+          tpe = tupleTpe,
           Map(
             0 -> input.vars,
             1 -> ScalarValue(typeOf[Int], alias = Some(indexValRef))),
-          alias = Some(pairRef))
+          alias = Some(pairRef),
+          couldBeNull = false)
 
       val sub = emitSub(input.copy(vars = outputVars), nextOps)
       sub.copy(
