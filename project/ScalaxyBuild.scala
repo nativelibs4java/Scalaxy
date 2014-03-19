@@ -306,8 +306,9 @@ object Scalaxy extends Build {
 
   lazy val extensions =
     Project(id = "scalaxy-macro-extensions", base = file("Obsolete/MacroExtensions"), settings = reflectSettings ++ Seq(
-      watchSources <+= baseDirectory map { _ / "examples" }
-    ))
+        watchSources <++= baseDirectory map { path => (path / "examples" ** "*.scala").get }
+      )
+    )
     .dependsOn(debug)
 
   lazy val js =
@@ -370,7 +371,8 @@ object Scalaxy extends Build {
 
   lazy val streams =
     Project(id = "scalaxy-streams", base = file("Streams"), settings = reflectSettings ++ Seq(
-      scalaVersion := "2.11.0-RC1"
+      scalaVersion := "2.11.0-RC1",
+      watchSources <++= baseDirectory map { path => (path / "examples" ** "*.scala").get }
     ))
 
   lazy val debug =
