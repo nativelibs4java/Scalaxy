@@ -3,6 +3,10 @@
 Optimized loops for Scala 2.10 (using a macro to rewrite them to an equivalent while loop), currently limited to Range foreach loops.
 ([BSD-licensed](https://github.com/ochafik/Scalaxy/blob/master/LICENSE))
 
+**Caveats**:
+* Experimental material: use at your own risk (and avoid using in your tests :-D).
+* Only works with 2.10.x. For 2.11.x, please have a look at [Scalaxy/Streams](https://github.com/ochafik/Scalaxy/blob/master/Streams).
+
 The following expression:
 ```scala
 import scalaxy.loops._
@@ -25,26 +29,26 @@ Gets rewritten at compilation time into:
   }
 }
 ```
-    
+
 This is a rejuvenation of some code initially written for [ScalaCL](http://scalacl.googlecode.com/) then for [optimized-loops-macros](https://github.com/ochafik/optimized-loops-macros).
 
 (see [this blog post](http://ochafik.com/blog/?p=806) for a recap on the ScalaCL project rationale / story)
+
 
 # Usage with Sbt
 
 If you're using `sbt` 0.13.0+, just put the following lines in `build.sbt`:
 ```scala
-// Only works with 2.10.0+
 scalaVersion := "2.10.3"
 
 // Dependency at compilation-time only (not at runtime).
-libraryDependencies += "com.nativelibs4java" %% "scalaxy-loops" % "0.3-SNAPSHOT" % "provided"
+libraryDependencies += "com.nativelibs4java" %% "scalaxy-loops" % "0.1" % "provided"
 
-// Scalaxy/Loops snapshots are published on the Sonatype repository.
-resolvers += Resolver.sonatypeRepo("snapshots")
+// The latest release might not be synced to Maven Central just yet:
+resolvers += Resolver.sonatypeRepo("releases")
 
-// This one usually doesn't hurt, but it may slow compilation down:
-// scalacOptions += "-optimise"
+// If you care about speed, you may want to enable these:
+// scalacOptions ++= Seq("-optimise", "-Yclosure-elim", "-Yinline")
 ```
 
 And append `optimized` to all the ranges you want to optimize:
@@ -52,6 +56,14 @@ And append `optimized` to all the ranges you want to optimize:
 for (i <- 0 until n optimized; j <- i until n optimized) {
   ...
 }
+```
+
+If you like to live on the bleeding edge, try the latest snapshot out:
+```scala
+libraryDependencies += "com.nativelibs4java" %% "scalaxy-loops" % "0.3-SNAPSHOT" % "provided"
+
+// Scalaxy snapshots are published on the Sonatype repository.
+resolvers += Resolver.sonatypeRepo("snapshots")
 ```
 
 You can always disable loop optimizations without removing the `optimized` postfix operator from your code: just recompile with the environment variable `SCALAXY_LOOPS_OPTIMIZED=0` or the System property `scalaxy.loops.optimized=false` set:
@@ -66,6 +78,17 @@ scalac -J-Dscalaxy.loops.optimized=false ...
 # Usage with Maven
 
 With Maven, you'll need this in your `pom.xml` file:
+```xml
+<dependencies>
+  <dependency>
+    <groupId>com.nativelibs4java</groupId>
+    <artifactId>scalaxy-loops_2.10</artifactId>
+    <version>0.1</version>
+  </dependency>
+</dependencies>
+```
+
+If you like to live on the bleeding edge, try the latest snapshot out:
 ```xml
 <dependencies>
   <dependency>

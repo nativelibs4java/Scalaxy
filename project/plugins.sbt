@@ -19,11 +19,11 @@ addSbtPlugin("org.ensime" % "ensime-sbt-cmd" % "0.1.2")
 
 //addSbtPlugin("com.jsuereth" % "xsbt-gpg-plugin" % "0.6")
 
-//addSbtPlugin("com.typesafe.sbt" % "sbt-pgp" % "0.8.1")
+addSbtPlugin("com.typesafe.sbt" % "sbt-pgp" % "0.8.2")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-scalariform" % "1.2.0")
 
 addSbtPlugin("com.typesafe.sbteclipse" % "sbteclipse-plugin" % "2.2.0")
 
 // ls.implicit.ly
-addSbtPlugin("me.lessis" % "ls-sbt" % "0.1.2")
+addSbtPlugin("me.lessis" % "ls-sbt" % "0.1.3")
