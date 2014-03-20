@@ -4,7 +4,7 @@ import scala.language.experimental.macros
 import scala.language.implicitConversions
 
 import scala.reflect.NameTransformer
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 
 import scala.reflect.runtime.{ universe => ru }
 
@@ -33,13 +33,13 @@ package streams
             import global._
 
             def typed(tree: Tree) = {
-              c.typeCheck(
+              c.typecheck(
                 tree.asInstanceOf[c.Tree])
                 // tpe.asInstanceOf[c.Type])
               .asInstanceOf[Tree]
             }
 
-            val original = a.tree.asInstanceOf[Tree]//c.typeCheck(a.tree)
+            val original = a.tree.asInstanceOf[Tree]//c.typecheck(a.tree)
 
             val result = new Transformer {
               override def transform(tree: Tree) = tree match {
@@ -49,7 +49,7 @@ package streams
                   // println(tree)
                   // println(result)
 
-                  //c.typeCheck(c.resetLocalAttrs(result.asInstanceOf[c.Tree]).asInstanceOf[c.Tree]).asInstanceOf[Tree]
+                  //c.typecheck(c.resetLocalAttrs(result.asInstanceOf[c.Tree]).asInstanceOf[c.Tree]).asInstanceOf[Tree]
 
                   // result
                   typed(tree)
@@ -60,7 +60,7 @@ package streams
             } transform original
           }
 
-          c.Expr[A](c.typeCheck(Optimize.result.asInstanceOf[c.universe.Tree]))
+          c.Expr[A](c.typecheck(Optimize.result.asInstanceOf[c.universe.Tree]))
         } catch {
           case ex: Throwable =>
             ex.printStackTrace()
