@@ -44,9 +44,6 @@ scalaVersion := "2.10.3"
 // Dependency at compilation-time only (not at runtime).
 libraryDependencies += "com.nativelibs4java" %% "scalaxy-loops" % "0.1" % "provided"
 
-// The latest release might not be synced to Maven Central just yet:
-resolvers += Resolver.sonatypeRepo("releases")
-
 // If you care about speed, you may want to enable these:
 // scalacOptions ++= Seq("-optimise", "-Yclosure-elim", "-Yinline")
 ```
