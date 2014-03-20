@@ -5,7 +5,7 @@ Optimized loops for Scala 2.10 (using a macro to rewrite them to an equivalent w
 
 **Caveats**:
 * Experimental material: use at your own risk (and avoid using in your tests :-D).
-* Only works with 2.10.x. For 2.11.x, please have a look at [Scalaxy/Streams](https://github.com/ochafik/Scalaxy/blob/master/Streams).
+* Designed for Scala 2.10.x. For 2.11.x, Scalaxy/Loops was rewritten as a special case of [Scalaxy/Streams](https://github.com/ochafik/Scalaxy/blob/master/Streams), which you are advised to eventually migrate to (although it's still quite experimental).
 
 The following expression:
 ```scala

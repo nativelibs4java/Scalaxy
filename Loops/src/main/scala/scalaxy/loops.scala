@@ -5,7 +5,7 @@ import scala.language.implicitConversions
 
 import scala.reflect.macros.blackbox.Context
 
-/** Scala loops compilation optimizations.
+/** Scala loops compilation optimizations (special case of Scalaxy/Streams optimizations).
  *  Currently limited to Range foreach loops (no support for yield / map yet).
  *  Requires "inline" ranges (so the macro can extract start, end and optional step),
  *  and step must be a constant.
@@ -23,11 +23,6 @@ import scala.reflect.macros.blackbox.Context
  */
 package object loops
 {
-  // TODO: optimize Range.map.
-  // TODO: optimize Array.foreach, Array.map.
-  // TODO: optimize Array.tabulate.
-  // TODO: optimize ArrayBuffer.foreach, ArrayBuffer.map.
-  // TODO: optimize (List/Seq).apply(...).foreach (replace with Array.apply + while loop)
   implicit def rangeExtensions(range: Range) =
     new RangeExtensions(range)
 
@@ -67,12 +62,9 @@ package loops
       System.getProperty("scalaxy.loops.optimized") == "false"
 
     // This needs to be public and statically accessible.
-    def rangeForeachImpl[U : c.WeakTypeTag]
-        (c: Context)
-        (f: c.Expr[Int => U]): c.Expr[Unit] =
+    def rangeForeachImpl[U : c.WeakTypeTag](c: Context)(f: c.Expr[Int => U]): c.Expr[Unit] =
     {
       import c.universe._
-      import scalaxy.streams.impl.optimize
 
       object Recompose {
         def unapply(tree: Tree): Option[Tree] = Option(tree) collect {
@@ -94,7 +86,10 @@ package loops
       }
       c.macroApplication match {
         case Recompose(target) =>
-          optimize(c)(c.Expr[Unit](c.typecheck(target)))
+          if (disabled)
+            target
+          else
+            scalaxy.streams.impl.optimize(c)(c.Expr[Unit](c.typecheck(target)))
 
         case _ =>
           c.error(c.macroApplication.pos, "This is not supported anymore")
