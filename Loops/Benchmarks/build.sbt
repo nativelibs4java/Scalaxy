@@ -14,7 +14,7 @@ libraryDependencies += "com.nativelibs4java" %% "scalaxy-loops" % "0.1" % "provi
 fork := true
 
 // The latest release might not be synced to Maven Central yet:
-resolvers += Resolver.sonatypeRepo("releases")
+// resolvers += Resolver.sonatypeRepo("releases")
 
 // Scalaxy snapshots are published on the Sonatype repository.
 resolvers += Resolver.sonatypeRepo("snapshots")

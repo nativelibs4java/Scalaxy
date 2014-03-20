@@ -169,6 +169,16 @@ With Maven, you'll need this in your `pom.xml` file:
 * To use the compiler plugin (optimizes all of your code):
 
   ```xml
+  <properties>
+    <scala.version>2.11.0-RC1</scala.version>
+  </properties>
+  <dependencies>
+    <dependency>
+      <groupId>org.scala-lang</groupId>
+      <artifactId>scala-library</artifactId>
+      <version>${scala.version}</version>
+    </dependency>
+  </dependencies>
   <build>
     <plugins>
       <plugin>
@@ -188,7 +198,7 @@ With Maven, you'll need this in your `pom.xml` file:
           <compilerPlugins>
             <compilerPlugin>
               <groupId>com.nativelibs4java</groupId>
-              <artifactId>scalaxy-streams_${scala.major.minor.version}</artifactId>
+              <artifactId>scalaxy-streams_${scala.version}</artifactId>
               <version>0.3-SNAPSHOT</version>
             </compilerPlugin>
           </compilerPlugins>
@@ -204,22 +214,6 @@ With Maven, you'll need this in your `pom.xml` file:
     </repository>
   </repositories>
   ```
-
-Of course, this assumes you have something like this:
-```xml
-  <properties>
-    <scala.major.minor.version>2.11</scala.major.minor.version>
-    <scala.patch.version>0-RC1</scala.patch.version>
-    <scala.version>${scala.major.minor.version}.${scala.patch.version}</scala.version>
-  </properties>
-  <dependencies>
-    <dependency>
-      <groupId>org.scala-lang</groupId>
-      <artifactId>scala-library</artifactId>
-      <version>${scala.version}</version>
-    </dependency>
-  </dependencies>
-```
 
 ## A note on architecture
 

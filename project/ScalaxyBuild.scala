@@ -366,7 +366,7 @@ object Scalaxy extends Build {
 
   lazy val loops =
     Project(id = "scalaxy-loops", base = file("Loops"), settings = reflectSettings ++ Seq(
-      version := "0.1"
+      //version := "0.1"
       // addCompilerPlugin("com.nativelibs4java" %% "scalaxy-privacy-plugin" % "0.3-SNAPSHOT")
     ))
     .dependsOn(privacy)
