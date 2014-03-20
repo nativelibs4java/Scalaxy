@@ -96,7 +96,7 @@ Or if you're not using sbt:
 scalac -J-Dscalaxy.streams.optimize=false ...
 ```
 
-# Usage with Sbt
+## Usage with Sbt
 
 If you're using `sbt` 0.13.0+, just put the following lines in `build.sbt`:
 
