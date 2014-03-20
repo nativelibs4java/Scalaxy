@@ -87,7 +87,7 @@ package loops
       c.macroApplication match {
         case Recompose(target) =>
           if (disabled)
-            target
+            c.Expr[Unit](target)
           else
             scalaxy.streams.impl.optimize(c)(c.Expr[Unit](c.typecheck(target)))
 

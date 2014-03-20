@@ -77,9 +77,20 @@ while (i < length) {
 # Scope
 
 Scalaxy/Streams rewrites streams with the following components:
-* Stream sources: `Array`, inline `Range`, `Option` (with special case for explicit `Option(x)`), explicit `Seq(a, b, ...)`, explicit `List(a, b, ...)`
+* Stream sources:
+  * `Array`,
+  * inline `Range`,
+  * `Option` (with special case for explicit `Option(x)`),
+  * explicit `Seq(a, b, ...)`,
+  * explicit `List(a, b, ...)`
   (TODO: extend to any `List`)
-* Stream operations: `filter`, `filterNot`, `withFilter`, `map`, `flatMap` (with or without nested streams), `zipWithIndex`
+* Stream operations:
+  * `filter`,
+  * `filterNot`,
+  * `withFilter`,
+  * `map`,
+  * `flatMap` (with or without nested streams),
+  * `zipWithIndex`
 
 The output type of each optimized stream is always the same as the original, but when nested streams are encountered in `flatMap` operations many intermediate outputs can typically be skipped, saving up on memory usage and execution time.
 
@@ -107,10 +118,7 @@ If you're using `sbt` 0.13.0+, just put the following lines in `build.sbt`:
   scalaVersion := "2.11.0-RC1"
 
   // Dependency at compilation-time only (not at runtime).
-  libraryDependencies += "com.nativelibs4java" %% "scalaxy-streams" % "0.3-SNAPSHOT" % "provided"
-
-  // Scalaxy/Streams snapshots are published on the Sonatype repository.
-  resolvers += Resolver.sonatypeRepo("snapshots")
+  libraryDependencies += "com.nativelibs4java" %% "scalaxy-streams" % "0.1" % "provided"
   ```
 
   And wrap some code with the `optimize` macro:
@@ -122,6 +130,15 @@ If you're using `sbt` 0.13.0+, just put the following lines in `build.sbt`:
     }
   }
   ```
+
+  If you like to live on the bleeding edge, try the latest snapshot out:
+  ```scala
+  libraryDependencies += "com.nativelibs4java" %% "scalaxy-streams" % "0.3-SNAPSHOT" % "provided"
+
+  // Scalaxy snapshots are published on the Sonatype repository.
+  resolvers += Resolver.sonatypeRepo("snapshots")
+  ```
+
 * To use the compiler plugin (optimizes all of your code):
 
   ```scala
@@ -130,11 +147,16 @@ If you're using `sbt` 0.13.0+, just put the following lines in `build.sbt`:
 
   autoCompilerPlugins := true
 
-  addCompilerPlugin("com.nativelibs4java" %% "scalaxy-streams" % "0.3-SNAPSHOT")
+  addCompilerPlugin("com.nativelibs4java" %% "scalaxy-streams" % "0.1")
 
   scalacOptions += "-Xplugin-require:scalaxy-streams"
+  ```
 
-  // Scalaxy/Streams snapshots are published on the Sonatype repository.
+  If you like to live on the bleeding edge, try the latest snapshot out:
+  ```scala
+  addCompilerPlugin("com.nativelibs4java" %% "scalaxy-streams" % "0.3-SNAPSHOT")
+
+  // Scalaxy snapshots are published on the Sonatype repository.
   resolvers += Resolver.sonatypeRepo("snapshots")
   ```
 
@@ -153,7 +175,18 @@ With Maven, you'll need this in your `pom.xml` file:
   <dependencies>
     <dependency>
       <groupId>com.nativelibs4java</groupId>
-      <artifactId>scalaxy-streams_2.11</artifactId>
+      <artifactId>scalaxy-streams_2.11.0-RC1</artifactId>
+      <version>0.1</version>
+    </dependency>
+  </dependencies>
+  ```
+
+  If you like to live on the bleeding edge, try the latest snapshot out:
+  ```xml
+  <dependencies>
+    <dependency>
+      <groupId>com.nativelibs4java</groupId>
+      <artifactId>scalaxy-streams_2.11.0-RC1</artifactId>
       <version>0.3-SNAPSHOT</version>
     </dependency>
   </dependencies>
@@ -220,10 +253,10 @@ With Maven, you'll need this in your `pom.xml` file:
 Scalaxy/Streams is a rewrite of [ScalaCL](https://code.google.com/p/scalacl/) using the awesome new (and experimental) reflection APIs from Scala 2.10, and the awesome [quasiquotes](http://docs.scala-lang.org/overviews/macros/quasiquotes.html) from Scala 2.11.
 
 The architecture is very simple: Scalaxy/Streams deals with... streams. A stream is comprised of:
-* A stream source (e.g. ArrayStreamSource, InlineRangeStreamSource...)
-* A list of 1 or more stream operations (e.g. MapOp, FilterOp...)
-* A stream sink (e.g. ListBufferSink, OptionSink...)
-Each of these three kinds of stream components is able to emit the equivalent code of the rest of the stream, and generally has a corresponding extractor to recognize it in a `Tree` (e.g. SomeArrayStreamSource, SomeOptionSink, SomeFlatMapOp...).
+* A stream source (e.g. `ArrayStreamSource`, `InlineRangeStreamSource`...)
+* A list of 1 or more stream operations (e.g. `MapOp`, `FilterOp`...)
+* A stream sink (e.g. `ListBufferSink`, `OptionSink`...)
+Each of these three kinds of stream components is able to emit the equivalent code of the rest of the stream, and generally has a corresponding extractor to recognize it in a `Tree` (e.g. `SomeArrayStreamSource`, `SomeOptionSink`, `SomeFlatMapOp`...).
 
 One particular operation, `FlatMapOp`, may contain nested streams, which allows for the chaining of complex for comprehensions:
 ```scala

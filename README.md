@@ -1,10 +1,23 @@
 Collection of Scala Macro goodies ([BSD-licensed](https://github.com/ochafik/Scalaxy/blob/master/LICENSE))
-- *[Loops](https://github.com/ochafik/Scalaxy/tree/master/Loops)* provide a macro that optimizes simple foreach loops by rewriting them to an equivalent while loop:
+- *[Loops](https://github.com/ochafik/Scalaxy/tree/master/Loops)* provide a macro that optimizes simple foreach loops on Ranges by rewriting them to equivalent while loops (Scala 2.10.x):
 
     ```scala
     import scalaxy.loops._
     
     for (i <- 0 until 100000000 optimized) { ... }
+    ```
+    (special case of / superseeded by Streams below)
+
+- *[Streams](https://github.com/ochafik/Scalaxy/tree/master/Streams)* provide a macro and a compiler plugin that optimize streamed collection operations / for comprehensions by rewriting them to equivalent while loops (Scala 2.11.x):
+
+    ```scala
+    for (i <- 0 to n;
+         ii = i * i;
+         j <- i to n;
+         jj = j * j;
+         if (ii - jj) % 2 == 0;
+         k <- (i + j) to n)
+      yield { (ii, jj, k) }
     ```
 
 - *[Debug](https://github.com/ochafik/Scalaxy/tree/master/Debug)* ([ScalaDoc](http://ochafik.github.io/Scalaxy/Debug/latest/api/index.html)) provides `assert`, `require` and `assume` macros that automatically add a useful message to the regular [Predef](http://www.scala-lang.org/api/current/index.html#scala.Predef$) calls.

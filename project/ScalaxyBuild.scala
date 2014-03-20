@@ -366,12 +366,13 @@ object Scalaxy extends Build {
 
   lazy val loops =
     Project(id = "scalaxy-loops", base = file("Loops"), settings = reflectSettings ++ Seq(
-      //version := "0.1"
+      version := "0.1"
     ))
     .dependsOn(streams)
 
   lazy val streams =
     Project(id = "scalaxy-streams", base = file("Streams"), settings = reflectSettings ++ Seq(
+      version := "0.1",
       // addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.0-SNAPSHOT" cross CrossVersion.full),
       watchSources <++= baseDirectory map { path => (path / "examples" ** "*.scala").get }
     ))
