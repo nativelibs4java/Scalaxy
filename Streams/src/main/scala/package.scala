@@ -9,7 +9,7 @@ import scala.reflect.macros.blackbox.Context
 import scala.reflect.runtime.{ universe => ru }
 
 package object streams {
-  def optimize[A](a: A): A = macro impl.optimize[A]
+  def optimize[A](a: A): A = macro impl.recursivelyOptimize[A]
 }
 
 package streams
@@ -20,47 +20,23 @@ package streams
       System.getenv("SCALAXY_STREAMS_OPTIMIZE") == "0" ||
       System.getProperty("scalaxy.streams.optimize") == "false"
 
-    def optimizedStreamMessage(streamDescription: String): String =
-      "[Scalaxy] Optimized stream: " + streamDescription
+    def recursivelyOptimize[A : c.WeakTypeTag](c: Context)(a: c.Expr[A]): c.Expr[A] = {
+      optimize[A](c)(a, recurse = true)
+    }
 
-    def optimize[A : c.WeakTypeTag](c: Context)(a: c.Expr[A]): c.Expr[A] = {
+    def optimize[A : c.WeakTypeTag](c: Context)(a: c.Expr[A], recurse: Boolean): c.Expr[A] = {
       if (disabled) {
         a
       } else {
         try {
-          object Optimize extends StreamTransforms {
-            override val global = c.universe
-            import global._
-
-            def typed(tree: Tree) = {
-              c.typecheck(
-                tree.asInstanceOf[c.Tree])
-                // tpe.asInstanceOf[c.Type])
-              .asInstanceOf[Tree]
-            }
-
-            val original = a.tree.asInstanceOf[Tree]//c.typecheck(a.tree)
-
-            val result = new Transformer {
-              override def transform(tree: Tree) = tree match {
-                case SomeStream(stream) =>
-                  c.info(a.tree.pos, optimizedStreamMessage(stream.describe()), force = true)
-                  val result: Tree = stream.emitStream(n => c.fresh(n): TermName, transform(_), typed(_)).compose(typed(_))
-                  // println(tree)
-                  // println(result)
-
-                  //c.typecheck(c.resetLocalAttrs(result.asInstanceOf[c.Tree]).asInstanceOf[c.Tree]).asInstanceOf[Tree]
-
-                  // result
-                  typed(tree)
-
-                case _ =>
-                  super.transform(tree)
-              }
-            } transform original
-          }
-
-          c.Expr[A](c.typecheck(Optimize.result.asInstanceOf[c.universe.Tree]))
+          import c.universe._
+          def typed(tree: Tree) = c.typecheck(tree.asInstanceOf[c.Tree]).asInstanceOf[Tree]
+          c.Expr[A](
+            Streams.optimize(c.universe)(
+              a.tree,
+              typed(_),
+              c.fresh(_),
+              c.info(_, _, force = true), recurse))
         } catch {
           case ex: Throwable =>
             ex.printStackTrace()

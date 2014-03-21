@@ -22,7 +22,7 @@ object MacroIntegrationTest
 {
   def streamMsg(streamDescription: String, pureExpressions: Int = 0) =
     CompilerMessages(
-      infos = List(impl.optimizedStreamMessage(streamDescription)),
+      infos = List(Streams.optimizedStreamMessage(streamDescription)),
       // TODO investigate why these happen!
       // warnings = Nil)
       warnings = (1 to pureExpressions).toList.map(_ =>
@@ -152,7 +152,16 @@ object MacroIntegrationTest
            k <- (i + j) to n)
         yield { (ii, jj, k) }
     """
-      -> streamMsg("Range.map.flatMap(Range.map.withFilter.flatMap(Range.map)) -> IndexedSeq", pureExpressions = 1)
+      -> streamMsg("Range.map.flatMap(Range.map.withFilter.flatMap(Range.map)) -> IndexedSeq", pureExpressions = 1),
+
+    """
+      val start = 10
+      val end = 20
+      (for (i <- start to end by 2) yield
+          (() => (i * 2))
+      ).map(_())
+    """
+      -> streamMsg("Range.map.map -> IndexedSeq", pureExpressions = 1)
 
   ).map({ case (src, msgs) => Array[AnyRef](src, msgs) })
 }
