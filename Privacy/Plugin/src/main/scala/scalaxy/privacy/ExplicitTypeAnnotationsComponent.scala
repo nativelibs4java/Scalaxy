@@ -37,9 +37,9 @@ class ExplicitTypeAnnotationsComponent(
   }
 
   private object TrivialCollectionName {
-    var rx = "List|Array|Set|Seq|Iterable|Traversable".r
+    private val Rx = "List|Array|Set|Seq|Iterable|Traversable".r
     def unapply(n: Name): Boolean = n.toString match {
-      case rx() => true
+      case Rx() => true
       case _ => false
     }
   }

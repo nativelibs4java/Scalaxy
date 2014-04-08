@@ -31,7 +31,7 @@ class PrivacyComponent(
   import definitions._
   import Flags._
 
-  import PrivacyComponent.defaultVisibilityString
+  import PrivacyComponent._
 
   override val phaseName = PrivacyComponent.phaseName
 
