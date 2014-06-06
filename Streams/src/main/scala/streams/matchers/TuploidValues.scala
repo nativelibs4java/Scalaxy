@@ -27,11 +27,11 @@ private[streams] trait TuploidValues extends Utils
     val headToSubs = for ((head, pathsWithSameHead) <- paths.filter(_.nonEmpty).groupBy(_.head)) yield {
       val subPaths = pathsWithSameHead.map(_.tail)
       val selector = "_" + (head + 1)
-      val subName: TermName = fresh(selector)
+      val subName = fresh(selector)
       val Block(List(subDecl, subRef), _) = typed(q"""
-        private[this] val $subName = $target.${selector: TermName};
+        private[this] val $subName = $target.${TermName(selector)};
         $subName;
-        {}
+        ""
       """)
       val (subExtraction, subValue) = createTuploidPathsExtractionDecls(subRef, subPaths, fresh, typed)
 
@@ -178,13 +178,13 @@ private[streams] trait TuploidValues extends Utils
         })(breakOut)
 
       tree match {
-        case q"${Tuple()}[..$_](..$subs)" =>
+        case q"${Tuple()}[..${_}](..$subs)" =>
           TupleValue(tree.tpe, values = sub(subs), alias = alias, couldBeNull = isInsideCasePattern)
 
-        case q"${Tuple()}.apply[..$_](..$subs)" =>
+        case q"${Tuple()}.apply[..${_}](..$subs)" =>
           TupleValue(tree.tpe, values = sub(subs), alias = alias, couldBeNull = isInsideCasePattern)
 
-        case Ident(nme.WILDCARD) =>
+        case Ident(termNames.WILDCARD) =>
           ScalarValue(tree.tpe, alias = alias)
 
         case Ident(n) if tree.symbol.name == n =>

@@ -4,7 +4,7 @@ private[streams] trait Utils {
   val global: scala.reflect.api.Universe
   import global._
 
-  lazy val EmptyName: TermName = ""
+  lazy val EmptyName = TermName("")
 
   trait Extractor[From, To] {
     def unapply(from: From): Option[To]

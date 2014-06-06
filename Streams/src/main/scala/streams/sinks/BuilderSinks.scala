@@ -29,7 +29,7 @@ private[streams] trait BuilderSinks extends StreamComponents {
         ${sizeHintOpt.getOrElse(Literal(Constant("")))};
         $builder += ${input.vars.alias.get};
         $builder.result();
-        {}
+        ""
       """)
 
       StreamOutput(

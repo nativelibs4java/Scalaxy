@@ -9,7 +9,7 @@ private[streams] trait ForeachOps
 
   object SomeForeachOp {
     def unapply(tree: Tree): Option[(Tree, ForeachOp)] = Option(tree) collect {
-      case q"$target.foreach[$_](${Strip(Function(List(param), body))})" =>
+      case q"$target.foreach[${_}](${Strip(Function(List(param), body))})" =>
         (target, ForeachOp(param, body))
     }
   }

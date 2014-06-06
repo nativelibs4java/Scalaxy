@@ -124,7 +124,8 @@ private[streams] trait SymbolMatchers
       override def transform(tree: Tree) = {
         repls.get(tree.symbol) match {
           case Some(by) =>
-            by.duplicate
+            //println("Replaced " + tree + " by " + by)
+            transform(by.duplicate)
 
           case None =>
             super.transform(tree)

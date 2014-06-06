@@ -20,10 +20,10 @@ private[streams] trait OptionStreamSources
     }
 
     def unapply(tree: Tree): Option[StreamSource] = Option(tree).filter(hasOptionType(_)) collect {
-      case q"scala.Option.apply[$_]($value)" =>
+      case q"scala.Option.apply[${_}]($value)" =>
         InlineOptionStreamSource(value, isSome = false)
 
-      case q"scala.Some.apply[$_]($value)" =>
+      case q"scala.Some.apply[${_}]($value)" =>
         InlineOptionStreamSource(value, isSome = true)
 
       case _ =>
@@ -60,7 +60,7 @@ private[streams] trait OptionStreamSources
         private[this] val $itemVal = $optionVal.get;
         $nonEmptyVal;
         $itemVal;
-        {}
+        ""
       """)
       val (extractionCode, outputVars) = createTuploidPathsExtractionDecls(itemValRef, outputNeeds, fresh, typed)
 
@@ -115,7 +115,7 @@ private[streams] trait OptionStreamSources
         private[this] val $nonEmptyVal = $nonEmptyTest;
         $nonEmptyVal;
         $itemVal;
-        {}
+        ""
       """)
       val (extractionCode, outputVars) = createTuploidPathsExtractionDecls(itemValRef, outputNeeds, fresh, typed)
 

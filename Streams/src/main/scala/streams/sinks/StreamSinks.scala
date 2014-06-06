@@ -14,10 +14,10 @@ private[streams] trait StreamSinks
       case q"$target.toList" =>
         (target, ListBufferSink)
 
-      case q"$target.toArray[$_]($_)" =>
+      case q"$target.toArray[${_}](${_})" =>
         (target, ArrayBuilderSink)
 
-      case q"$target.toSet[$_]" =>
+      case q"$target.toSet[${_}]" =>
         (target, SetBuilderSink)
     }
   }

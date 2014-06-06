@@ -55,7 +55,7 @@ class StreamsComponent(
               val result = {
                 stream
                   .emitStream(
-                    n => unit.fresh.newName(n): TermName,
+                    n => TermName(unit.fresh.newName(n)),
                     transform(_),
                     typed)
                   .compose(localTyper.typed(_))

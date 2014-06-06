@@ -4,7 +4,7 @@ import scala.language.experimental.macros
 import scala.language.implicitConversions
 
 import scala.reflect.NameTransformer
-import scala.reflect.macros.blackbox.Context
+import scala.reflect.macros.Context
 
 import scala.reflect.runtime.{ universe => ru }
 
@@ -32,11 +32,12 @@ package streams
           import c.universe._
           def typed(tree: Tree) = c.typecheck(tree.asInstanceOf[c.Tree]).asInstanceOf[Tree]
           c.Expr[A](
-            Streams.optimize(c.universe)(
-              a.tree,
-              typed(_),
-              c.fresh(_),
-              c.info(_, _, force = true), recurse))
+            c.resetLocalAttrs(
+              Streams.optimize(c.universe)(
+                a.tree,
+                typed(_),
+                c.fresh(_),
+                c.info(_, _, force = true), recurse)))
         } catch {
           case ex: Throwable =>
             ex.printStackTrace()

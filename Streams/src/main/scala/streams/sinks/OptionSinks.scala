@@ -32,7 +32,7 @@ private[streams] trait OptionSinks extends StreamComponents {
           $nonEmpty = true;
         };
         if ($nonEmpty) Some($value) else None;
-        {}
+        ""
       """)
 
       StreamOutput(

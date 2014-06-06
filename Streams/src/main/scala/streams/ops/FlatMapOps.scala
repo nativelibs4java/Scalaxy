@@ -13,7 +13,7 @@ private[streams] trait FlatMapOps
 
   object SomeFlatMapOp {
     def unapply(tree: Tree): Option[(Tree, StreamOp)] = Option(tree) collect {
-      case q"$target.flatMap[$tpt, $_](${fun @ Strip(Function(List(param), body))})($cbf)" =>
+      case q"$target.flatMap[$tpt, ${_}](${fun @ Strip(Function(List(param), body))})($cbf)" =>
         (target, FlatMapOp(tpt.tpe, param, body, Some(cbf)))
 
       // Option.flatMap doesn't take a CanBuildFrom.

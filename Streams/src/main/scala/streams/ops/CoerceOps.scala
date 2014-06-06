@@ -65,7 +65,7 @@ private[streams] trait CoerceOps
           // Expression that points to a tuple, e.g. `input._1._2`
           val expr = path.foldLeft(input.vars.alias.get.duplicate) {
             case (tree, i) =>
-              Select(tree, ("_" + (i + 1)): TermName)
+              Select(tree, TermName("_" + (i + 1)))
           }
           q"$expr != null"
         })

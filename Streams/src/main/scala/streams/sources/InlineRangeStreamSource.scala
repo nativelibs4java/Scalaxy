@@ -54,7 +54,7 @@ private[streams] trait InlineRangeStreamSources extends StreamComponents {
       val iVar = fresh("i")
       val iVal = fresh("iVal")
 
-      val testOperator: TermName =
+      val testOperator = TermName(
         encode(
           if (implicitly[Numeric[T]].signum(by) > 0) {
             if (isInclusive) "<=" else "<"
@@ -62,6 +62,7 @@ private[streams] trait InlineRangeStreamSources extends StreamComponents {
             if (isInclusive) ">=" else ">"
           }
         )
+      )
 
       // Force typing of declarations and get typed references to various vars and vals.
       val b @ Block(List(
@@ -83,7 +84,7 @@ private[streams] trait InlineRangeStreamSources extends StreamComponents {
         $endVal;
         $iVar $testOperator $endVal;
         $iVar = $iVar + $by;
-        {}
+        ""
       """)
 
       val outputVars = ScalarValue[Tree](tpe = tpe, alias = Some(iValRef))

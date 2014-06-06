@@ -32,10 +32,11 @@ object Scalaxy extends Build {
   lazy val scalaSettings = Seq(
     //exportJars := true, // use jars in classpath
     // scalaVersion := "2.10.3"
-    scalaVersion := "2.11.0-RC1",
+    //scalaVersion := "2.11.0-RC4",
+    scalaVersion := "2.11.1",
     //scalaVersion := "2.11.0-M4",
     //scalaVersion := "2.11.0-SNAPSHOT",
-    crossScalaVersions := Seq("2.10.3")
+    crossScalaVersions := Seq("2.10.4")
     // crossScalaVersions := Seq("2.11.0-SNAPSHOT")
   )
 
@@ -331,22 +332,24 @@ object Scalaxy extends Build {
   lazy val jsonCore =
     Project(id = "scalaxy-json-core", base = file("JSON/Core"), settings = reflectSettings)
 
+  val json4sVersion = "3.2.9"
+
   lazy val jsonJson4sCore =
     Project(id = "scalaxy-json-json4s-core", base = file("JSON/Json4s/Core"), settings = reflectSettings ++ Seq(
-      libraryDependencies += "org.json4s" %% "json4s-core" % "3.2.5",
-      libraryDependencies += "org.json4s" %% "json4s-jackson" % "3.2.5" // TODO remove this.
+      libraryDependencies += "org.json4s" %% "json4s-core" % json4sVersion,
+      libraryDependencies += "org.json4s" %% "json4s-jackson" % json4sVersion // TODO remove this.
     ))
     .dependsOn(jsonCore)
 
   lazy val jsonJson4sNative =
     Project(id = "scalaxy-json-json4s-native", base = file("JSON/Json4s/Native"), settings = reflectSettings ++ Seq(
-      libraryDependencies += "org.json4s" %% "json4s-native" % "3.2.5"
+      libraryDependencies += "org.json4s" %% "json4s-native" % json4sVersion
     ))
     .dependsOn(jsonJson4sCore)
 
   lazy val jsonJson4sJackson =
     Project(id = "scalaxy-json-json4s-jackson", base = file("JSON/Json4s/Jackson"), settings = reflectSettings ++ Seq(
-      libraryDependencies += "org.json4s" %% "json4s-jackson" % "3.2.5"
+      libraryDependencies += "org.json4s" %% "json4s-jackson" % json4sVersion
     ))
     .dependsOn(jsonJson4sCore)
 
@@ -369,6 +372,13 @@ object Scalaxy extends Build {
       // version := "0.1"
     ))
     .dependsOn(streams)
+
+  lazy val loops210 =
+    Project(id = "scalaxy-loops-210", base = file("Loops-2.10"), settings = reflectSettings ++ Seq(
+      // version := "0.1"
+      name := "scalaxy-loops",
+      scalaVersion := "2.10.4"
+    ))
 
   lazy val streams =
     Project(id = "scalaxy-streams", base = file("Streams"), settings = reflectSettings ++ Seq(

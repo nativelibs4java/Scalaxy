@@ -18,7 +18,7 @@ private[streams] trait ArrayOps {
   object SomeArrayOps {
     def unapply(tree: Tree): Option[Tree] = Option(tree) collect {
       case q"scala.this.Predef.${AnyValArrayOpsName()}($a)" => a
-      case q"scala.this.Predef.refArrayOps[$_]($a)"         => a
+      case q"scala.this.Predef.refArrayOps[${_}]($a)"         => a
     }
   }
 }

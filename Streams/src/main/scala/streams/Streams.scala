@@ -31,6 +31,7 @@ object Streams
                 typed)
               .compose(typed)
             // println(result)
+
             typed(result)
 
           case _ =>

@@ -11,7 +11,7 @@ private[streams] trait ZipWithIndexOps
 
   object SomeZipWithIndexOp {
     def unapply(tree: Tree): Option[(Tree, ZipWithIndexOp)] = Option(tree) collect {
-      case q"$target.zipWithIndex[$_, $_]($canBuildFrom)" =>
+      case q"$target.zipWithIndex[${_}, ${_}]($canBuildFrom)" =>
         (target, ZipWithIndexOp(canBuildFrom))
     }
   }
@@ -41,7 +41,7 @@ private[streams] trait ZipWithIndexOps
       val indexVal = fresh("indexVal")
 
       val needsPair: Boolean = outputNeeds(RootTuploidPath)
-      val pairName: TermName = if (needsPair) fresh("zipWithIndexPair") else ""
+      val pairName = if (needsPair) fresh("zipWithIndexPair") else TermName("")
 
       // Early typing / symbolization.
       val Block(List(
@@ -64,7 +64,7 @@ private[streams] trait ZipWithIndexOps
 
       import compat._
       val TypeRef(pre, sym, List(_, _)) = typeOf[(Int, Int)]
-      val tupleTpe = TypeRef(pre, sym, List(input.vars.tpe, typeOf[Int]))
+      val tupleTpe = internal.typeRef(pre, sym, List(input.vars.tpe, typeOf[Int]))
       require(tupleTpe != null && tupleTpe != NoType)
       val outputVars =
         TupleValue[Tree](
