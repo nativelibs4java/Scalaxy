@@ -181,7 +181,11 @@ object Scalaxy extends Build {
       settings =
         standardSettings ++
         Seq(publish := { }))
-    .aggregate(integration, loops, compilets, fx, json, beans, components, debug, extensions, reified, scalaxyDoc, parano, privacyPlugin)
+    .aggregate(
+      integration, loops,
+      // obsolete_compilets, obsolete_extensions,
+      fx, json, beans, components, debug, reified, scalaxyDoc,
+      parano, privacyPlugin)
 
   lazy val integration =
     Project(
@@ -190,7 +194,10 @@ object Scalaxy extends Build {
       settings =
         standardSettings ++
         Seq(publish := { }))
-    .dependsOn(loops, compilets, fx, json, beans, components, debug, extensions, reified, parano, privacyPlugin)
+    .dependsOn(loops,
+      // obsolete_compilets, obsolete_extensions,
+      fx, json, beans, components, debug, reified,
+      parano, privacyPlugin)
 
   lazy val docProjects = Map(
     // "Compilets" -> compilets,
@@ -254,7 +261,7 @@ object Scalaxy extends Build {
     ).dependsOn(docProjects.values.map(p => p: ClasspathDep[ProjectReference]).toSeq: _*)
     .aggregate(docProjects.values.toSeq.map(p => p: sbt.ProjectReference): _*)
 
-  lazy val compilets =
+  lazy val obsolete_compilets =
     Project(
       id = "scalaxy-compilets",
       base = file("Obsolete/Compilets"),
@@ -269,13 +276,13 @@ object Scalaxy extends Build {
           scalacOptions in console in Compile <+= (packageBin in Compile) map("-Xplugin:" + _)
         )
     )
-    .dependsOn(compiletsPlugin, compiletsApi, defaultCompilets)
-    .aggregate(compiletsPlugin, compiletsApi, defaultCompilets)
+    .dependsOn(obsolete_compiletsPlugin, obsolete_compiletsApi, obsolete_defaultCompilets)
+    .aggregate(obsolete_compiletsPlugin, obsolete_compiletsApi, obsolete_defaultCompilets)
 
   lazy val components =
     Project(id = "scalaxy-components", base = file("Components"), settings = reflectSettings ++ scalariformSettings)
 
-  lazy val compiletsApi =
+  lazy val obsolete_compiletsApi =
     Project(
       id = "scalaxy-compilets-api",
       base = file("Obsolete/Compilets/API"),
@@ -285,7 +292,7 @@ object Scalaxy extends Build {
         )
       ))
 
-  lazy val compiletsPlugin =
+  lazy val obsolete_compiletsPlugin =
     Project(
       id = "scalaxy-compilets-plugin",
       base = file("Obsolete/Compilets/Plugin"),
@@ -297,16 +304,16 @@ object Scalaxy extends Build {
             _.copy(`classifier` = None)//Some("assembly"))
           },
           publishArtifact in Test := true))
-    .dependsOn(compiletsApi)
+    .dependsOn(obsolete_compiletsApi)
 
-  lazy val defaultCompilets =
+  lazy val obsolete_defaultCompilets =
     Project(
       id = "scalaxy-default-compilets",
       base = file("Obsolete/Compilets/DefaultCompilets"),
       settings = reflectSettings)
-    .dependsOn(compiletsApi, compiletsPlugin % "test->test")
+    .dependsOn(obsolete_compiletsApi, obsolete_compiletsPlugin % "test->test")
 
-  lazy val extensions =
+  lazy val obsolete_extensions =
     Project(id = "scalaxy-macro-extensions", base = file("Obsolete/MacroExtensions"), settings = reflectSettings ++ Seq(
         watchSources <++= baseDirectory map { path => (path / "examples" ** "*.scala").get }
       )

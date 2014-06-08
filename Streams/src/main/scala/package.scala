@@ -4,7 +4,7 @@ import scala.language.experimental.macros
 import scala.language.implicitConversions
 
 import scala.reflect.NameTransformer
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 
 import scala.reflect.runtime.{ universe => ru }
 

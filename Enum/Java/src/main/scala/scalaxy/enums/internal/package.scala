@@ -3,7 +3,7 @@ package scalaxy.enums
 import scala.language.experimental.macros
 
 import scala.reflect._
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 
 package object internal {
 
