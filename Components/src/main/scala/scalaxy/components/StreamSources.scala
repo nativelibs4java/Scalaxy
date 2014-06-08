@@ -82,7 +82,7 @@ trait StreamSources
 
   abstract class ExplicitCollectionStreamSource(val tree: Tree, items: List[Tree], val componentType: Type)
       extends AbstractArrayStreamSource {
-    val array = newArrayApply(TypeTree(componentType), items: _*)
+    override val array: Tree = newArrayApply(TypeTree(componentType), items: _*)
 
     override def analyzeSideEffectsOnStream(analyzer: SideEffectsAnalyzer) =
       analyzer.analyzeSideEffects(tree, items: _*)

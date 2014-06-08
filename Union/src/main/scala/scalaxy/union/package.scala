@@ -1,7 +1,7 @@
 package scalaxy
 
 import scala.language.experimental.macros
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 
 package union {
   private[union] trait Trait
@@ -10,13 +10,13 @@ package union {
 package object union {
 
   implicit class AnyOps[A](value: A) {
-    def as[B]: B = macro internal.as[A, B]
+    def as[B]: B = macro scalaxy.union.internal.as[A, B]
   }
 
   def wrap[A: c.WeakTypeTag, B: c.WeakTypeTag](c: Context)(value: c.Expr[A]): c.Expr[B] = {
     import c.universe._
 
-    internal.checkMemberOfUnion[A, B](c)
+    scalaxy.union.internal.checkMemberOfUnion[A, B](c)
 
     val valueExpr = value
     val expr = reify {
@@ -48,7 +48,8 @@ package object union {
           super.transform(tree)
       }
     }).transform(tree)
-    tree = tree.substituteSymbols(
+    tree = internal.substituteSymbols(
+      tree,
       List(typeOf[Trait].typeSymbol),
       List(b.typeSymbol)
     )

@@ -19,7 +19,7 @@ private[reified] class CapturesFlattener(tree: Tree) extends Transformer {
 
   private var nextId = 1
   private def nextName: TermName = {
-    val name = internal.syntheticVariableNamePrefix + nextId
+    val name = syntheticVariableNamePrefix + nextId
     nextId += 1
     name
   }
@@ -52,8 +52,8 @@ private[reified] class CapturesFlattener(tree: Tree) extends Transformer {
   object FreeTermTree {
     def unapply(tree: Tree): Option[(FreeTermSymbol, Tree)] = {
       val sym = tree.symbol
-      if (sym != null && sym.isFreeTerm)
-        Some(sym.asFreeTerm -> tree)
+      if (sym != null && internal.isFreeTerm(sym))
+        Some(internal.asFreeTerm(sym) -> tree)
       else
         tree match {
           case Apply(Apply(Select(_, N(n)), List(f)), _) if n.matches("ReifiedFunction\\d|hasReifiedValueToValue") =>

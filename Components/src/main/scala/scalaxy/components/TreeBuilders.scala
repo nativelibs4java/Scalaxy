@@ -110,7 +110,7 @@ trait TreeBuilders
     case BooleanTpe => false
     case ByteTpe => 0: Byte
     case ShortTpe => 0: Short
-    case CharTpe => '\0'
+    case CharTpe => '\u0000'
     case LongTpe => 0L
     case FloatTpe => 0.0f
     case DoubleTpe => 0.0
@@ -448,7 +448,7 @@ trait TreeBuilders
 
   lazy val TypeRef(manifestPre, manifestSym, _) = typeOf[Manifest[Int]]
   def toArray(tree: Tree, componentType: Type) = {
-    val manifest = inferImplicitValue(typeRef(manifestPre, manifestSym, List(componentType)))
+    val manifest = inferImplicitValue(global.internal.typeRef(manifestPre, manifestSym, List(componentType)))
     assert(manifest != EmptyTree, "Failed to get manifest for " + componentType)
 
     Apply(

@@ -18,7 +18,7 @@ import scalaxy.reified.internal.CommonExtractors._
  * - transform function values into methods when they're only used as methods (frequent pattern with Scalaxy/Reified's function composition and capture of reified functions)
  * - TODO: add Range foreach loops optimizations from Scalaxy
  */
-private[reified] object Optimizer {
+private[scalaxy] object Optimizer {
   import universe._
   import definitions._
 

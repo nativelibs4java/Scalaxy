@@ -4,12 +4,12 @@ import scala.language.experimental.macros
 import scala.language.dynamics
 
 import scala.reflect._
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 
 /**
  * Union type.
  */
-trait |[+A, +B] extends Dynamic {
+trait |[A, B] extends Dynamic {
   /**
    * Type-class definition, handy to ask for a proof that `T` matches this union type.
    */
@@ -37,7 +37,7 @@ object | {
       case tree @ Apply(target, List(value)) if target.symbol.isMethod && target.symbol.isImplicit =>
         value
       case tree =>
-        Select(tree, "value": TermName)
+        Select(tree, TermName("value"))
     }
 
     // val types = internal.getUnionTypes(c)(t)

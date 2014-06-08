@@ -12,5 +12,5 @@ trait =|=[A, B]
 
 object =|= {
   implicit def selfProof[A, B <: A]: A =|= B = null
-  implicit def =|=[A, B]: A =|= B = macro internal.=|=[A, B, A =|= B]
+  implicit def =|=[A, B]: A =|= B = macro scalaxy.union.internal.=|=[A, B, A =|= B]
 }

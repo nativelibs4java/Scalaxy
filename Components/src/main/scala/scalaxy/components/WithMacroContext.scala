@@ -31,7 +31,7 @@
 package scalaxy.components
 
 import language.experimental.macros
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 
 import scala.reflect.runtime.{ universe => ru }
 import scala.reflect.runtime.{ currentMirror => cm }
@@ -49,17 +49,17 @@ trait WithMacroContext {
   def warning(pos: Position, msg: String) =
     context.warning(pos.asInstanceOf[context.universe.Position], msg)
 
-  def withSymbol[T <: Tree](sym: Symbol, tpe: Type = NoType)(tree: T): T = {
-    try {
-      tree.symbol = sym
-    } catch {
-      case _: Throwable =>
-      // TODO: remove this ugly stuff.
-    }
-    if (tpe != NoType)
-      tree.tpe = tpe
-    tree
-  }
+  // def withSymbol[T <: Tree](sym: Symbol, tpe: Type = NoType)(tree: T): T = {
+  //   try {
+  //     tree.symbol = sym
+  //   } catch {
+  //     case _: Throwable =>
+  //     // TODO: remove this ugly stuff.
+  //   }
+  //   if (tpe != NoType)
+  //     tree.tpe = tpe
+  //   tree
+  // }
   def typed[T <: Tree](tree: T): T =
     context.typeCheck(tree.asInstanceOf[context.universe.Tree]).asInstanceOf[T]
 
@@ -82,13 +82,13 @@ trait WithMacroContext {
       ).asInstanceOf[Tree]
   }
 
-  def cleanTypeCheck(tree: Tree): Tree = {
-    context.typeCheck(context.resetAllAttrs(tree.asInstanceOf[context.Tree])).asInstanceOf[Tree]
-  }
+  // def cleanTypeCheck(tree: Tree): Tree = {
+  //   context.typeCheck(context.brutallyResetAttrs(tree.asInstanceOf[context.Tree])).asInstanceOf[Tree]
+  // }
 
-  def resetAllAttrs(tree: Tree): Tree = {
-    context.resetAllAttrs(tree.asInstanceOf[context.Tree]).asInstanceOf[Tree]
-  }
+  // def resetAllAttrs(tree: Tree): Tree = {
+  //   context.brutallyResetAttrs(tree.asInstanceOf[context.Tree]).asInstanceOf[Tree]
+  // }
 
   def resetLocalAttrs(tree: Tree): Tree = {
     context.resetLocalAttrs(tree.asInstanceOf[context.Tree]).asInstanceOf[Tree]

@@ -4,7 +4,7 @@ import scala.language.experimental.macros
 import scala.language.implicitConversions
 
 import scala.reflect._
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 
 package object internal {
 

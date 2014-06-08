@@ -62,7 +62,7 @@ final class Reified[A: TypeTag](
    * @param toolbox toolbox used to perform the compilation. By default, using a
    *     toolbox configured with all stable optimization flags available.
    */
-  def compile(toolbox: ToolBox[universe.type] = internal.Utils.optimisingToolbox): () => A = {
+  def compile(toolbox: ToolBox[universe.type] = optimisingToolbox): () => A = {
 
     var ast: Tree = flatExpr.tree
     // println("AST: " + ast)

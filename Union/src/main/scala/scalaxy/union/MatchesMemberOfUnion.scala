@@ -11,5 +11,5 @@ import scala.annotation.implicitNotFound
 trait <|<[A, B]
 
 object <|< {
-  implicit def <|<[A, B]: A <|< B = macro internal.<|<[A, B, A <|< B]
+  implicit def <|<[A, B]: A <|< B = macro scalaxy.union.internal.<|<[A, B, A <|< B]
 }
