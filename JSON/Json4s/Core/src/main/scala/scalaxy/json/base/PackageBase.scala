@@ -7,13 +7,14 @@ import scala.language.experimental.macros
 import org.json4s._
 
 private[json] trait PackageBase {
+  import implementation._
 
   object json extends Dynamic {
     def applyDynamicNamed(name: String)(args: (String, JValue)*): JValue =
-      macro implementation.applyDynamicNamed
+      macro applyDynamicNamedImpl
 
     def applyDynamic(name: String)(args: JValue*): JValue =
-      macro implementation.applyDynamic
+      macro applyDynamicImpl
   }
 
   class PreparedJValue(_value: => JValue, _string: => String) {
@@ -33,23 +34,23 @@ private[json] trait PackageBase {
   implicit def preparedJValue2String(p: PreparedJValue): String = p.toString
   implicit def preparedJValue2JValue(p: PreparedJValue): JValue = p.value
 
-  implicit def Byte2JValue(v: Byte) = macro implementation.jdouble[Byte]
-  implicit def Short2JValue(v: Short) = macro implementation.jdouble[Short]
-  implicit def Int2JValue(v: Int) = macro implementation.jdouble[Int]
-  implicit def Long2JValue(v: Long) = macro implementation.jdouble[Long]
-  implicit def Double2JValue(v: Double) = macro implementation.jdouble[Double]
-  implicit def Float2JValue(v: Float) = macro implementation.jdouble[Float]
-  implicit def String2JValue(v: String) = macro implementation.jstring
-  implicit def Boolean2JValue(v: Boolean) = macro implementation.jbool
-  implicit def Char2JValue(v: Char) = macro implementation.jchar
+  implicit def Byte2JValue(v: Byte): JDouble = macro jdouble[Byte]
+  implicit def Short2JValue(v: Short): JDouble = macro jdouble[Short]
+  implicit def Int2JValue(v: Int): JDouble = macro jdouble[Int]
+  implicit def Long2JValue(v: Long): JDouble = macro jdouble[Long]
+  implicit def Double2JValue(v: Double): JDouble = macro jdouble[Double]
+  implicit def Float2JValue(v: Float): JDouble = macro jdouble[Float]
+  implicit def String2JValue(v: String): JString = macro jstring
+  implicit def Boolean2JValue(v: Boolean): JBool = macro jbool
+  implicit def Char2JValue(v: Char): JString = macro jchar
 
-  implicit def ByteJField(v: (String, Byte)) = macro implementation.jfield[Byte]
-  implicit def ShortJField(v: (String, Short)) = macro implementation.jfield[Short]
-  implicit def IntJField(v: (String, Int)) = macro implementation.jfield[Int]
-  implicit def LongJField(v: (String, Long)) = macro implementation.jfield[Long]
-  implicit def DoubleJField(v: (String, Double)) = macro implementation.jfield[Double]
-  implicit def FloatJField(v: (String, Float)) = macro implementation.jfield[Float]
-  implicit def StringJField(v: (String, String)) = macro implementation.jfield[String]
-  implicit def BooleanJField(v: (String, Boolean)) = macro implementation.jfield[Boolean]
-  implicit def CharJField(v: (String, Char)) = macro implementation.jfield[Char]
+  implicit def ByteJField(v: (String, Byte)): JField = macro jfield[Byte]
+  implicit def ShortJField(v: (String, Short)): JField = macro jfield[Short]
+  implicit def IntJField(v: (String, Int)): JField = macro jfield[Int]
+  implicit def LongJField(v: (String, Long)): JField = macro jfield[Long]
+  implicit def DoubleJField(v: (String, Double)): JField = macro jfield[Double]
+  implicit def FloatJField(v: (String, Float)): JField = macro jfield[Float]
+  implicit def StringJField(v: (String, String)): JField = macro jfield[String]
+  implicit def BooleanJField(v: (String, Boolean)): JField = macro jfield[Boolean]
+  implicit def CharJField(v: (String, Char)): JField = macro jfield[Char]
 }

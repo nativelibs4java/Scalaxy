@@ -17,16 +17,16 @@ package object implementation
       c.error(name.tree.pos, s"value $n is not a member of ${c.prefix.tree.tpe.normalize}")
   }
 
-  def applyDynamicNamed(c: Context)
-                       (name: c.Expr[String])
-                       (args: c.Expr[(String, JValue)]*): c.Expr[JObject] = {
+  def applyDynamicNamedImpl(c: Context)
+                           (name: c.Expr[String])
+                           (args: c.Expr[(String, JValue)]*): c.Expr[JObject] = {
     checkApplyName(c)(name)
     reifyJsonObject(c)(args.toList, containsOptionalFields = false)
   }
 
-  def applyDynamic(c: Context)
-                  (name: c.Expr[String])
-                  (args: c.Expr[JValue]*): c.Expr[JArray] = {
+  def applyDynamicImpl(c: Context)
+                      (name: c.Expr[String])
+                      (args: c.Expr[JValue]*): c.Expr[JArray] = {
     checkApplyName(c)(name)
     reifyJsonArray(c)(args.toList)
   }
