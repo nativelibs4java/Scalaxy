@@ -14,7 +14,7 @@ object Utils {
       .getOrElse(Thread.currentThread.getContextClassLoader)
     val instanceMirror = runtimeMirror(classLoader).reflect(instance)
     val instanceType = instanceMirror.symbol.asType.toType
-    val method = instanceType.member("apply": TermName)
+    val method = instanceType.member(TermName("apply"))
 
     // println("METHOD: " + method + " (alternative: " + method.asTerm.alternatives.head)
     instanceMirror.reflectMethod(method.asTerm.alternatives.head.asMethod)
@@ -34,7 +34,7 @@ object Utils {
         i += 1
       }
       names.add(name)
-      name
+      TermName(name)
     }
   }
 
@@ -60,12 +60,12 @@ object Utils {
     import u._
     def rec(relements: List[String]): Tree = relements match {
       case name :: Nil =>
-        Ident(name: TermName)
+        Ident(TermName(name))
       case ("`package`") :: rest =>
         //rec(rest)
-        Select(rec(rest), "package": TermName)
+        Select(rec(rest), TermName("package"))
       case name :: rest =>
-        Select(rec(rest), name: TermName)
+        Select(rec(rest), TermName(name))
     }
     rec(moduleSym.fullName.split("\\.").reverse.toList)
   }

@@ -10,6 +10,8 @@ import com.fasterxml.jackson.core.JsonParser.Feature._
 import com.fasterxml.jackson.databind.ObjectMapper
 
 package object jackson extends base.PackageBase {
+  import implementation._
+  
   private lazy val mapper = {
     val mapper = new ObjectMapper
     mapper.registerModule(new Json4sScalaModule)
@@ -20,7 +22,7 @@ package object jackson extends base.PackageBase {
   implicit class JSONStringContext(val context: StringContext) {
     object json extends base.ExtractibleJSONStringContext(context) {
       def apply(args: Any*): JValue =
-        macro implementation.jsonApply
+        macro jsonApply
 
       override def parse(str: String): JValue = {
         // JsonMethods.parse(str)

@@ -2,7 +2,7 @@ package scalaxy.json.base
 
 import scala.language.dynamics
 import scala.language.experimental.macros
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 
 trait MacrosBase {
 

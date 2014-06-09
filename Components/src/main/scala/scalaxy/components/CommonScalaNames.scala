@@ -24,7 +24,7 @@ trait CommonScalaNames {
 
   def encode(str: String): TermName = {
     assert(str != null)
-    newTermName(NameTransformer.encode(str))
+    TermName(NameTransformer.encode(str))
   }
 
   lazy val ADD = encode("+")

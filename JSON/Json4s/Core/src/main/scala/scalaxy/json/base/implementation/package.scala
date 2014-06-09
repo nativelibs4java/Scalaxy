@@ -2,7 +2,7 @@ package scalaxy.json.json4s.base
 
 import scala.language.dynamics
 import scala.language.experimental.macros
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 import org.json4s._
 import scala.collection.JavaConversions._
 
@@ -14,7 +14,7 @@ package object implementation
 
     val Literal(Constant(n)) = name.tree
     if (n != "apply")
-      c.error(name.tree.pos, s"value $n is not a member of ${c.prefix.tree.tpe.normalize}")
+      c.error(name.tree.pos, s"value $n is not a member of ${c.prefix.tree.tpe.dealias}")
   }
 
   def applyDynamicNamedImpl(c: Context)
@@ -52,12 +52,12 @@ package object implementation
   def jfield[A : c.WeakTypeTag](c: Context)(v: c.Expr[(String, A)]): c.Expr[JField] = {
     import c.universe._
 
-    val tv = c.typeCheck(v.tree)
-    val n = c.fresh: TermName
+    val tv = c.typecheck(v.tree)
+    val n = TermName(c.freshName)
     val vd = ValDef(NoMods, n, TypeTree(tv.tpe), v.tree)
 
-    val key = c.Expr[String](Select(Ident(n), "_1": TermName))
-    val value = c.Expr[JValue](Select(Ident(n), "_2": TermName))
+    val key = c.Expr[String](Select(Ident(n), TermName("_1")))
+    val value = c.Expr[JValue](Select(Ident(n), TermName("_2")))
     c.Expr[JField](
       Block(
         List(vd),

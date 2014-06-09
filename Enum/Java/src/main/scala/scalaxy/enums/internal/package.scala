@@ -51,7 +51,7 @@ package object internal {
       TypeApply(
         Select(
           Ident(arraySym),
-          "apply": TermName
+          TermName("apply")
         ),
         List(TypeTree(elementType))
       ),
@@ -63,12 +63,12 @@ package object internal {
     import u._
     def rec(relements: List[String]): Tree = relements match {
       case name :: Nil =>
-        Ident(name: TermName)
+        Ident(TermName(name))
       case ("`package`") :: rest =>
         //rec(rest)
-        Select(rec(rest), "package": TermName)
+        Select(rec(rest), TermName("package"))
       case name :: rest =>
-        Select(rec(rest), name: TermName)
+        Select(rec(rest), TermName(name))
     }
     rec(moduleSym.fullName.split("\\.").reverse.toList)
   }
@@ -95,8 +95,8 @@ package object internal {
               names.map(name => Literal(Constant(name)))
             ),
             {
-              val paramName: TermName = c.fresh()
-              val singletonName: TermName = c.fresh()
+              val paramName = TermName(c.fresh())
+              val singletonName = TermName(c.fresh())
               Function(
                 List(
                   ValDef(
@@ -114,7 +114,7 @@ package object internal {
                     TypeApply(
                       Select(
                         Ident(paramName),
-                        "asInstanceOf": TermName
+                        TermName("asInstanceOf")
                       ),
                       List(
                         TypeTree(singletonType)
@@ -127,7 +127,7 @@ package object internal {
                       Select(
                         Ident(singletonName),
                         //getModulePath(c.universe)(c.enclosingClass.symbol.asModule),
-                        name: TermName
+                        TermName(name)
                       )
                     })
                   )
@@ -154,7 +154,7 @@ package object internal {
       val res = c.Expr[T](
         // Apply(
         c.typeCheck(
-          Ident("nextEnumValueData": TermName),
+          Ident(TermName("nextEnumValueData")),
           // Select(
           //   Ident(c.enclosingClass.symbol),
           //   // This("enum": TypeName),

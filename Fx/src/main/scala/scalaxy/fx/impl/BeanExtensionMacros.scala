@@ -86,7 +86,7 @@ private[fx] object BeanExtensionMacros
           Apply(
             Select(
               Select(Ident(beanName), propertyName),
-              "bind": TermName
+              TermName("bind")
             ),
             List(value)
           )

@@ -36,7 +36,7 @@ object NumericTrees {
       Literal(Constant(typesToNumerics(tpe).fromInt(n).asInstanceOf[AnyRef]))
 
     case (Apply(Select(NumericOpsCreation(target, tpe @ ConcreteType()), name), args), transformer) =>
-      val sel = Select(transformer(target), NameTransformer.encode(NameTransformer.decode(name.toString)): TermName)
+      val sel = Select(transformer(target), TermName(NameTransformer.encode(NameTransformer.decode(name.toString))))
       if (args.isEmpty) {
         sel
       } else {

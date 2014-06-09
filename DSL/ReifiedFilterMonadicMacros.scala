@@ -60,7 +60,7 @@ object ReifiedFilterMonadicMacros {
         }
         override def transform(tree: Tree): Tree = tree match {
           case CapturedSymbol(newName) =>
-            Ident(newName: TermName)
+            Ident(TermName(newName))
           case _ => 
             super.transform(tree)
         }

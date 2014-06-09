@@ -2,7 +2,7 @@ package scalaxy.json.json4s
 package jackson
 
 import scala.language.experimental.macros
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 
 import org.json4s._
 import org.json4s.jackson.JsonMethods

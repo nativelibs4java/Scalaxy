@@ -4,7 +4,7 @@ import scalaxy.json.base._
 
 import scala.language.dynamics
 import scala.language.experimental.macros
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 
 import org.json4s._
 

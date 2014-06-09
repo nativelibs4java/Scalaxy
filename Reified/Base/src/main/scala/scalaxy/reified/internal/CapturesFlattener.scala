@@ -18,10 +18,10 @@ private[reified] class CapturesFlattener(tree: Tree) extends Transformer {
   private val captureDefMods = Modifiers(Flag.PRIVATE | Flag.FINAL | Flag.LOCAL)
 
   private var nextId = 1
-  private def nextName: TermName = {
+  private def nextName = {
     val name = syntheticVariableNamePrefix + nextId
     nextId += 1
-    name
+    TermName(name)
   }
 
   private type FreeTermSymbolKey = Any

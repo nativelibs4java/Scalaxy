@@ -34,7 +34,7 @@ private[fx] object PropertyMacros
       (ev: c.Expr[GenericType[_, _, _, _]]): c.Expr[T] =
   {
     import c.universe._
-    c.Expr[T](Select(c.typeCheck(p.tree), "get": TermName))
+    c.Expr[T](Select(c.typeCheck(p.tree), TermName("get")))
   }
 
   def bindingValue
@@ -44,6 +44,6 @@ private[fx] object PropertyMacros
       (ev: c.Expr[GenericType[_, _, _, _]]): c.Expr[T] =
   {
     import c.universe._
-    c.Expr[T](Select(c.typeCheck(b.tree), "get": TermName))
+    c.Expr[T](Select(c.typeCheck(b.tree), TermName("get")))
   }
 }

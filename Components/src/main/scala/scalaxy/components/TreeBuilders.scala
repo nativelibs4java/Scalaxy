@@ -348,7 +348,7 @@ trait TreeBuilders
   }
 
   def whileLoop(cond: Tree, body: Tree): Tree = {
-    val lab: TermName = fresh("while$")
+    val lab = TermName(fresh("while$"))
     LabelDef(
       lab,
       Nil,
@@ -475,7 +475,7 @@ trait TreeBuilders
   private def newValueDef(prefix: String, mutable: Boolean, value: Tree, tpe: Type) = {
     val vd = ValDef(
       if (mutable) Modifiers(Flag.MUTABLE) else NoMods,
-      fresh(prefix): TermName,
+      TermName(fresh(prefix)),
       TypeTree(tpe),
       value)
     ValueDef(() => Ident(vd.name), vd, tpe)

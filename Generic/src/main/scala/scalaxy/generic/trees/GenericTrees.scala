@@ -56,7 +56,7 @@ object GenericTrees {
   }
 
   private def normalizeName(name: String): TermName =
-    NameTransformer.encode(NameTransformer.decode(name))
+    TermName(NameTransformer.encode(NameTransformer.decode(name)))
 
   def simplifier: PartialFunction[(Tree, Tree => Tree), Tree] = {
     case (AsInstanceOf(target, tpe @ ConcreteType()), transformer) if target.tpe =:= tpe =>
@@ -69,7 +69,7 @@ object GenericTrees {
       Apply(Select(transformer(target), normalizeName(methodName)), args.map(transformer))
 
     case (Apply(GenericOpsCall(target, ConcreteType(), "updateDynamic", methodName), List(value)), transformer) =>
-      Apply(Select(transformer(target), "update": TermName), List(transformer(value)))
+      Apply(Select(transformer(target), TermName("update")), List(transformer(value)))
 
     case (GenericOpsCall(target, ConcreteType(), "selectDynamic", methodName), transformer) =>
       Select(transformer(target), normalizeName(methodName))

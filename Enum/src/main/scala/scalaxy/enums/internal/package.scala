@@ -51,7 +51,7 @@ package object internal {
       TypeApply(
         Select(
           Ident(arraySym),
-          "apply": TermName
+          TermName("apply")
         ),
         List(TypeTree(elementType))
       ),

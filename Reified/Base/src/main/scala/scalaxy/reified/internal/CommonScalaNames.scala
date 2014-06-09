@@ -11,7 +11,7 @@ private[reified] object CommonScalaNames {
 
   class N(val s: String) {
     def unapply(n: Name): Boolean = n.toString == s
-    def apply(): TermName = s
+    def apply() = TermName(s)
   }
   object N {
     def apply(s: String) = new N(s)

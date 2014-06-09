@@ -3,7 +3,7 @@ package scalaxy.json.json4s.base
 import scalaxy.json.base._
 
 import scala.language.experimental.macros
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 
 trait JSONStringInterpolationMacros extends JsonDriverMacros {
 
@@ -19,7 +19,7 @@ trait JSONStringInterpolationMacros extends JsonDriverMacros {
         s -> t.pos
     }
 
-    var typedArgs = args.map(arg => c.typeCheck(arg.tree))
+    var typedArgs = args.map(arg => c.typecheck(arg.tree))
     val Placeholders(placeholders, argNames, posMap, _) = ExtractibleJSONStringContext.preparePlaceholders(
       fragments, i => {
         val typedArg = typedArgs(i)
@@ -28,7 +28,7 @@ trait JSONStringInterpolationMacros extends JsonDriverMacros {
       },
       i => typedArgs(i).pos)
 
-    val valNames = (1 to typedArgs.size).map(_ => c.fresh: TermName)
+    val valNames = (1 to typedArgs.size).map(_ => TermName(c.freshName))
     val valDefs = typedArgs.zip(valNames).map({
       case (typedArg, valName) =>
         ValDef(NoMods, valName, TypeTree(typedArg.tpe), typedArg): Tree
@@ -48,7 +48,7 @@ trait JSONStringInterpolationMacros extends JsonDriverMacros {
       case ex: Throwable =>
         if (!reportParsingException(c)(ex, posMap))
           c.error(c.enclosingPosition, ex.getMessage)
-        c.literalNull.asInstanceOf[c.Expr[JSONValueType]]
+        q"null".asInstanceOf[c.Expr[JSONValueType]]
     }
   }
 }

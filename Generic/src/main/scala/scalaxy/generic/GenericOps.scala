@@ -57,8 +57,8 @@ class GenericOps[+A: Generic](val rawValue: A, implicitConversions: List[Any] = 
       case mirror :: otherMirrors =>
         val tpe = mirror.symbol.asType.toType
         val symbol =
-          tpe.member(name: TermName) orElse
-            tpe.member(reflect.NameTransformer.encode(name): TermName)
+          tpe.member(TermName(name)) orElse
+            tpe.member(TermName(reflect.NameTransformer.encode(name)))
         if (symbol == NoSymbol) { //} || !(mirror.symbol.asType.toType <:< symbol.owner.asType.toType)) {
           // println("No " + name + " or " + reflect.NameTransformer.encode(name) + " in " + mirror.instance.getClass.getName + ": " + tpe + ": " + tpe.members)
           sub(otherMirrors)
