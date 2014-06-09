@@ -42,8 +42,8 @@ class GenericTreesTest {
       a.toDouble.asInstanceOf[Double]
     }).tree
     assertEquals(
-      tb.typeCheck(doubleTree).toString,
-      simplifyGenericTree(tb.typeCheck(genericDoubleTree)).toString
+      tb.typecheck(doubleTree).toString,
+      simplifyGenericTree(tb.typecheck(genericDoubleTree)).toString
         .replaceAll("\\$times", "*")
         .replaceAll("\\$plus", "+")
         .replaceAll("\\$minus", "-")

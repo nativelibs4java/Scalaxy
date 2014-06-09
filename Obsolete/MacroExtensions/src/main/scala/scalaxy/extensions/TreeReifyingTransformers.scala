@@ -40,12 +40,12 @@ trait TreeReifyingTransformers extends Extensions
       extends Transformer 
   {
     def newTermIdent(n: String): Tree =
-      newApply("Ident", transform(newTermName(n)))
+      newApply("Ident", transform(TermName(n)))
       
     def transform(n: Name): Tree = {
       if (n.toString == "T")
         new RuntimeException("TTTT: " + n).printStackTrace()
-      newApply(if (n.isTermName) "newTermName" else "newTypeName", newConstant(n.toString))
+      newApply(if (n.isTermName) "TermName" else "TypeName", newConstant(n.toString))
     }
     
     def transform(constant: Constant): Tree = {

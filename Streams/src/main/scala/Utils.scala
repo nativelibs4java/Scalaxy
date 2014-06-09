@@ -42,5 +42,5 @@ private[streams] trait Utils {
     typeOf[Double] -> 0.0)
 
   def defaultValue(tpe: Type): Any =
-    defaultValues.get(tpe.normalize).getOrElse(null)
+    defaultValues.get(tpe.dealias).getOrElse(null)
 }

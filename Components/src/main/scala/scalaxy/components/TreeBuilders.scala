@@ -105,7 +105,7 @@ trait TreeBuilders
       .getOrElse(sys.error("No primary constructor for " + tpe))
   }
 
-  def defaultValue(tpe: Type): Any = tpe.normalize match {
+  def defaultValue(tpe: Type): Any = tpe.dealias match {
     case IntTpe => 0
     case BooleanTpe => false
     case ByteTpe => 0: Byte
@@ -157,7 +157,7 @@ trait TreeBuilders
     Apply(
       Select(
         New(TypeTree(tpe)),
-        nme.CONSTRUCTOR
+        termNames.CONSTRUCTOR
       ),
       constructorArgs
     )
@@ -221,8 +221,8 @@ trait TreeBuilders
 
   def newArrayMulti(arrayType: Type, componentTpe: Type, lengths: => List[Tree], manifest: Tree) =
     typed {
-      val sym = (ArrayModule.asModule.moduleClass.asType.toType member newTermName("ofDim"))
-        .suchThat(s => s.isMethod && s.asMethod.paramss.flatten.size == lengths.size + 1)
+      val sym = (ArrayModule.asModule.moduleClass.asType.toType member TermName("ofDim"))
+        .suchThat(s => s.isMethod && s.asMethod.paramLists.flatten.size == lengths.size + 1)
       //.getOrElse(sys.error("No Array.ofDim found"))
       Apply(
         Apply(

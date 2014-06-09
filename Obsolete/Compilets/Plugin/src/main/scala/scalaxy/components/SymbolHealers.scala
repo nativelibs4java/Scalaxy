@@ -182,8 +182,8 @@ extends TypingTransformers
                   tpe = tpe.widen
     
                 for (t <- Option(tpe)) {
-                  tpe = //tpe.dealias.normalize// 
-                    tpe.deconst.dealias.normalize
+                  tpe = //tpe.dealias.dealias// 
+                    tpe.deconst.dealias.dealias
                   sym.setInfo(tpe)
                 }
   

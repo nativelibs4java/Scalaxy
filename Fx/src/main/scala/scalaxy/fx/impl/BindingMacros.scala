@@ -7,7 +7,7 @@ import javafx.beans.property._
 import javafx.beans.value._
 
 import scala.language.experimental.macros
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 
 private[fx] object BindingMacros
 {
@@ -27,7 +27,7 @@ private[fx] object BindingMacros
     val tpe = weakTypeTag[T].tpe
     val bindingTpe = weakTypeTag[B].tpe
 
-    val bindingName = newTermName(c.fresh("binding"))
+    val bindingName = TermName(c.freshName("binding"))
 
     var observables: List[Tree] = Nil
     val observableCollector = new Traverser {
@@ -58,10 +58,10 @@ private[fx] object BindingMacros
             else {
               n match {
                 case getterRx(capitalizedFieldName) =>
-                  val propertyGetterName = newTermName(decapitalize(capitalizedFieldName) + "Property")
+                  val propertyGetterName = TermName(decapitalize(capitalizedFieldName) + "Property")
                   val s =
                     sel.qualifier.tpe.member(propertyGetterName)
-                      .filter(s => s.isMethod && s.asMethod.paramss.flatten.isEmpty)
+                      .filter(s => s.isMethod && s.asMethod.paramLists.flatten.isEmpty)
                   if (s != NoSymbol && isObservable(s.asMethod.returnType))
                     observables = Select(sel.qualifier, propertyGetterName) :: observables
                 case _ =>
@@ -85,7 +85,7 @@ private[fx] object BindingMacros
         super.traverse(tree)
       }
     }
-    observableCollector.traverse(c.typeCheck(expression.tree))
+    observableCollector.traverse(c.typecheck(expression.tree))
 
     if (observables.isEmpty)
       c.error(expression.tree.pos, "This expression does not contain any observable property, this is not bindable.")
@@ -110,8 +110,8 @@ private[fx] object BindingMacros
     val superBindCall = c.Expr[Unit](
       Apply(
         Select(
-          Super(This(tpnme.EMPTY), tpnme.EMPTY),
-          newTermName("bind")
+          Super(This(typeNames.EMPTY), typeNames.EMPTY),
+          TermName("bind")
         ),
         observables.toList.map(_.tree)
       )

@@ -1,7 +1,7 @@
 package scalaxy.dsl
 
 import scala.language.experimental.macros
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 
 import scala.collection.GenTraversableOnce
 import scala.collection.generic.CanBuildFrom
@@ -17,7 +17,7 @@ object ReifiedFilterMonadicMacros {
   {
     import c.universe._
     
-    val tf = c.typeCheck(f.tree)
+    val tf = c.typecheck(f.tree)
     
     var definedSymbols = Set[Symbol]()
     var referredSymbols = Set[Symbol]()
@@ -44,7 +44,7 @@ object ReifiedFilterMonadicMacros {
     val capturedSymbols: Map[Symbol, String] =
       (
         for (capturedSymbol <- (referredSymbols -- definedSymbols)) yield {
-          capturedSymbol -> c.fresh(capturedSymbol.name.toString)
+          capturedSymbol -> c.freshName(capturedSymbol.name.toString)
         }
       ).toMap
     

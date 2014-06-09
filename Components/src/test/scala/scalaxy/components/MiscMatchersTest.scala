@@ -41,7 +41,7 @@ class MiscMatchersTest
   import global._
 
   def extractTupleComponentTypes(x: Expr[_]) =
-    TupleCreation.unapply(typeCheck(x.tree)).map(_.map(_.tpe.normalize.widen))
+    TupleCreation.unapply(typeCheck(x.tree)).map(_.map(_.tpe.dealias.widen))
 
   @Test def testTuples {
     assertEquals(

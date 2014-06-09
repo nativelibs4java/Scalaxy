@@ -121,7 +121,7 @@ trait Extensions
     ) :+
     DefDef(
       NoMods,
-      nme.CONSTRUCTOR,
+      termNames.CONSTRUCTOR,
       Nil,
       List(
         namesAndTypeTrees.map { case (name, tpt) =>
@@ -140,7 +140,7 @@ trait Extensions
   def newSuperInitConstructorBody(): Tree = {
     Block(
       // super.<init>()
-      Apply(Select(Super(This("": TypeName), "": TypeName), nme.CONSTRUCTOR), Nil),
+      Apply(Select(Super(This("": TypeName), "": TypeName), termNames.CONSTRUCTOR), Nil),
       Literal(Constant(()))
     )
   }

@@ -13,7 +13,7 @@ trait ScalaToJSTypeConversions {
   private lazy val arrayRx = """scala\.Array\[.*""".r
   def eraseType(tpe: Type): String = {
     if (tpe == NoType) "undefined"
-    else Option(tpe).map(_.normalize).map(_.typeSymbol.fullName.toString match {
+    else Option(tpe).map(_.dealias).map(_.typeSymbol.fullName.toString match {
       case "scala.Unit" | "scala.Nothing" =>
         "undefined"
       case "scala.Char" =>

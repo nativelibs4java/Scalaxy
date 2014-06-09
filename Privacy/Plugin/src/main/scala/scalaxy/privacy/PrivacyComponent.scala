@@ -53,7 +53,7 @@ class PrivacyComponent(
 
   private object SimpleAnnotation {
     def unapply(ann: Tree): Option[String] = Option(ann) collect {
-      case Apply(Select(New(Ident(tpt)), nme.CONSTRUCTOR), _) =>
+      case Apply(Select(New(Ident(tpt)), termNames.CONSTRUCTOR), _) =>
         tpt.toString
     }
   }
@@ -118,8 +118,8 @@ class PrivacyComponent(
 
           d.mods.hasNoFlags(flagsThatPreventPrivatization) &&
             String.valueOf(d.mods.privateWithin) == "" &&
-            d.name != nme.PACKAGE &&
-            d.name != nme.CONSTRUCTOR &&
+            d.name != termNames.PACKAGE &&
+            d.name != termNames.CONSTRUCTOR &&
             // d.mods.annotations.nonEmpty &&
             !hasSimpleAnnotation(d.mods, PublicName) &&
             !isConsoleSpecialCase

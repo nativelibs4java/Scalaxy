@@ -64,9 +64,9 @@ trait WithRuntimeUniverse {
       tree
     else {
       try {
-        toolbox.typeCheck(
+        toolbox.typecheck(
           ttree,
-          pt.asInstanceOf[toolbox.u.Type])
+          pt = pt.asInstanceOf[toolbox.u.Type])
       } catch {
         case ex: Throwable =>
           throw new RuntimeException(s"Failed to typeCheck($tree, $pt): $ex", ex)
@@ -79,7 +79,7 @@ trait WithRuntimeUniverse {
   // }
 
   def resetLocalAttrs(tree: Tree): Tree = {
-    toolbox.resetLocalAttrs(tree.asInstanceOf[toolbox.u.Tree]).asInstanceOf[Tree]
+    toolbox.untypecheck(tree.asInstanceOf[toolbox.u.Tree]).asInstanceOf[Tree]
   }
 
   // def resetAllAttrs(tree: Tree): Tree = {

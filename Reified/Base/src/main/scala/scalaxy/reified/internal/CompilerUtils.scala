@@ -11,7 +11,7 @@ object CompilerUtils {
   def compile(tree: Tree, toolbox: ToolBox[universe.type] = Utils.optimisingToolbox): () => Any = {
     try {
       // val resetTree = Utils.safeReset(tree, toolbox)
-      val resetTree = toolbox.resetLocalAttrs(tree)
+      val resetTree = toolbox.untypecheck(tree)
       toolbox.compile(resetTree)
       // toolbox.compile(Utils.typeCheckTree(resetTree))
     } catch {

@@ -1,6 +1,6 @@
 object MacroDSL {
   import scala.language.experimental.macros
-  import scala.reflect.macros.Context
+  import scala.reflect.macros.blackbox.Context
   implicit class str(self: Int) {
     def str(v: Int) = macro str$.str
   }

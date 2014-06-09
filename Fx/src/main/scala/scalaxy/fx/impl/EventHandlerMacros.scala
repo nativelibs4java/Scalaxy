@@ -4,7 +4,7 @@ package impl
 import javafx.event.{ Event, EventHandler }
 
 import scala.language.experimental.macros
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 
 private[fx] object EventHandlerMacros
 {

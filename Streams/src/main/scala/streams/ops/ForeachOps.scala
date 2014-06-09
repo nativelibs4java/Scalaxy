@@ -29,7 +29,7 @@ private[streams] trait ForeachOps
       val (replacedStatements, outputVars) =
         transformationClosure.replaceClosureBody(input, outputNeeds)
 
-      // require(outputVars.tpe.normalize =:= typeOf[Unit], "Expected Unit, got " + outputVars.tpe)
+      // require(outputVars.tpe.dealias =:= typeOf[Unit], "Expected Unit, got " + outputVars.tpe)
 
       StreamOutput(
         prelude = Nil,

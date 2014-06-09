@@ -2,7 +2,7 @@ package scalaxy.json
 
 import scala.language.dynamics
 import scala.language.experimental.macros
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 import scala.util.parsing.json._
 
 package object implementation {
@@ -11,7 +11,7 @@ package object implementation {
 
     val Literal(Constant(n)) = name.tree
     if (n != "apply")
-      c.error(name.tree.pos, s"value $n is not a member of ${c.prefix.tree.tpe.normalize}")
+      c.error(name.tree.pos, s"value $n is not a member of ${c.prefix.tree.tpe.dealias}")
   }
 
   private def buildJSONArray(c: Context)(args: List[c.universe.Tree]) = {

@@ -26,7 +26,7 @@ package object union {
     }
 
     val t = typeOf[Trait]
-    val b = weakTypeTag[B].tpe // .normalize.widen
+    val b = weakTypeTag[B].tpe // .dealias.widen
     var tree = expr.tree
 
     // Manual replace of base class Trait.

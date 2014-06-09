@@ -100,7 +100,13 @@ trait MiscMatchers extends Tuploids {
      *  see the twice-as-long identifiers as much improvement.
      */
     def apply(functionName: String, args: List[Tree]) =
-      Apply(mkSelect("scala", "math", "package", functionName), args)
+      Apply(
+        mkSelect(
+          TermName("scala"),
+          TermName("math"),
+          TermName("package"),
+          TermName(functionName)),
+        args)
 
     def unapply(tree: Tree): Option[(Type, Name, List[Tree])] = tree match {
       case Apply(f @ Select(left, name), args) =>
@@ -402,7 +408,7 @@ trait MiscMatchers extends Tuploids {
   object VectorApply extends CollectionApply(VectorModule, typeOf[Vector[_]])
 
   def normalize(tpe: Type): Type =
-    Option(tpe).map(_.normalize.widen).orNull
+    Option(tpe).map(_.dealias.widen).orNull
 
   object OptionTree {
     val optionClass = OptionClass
@@ -425,7 +431,7 @@ trait MiscMatchers extends Tuploids {
     lazy val println = this("println")
 
     def contains(sym: Symbol) = sym.owner == PredefModule.moduleClass
-    def apply(name: String): Symbol = PredefModule.asModule.moduleClass.asType.toType member newTermName(name)
+    def apply(name: String): Symbol = PredefModule.asModule.moduleClass.asType.toType member TermName(name)
     def unapply(tree: Tree): Boolean = tree.symbol == PredefModule
   }
   object ArrayOps {

@@ -66,9 +66,9 @@ final class Reified[A: TypeTag](
 
     var ast: Tree = flatExpr.tree
     // println("AST: " + ast)
-    ast = simplifyGenericTree(toolbox.typeCheck(ast, valueTag.tpe))
+    ast = simplifyGenericTree(toolbox.typecheck(ast, pt = valueTag.tpe))
     // println("SIMPLIFIED AST: " + ast)
-    ast = toolbox.resetLocalAttrs(ast)
+    ast = toolbox.untypecheck(ast)
     // println("RESET AST: " + ast)
     def reinline(tree: Tree) = tree match {
       case DefDef(mods, name, tparams, vparamss, tpt, rhs) =>

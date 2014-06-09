@@ -187,7 +187,7 @@ trait TraversalOps
                 Apply(
                   Select(
                     New(TypeTree(ArrayIndexOutOfBoundsExceptionClass.asType.toType)),
-                    nme.CONSTRUCTOR
+                    termNames.CONSTRUCTOR
                   ),
                   List(newInt(0))
                 )

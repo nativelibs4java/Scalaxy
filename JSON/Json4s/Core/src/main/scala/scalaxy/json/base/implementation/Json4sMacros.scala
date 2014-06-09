@@ -40,7 +40,7 @@ trait Json4sMacros extends JsonDriverMacros {
   override def isJField(c: Context)(tpe: c.universe.Type) = {
     import c.universe._
 
-    val t = tpe.normalize
+    val t = tpe.dealias
     t <:< typeOf[JField] ||
     t <:< typeOf[(String, Byte)] ||
     t <:< typeOf[(String, Short)] ||
@@ -55,7 +55,7 @@ trait Json4sMacros extends JsonDriverMacros {
   override def isJFieldOption(c: Context)(tpe: c.universe.Type) = {
     import c.universe._
 
-    val t = tpe.normalize
+    val t = tpe.dealias
     t <:< typeOf[None.type] ||
     t <:< typeOf[Option[_]] && {
       val TypeRef(_, _, List(tparam)) = t

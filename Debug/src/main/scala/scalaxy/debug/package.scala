@@ -62,8 +62,8 @@ package debug
       def newValDef(name: String, rhs: Tree, tpe: Type = null) = {
         ValDef(
           NoMods, 
-          newTermName(c.fresh(name)), 
-          TypeTree(Option(tpe).getOrElse(rhs.tpe.normalize)), 
+          TermName(c.freshName(name)), 
+          TypeTree(Option(tpe).getOrElse(rhs.tpe.dealias)), 
           rhs
         )
       }
@@ -82,7 +82,7 @@ package debug
         case _ => false
       }
       
-      val typedCondition = c.typeCheck(condition.tree, typeOf[Boolean])
+      val typedCondition = c.typecheck(condition.tree)//, typeOf[Boolean])
       c.Expr[Unit](
         typedCondition match 
         {
@@ -105,7 +105,7 @@ package debug
               rightDef,
               if (isEqual)
                 callBuilder(
-                  condExpr, 
+                  condExpr,
                   reify(s"${str.splice} (${leftExpr.splice} ${actualRelExpr.splice} ${rightExpr.splice})")
                 ).tree
               else if (isConstant(left) || isConstant(right))
@@ -116,11 +116,12 @@ package debug
           case _ =>
             val condDef = newValDef("cond", typedCondition)
             val condExpr = c.Expr[Boolean](Ident(condDef.name))
-            val str = 
+            val str = c.Expr[String](
               if (isConstant(typedCondition))
-                c.literal("Always false!")
+                q""" "Always false!" """
               else
-                c.literal(typedCondition.toString)
+                q"${typedCondition.toString}"
+            )
             Block(
               condDef,
               callBuilder(condExpr, str).tree

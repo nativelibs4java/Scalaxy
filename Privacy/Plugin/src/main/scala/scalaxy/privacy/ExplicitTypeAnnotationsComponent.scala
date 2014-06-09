@@ -96,7 +96,7 @@ class ExplicitTypeAnnotationsComponent(
         def checkTypeTree(d: ValOrDefDef) {
           if (d.tpt.pos != NoPosition &&
             d.tpt.pos == d.pos &&
-            d.name != nme.CONSTRUCTOR &&
+            d.name != termNames.CONSTRUCTOR &&
             d.mods.hasNoFlags(PRIVATE | PROTECTED | SYNTHETIC | OVERRIDE | PARAM)) {
 
             val pos = if (d.pos == NoPosition) d.rhs.pos else d.pos

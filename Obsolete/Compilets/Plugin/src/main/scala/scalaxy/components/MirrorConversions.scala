@@ -32,7 +32,7 @@ extends PatternMatchers
   def newMirrorToGlobalImporter(mirror: api.Universe)(bindings: Bindings): global.StandardImporter = {
     new global.StandardImporter {
       val from = mirror.asInstanceOf[scala.reflect.internal.SymbolTable]
-      lazy val applyNamePattern = from.newTermName("apply")
+      lazy val applyNamePattern = from.TermName("apply")
   
       override def importTree(tree: from.Tree) = {
         ultraLogConversions("IMPORT TREE (tpe = " + tree.tpe + ", cls = " + tree.getClass.getName + "): " + tree)

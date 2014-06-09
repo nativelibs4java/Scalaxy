@@ -75,7 +75,7 @@ private[streams] trait FlatMapOps
           val (replacedStatements, outputVars) =
             transformationClosure.replaceClosureBody(
               input.copy(
-                vars = ScalarValue(tpe, alias = Some(Ident(itemVal.toString))),
+                vars = ScalarValue(tpe, alias = Some(Ident(TermName(itemVal.toString)))),
                 outputSize = None,
                 index = None),
               outputNeeds)

@@ -37,7 +37,7 @@ trait Tuploids extends CommonScalaNames {
 
   private lazy val primTypes = Set(IntTpe, LongTpe, ShortTpe, CharTpe, BooleanTpe, DoubleTpe, FloatTpe, ByteTpe)
 
-  def isPrimitiveType(tpe: Type) = tpe != null && primTypes.contains(tpe.normalize)
+  def isPrimitiveType(tpe: Type) = tpe != null && primTypes.contains(tpe.dealias)
 
   def getTupleComponentTypes(tpe: Type): List[Type] = {
     tpe match {
@@ -96,8 +96,8 @@ trait Tuploids extends CommonScalaNames {
     isPrimitiveType(tpe) ||
       isTupleType(tpe) && getTupleComponentTypes(tpe).forall(isTuploidType _) ||
       {
-        tpe.declarations.exists(isValOrVar _) &&
-          tpe.declarations.forall(isImmutableClassMember _)
+        tpe.decls.exists(isValOrVar _) &&
+          tpe.decls.forall(isImmutableClassMember _)
       }
   }
 }

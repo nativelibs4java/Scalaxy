@@ -6,7 +6,7 @@ import javafx.beans.binding._
 import javafx.beans.value._
 
 import scala.language.experimental.macros
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 
 private[fx] object PropertyMacros
 {
@@ -21,7 +21,7 @@ private[fx] object PropertyMacros
       Apply(
         Select(
           New(TypeTree(weakTypeTag[P].tpe)),
-          nme.CONSTRUCTOR),
+          termNames.CONSTRUCTOR),
         List(value.tree)
       )
     )
@@ -34,7 +34,7 @@ private[fx] object PropertyMacros
       (ev: c.Expr[GenericType[_, _, _, _]]): c.Expr[T] =
   {
     import c.universe._
-    c.Expr[T](Select(c.typeCheck(p.tree), TermName("get")))
+    c.Expr[T](Select(c.typecheck(p.tree), TermName("get")))
   }
 
   def bindingValue
@@ -44,6 +44,6 @@ private[fx] object PropertyMacros
       (ev: c.Expr[GenericType[_, _, _, _]]): c.Expr[T] =
   {
     import c.universe._
-    c.Expr[T](Select(c.typeCheck(b.tree), TermName("get")))
+    c.Expr[T](Select(c.typecheck(b.tree), TermName("get")))
   }
 }

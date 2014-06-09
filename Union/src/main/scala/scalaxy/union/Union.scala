@@ -48,7 +48,7 @@ object | {
     //   val structTpe = refinedType(Nil, NoSymbol, decls, NoPosition)
     //   val conversionType = MethodType(List(tpe), structTpe)
     // }
-    //val typedArgs = args.map(c.typeCheck(_.tree))
+    //val typedArgs = args.map(c.typecheck(_.tree))
 
     c.Expr[Any](
       Apply(

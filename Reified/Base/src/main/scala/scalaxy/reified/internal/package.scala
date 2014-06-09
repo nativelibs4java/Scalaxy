@@ -22,7 +22,7 @@ package object internal {
 
     c.Expr[universe.Expr[A]](
       c.reifyTree(
-        c.universe.treeBuild.mkRuntimeUniverseRef,
+        c.universe.internal.gen.mkRuntimeUniverseRef,
         c.universe.EmptyTree,
         tree
       )
@@ -35,7 +35,7 @@ package object internal {
   def reifiedImpl[A: c.WeakTypeTag](c: Context)(v: c.Expr[A])(tt: c.Expr[universe.TypeTag[A]]): c.Expr[Reified[A]] = {
     import c.universe._
 
-    val expr = runtimeExpr[A](c)(c.typeCheck(v.tree, weakTypeTag[A].tpe))
+    val expr = runtimeExpr[A](c)(c.typecheck(v.tree, pt = weakTypeTag[A].tpe))
     // println("COMPILING EXPR[" + weakTypeTag[A].tpe + "] = " + v.tree)
     val res = reify({
       implicit val valueTag: universe.TypeTag[A] = tt.splice
@@ -62,7 +62,7 @@ package object internal {
 
     import c.universe._
 
-    val expr = runtimeExpr[A](c)(c.typeCheck(v.tree))
+    val expr = runtimeExpr[A](c)(c.typecheck(v.tree))
     reify({
       implicit val valueTag = tt.splice
       new Reified[A](

@@ -224,7 +224,7 @@ trait CodeAnalysis
             Seq()
           else
             Seq(tree)
-        case This(_) | Select(_, SELF | THIS | thisName() | superName() | nme.CONSTRUCTOR) =>
+        case This(_) | Select(_, SELF | THIS | thisName() | superName() | termNames.CONSTRUCTOR) =>
           //println("That was a this : " + tree)
           Seq()
         case Select(TupleSelect(), applyName()) =>

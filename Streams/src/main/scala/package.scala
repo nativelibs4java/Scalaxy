@@ -32,11 +32,11 @@ package streams
           import c.universe._
           def typed(tree: Tree) = c.typecheck(tree.asInstanceOf[c.Tree]).asInstanceOf[Tree]
           c.Expr[A](
-            c.resetLocalAttrs(
+            c.untypecheck(
               Streams.optimize(c.universe)(
                 a.tree,
                 typed(_),
-                c.fresh(_),
+                c.freshName(_),
                 c.info(_, _, force = true), recurse)))
         } catch {
           case ex: Throwable =>

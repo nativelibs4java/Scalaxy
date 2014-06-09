@@ -19,8 +19,8 @@ trait QuasiQuoteHacks {
   */
   private lazy val traitsFixer = new Transformer {
     override def transform(tree: Tree) = tree match {
-      case Block(List(Select(target, nme.CONSTRUCTOR)), value) =>
-        Block(List(Apply(Select(target, nme.CONSTRUCTOR), Nil)), value)
+      case Block(List(Select(target, termNames.CONSTRUCTOR)), value) =>
+        Block(List(Apply(Select(target, termNames.CONSTRUCTOR), Nil)), value)
       case ClassDef(mods, name, tparams, Template(parents, self, body)) if mods.hasFlag(Flag.TRAIT) =>
         println("FOUND TRAIT")
         ClassDef(
@@ -31,7 +31,7 @@ trait QuasiQuoteHacks {
             parents,
             self,
             body.filter({
-              case d: DefDef if d.name == nme.CONSTRUCTOR => false
+              case d: DefDef if d.name == termNames.CONSTRUCTOR => false
               case _ => true
             })
           )

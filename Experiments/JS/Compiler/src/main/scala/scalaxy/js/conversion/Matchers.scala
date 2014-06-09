@@ -7,7 +7,7 @@ import scala.reflect.NameTransformer.{ encode, decode }
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 import scala.reflect.api.Universe
 // import scala.reflect.api.Universe
 

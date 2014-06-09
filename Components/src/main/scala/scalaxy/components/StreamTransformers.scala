@@ -62,7 +62,7 @@ trait StreamTransformers
             case ArrayTabulate(componentType, lengths @ (firstLength :: otherLengths), f @ Func(params, body), manifest) =>
               val tpe = body.tpe
               val returnType = //if (tpe.isInstanceOf[ConstantType]) 
-                tpe.normalize.widen
+                tpe.dealias.widen
               //else
               //  tpe
 

@@ -35,7 +35,7 @@ package object parano {
 
   def impl(c: Context)(): c.Expr[Unit] =
     {
-      val tree = c.typeCheck(c.enclosingUnit.body, withMacrosDisabled = true)
+      val tree = c.typecheck(c.enclosingUnit.body, withMacrosDisabled = true)
 
       class MacroParanoChecks(c: Context) extends ParanoChecks {
         override val global = c.universe

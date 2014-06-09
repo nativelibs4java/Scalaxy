@@ -11,7 +11,7 @@ package trees {
   }
   private[trees] object ConcreteType {
     def unapply(tpe: Type): Boolean = {
-      !tpe.typeSymbol.asType.isAbstractType
+      !tpe.typeSymbol.asType.isAbstract
     }
   }
   private[trees] object AsInstanceOf {

@@ -1,7 +1,7 @@
 package scalaxy.generic
 
 import scala.language.experimental.macros
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 
 import scala.language.implicitConversions
 import scala.language.dynamics

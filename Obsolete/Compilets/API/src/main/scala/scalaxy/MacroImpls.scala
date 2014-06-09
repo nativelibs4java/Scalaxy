@@ -1,7 +1,7 @@
 package scalaxy.compilets
 
 import scala.language.experimental.macros
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 
 import scala.reflect.runtime.{ universe => ru }
 
@@ -16,10 +16,10 @@ object impl
         TypeApply(
           Select(
             Select(
-              Ident(newTermName("scala")).setSymbol(definitions.ScalaPackage),
-              newTermName("List")
+              Ident(TermName("scala")).setSymbol(definitions.ScalaPackage),
+              TermName("List")
             ),
-            newTermName("apply")
+            TermName("apply")
           ),
           List(TypeTree(typeOf[T]))
         ),
@@ -56,7 +56,7 @@ object impl
       c.reifyTree(
         c.universe.treeBuild.mkRuntimeUniverseRef,
         c.universe.EmptyTree,
-        c.typeCheck(x.tree)
+        c.typecheck(x.tree)
       )
     )
   }
@@ -87,7 +87,7 @@ object impl
     assertNoUnsupportedConstructs(c)(pattern.tree)
 
     val scalaCollection =
-      Select(Ident(newTermName("scala")), newTermName("collection"))
+      Select(Ident(TermName("scala")), TermName("collection"))
 
     c.Expr[ConditionalAction[T]](
       New(
@@ -95,7 +95,7 @@ object impl
         List(List(
           tree(c)(pattern),
           Apply(
-            Select(Select(scalaCollection, newTermName("Seq")), newTermName("apply")),
+            Select(Select(scalaCollection, TermName("Seq")), TermName("apply")),
             idents.map(_.tree).toList.map { case Ident(n) => Literal(Constant(n.toString)) }
           ),
           thenMatch.tree

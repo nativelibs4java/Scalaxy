@@ -34,7 +34,7 @@ extends TypingTransformers
   val patternUniv: api.Universe
   val candidateUniv: api.Universe with scala.reflect.internal.Importers
 
-  lazy val applyNamePattern = patternUniv.newTermName("apply")
+  lazy val applyNamePattern = patternUniv.TermName("apply")
   
   var printed = Set[String]()
   
@@ -158,7 +158,7 @@ extends TypingTransformers
   }
 
   def normalize(u: api.Universe)(tpe: u.Type) = {
-    tpe.deconst.dealias.normalize.asInstanceOf[u.Type]
+    tpe.deconst.dealias.dealias.asInstanceOf[u.Type]
   }
 
   def resolveType(u: api.Universe)(tpe: u.Type): u.Type = {

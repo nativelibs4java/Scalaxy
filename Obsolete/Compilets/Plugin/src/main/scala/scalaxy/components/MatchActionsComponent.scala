@@ -275,7 +275,7 @@ extends PluginComponent
         if (expanded eq sup) {
           sup
         } else {
-          val expectedTpe = tree.tpe.dealias.deconst.normalize
+          val expectedTpe = tree.tpe.dealias.deconst.dealias
           val tpe = expanded.tpe
 
           if (options.debug)

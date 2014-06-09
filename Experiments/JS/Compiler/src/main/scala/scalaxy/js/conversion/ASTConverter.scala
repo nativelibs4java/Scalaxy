@@ -7,7 +7,7 @@ import scala.reflect.NameTransformer.{ encode, decode }
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 import scala.reflect.api.Universe
 // import scala.reflect.api.Universe
 
@@ -42,7 +42,7 @@ trait ASTConverter
   }
 
   private implicit def n2s(name: Name): String =
-    if (name == nme.EMPTY || name == tpnme.EMPTY) ""
+    if (name == termNames.EMPTY || name == typeNames.EMPTY) ""
     else name.toString
 
   private implicit class ListExt(list: List[JS.Node]) {
@@ -314,7 +314,7 @@ trait ASTConverter
                 JS.Return(JS.Ident("this")))),
             topLevel = topLevel) ::
           body.collect({
-            case d: DefDef if d.name != nme.CONSTRUCTOR =>
+            case d: DefDef if d.name != termNames.CONSTRUCTOR =>
               implicit val p = pos(d)
               // TODO fix prefix mechanism
               val subGlobalPrefix = globalPrefix.derive(name + ".prototype")
@@ -324,7 +324,7 @@ trait ASTConverter
         case ModuleDef(mods, name, Template(parents, self, body)) =>
         // case q"object $name { ..$body }" =>
           val needsStableName = body.exists({
-            case d: ValOrDefDef if d.name != nme.CONSTRUCTOR =>
+            case d: ValOrDefDef if d.name != termNames.CONSTRUCTOR =>
               true
             case d: ModuleDef =>
               true
@@ -338,7 +338,7 @@ trait ASTConverter
                 JS.newEmptyJSON.asVar(name),
                 assembleBlock(
                   body.flatMap({
-                    case d: ValOrDefDef if !d.mods.hasFlag(Flag.LAZY) && d.name != nme.CONSTRUCTOR =>
+                    case d: ValOrDefDef if !d.mods.hasFlag(Flag.LAZY) && d.name != termNames.CONSTRUCTOR =>
                       implicit val p = pos(d)
                       convert(d) :+ JS.Ident(name).select(d.name).assign(d.name)
                     case t =>
@@ -359,7 +359,7 @@ trait ASTConverter
             "base",
             List(JS.Ident("this")) ++
             (
-              if (methodName == nme.CONSTRUCTOR) Nil
+              if (methodName == termNames.CONSTRUCTOR) Nil
               else JS.Literal(methodName.toString) :: Nil
             ) ++
             args.flatMap(convert(_))) :: Nil
@@ -386,7 +386,7 @@ trait ASTConverter
 
         case Select(target, name) =>
           val convTarget = convert(target).unique
-          if (name == nme.CONSTRUCTOR)
+          if (name == termNames.CONSTRUCTOR)
             convTarget :: Nil
           else
             convTarget.select(name) :: Nil
@@ -436,7 +436,7 @@ trait ASTConverter
 
         case DefDef(mods, name, tparams, vparamss, tpt, rhs) =>
           val termSym = tree.symbol.asTerm
-          if (name == nme.CONSTRUCTOR) {
+          if (name == termNames.CONSTRUCTOR) {
             Nil
           } else if (termSym.isAccessor) {
             if (termSym.isLazy) {

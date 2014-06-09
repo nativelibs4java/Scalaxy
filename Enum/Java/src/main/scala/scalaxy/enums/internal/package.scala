@@ -15,10 +15,10 @@ package object internal {
       s.isModule &&
         s.asModule.moduleClass.asType.toType <:< valueType ||
       s.isTerm && s.asTerm.isGetter &&
-        s.asTerm.accessed.typeSignature.normalize <:< valueType
+        s.asTerm.accessed.typeSignature.dealias <:< valueType
     }
     // val ModuleDef(_, _, Template(_, _, body)) = 
-    //   c.typeCheck(c.enclosingClass, withMacrosDisabled = true)
+    //   c.typecheck(c.enclosingClass, withMacrosDisabled = true)
     // val namesToPos = (body.collect {
     //   case vd @ ValDef(_, name, tpt, _)
     //       if namesSet(name.toString.trim) =>
@@ -87,7 +87,7 @@ package object internal {
         Apply(
           Select(
             New(TypeTree(weakTypeTag[T].tpe)),
-            nme.CONSTRUCTOR
+            termNames.CONSTRUCTOR
           ),
           List(
             newArray(c)(
@@ -95,8 +95,8 @@ package object internal {
               names.map(name => Literal(Constant(name)))
             ),
             {
-              val paramName = TermName(c.fresh())
-              val singletonName = TermName(c.fresh())
+              val paramName = TermName(c.freshName())
+              val singletonName = TermName(c.freshName())
               Function(
                 List(
                   ValDef(
@@ -138,7 +138,7 @@ package object internal {
         )
       // println("Res = " + res)
       c.Expr[T](
-        c.typeCheck(res, weakTypeTag[T].tpe)
+        c.typecheck(res, weakTypeTag[T].tpe)
       )
     } catch { case ex: Throwable =>
       ex.printStackTrace(System.out);
@@ -153,7 +153,7 @@ package object internal {
     try {
       val res = c.Expr[T](
         // Apply(
-        c.typeCheck(
+        c.typecheck(
           Ident(TermName("nextEnumValueData")),
           // Select(
           //   Ident(c.enclosingClass.symbol),

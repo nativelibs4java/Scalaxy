@@ -109,7 +109,7 @@ package object internal {
     import c.universe._
 
     def sub(tpe: Type): List[Type] = {
-      val ntpe = tpe.normalize
+      val ntpe = tpe.dealias
       if (tpe <:< typeOf[_ | _]) {
         val TypeRef(_, _, List(a, b)) = ntpe.baseType(typeOf[|[_, _]].typeSymbol)
         sub(a) ++ sub(b)

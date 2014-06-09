@@ -92,7 +92,7 @@ object Utils {
 
   def typeCheckTree(tree: Tree, pt: Type = WildcardType): Tree = {
     try {
-      optimisingToolbox.typeCheck(tree, pt)
+      optimisingToolbox.typecheck(tree, pt = pt)
     } catch {
       case ex: Throwable =>
         throw new RuntimeException(s"Failed to typeCheck($tree, $pt): $ex", ex)
@@ -101,6 +101,6 @@ object Utils {
 
   // def safeReset(tree: Tree, toolbox: ToolBox[universe.type]): Tree = {
   //   val resolved = resolveModulePaths(universe)(tree)
-  //   toolbox.resetLocalAttrs(resolved)
+  //   toolbox.untypecheck(resolved)
   // }
 }

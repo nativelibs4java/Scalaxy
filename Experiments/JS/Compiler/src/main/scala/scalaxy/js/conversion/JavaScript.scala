@@ -1,6 +1,6 @@
 package scalaxy.js
 
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 import scala.language.experimental.macros
 import scala.annotation.StaticAnnotation
 
@@ -14,7 +14,7 @@ object JavaScript {
   def implementation(c: Context)(annottees: c.Expr[Any]*): c.Expr[Any] = {
     import c.universe._
 
-    val body = c.typeCheck(c.enclosingUnit.body, withMacrosDisabled = true)
+    val body = c.typecheck(c.enclosingUnit.body, withMacrosDisabled = true)
     val converter = new ScalaToJavaScriptConverter(c.universe)
     val javaScriptCode = converter.convert(body.asInstanceOf[converter.global.Tree])
     println("CONVERTED TO JavaScript:\n" + javaScriptCode)

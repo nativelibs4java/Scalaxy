@@ -39,8 +39,8 @@ class NumericTreesTest {
       // a = (a / 3.0)
       a.toDouble
     }).tree
-    assertEquals(tb.typeCheck(doubleTree).toString,
-      simplifyGenericTree(tb.typeCheck(numericDoubleTree)).toString
+    assertEquals(tb.typecheck(doubleTree).toString,
+      simplifyGenericTree(tb.typecheck(numericDoubleTree)).toString
         .replaceAll("\\$times", "*")
         .replaceAll("\\$plus", "+")
         .replaceAll("\\$minus", "-")

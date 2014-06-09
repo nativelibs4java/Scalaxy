@@ -8,7 +8,7 @@ import javafx.beans.value._
 import javafx.event._
 
 import scala.language.experimental.macros
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 
 // import scalaxy.fx.runtime.ScalaChangeListener
 
@@ -20,8 +20,8 @@ private[fx] object ObservableValueExtensionMacros
   private def getAddListenerMethod(c: Context)(tpe: c.universe.Type): c.universe.Symbol = {
     import c.universe._
 
-    tpe.member(newTermName("addListener"))
-      .filter(s => s.isMethod && (s.asMethod.paramss.flatten match {
+    tpe.member(TermName("addListener"))
+      .filter(s => s.isMethod && (s.asMethod.paramLists.flatten match {
         case Seq(param) if param.typeSignature <:< typeOf[ChangeListener[_]] =>
           true
         case _ =>

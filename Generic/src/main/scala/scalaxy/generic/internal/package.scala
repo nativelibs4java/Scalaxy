@@ -3,7 +3,7 @@ package scalaxy.generic
 import scala.language.experimental.macros
 
 import scala.reflect._
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 import scala.reflect.runtime.universe
 
 package object internal {

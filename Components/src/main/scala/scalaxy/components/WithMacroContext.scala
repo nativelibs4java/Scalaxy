@@ -61,29 +61,29 @@ trait WithMacroContext {
   //   tree
   // }
   def typed[T <: Tree](tree: T): T =
-    context.typeCheck(tree.asInstanceOf[context.universe.Tree]).asInstanceOf[T]
+    context.typecheck(tree.asInstanceOf[context.universe.Tree]).asInstanceOf[T]
 
   def inferImplicitValue(pt: Type): Tree =
     context.inferImplicitValue(pt.asInstanceOf[context.universe.Type]).asInstanceOf[Tree]
 
   def fresh(s: String) =
-    context.fresh(s)
+    context.freshName(s)
 
   def typeCheck(x: Expr[_]): Tree =
-    context.typeCheck(x.tree.asInstanceOf[context.universe.Tree]).asInstanceOf[Tree]
+    context.typecheck(x.tree.asInstanceOf[context.universe.Tree]).asInstanceOf[Tree]
 
   def typeCheck(tree: Tree, pt: Type): Tree = {
     if (tree.tpe != null && tree.tpe =:= pt)
       tree
     else
-      context.typeCheck(
+      context.typecheck(
         tree.asInstanceOf[context.universe.Tree],
-        pt.asInstanceOf[context.universe.Type]
+        pt = pt.asInstanceOf[context.universe.Type]
       ).asInstanceOf[Tree]
   }
 
   // def cleanTypeCheck(tree: Tree): Tree = {
-  //   context.typeCheck(context.brutallyResetAttrs(tree.asInstanceOf[context.Tree])).asInstanceOf[Tree]
+  //   context.typecheck(context.brutallyResetAttrs(tree.asInstanceOf[context.Tree])).asInstanceOf[Tree]
   // }
 
   // def resetAllAttrs(tree: Tree): Tree = {
@@ -91,6 +91,6 @@ trait WithMacroContext {
   // }
 
   def resetLocalAttrs(tree: Tree): Tree = {
-    context.resetLocalAttrs(tree.asInstanceOf[context.Tree]).asInstanceOf[Tree]
+    context.untypecheck(tree.asInstanceOf[context.Tree]).asInstanceOf[Tree]
   }
 }

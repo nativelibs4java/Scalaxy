@@ -43,7 +43,7 @@ object MatchActionDefinitions
     val compilet = moduleMirror.instance.asInstanceOf[Compilet]
     val instanceMirror = currentMirror.reflect(compilet)
     
-    val declarations = compiletModule.typeSignature.declarations.toSeq
+    val declarations = compiletModule.typeSignature.decls.toSeq
     
     CompiletDefinitions(
       definitions = declarations.collect {

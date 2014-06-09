@@ -7,7 +7,7 @@ import javafx.event.EventHandler
 import scala.language.dynamics
 import scala.language.experimental.macros
 import scala.reflect.NameTransformer
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 
 private[fx] object BeanExtensionMacros
 {
@@ -28,23 +28,23 @@ private[fx] object BeanExtensionMacros
     }
 
     // Get the bean.
-    val Select(Apply(_, List(bean)), _) = c.prefix.tree//c.typeCheck(c.prefix.tree)
+    val Select(Apply(_, List(bean)), _) = c.prefix.tree//c.typecheck(c.prefix.tree)
 
     // Choose a non-existing name for our bean's val.
-    val beanName = newTermName(c.fresh("bean"))
+    val beanName = TermName(c.freshName("bean"))
 
     // Create a declaration for our bean's val.
     val beanDef = ValDef(NoMods, beanName, TypeTree(bean.tpe), bean)
 
     // Try to find a setter in the bean type that can take values of the type we've got.
     def getSetter(name: String) = {
-      bean.tpe.member(newTermName(name))
-        .filter(s => s.isMethod && s.asMethod.paramss.flatten.size == 1)
+      bean.tpe.member(TermName(name))
+        .filter(s => s.isMethod && s.asMethod.paramLists.flatten.size == 1)
     }
 
     // Try to find a setter in the bean type that can take values of the type we've got.
     def getVarTypeFromSetter(s: Symbol) = {
-      val Seq(param) = s.asMethod.paramss.flatten
+      val Seq(param) = s.asMethod.paramLists.flatten
       param.typeSignature
     }
 
@@ -65,7 +65,7 @@ private[fx] object BeanExtensionMacros
     {
       case (fieldName, value) =>
 
-        val valueTpe = value.tpe.normalize//.widen
+        val valueTpe = value.tpe.dealias//.widen
 
         // Check that all parameters are named.
         if (fieldName == null || fieldName == "")
@@ -74,10 +74,10 @@ private[fx] object BeanExtensionMacros
         //println(s"fieldName = $fieldName, valueTpe.typeSymbol = ${valueTpe.typeSymbol}; value = $value")
         //if (valueTpe weak_<:< g
         if (valueTpe <:< typeOf[ObservableValue[_]]) {
-          val propertyName = newTermName(fieldName + "Property")
+          val propertyName = TermName(fieldName + "Property")
           val propertySymbol =
             bean.tpe.member(propertyName)
-              .filter(s => s.isMethod && s.asMethod.paramss.flatten.isEmpty)
+              .filter(s => s.isMethod && s.asMethod.paramLists.flatten.isEmpty)
 
           if (propertySymbol == NoSymbol) {
             c.error(value.pos, s"Couldn't find a property getter $propertyName for property '$fieldName' in type ${bean.tpe}")

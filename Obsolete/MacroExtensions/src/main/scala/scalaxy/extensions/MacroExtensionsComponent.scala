@@ -57,10 +57,10 @@ class MacroExtensionsComponent(
         object ExtendAnnotation {
           def unapply(tree: Tree) = Option(tree) collect {
             case Apply(Select(New(AppliedTypeTree(name, List(tpt))), initName), Nil)
-            if initName == nme.CONSTRUCTOR && name.toString == "scalaxy.extension" =>
+            if initName == termNames.CONSTRUCTOR && name.toString == "scalaxy.extension" =>
               tpt
             case Apply(Select(New(name), initName), List(targetValueTpt))
-            if initName == nme.CONSTRUCTOR && name.toString.matches("extend|scalaxy.extend") =>
+            if initName == termNames.CONSTRUCTOR && name.toString.matches("extend|scalaxy.extend") =>
               val msg = "Please use `@scalaxy.extension[T]` instead of `@extend(T)` or `@scalaxy.extend(T)`"
               unit.error(tree.pos, msg)
               sys.error(msg)
@@ -163,7 +163,7 @@ class MacroExtensionsComponent(
                   ValDef(
                     pmods, 
                     // Due to https://issues.scala-lang.org/browse/SI-7170, we can have evidence name clashes.
-                    pname,//if (isImplicit(pmods)) newTermName(unit.fresh.newName(pname + "$")) else pname, 
+                    pname,//if (isImplicit(pmods)) TermName(unit.fresh.newName(pname + "$")) else pname, 
                     newPTpt, 
                     prhs)
               })
@@ -298,7 +298,7 @@ class MacroExtensionsComponent(
                                   New(
                                     typePath("scala.unchecked")
                                   ),
-                                  nme.CONSTRUCTOR
+                                  termNames.CONSTRUCTOR
                                 ),
                                 Nil),
                               termPath(contextName + ".prefix.tree")),
@@ -343,7 +343,7 @@ class MacroExtensionsComponent(
                               case ValDef(pmods, pname, ptpt, prhs) if isImplicit(pmods) =>
                                 DefDef(
                                   Modifiers(IMPLICIT),
-                                  newTermName(unit.fresh.newName(pname.toString + "$")),
+                                  TermName(unit.fresh.newName(pname.toString + "$")),
                                   Nil,
                                   Nil,
                                   newEmptyTpt,//newExprType(contextName, ptpt),

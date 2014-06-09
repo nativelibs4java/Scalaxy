@@ -49,7 +49,7 @@ class StreamTransformersTest
   private def comp[T](t: Tree, reset: Boolean): T = {
     var tree = t
     if (reset)
-      toolbox.compile(toolbox.resetLocalAttrs(t.asInstanceOf[toolbox.u.Tree]))().asInstanceOf[T]
+      toolbox.compile(toolbox.untypecheck(t.asInstanceOf[toolbox.u.Tree]))().asInstanceOf[T]
     else
       toolbox.compile(t.asInstanceOf[toolbox.u.Tree])().asInstanceOf[T]
   }

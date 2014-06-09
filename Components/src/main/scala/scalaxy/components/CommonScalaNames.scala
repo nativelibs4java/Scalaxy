@@ -13,7 +13,7 @@ trait CommonScalaNames {
 
   class N(val s: String) {
     def unapply(n: Name): Boolean = n.toString == s
-    def apply() = newTermName(s)
+    def apply() = TermName(s)
   }
   object N {
     def apply(s: String) = new N(s)
@@ -55,8 +55,8 @@ trait CommonScalaNames {
   lazy val ZAND = encode("&&")
   lazy val ZOR = encode("||")
 
-  lazy val THIS = newTermName("this")
-  lazy val SELF = newTermName("self")
+  lazy val THIS = TermName("this")
+  lazy val SELF = TermName("self")
 
   val addAssignName = N(NameTransformer.encode("+="))
   val toArrayName = N("toArray")

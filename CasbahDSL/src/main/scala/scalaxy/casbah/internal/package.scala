@@ -1,6 +1,6 @@
 package scalaxy.casbah
 
-import scala.reflect.macros.Context
+import scala.reflect.macros.blackbox.Context
 
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.query.dsl._
@@ -46,7 +46,7 @@ package object internal {
     }
     object TermsAnnotated {
       def unapply(tree: Tree) = Annotated.unapply(tree).map {
-        case (tpe, names, tree) => (tpe, Option(names).map(_.map(newTermName(_))).orNull, tree)
+        case (tpe, names, tree) => (tpe, Option(names).map(_.map(TermName(_))).orNull, tree)
       }
     }
     object Eq {
@@ -78,7 +78,7 @@ package object internal {
     }
 
     // Transform closure body recursively.
-    val result = c.typeCheck(f.tree) match {
+    val result = c.typecheck(f.tree) match {
       case Function(List(param), body) =>
         c.Expr[MongoDBObject](
           new Transformer {

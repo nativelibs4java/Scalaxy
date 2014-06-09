@@ -26,7 +26,7 @@ private[scalaxy] object Optimizer {
     Apply(
       Select(
         New(Ident(typeOf[scala.inline].typeSymbol)),
-        nme.CONSTRUCTOR),
+        termNames.CONSTRUCTOR),
       Nil)
   }
 
@@ -67,13 +67,15 @@ private[scalaxy] object Optimizer {
         Apply(
           Select(
             Ident(iVar.name),
-            encode(
-              if (step > 0) {
-                if (isInclusive) "<=" else "<"
-              } else {
-                if (isInclusive) ">=" else ">"
-              }
-            ): TermName
+            TermName(
+              encode(
+                if (step > 0) {
+                  if (isInclusive) "<=" else "<"
+                } else {
+                  if (isInclusive) ">=" else ">"
+                }
+              )
+            )
           ),
           List(Ident(endVal.name))
         )
@@ -94,7 +96,7 @@ private[scalaxy] object Optimizer {
           Apply(
             Select(
               Ident(iVar.name),
-              encode("+"): TermName
+              TermName(encode("+"))
             ),
             List(Ident(stepVal.name))
           )
