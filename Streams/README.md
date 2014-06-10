@@ -91,6 +91,7 @@ Scalaxy/Streams rewrites streams with the following components:
   * `map`,
   * `flatMap` (with or without nested streams),
   * `zipWithIndex`
+  * `sum`, `product`
 
 The output type of each optimized stream is always the same as the original, but when nested streams are encountered in `flatMap` operations many intermediate outputs can typically be skipped, saving up on memory usage and execution time.
 

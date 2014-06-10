@@ -24,8 +24,10 @@ private[streams] trait StreamSinks
       case q"$target.sum[${tpt}](${_})" =>
         (target, SumSink(tpt.tpe))
 
-      // case _ if { println(tree); false } =>
-      // 	null
+      case q"$target.product[${tpt}](${_})" =>
+        (target, ProductSink(tpt.tpe))
+
+      // case _ if { println(tree); false } => null
     }
   }
 }

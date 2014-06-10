@@ -69,28 +69,32 @@ class StreamComponentsTestBase extends Utils {
     val (unoptimized, unoptimizedMessages) = compile(source)
     val (optimized, optimizedMessages) = compile(s"scalaxy.streams.optimize { $source }");
 
-    (unoptimized(), optimized()) match {
-      case (expected: Array[Int], actual: Array[Int]) =>
-        assertArrayEquals(source, expected, actual)
-      case (expected: Array[Short], actual: Array[Short]) =>
-        assertArrayEquals(source, expected, actual)
-      case (expected: Array[Byte], actual: Array[Byte]) =>
-        assertArrayEquals(source, expected, actual)
-      case (expected: Array[Char], actual: Array[Char]) =>
-        assertArrayEquals(source, expected, actual)
-      case (expected: Array[Float], actual: Array[Float]) =>
-        assertArrayEquals(source, expected, actual, 0)
-      case (expected: Array[Double], actual: Array[Double]) =>
-        assertArrayEquals(source, expected, actual, 0)
-      case (expected: Array[Boolean], actual: Array[Boolean]) =>
-        assertArrayEquals(source, expected.map(_.toString: AnyRef), actual.map(_.toString: AnyRef))
-      case (expected, actual) =>
-        assertEquals(source, expected, actual)
-    }
+    assertEqualValues(source, unoptimized(), optimized())
 
     assertEquals("Unexpected messages during unoptimized compilation",
       CompilerMessages(), unoptimizedMessages)
 
     optimizedMessages
+  }
+
+  def assertEqualValues(message: String, expected: Any, actual: Any) = {
+    (expected, actual) match {
+      case (expected: Array[Int], actual: Array[Int]) =>
+        assertArrayEquals(message, expected, actual)
+      case (expected: Array[Short], actual: Array[Short]) =>
+        assertArrayEquals(message, expected, actual)
+      case (expected: Array[Byte], actual: Array[Byte]) =>
+        assertArrayEquals(message, expected, actual)
+      case (expected: Array[Char], actual: Array[Char]) =>
+        assertArrayEquals(message, expected, actual)
+      case (expected: Array[Float], actual: Array[Float]) =>
+        assertArrayEquals(message, expected, actual, 0)
+      case (expected: Array[Double], actual: Array[Double]) =>
+        assertArrayEquals(message, expected, actual, 0)
+      case (expected: Array[Boolean], actual: Array[Boolean]) =>
+        assertArrayEquals(message, expected.map(_.toString: AnyRef), actual.map(_.toString: AnyRef))
+      case (expected, actual) =>
+        assertEquals(message, expected, actual)
+    }
   }
 }
