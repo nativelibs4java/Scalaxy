@@ -30,9 +30,9 @@ class StreamComponentsTestBase extends Utils {
       Option(name).map(_.toString)
   }
 
-  def typeCheck(t: global.Tree): global.Tree = {
+  def typecheck(t: global.Tree): global.Tree = {
     val toolbox = currentMirror.mkToolBox(options = commonOptions)
-    toolbox.typeCheck(t.asInstanceOf[toolbox.u.Tree]).asInstanceOf[global.Tree]
+    toolbox.typecheck(t.asInstanceOf[toolbox.u.Tree]).asInstanceOf[global.Tree]
   }
 
   def compile(source: String): (() => Any, CompilerMessages) = {

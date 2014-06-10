@@ -18,6 +18,8 @@ private[streams] trait ForeachOps
   {
     override def describe = Some("foreach")
 
+    override def lambdaCount = 1
+
     override def sinkOption = Some(UnusableSink)
 
     override def emit(input: StreamInput,

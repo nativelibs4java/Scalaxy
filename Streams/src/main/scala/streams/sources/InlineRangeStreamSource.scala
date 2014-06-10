@@ -38,6 +38,8 @@ private[streams] trait InlineRangeStreamSources extends StreamComponents {
   {
     override def describe = Some("Range")
 
+    override def lambdaCount = 0
+
     override def sinkOption = {
       println("TODO vector / range sink")
       None

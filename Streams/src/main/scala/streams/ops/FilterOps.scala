@@ -22,6 +22,8 @@ private[streams] trait FilterOps extends ClosureStreamOps with Strippers
   {
     override def describe = Some(name)
 
+    override def lambdaCount = 1
+
     override def sinkOption = None
 
     override def isMapLike = false

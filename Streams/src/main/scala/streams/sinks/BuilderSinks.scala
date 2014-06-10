@@ -7,6 +7,8 @@ private[streams] trait BuilderSinks extends StreamComponents {
   // Base class for builder-based sinks.
   trait BuilderSink extends StreamSink
   {
+    override def lambdaCount = 0
+
     def createBuilder(inputVars: TuploidValue[Tree], typed: Tree => Tree): Tree
 
     override def emit(input: StreamInput, outputNeeds: OutputNeeds, nextOps: OpsAndOutputNeeds): StreamOutput =

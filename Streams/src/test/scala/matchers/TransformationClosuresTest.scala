@@ -9,7 +9,7 @@ class TransformationClosureTest extends StreamComponentsTestBase with Transforma
 
   @Test
   def testNoOpTuple2 {
-    val f = typeCheck(q"""
+    val f = typecheck(q"""
       (p: (Int, Int)) => p match {
         case pp @ (x, y) =>
           (x, y)
@@ -40,7 +40,7 @@ class TransformationClosureTest extends StreamComponentsTestBase with Transforma
 
   @Test
   def testTupleAliasRef {
-    val f = typeCheck(q"""
+    val f = typecheck(q"""
       (p: (Int, Int)) => p match {
         case pp @ (x, y) =>
           println(pp)
@@ -55,7 +55,7 @@ class TransformationClosureTest extends StreamComponentsTestBase with Transforma
 
   @Test
   def testNoOpScalar {
-    val f = typeCheck(q"(x: Int) => x")
+    val f = typecheck(q"(x: Int) => x")
 
     val SomeTransformationClosure(tc @ TransformationClosure(inputs, statements, outputs)) = f
     val ScalarValue(_, None, Some(S("x"))) = inputs
@@ -64,7 +64,7 @@ class TransformationClosureTest extends StreamComponentsTestBase with Transforma
 
   @Test
   def testScalarToPrintln {
-    val f = typeCheck(q"(x: Int) => println(x)")
+    val f = typecheck(q"(x: Int) => println(x)")
 
     val SomeTransformationClosure(tc @ TransformationClosure(inputs, statements, outputs)) = f
     val ScalarValue(_, None, Some(S("x"))) = inputs
@@ -73,7 +73,7 @@ class TransformationClosureTest extends StreamComponentsTestBase with Transforma
 
   @Test
   def testScalarToTuple {
-    val f = typeCheck(q"(x: Int) => (1, x)")
+    val f = typecheck(q"(x: Int) => (1, x)")
 
     val SomeTransformationClosure(tc @ TransformationClosure(inputs, statements, outputs)) = f
     val ScalarValue(_, None, Some(S("x"))) = inputs
@@ -93,7 +93,7 @@ class TransformationClosureTest extends StreamComponentsTestBase with Transforma
 
   @Test
   def tupleMappedToTuple {
-    val f = typeCheck(q"""
+    val f = typecheck(q"""
       (x2: (Int, Int)) => (x2: (Int, Int) @unchecked) match {
         case (x1 @ ((v @ _), (i @ _))) => {
           val c: Int = i.+(2);
@@ -107,7 +107,7 @@ class TransformationClosureTest extends StreamComponentsTestBase with Transforma
 
   @Test
   def scalarMappedToTuple {
-    val f = typeCheck(q"""
+    val f = typecheck(q"""
       (array: Array[Int]) => {
         val length: Int = array.length.*(30);
         scala.Tuple2.apply[Array[Int], Int](array, length)
@@ -120,7 +120,7 @@ class TransformationClosureTest extends StreamComponentsTestBase with Transforma
 
   @Test
   def simple3Tuple {
-    val f = typeCheck(q"""
+    val f = typecheck(q"""
       ((t: ((Int, Int), Int)) => (t: ((Int, Int), Int) @unchecked) match {
         case (((x @ (_: Int)), (y @ (_: Int))), (i @ (_: Int))) =>
           (x + y) % 2 == 0
@@ -145,7 +145,7 @@ class TransformationClosureTest extends StreamComponentsTestBase with Transforma
   }
   /**
 
-  val f = toolbox.typeCheck(q"""
+  val f = toolbox.typecheck(q"""
         (x2: (Int, Int)) => (x2: (Int, Int) @unchecked) match {
           case (x1 @ ((v @ _), (i @ _))) => {
             val c: Int = i.+(2);
@@ -153,7 +153,7 @@ class TransformationClosureTest extends StreamComponentsTestBase with Transforma
           }
         }
       """)
-      val f = toolbox.typeCheck(q"""
+      val f = toolbox.typecheck(q"""
         (array: Array[Int]) => {
           val length: Int = array.length.*(30);
           scala.Tuple2.apply[Array[Int], Int](array, length)

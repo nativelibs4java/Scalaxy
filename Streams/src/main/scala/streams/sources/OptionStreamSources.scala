@@ -38,6 +38,8 @@ private[streams] trait OptionStreamSources
   {
     override def describe = Some("Option")
 
+    override def lambdaCount = 0
+
     override def emit(input: StreamInput,
                       outputNeeds: OutputNeeds,
                       nextOps: OpsAndOutputNeeds): StreamOutput =
@@ -89,6 +91,8 @@ private[streams] trait OptionStreamSources
     extends StreamSource
   {
     override def describe = Some(if (isSome) "Some" else "Option")
+
+    override def lambdaCount = 0
 
     override def emit(input: StreamInput,
                       outputNeeds: OutputNeeds,

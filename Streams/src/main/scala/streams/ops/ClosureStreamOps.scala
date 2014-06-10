@@ -10,6 +10,8 @@ private[streams] trait ClosureStreamOps extends StreamComponents with Transforma
     def body: Tree
     def isMapLike: Boolean = true
 
+    override def lambdaCount = 1
+
     lazy val SomeTransformationClosure(transformationClosure) = q"($param) => $body"
 
     override def transmitOutputNeedsBackwards(paths: Set[TuploidPath]) =

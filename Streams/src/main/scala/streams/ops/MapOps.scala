@@ -23,6 +23,8 @@ private[streams] trait MapOps
   {
     override def describe = Some("map")
 
+    override def lambdaCount = 1
+
     override val sinkOption = canBuildFrom.map(CanBuildFromSink(_))
 
     override def emit(input: StreamInput,

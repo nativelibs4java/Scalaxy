@@ -12,7 +12,7 @@ class CoerceOpsTest extends StreamComponentsTestBase
 
   @Test
   def testCoerceExtractor {
-    val v @ SomeCoerceOp(_, CoerceOp(_)) = typeCheck(q"""Array(Array(1)).zipWithIndex.withFilter(
+    val v @ SomeCoerceOp(_, CoerceOp(_)) = typecheck(q"""Array(Array(1)).zipWithIndex.withFilter(
       (item2: (Array[Int], Int)) => (item2: (Array[Int], Int) @unchecked) match {
         case ((a @ _), (i @ _)) => true
         case _ => false

@@ -12,6 +12,8 @@ private[streams] trait StreamComponents extends StreamResults {
 
     def sinkOption: Option[StreamSink]
 
+    def lambdaCount: Int
+
     def emit(input: StreamInput,
              outputNeeds: OutputNeeds,
              nextOps: OpsAndOutputNeeds): StreamOutput

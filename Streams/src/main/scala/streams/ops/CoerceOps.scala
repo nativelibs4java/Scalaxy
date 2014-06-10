@@ -30,6 +30,7 @@ private[streams] trait CoerceOps
 
   case class CoerceOp(coercedInputValue: TuploidValue[Symbol]) extends StreamOp {
     override def describe = Some("withFilter") // Some("withFilter(checkIfRefutable)") //None
+    override def lambdaCount = 1
     override def sinkOption = None
 
     override def transmitOutputNeedsBackwards(paths: Set[TuploidPath]) =

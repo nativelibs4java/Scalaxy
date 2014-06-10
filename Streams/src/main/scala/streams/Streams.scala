@@ -20,7 +20,7 @@ object Streams
 
       val result = new Transformer {
         override def transform(tree: Tree) = tree match {
-          case SomeStream(stream) =>
+          case SomeStream(stream) if stream.lambdaCount >= 1 =>
             info(
               tree.pos.asInstanceOf[u.Position],
               optimizedStreamMessage(stream.describe()))
@@ -38,6 +38,7 @@ object Streams
             super.transform(tree)
         }
       } transform tree.asInstanceOf[Tree]//typed(tree)
+    	// println(result)
     }
 
     typeCheck(Optimize.result.asInstanceOf[u.Tree])
@@ -51,10 +52,10 @@ private[streams] trait Streams extends StreamComponents
 
   object SomeStream extends Extractor[Tree, Stream] {
     def unapply(tree: Tree): Option[Stream] = tree match {
-      case SomeStreamSink(SomeStreamOp(SomeStreamSource(source), ops @ (_ :: _)), sink) =>
+      case SomeStreamSink(SomeStreamOp(SomeStreamSource(source), ops), sink) =>
         Some(new Stream(source, ops, sink))
 
-      case SomeStreamOp(SomeStreamSource(source), ops @ (_ :: _)) =>
+      case SomeStreamOp(SomeStreamSource(source), ops) =>
         (source :: ops).reverse.toIterator.map(_.sinkOption) collectFirst {
           case Some(sink) =>
             new Stream(source, ops, sink)
@@ -70,6 +71,8 @@ private[streams] trait Streams extends StreamComponents
     def describe(describeSink: Boolean = true) =
       (source :: ops).flatMap(_.describe).mkString(".") +
       sink.describe.filter(_ => describeSink).map(" -> " + _).getOrElse("")
+
+    def lambdaCount = ((source :: ops) :+ sink).map(_.lambdaCount).sum
 
     def emitStream(fresh: String => TermName,
                    transform: Tree => Tree,

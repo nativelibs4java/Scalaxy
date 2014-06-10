@@ -9,6 +9,8 @@ private[streams] trait OptionSinks extends StreamComponents {
   {
     override def describe = Some("Option")
 
+    override def lambdaCount = 0
+
     override def emit(input: StreamInput, outputNeeds: OutputNeeds, nextOps: OpsAndOutputNeeds): StreamOutput =
     {
       import input._

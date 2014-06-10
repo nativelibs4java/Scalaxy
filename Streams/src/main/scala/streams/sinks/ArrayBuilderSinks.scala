@@ -10,6 +10,8 @@ private[streams] trait ArrayBuilderSinks extends BuilderSinks {
   {
     override def describe = Some("Array")
 
+    override def lambdaCount = 0
+
     // TODO build array of same size as source collection if it is known.
     override def createBuilder(inputVars: TuploidValue[Tree], typed: Tree => Tree) = {
       val builderModule =

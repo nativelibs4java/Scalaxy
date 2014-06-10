@@ -24,6 +24,8 @@ private[streams] trait ArrayStreamSources
       sinkOption: Option[StreamSink] = Some(ArrayBuilderSink))
     extends StreamSource
   {
+    override def lambdaCount = 0
+
     override def emit(input: StreamInput,
                       outputNeeds: OutputNeeds,
                       nextOps: OpsAndOutputNeeds): StreamOutput =

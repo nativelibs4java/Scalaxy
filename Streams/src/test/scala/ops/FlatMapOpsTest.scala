@@ -9,7 +9,7 @@ class FlatMapOpsTest extends StreamComponentsTestBase with StreamTransforms {
 
   @Test
   def testFlatMapExtractor {
-    val v @ SomeFlatMapOp(_, FlatMapOp(_, _, _, _)) = typeCheck(q"""
+    val v @ SomeFlatMapOp(_, FlatMapOp(_, _, _, _)) = typecheck(q"""
       Array(1).flatMap(v => Seq(v + 1))
     """)
     val SomeStreamOp(_, _ :: Nil) = v

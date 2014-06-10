@@ -9,7 +9,7 @@ class MapOpsTest extends StreamComponentsTestBase with StreamTransforms {
 
   @Test
   def testMapExtractor {
-    val v @ SomeMapOp(_, MapOp(_, _, _)) = typeCheck(q"Array(1).map(_ + 1)")
+    val v @ SomeMapOp(_, MapOp(_, _, _)) = typecheck(q"Array(1).map(_ + 1)")
     val SomeStreamOp(_, _ :: Nil) = v
   }
 }

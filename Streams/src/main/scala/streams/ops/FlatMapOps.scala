@@ -36,6 +36,8 @@ private[streams] trait FlatMapOps
     override def describe = Some(
       "flatMap" + nestedStream.map("(" + _.describe(describeSink = false) + ")").getOrElse(""))
 
+    override def lambdaCount = 1 + nestedStream.map(_.lambdaCount).getOrElse(0)
+
     override def transmitOutputNeedsBackwards(paths: Set[TuploidPath]) = {
       super.transmitOutputNeedsBackwards(paths) ++
       nestedStream.toList.flatMap(_.ops.foldRight(paths)({ case (op, refs) =>
