@@ -83,6 +83,9 @@ object MacroIntegrationTest
     "(1 to 3).map(_ * 2).filter(_ < 3).toArray"
       -> streamMsg("Range.map.filter -> Array", hasPureExpressions = true),
 
+    "Array(1, 2, 3).map(_ * 10).sum"
+      -> streamMsg("Array.map -> sum", hasPureExpressions = true),
+
     "val n = 10; for (v <- 0 to n) yield v"
       -> streamMsg("Range.map -> IndexedSeq", hasPureExpressions = true),
 

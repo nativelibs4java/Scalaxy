@@ -38,7 +38,7 @@ object Streams
             super.transform(tree)
         }
       } transform tree.asInstanceOf[Tree]//typed(tree)
-    	// println(result)
+    	// println(showRaw(result, printTypes = true))
     }
 
     typeCheck(Optimize.result.asInstanceOf[u.Tree])
