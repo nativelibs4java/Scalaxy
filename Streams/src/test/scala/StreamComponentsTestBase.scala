@@ -13,7 +13,7 @@ case class CompilerMessages(
   warnings: List[String] = Nil,
   errors: List[String] = Nil)
 
-class StreamComponentsTestBase extends Utils {
+trait StreamComponentsTestBase extends Utils {
   val global = scala.reflect.runtime.universe
   val commonOptions = "-usejavacp -optimise -Yclosure-elim -Yinline "
   import scala.reflect.runtime.currentMirror
@@ -65,9 +65,11 @@ class StreamComponentsTestBase extends Utils {
     )
   }
 
+  def optimizedCode(source: String): String = s"scalaxy.streams.optimize { $source }"
+
   def assertMacroCompilesToSameValue(source: String): CompilerMessages = {
     val (unoptimized, unoptimizedMessages) = compile(source)
-    val (optimized, optimizedMessages) = compile(s"scalaxy.streams.optimize { $source }");
+    val (optimized, optimizedMessages) = compile(optimizedCode(source))
 
     assertEqualValues(source, unoptimized(), optimized())
 
