@@ -50,7 +50,7 @@ class StreamsComponent(
             }
 
           override def transform(tree: Tree) = tree match {
-            case SomeStream(stream) =>
+            case SomeStream(stream) if stream.isWorthOptimizing =>
               reporter.info(tree.pos, Streams.optimizedStreamMessage(stream.describe()), force = true)
               val result = {
                 stream

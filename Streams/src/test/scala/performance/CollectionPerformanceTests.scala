@@ -25,17 +25,17 @@ trait NoScalarReductionTests {//extends CollectionPerformanceTests {
   override def simpleMin = {}
   override def simpleMax = {}
 }
-class ListPerformanceTest extends CollectionPerformanceTests with NoRightTests {
+@Ignore class ListPerformanceTest extends CollectionPerformanceTests with NoRightTests {
   override def col = ("val col: List[Int] = (0 to n).toList", "col")//.filter(v => (v % 2) == 0).map(_ * 2)")
 }
-class ListChainedPerformanceTest extends ListPerformanceTest with ChainedPerformanceTests {
+@Ignore class ListChainedPerformanceTest extends ListPerformanceTest with ChainedPerformanceTests {
   override def col = chain(super.col)
 }
-class ArrayPerformanceTest extends CollectionPerformanceTests {
+@Ignore class ArrayPerformanceTest extends CollectionPerformanceTests {
   override def col = ("val col = Array.tabulate(n)(i => i)", "col")
   @Test def simpleArrayTabulate =  if (!skip) ensureFasterCodeWithSameResult(null, "Array.tabulate(n)(i => i).toSeq")
 }
-class ArrayChainedPerformanceTest extends ArrayPerformanceTest with ChainedPerformanceTests {
+@Ignore class ArrayChainedPerformanceTest extends ArrayPerformanceTest with ChainedPerformanceTests {
   override def col = chain(super.col)
 }
 class RangePerformanceTest extends CollectionPerformanceTests with NoRightTests with NoScalarReductionTests {

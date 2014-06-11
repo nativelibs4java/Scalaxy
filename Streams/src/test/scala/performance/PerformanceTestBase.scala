@@ -14,6 +14,8 @@ class PerformanceTestBase extends StreamComponentsTestBase {
 
 	val perfRuns = 4
 	val defaultExpectedFasterFactor = 0.95
+	val testSizes = Array(2, 10, 1000, 100000)
+	// val testSizes = Array(10)
 
   def testClassInfo = {
     val testTrace = new RuntimeException().getStackTrace.filter(se => se.getClassName.endsWith("Test")).last
@@ -37,7 +39,12 @@ class PerformanceTestBase extends StreamComponentsTestBase {
 			}
 		"""
 
-		val (compiled, messages) = compile(functionCode)
+		val (compiled, messages) = try {
+			compile(functionCode)
+		} catch { case ex: Throwable =>
+			// ex.printStackTrace()
+			throw new RuntimeException(s"Failed to compile:\n$functionCode", ex)
+		}
     val sizeToExecutor = compiled().asInstanceOf[Int => (() => Any)]
 
     (n: Int) => {
@@ -61,7 +68,7 @@ class PerformanceTestBase extends StreamComponentsTestBase {
   def ensureFasterCodeWithSameResult(
   		decls: String,
   		code: String,
-  		params: Seq[Int] = Array(2, 10, 1000, 100000)/*10000, 100, 20, 2)*/,
+  		params: Seq[Int] = testSizes,
   		minFaster: Double = 1.0,
   		nRuns: Int = perfRuns): Unit = {
 

@@ -53,16 +53,20 @@ trait StreamComponentsTestBase extends Utils {
     val toolbox = currentMirror.mkToolBox(frontEnd = frontEnd, options = commonOptions)
     import toolbox.u._
 
-    val tree = toolbox.parse(source);
-    val compilation = toolbox.compile(tree)
+    try {
+	    val tree = toolbox.parse(source);
+	    val compilation = toolbox.compile(tree)
 
-    (
-      compilation,
-      CompilerMessages(
-        infos = infosBuilder.result,
-        warnings = warningsBuilder.result,
-        errors = errorsBuilder.result)
-    )
+	    (
+	      compilation,
+	      CompilerMessages(
+	        infos = infosBuilder.result,
+	        warnings = warningsBuilder.result,
+	        errors = errorsBuilder.result)
+	    )
+    } catch { case ex: Throwable =>
+    	throw new RuntimeException(s"Failed to compile:\n$source", ex)
+    }
   }
 
   def optimizedCode(source: String): String = s"scalaxy.streams.optimize { $source }"

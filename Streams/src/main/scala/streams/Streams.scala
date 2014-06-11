@@ -20,7 +20,7 @@ object Streams
 
       val result = new Transformer {
         override def transform(tree: Tree) = tree match {
-          case SomeStream(stream) if stream.lambdaCount >= 1 =>
+          case SomeStream(stream) if stream.isWorthOptimizing =>
             info(
               tree.pos.asInstanceOf[u.Position],
               optimizedStreamMessage(stream.describe()))
@@ -38,6 +38,8 @@ object Streams
             super.transform(tree)
         }
       } transform tree.asInstanceOf[Tree]//typed(tree)
+
+    	// println(result)
     	// println(showRaw(result, printTypes = true))
     }
 
@@ -73,6 +75,9 @@ private[streams] trait Streams extends StreamComponents
       sink.describe.filter(_ => describeSink).map(" -> " + _).getOrElse("")
 
     def lambdaCount = ((source :: ops) :+ sink).map(_.lambdaCount).sum
+
+    // TODO: refine this.
+    def isWorthOptimizing = lambdaCount >= 1
 
     def emitStream(fresh: String => TermName,
                    transform: Tree => Tree,
