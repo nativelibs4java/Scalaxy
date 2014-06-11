@@ -9,7 +9,7 @@ object PerformanceTests {
   	val perfEnvVar = "SCALAXY_TEST_PERF"
     val test = "1" == System.getenv(perfEnvVar)
     if (!test)
-      println("You can run ${getClass.getName} by setting the environment variable $perfEnvVar=1")
+      println(s"You can run ${getClass.getName} by setting the environment variable $perfEnvVar=1")
     !test
   }
 }
