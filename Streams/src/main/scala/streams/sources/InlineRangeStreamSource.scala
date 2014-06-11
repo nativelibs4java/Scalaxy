@@ -1,7 +1,10 @@
 package scalaxy.streams
 import scala.reflect.NameTransformer.{ encode, decode }
 
-private[streams] trait InlineRangeStreamSources extends StreamComponents {
+private[streams] trait InlineRangeStreamSources
+		extends StreamComponents
+		with VectorBuilderSinks
+{
   val global: scala.reflect.api.Universe
   import global._
 
@@ -40,10 +43,7 @@ private[streams] trait InlineRangeStreamSources extends StreamComponents {
 
     override def lambdaCount = 0
 
-    override def sinkOption = {
-      println("TODO vector / range sink")
-      None
-    }
+    override def sinkOption = Some(VectorBuilderSink)
 
     override def emit(input: StreamInput,
                       outputNeeds: OutputNeeds,

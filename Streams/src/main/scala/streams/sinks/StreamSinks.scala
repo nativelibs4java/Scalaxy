@@ -6,6 +6,7 @@ private[streams] trait StreamSinks
     with ListBufferSinks
     with SetBuilderSinks
     with ReductionSinks
+    with VectorBuilderSinks
 {
   val global: scala.reflect.api.Universe
   import global._
@@ -20,6 +21,9 @@ private[streams] trait StreamSinks
 
       case q"$target.toSet[${_}]" =>
         (target, SetBuilderSink)
+
+      case q"$target.toVector[${_}]" =>
+        (target, VectorBuilderSink)
 
       case q"$target.sum[${tpt}](${_})" =>
         (target, SumSink(tpt.tpe))

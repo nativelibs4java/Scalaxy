@@ -53,6 +53,9 @@ object MacroIntegrationTest
 
   @Parameters(name = "{0}") def data: java.util.Collection[Array[AnyRef]] = List[(String, CompilerMessages)](
 
+  	// """{ object Foo { def doit(args: Array[String]) = args.length } ; Foo.doit(Array("1")) }"""
+  	// 	-> CompilerMessages(),
+
     "Option(1).map(_ * 2).filter(_ < 3)"
       -> streamMsg("Option.map.filter -> Option", hasPureExpressions = true),
 
@@ -79,6 +82,9 @@ object MacroIntegrationTest
 
     "Array(1, 2, 3).map(_ * 2).filter(_ < 3).toList"
       -> streamMsg("Array.map.filter -> List", hasPureExpressions = true),
+
+    "Array(1, 2, 3).map(_ * 2).filter(_ < 3).toVector"
+      -> streamMsg("Array.map.filter -> Vector", hasPureExpressions = true),
 
     "(1 to 3).map(_ * 2).filter(_ < 3).toArray"
       -> streamMsg("Range.map.filter -> Array", hasPureExpressions = true),
