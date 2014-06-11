@@ -2,7 +2,6 @@ package scalaxy.streams
 
 private[streams] trait CoerceOps
   extends StreamComponents
-  with ClosureStreamOps
   with Strippers
 {
   val global: scala.reflect.api.Universe

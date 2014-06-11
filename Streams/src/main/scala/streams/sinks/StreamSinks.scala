@@ -22,7 +22,7 @@ private[streams] trait StreamSinks
       case q"$target.toSet[${_}]" =>
         (target, SetBuilderSink)
 
-      case q"$target.toVector[${_}]" =>
+      case q"$target.toVector" =>
         (target, VectorBuilderSink)
 
       case q"$target.sum[${tpt}](${_})" =>

@@ -1,7 +1,7 @@
 package scalaxy.streams
 
 private[streams] trait StreamOps
-    extends ArrayOps
+    extends ArrayOpsOps
     with CoerceOps
     with FilterOps
     with FlatMapOps
@@ -32,8 +32,8 @@ private[streams] trait StreamOps
       case SomeZipWithIndexOp(SomeStreamOp(src, ops), op) =>
         (src, ops :+ op)
 
-      case SomeArrayOps(SomeStreamOp(src, ops)) =>
-        (src, ops)
+      case SomeArrayOpsOp(SomeStreamOp(src, ops), op) =>
+        (src, ops :+ op)
 
       case _ =>
         (tree, Nil)

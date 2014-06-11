@@ -18,6 +18,8 @@ class CoerceOpsTest extends StreamComponentsTestBase
         case _ => false
       }
     )""")
-    val SomeStreamOp(_, List(ZipWithIndexOp(_), CoerceOp(_))) = v
+    val SomeStreamOp(_, ops) = v
+    // printOps(ops)
+    val List(ArrayOpsOp, ZipWithIndexOp(_), ArrayOpsOp, CoerceOp(_)) = ops
   }
 }

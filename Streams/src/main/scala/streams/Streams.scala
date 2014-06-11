@@ -53,15 +53,21 @@ private[streams] trait Streams extends StreamComponents
   import global._
 
   object SomeStream extends Extractor[Tree, Stream] {
+  	def findSink(ops: List[StreamComponent]): Option[StreamSink] = {
+			ops.reverse.toIterator.zipWithIndex.map({
+      	case (op, i) => (op.sinkOption, i)
+    	}) collectFirst {
+        case (Some(sink), i) if !sink.isFinalOnly || i == 0 =>
+          sink
+      }
+  	}
+
     def unapply(tree: Tree): Option[Stream] = tree match {
       case SomeStreamSink(SomeStreamOp(SomeStreamSource(source), ops), sink) =>
         Some(new Stream(source, ops, sink))
 
       case SomeStreamOp(SomeStreamSource(source), ops) =>
-        (source :: ops).reverse.toIterator.map(_.sinkOption) collectFirst {
-          case Some(sink) =>
-            new Stream(source, ops, sink)
-        }
+      	findSink(source :: ops).map(sink => new Stream(source, ops, sink))
 
       case _ =>
         None

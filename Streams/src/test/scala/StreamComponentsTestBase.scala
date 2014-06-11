@@ -13,7 +13,8 @@ case class CompilerMessages(
   warnings: List[String] = Nil,
   errors: List[String] = Nil)
 
-trait StreamComponentsTestBase extends Utils {
+trait StreamComponentsTestBase extends Utils
+{
   val global = scala.reflect.runtime.universe
   val commonOptions = "-usejavacp -optimise -Yclosure-elim -Yinline "
   import scala.reflect.runtime.currentMirror
