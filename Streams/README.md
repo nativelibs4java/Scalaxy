@@ -7,7 +7,8 @@ Scalaxy/Streams makes your Scala collections code faster (official heir to [Scal
 * Usable as a compiler plugin (whole project) or as a macro (surgical strikes)
 
   **Watch out**: version 0.2's aggressive optimizations alter Scala semantics (see below).
-  Use with caution / report bugs (_safe_ optimizations are on the TODO-list below)
+  
+  Use with caution / [report bugs](https://github.com/ochafik/Scalaxy/issues/new) (_safe_ optimizations are on the TODO-list below)
 
 ```scala
 // For instance, given the following array:
