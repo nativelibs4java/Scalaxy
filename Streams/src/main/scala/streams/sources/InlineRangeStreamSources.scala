@@ -2,8 +2,8 @@ package scalaxy.streams
 import scala.reflect.NameTransformer.{ encode, decode }
 
 private[streams] trait InlineRangeStreamSources
-		extends StreamComponents
-		with VectorBuilderSinks
+    extends StreamComponents
+    with VectorBuilderSinks
 {
   val global: scala.reflect.api.Universe
   import global._

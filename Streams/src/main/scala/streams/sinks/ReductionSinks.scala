@@ -6,10 +6,10 @@ private[streams] trait ReductionSinks extends StreamComponents {
 
   trait SimpleReductorSink extends StreamSink
   {
-  	def throwsIfEmpty: Boolean
-  	def tpe: Type
-  	def initialAccumulatorValue: Tree
-  	def accumulate(accumulator: Tree, newValue: Tree): Tree
+    def throwsIfEmpty: Boolean
+    def tpe: Type
+    def initialAccumulatorValue: Tree
+    def accumulate(accumulator: Tree, newValue: Tree): Tree
 
     override def lambdaCount = 0
 
@@ -39,15 +39,15 @@ private[streams] trait ReductionSinks extends StreamComponents {
       """)
 
       if (throwsIfEmpty)
-	      StreamOutput(
-	        prelude = List(resultDef, emptyDef),
-	        body = List(resultAdd),
-	        ending = List(throwIfEmpty, resultRef))
+        StreamOutput(
+          prelude = List(resultDef, emptyDef),
+          body = List(resultAdd),
+          ending = List(throwIfEmpty, resultRef))
       else
-	      StreamOutput(
-	        prelude = List(resultDef),
-	        body = List(resultAdd),
-	        ending = List(resultRef))
+        StreamOutput(
+          prelude = List(resultDef),
+          body = List(resultAdd),
+          ending = List(resultRef))
     }
   }
 
@@ -56,8 +56,8 @@ private[streams] trait ReductionSinks extends StreamComponents {
     override def describe = Some("sum")
     override def initialAccumulatorValue = q"0"
     override def throwsIfEmpty = false
-  	override def accumulate(accumulator: Tree, newValue: Tree): Tree =
-  		q"$accumulator + $newValue"
+    override def accumulate(accumulator: Tree, newValue: Tree): Tree =
+      q"$accumulator + $newValue"
   }
 
   case class ProductSink(tpe: Type) extends SimpleReductorSink
@@ -65,7 +65,7 @@ private[streams] trait ReductionSinks extends StreamComponents {
     override def describe = Some("product")
     override def initialAccumulatorValue = q"1"
     override def throwsIfEmpty = false
-  	override def accumulate(accumulator: Tree, newValue: Tree): Tree =
-  		q"$accumulator * $newValue"
+    override def accumulate(accumulator: Tree, newValue: Tree): Tree =
+      q"$accumulator * $newValue"
   }
 }

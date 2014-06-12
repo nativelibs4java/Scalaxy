@@ -39,8 +39,8 @@ private[streams] trait StreamComponents extends StreamResults {
 
   trait StreamSink extends StreamOp
   {
-  	/** If true, this sink is skipped unless it's at the end of the stream, i.e. after all ops. */
-  	def isFinalOnly: Boolean = false
+    /** If true, this sink is skipped unless it's at the end of the stream, i.e. after all ops. */
+    def isFinalOnly: Boolean = false
     override def sinkOption = Some(this)
 
     def outputNeeds: Set[TuploidPath] = Set(RootTuploidPath)
@@ -72,8 +72,8 @@ private[streams] trait StreamComponents extends StreamResults {
                       outputNeeds: OutputNeeds,
                       nextOps: OpsAndOutputNeeds): StreamOutput =
     {
-    	var (nextOp, nextOutputNeeds) :: subsequentOps = nextOps
-    	nextOp.emit(input, nextOutputNeeds, subsequentOps)
+      var (nextOp, nextOutputNeeds) :: subsequentOps = nextOps
+      nextOp.emit(input, nextOutputNeeds, subsequentOps)
     }
   }
 
@@ -83,7 +83,7 @@ private[streams] trait StreamComponents extends StreamResults {
   val SomeStreamSink: Extractor[Tree, (Tree, StreamSink)]
 
   private[streams] def printOps(ops: List[StreamOp]) {
-  	println(s"ops = " + ops.map(_.getClass.getSimpleName).mkString("\n\t"))
+    println(s"ops = " + ops.map(_.getClass.getSimpleName).mkString("\n\t"))
     // println(s"ops = " + ops.mkString("\n\t"))
   }
 }

@@ -55,18 +55,18 @@ trait StreamComponentsTestBase extends Utils
     import toolbox.u._
 
     try {
-	    val tree = toolbox.parse(source);
-	    val compilation = toolbox.compile(tree)
+      val tree = toolbox.parse(source);
+      val compilation = toolbox.compile(tree)
 
-	    (
-	      compilation,
-	      CompilerMessages(
-	        infos = infosBuilder.result,
-	        warnings = warningsBuilder.result,
-	        errors = errorsBuilder.result)
-	    )
+      (
+        compilation,
+        CompilerMessages(
+          infos = infosBuilder.result,
+          warnings = warningsBuilder.result,
+          errors = errorsBuilder.result)
+      )
     } catch { case ex: Throwable =>
-    	throw new RuntimeException(s"Failed to compile:\n$source", ex)
+      throw new RuntimeException(s"Failed to compile:\n$source", ex)
     }
   }
 

@@ -53,10 +53,10 @@ object MacroIntegrationTest
 
   @Parameters(name = "{0}") def data: java.util.Collection[Array[AnyRef]] = List[(String, CompilerMessages)](
 
-  	// """{ object Foo { def doit(args: Array[String]) = args.length } ; Foo.doit(Array("1")) }"""
-  	// 	-> CompilerMessages(),
+    // """{ object Foo { def doit(args: Array[String]) = args.length } ; Foo.doit(Array("1")) }"""
+    //   -> CompilerMessages(),
 
-  	"Option(1).map(_ * 2).filter(_ < 3)"
+    "Option(1).map(_ * 2).filter(_ < 3)"
       -> streamMsg("Option.map.filter -> Option", hasPureExpressions = true),
 
     """Option("a").flatMap(v => Option(v).filter(_ != null))"""

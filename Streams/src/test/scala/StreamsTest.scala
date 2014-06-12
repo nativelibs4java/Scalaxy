@@ -10,11 +10,11 @@ class StreamsTest extends StreamComponentsTestBase with StreamTransforms {
 
   @Test
   def testFindSink {
-  	assertEquals(Some(ArrayOpsSink), SomeStream.findSink(List(ArrayOpsOp)))
-  	assertEquals(Some(VectorBuilderSink), SomeStream.findSink(List(ArrayOpsOp, VectorBuilderSink)))
-  	assertEquals(None, SomeStream.findSink(List(ArrayOpsOp, FilterOp(null, null, false, null))))
-  	// val Some(CanBuildFromSink(null)) = SomeStream.findSink(List(ListBufferSink, ZipWithIndexOp(null)))
-  	assertEquals(Some(ListBufferSink), SomeStream.findSink(List(ArrayBuilderSink, ListBufferSink)))
+    assertEquals(Some(ArrayOpsSink), SomeStream.findSink(List(ArrayOpsOp)))
+    assertEquals(Some(VectorBuilderSink), SomeStream.findSink(List(ArrayOpsOp, VectorBuilderSink)))
+    assertEquals(None, SomeStream.findSink(List(ArrayOpsOp, FilterOp(null, null, false, null))))
+    // val Some(CanBuildFromSink(null)) = SomeStream.findSink(List(ListBufferSink, ZipWithIndexOp(null)))
+    assertEquals(Some(ListBufferSink), SomeStream.findSink(List(ArrayBuilderSink, ListBufferSink)))
   }
 
   @Test
@@ -42,7 +42,7 @@ class StreamsTest extends StreamComponentsTestBase with StreamTransforms {
 
   @Test
   def testToVector {
-  	val tree = typecheck(q"""
+    val tree = typecheck(q"""
       Array(1, 2, 3).map(_ + 1).toVector
     """)
     val SomeStream(Stream(source, ops, sink)) = tree

@@ -12,10 +12,10 @@ case class PerfRun(optimized: Boolean, output: Any, nanoTime: Long)
 
 class PerformanceTestBase extends StreamComponentsTestBase {
 
-	val perfRuns = 4
-	val defaultExpectedFasterFactor = 0.95
-	val testSizes = Array(2, 10, 1000, 100000)
-	// val testSizes = Array(10)
+  val perfRuns = 4
+  val defaultExpectedFasterFactor = 0.95
+  val testSizes = Array(2, 10, 1000, 100000)
+  // val testSizes = Array(10)
 
   def testClassInfo = {
     val testTrace = new RuntimeException().getStackTrace.filter(se => se.getClassName.endsWith("Test")).last
@@ -24,27 +24,27 @@ class PerformanceTestBase extends StreamComponentsTestBase {
     (testClassName, methodName)
   }
 
-	type PerformanceRunner = Int => (Boolean => PerfRun)
+  type PerformanceRunner = Int => (Boolean => PerfRun)
 
   private def getPerformanceRunner(
-  		optimized: Boolean,
-  		decls: String,
-  		code: String,
-  		sizeParam: String = "n"): PerformanceRunner =
+      optimized: Boolean,
+      decls: String,
+      code: String,
+      sizeParam: String = "n"): PerformanceRunner =
   {
-  	val functionCode = s"""
-  		($sizeParam: Int) => {
-  			$decls;
-  			() => ${if (optimized) optimizedCode(code) else code}
-			}
-		"""
+    val functionCode = s"""
+      ($sizeParam: Int) => {
+        $decls;
+        () => ${if (optimized) optimizedCode(code) else code}
+      }
+    """
 
-		val (compiled, messages) = try {
-			compile(functionCode)
-		} catch { case ex: Throwable =>
-			// ex.printStackTrace()
-			throw new RuntimeException(s"Failed to compile:\n$functionCode", ex)
-		}
+    val (compiled, messages) = try {
+      compile(functionCode)
+    } catch { case ex: Throwable =>
+      // ex.printStackTrace()
+      throw new RuntimeException(s"Failed to compile:\n$functionCode", ex)
+    }
     val sizeToExecutor = compiled().asInstanceOf[Int => (() => Any)]
 
     (n: Int) => {
@@ -66,25 +66,25 @@ class PerformanceTestBase extends StreamComponentsTestBase {
   }
 
   def ensureFasterCodeWithSameResult(
-  		decls: String,
-  		code: String,
-  		params: Seq[Int] = testSizes,
-  		minFaster: Double = 1.0,
-  		nRuns: Int = perfRuns): Unit = {
+      decls: String,
+      code: String,
+      params: Seq[Int] = testSizes,
+      minFaster: Double = 1.0,
+      nRuns: Int = perfRuns): Unit = {
 
     val (testClassName, methodName) = testClassInfo
 
     val runners @
-    	Array(
-    		optimizedRunner,
-    		normalRunner
-  		) = Array(
-	    	getPerformanceRunner(optimized = true, decls = decls, code = code),
-	    	getPerformanceRunner(optimized = false, decls = decls, code = code)
-  		)
+      Array(
+        optimizedRunner,
+        normalRunner
+      ) = Array(
+        getPerformanceRunner(optimized = true, decls = decls, code = code),
+        getPerformanceRunner(optimized = false, decls = decls, code = code)
+      )
 
     def run = params.toList.sorted.map(param => {
-    	val testers = runners.map(_(param))
+      val testers = runners.map(_(param))
       val firstRun = testers.map(_(false))
 
       val Array(optimizedOutput, normalOutput) = firstRun.map(_.output)
@@ -132,7 +132,7 @@ class PerformanceTestBase extends StreamComponentsTestBase {
       }
       //def printFact(factor: Double) = log.println(methodName + "\\:" + param + "=" + f2s(factor))
       val (expectedWarmFactor, expectedColdFactor) = {
-      	(defaultExpectedFasterFactor, defaultExpectedFasterFactor)
+        (defaultExpectedFasterFactor, defaultExpectedFasterFactor)
         // val p = Option(properties.getProperty(methodName + ":" + param)).map(_.split(";")).orNull
         // if (p != null && p.length == 2) {
         //   //val Array(c) = p.map(_.toDouble)
