@@ -24,7 +24,7 @@ object MacroIntegrationTest
 {
   def streamMsg(streamDescription: String, hasPureExpressions: Boolean = false) =
     CompilerMessages(
-      infos = List(Streams.optimizedStreamMessage(streamDescription)),
+      infos = List(Optimizations.optimizedStreamMessage(streamDescription)),
       // TODO investigate why these happen!
       // warnings = Nil)
       warnings = if (hasPureExpressions) List("a pure expression does nothing in statement position; you may be omitting necessary parentheses") else Nil)
@@ -89,7 +89,10 @@ object MacroIntegrationTest
     "{ val list = List(1, 2, 3); list.map(_ * 2).filter(_ < 3) }"
       -> streamMsg("List.map.filter -> List", hasPureExpressions = true),
     
-    "{ (Nil: scala.collection.immutable.List[Int]).map(_ * 2).filter(_ < 3).toArray }"
+    "(Nil: scala.collection.immutable.List[Int]).map(_ * 2).filter(_ < 3).toArray"
+      -> streamMsg("List.map.filter -> Array", hasPureExpressions = true),
+    
+    "(1 :: 2 :: 3 :: Nil).map(_ * 2).filter(_ < 3).toArray"
       -> streamMsg("List.map.filter -> Array", hasPureExpressions = true),
     
     "(1 to 3).map(_ * 2).filter(_ < 3).toArray"

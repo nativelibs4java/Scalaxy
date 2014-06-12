@@ -50,19 +50,35 @@ class StreamsComponent(
             }
 
           override def transform(tree: Tree) = tree match {
-            case SomeStream(stream) if stream.isWorthOptimizing =>
-              reporter.info(tree.pos, Streams.optimizedStreamMessage(stream.describe()), force = true)
-              val result = {
-                stream
-                  .emitStream(
-                    n => TermName(unit.fresh.newName(n)),
-                    transform(_),
-                    typed)
-                  .compose(localTyper.typed(_))
-              }
-              // println(result)
+            case SomeStream(stream) =>
+              val strategyImplicitResult = analyzer.inferImplicit(
+                EmptyTree,
+                typeOf[scalaxy.optimization],
+                reportAmbiguous = true,
+                isView = false,
+                context = localTyper.context,
+                saveAmbiguousDivergent = false,
+                pos = tree.pos)
 
-              result
+              val strategy = Optimizations.matchStrategyTree(global)(
+                if (strategyImplicitResult.isSuccess) strategyImplicitResult.tree else EmptyTree)
+
+              if (stream.isWorthOptimizing(strategy)) {
+                reporter.info(tree.pos, Optimizations.optimizedStreamMessage(stream.describe()), force = true)
+                val result = {
+                  stream
+                    .emitStream(
+                      n => TermName(unit.fresh.newName(n)),
+                      transform(_),
+                      typed)
+                    .compose(localTyper.typed(_))
+                }
+                // println(result)
+
+                result
+              } else {
+                super.transform(tree)
+              }
 
             case _ =>
               super.transform(tree)

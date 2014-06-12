@@ -1,52 +1,5 @@
 package scalaxy.streams
 
-object Streams
-{
-  def optimizedStreamMessage(streamDescription: String): String =
-      "[Scalaxy] Optimized stream: " + streamDescription
-
-  def optimize(u: scala.reflect.api.Universe)
-              (tree: u.Tree,
-                typeCheck: u.Tree => u.Tree,
-                fresh: String => String,
-                info: (u.Position, String) => Unit,
-                recurse: Boolean = true): u.Tree =
-  {
-    object Optimize extends StreamTransforms {
-      override val global = u
-      import global._
-
-      private[this] val typed = typeCheck.asInstanceOf[Tree => Tree]
-
-      val result = new Transformer {
-        override def transform(tree: Tree) = tree match {
-          case SomeStream(stream) if stream.isWorthOptimizing =>
-            info(
-              tree.pos.asInstanceOf[u.Position],
-              optimizedStreamMessage(stream.describe()))
-            val result =
-              stream.emitStream(
-                n => TermName(fresh(n)),
-                if (recurse) transform(_) else tree => tree,
-                typed)
-              .compose(typed)
-            // println(result)
-
-            typed(result)
-
-          case _ =>
-            super.transform(tree)
-        }
-      } transform tree.asInstanceOf[Tree]//typed(tree)
-
-      // println(result)
-      // println(showRaw(result, printTypes = true))
-    }
-
-    typeCheck(Optimize.result.asInstanceOf[u.Tree])
-  }
-}
-
 private[streams] trait Streams extends StreamComponents
 {
   val global: scala.reflect.api.Universe
@@ -83,7 +36,19 @@ private[streams] trait Streams extends StreamComponents
     def lambdaCount = ((source :: ops) :+ sink).map(_.lambdaCount).sum
 
     // TODO: refine this.
-    def isWorthOptimizing = lambdaCount >= 1
+    def isWorthOptimizing(strategy: scalaxy.optimization) = {
+      strategy match {
+        case scalaxy.optimization.none =>
+          false
+
+        case scalaxy.optimization.safe =>
+          // TODO: side-effects analysis to allow more cases where lambdaCount > 1
+          lambdaCount == 1
+
+        case scalaxy.optimization.aggressive =>
+          lambdaCount >= 1
+      }
+    }
 
     def emitStream(fresh: String => TermName,
                    transform: Tree => Tree,
