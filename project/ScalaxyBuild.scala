@@ -389,7 +389,7 @@ object Scalaxy extends Build {
 
   lazy val streams =
     Project(id = "scalaxy-streams", base = file("Streams"), settings = reflectSettings ++ Seq(
-      version := "0.2",
+      // version := "0.2",
       // addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.0-SNAPSHOT" cross CrossVersion.full),
       watchSources <++= baseDirectory map { path => (path / "examples" ** "*.scala").get }
     ))
