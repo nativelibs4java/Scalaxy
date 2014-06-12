@@ -36,7 +36,7 @@ class StreamSourcesTest extends StreamComponentsTestBase with StreamTransforms {
     val v1 @ SomeInlineSeqStreamSource(_) = typecheck(q"List(1)")
     val SomeStreamSource(_) = v1
 
-    val v2 @ SomeListStreamSource(_) = typecheck(q"Seq(1)")
+    val v2 @ SomeInlineSeqStreamSource(_) = typecheck(q"Seq(1)")
     val SomeStreamSource(_) = v2
   }
 
@@ -47,5 +47,8 @@ class StreamSourcesTest extends StreamComponentsTestBase with StreamTransforms {
 
     val v2 @ SomeListStreamSource(_) = typecheck(q"Nil")
     val SomeStreamSource(_) = v2
+
+    val v3 @ SomeListStreamSource(_) = typecheck(q"1 :: Nil")
+    val SomeStreamSource(_) = v3
   }
 }

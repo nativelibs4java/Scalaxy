@@ -12,7 +12,7 @@ private[streams] trait ListStreamSources
     private[this] lazy val ListSym = rootMirror.staticClass("scala.List")
 
     def unapply(tree: Tree): Option[ListStreamSource] = Option(tree) collect {
-      case _ if tree.tpe != null && tree.tpe != NoType && tree.tpe.typeSymbol == ListSym =>
+      case _ if tree.tpe != null && tree.tpe != NoType && tree.tpe <:< typeOf[List[Any]] =>
         ListStreamSource(tree)
     }
   }
