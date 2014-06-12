@@ -1,13 +1,13 @@
 package scalaxy.streams
 
-private[streams] trait SeqStreamSources
+private[streams] trait InlineSeqStreamSources
     extends ArrayStreamSources
     with ListBufferSinks
 {
   val global: scala.reflect.api.Universe
   import global._
 
-  object SomeSeqStreamSource {
+  object SomeInlineSeqStreamSource {
     private[this] lazy val SeqModuleSym = rootMirror.staticModule("scala.collection.Seq")
     private[this] lazy val ListModuleSym = rootMirror.staticModule("scala.collection.immutable.List")
 

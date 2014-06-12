@@ -30,4 +30,22 @@ class StreamSourcesTest extends StreamComponentsTestBase with StreamTransforms {
     val v4 @ SomeInlineRangeStreamSource(InlineRangeStreamSource(_, _, -2, false, _)) = typecheck(q"10 until 1 by -2")
     val SomeStreamSource(_) = v4
   }
+
+  @Test
+  def testInlineSeqExtractor {
+    val v1 @ SomeInlineSeqStreamSource(_) = typecheck(q"List(1)")
+    val SomeStreamSource(_) = v1
+
+    val v2 @ SomeListStreamSource(_) = typecheck(q"Seq(1)")
+    val SomeStreamSource(_) = v2
+  }
+
+  @Test
+  def testListExtractor {
+    val v1 @ SomeListStreamSource(_) = typecheck(q"(null: List[Int])")
+    val SomeStreamSource(_) = v1
+
+    val v2 @ SomeListStreamSource(_) = typecheck(q"Nil")
+    val SomeStreamSource(_) = v2
+  }
 }

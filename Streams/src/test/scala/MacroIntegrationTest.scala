@@ -56,7 +56,7 @@ object MacroIntegrationTest
   	// """{ object Foo { def doit(args: Array[String]) = args.length } ; Foo.doit(Array("1")) }"""
   	// 	-> CompilerMessages(),
 
-    "Option(1).map(_ * 2).filter(_ < 3)"
+  	"Option(1).map(_ * 2).filter(_ < 3)"
       -> streamMsg("Option.map.filter -> Option", hasPureExpressions = true),
 
     """Option("a").flatMap(v => Option(v).filter(_ != null))"""
@@ -86,6 +86,12 @@ object MacroIntegrationTest
     "Array(1, 2, 3).map(_ * 2).filter(_ < 3).toVector"
       -> streamMsg("Array.map.filter -> Vector", hasPureExpressions = true),
 
+    "{ val list = List(1, 2, 3); list.map(_ * 2).filter(_ < 3) }"
+      -> streamMsg("List.map.filter -> List", hasPureExpressions = true),
+    
+    "{ (Nil: scala.collection.immutable.List[Int]).map(_ * 2).filter(_ < 3).toArray }"
+      -> streamMsg("List.map.filter -> Array", hasPureExpressions = true),
+    
     "(1 to 3).map(_ * 2).filter(_ < 3).toArray"
       -> streamMsg("Range.map.filter -> Array", hasPureExpressions = true),
 

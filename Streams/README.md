@@ -86,9 +86,8 @@ Scalaxy/Streams rewrites streams with the following components:
   * `Array`,
   * inline `Range`,
   * `Option` (with special case for explicit `Option(x)`),
-  * explicit `Seq(a, b, ...)`,
-  * explicit `List(a, b, ...)`
-  (TODO: extend to any `List`)
+  * explicit `Seq(a, b, ...)` (array-based rewrite),
+  * `List` (with special array-based rewrite for explicit `List(a, b, ...)`)
 * Stream operations:
   * `filter`,
   * `filterNot`,
