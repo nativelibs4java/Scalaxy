@@ -134,6 +134,9 @@ If you're using `sbt` 0.13.0+, just put the following lines in `build.sbt`:
 
   If you like to live on the bleeding edge, try the latest snapshot out:
   ```scala
+  // Works with 2.11.x
+  scalaVersion := "2.11.1"
+
   libraryDependencies += "com.nativelibs4java" %% "scalaxy-streams" % "0.3-SNAPSHOT" % "provided"
 
   // Scalaxy snapshots are published on the Sonatype repository.
@@ -155,6 +158,9 @@ If you're using `sbt` 0.13.0+, just put the following lines in `build.sbt`:
 
   If you like to live on the bleeding edge, try the latest snapshot out:
   ```scala
+  // Works with 2.11.x
+  scalaVersion := "2.11.1"
+
   addCompilerPlugin("com.nativelibs4java" %% "scalaxy-streams" % "0.3-SNAPSHOT")
 
   // Scalaxy snapshots are published on the Sonatype repository.

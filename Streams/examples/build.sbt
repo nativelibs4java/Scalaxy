@@ -1,4 +1,4 @@
-scalaVersion := "2.11.0-RC1"
+scalaVersion := "2.11.1"
 
 autoCompilerPlugins := true
 
