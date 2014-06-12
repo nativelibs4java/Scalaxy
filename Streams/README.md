@@ -115,11 +115,11 @@ If you're using `sbt` 0.13.0+, just put the following lines in `build.sbt`:
 * To use the macro (manually decide which parts of your code are optimized):
 
   ```scala
-  // Only works with 2.11.0-RC1
-  scalaVersion := "2.11.0-RC1"
+  // Note that Scalaxy/Streams 0.1 only works with Scala 2.11.0-RC1.
+  scalaVersion := "2.11.1"
 
   // Dependency at compilation-time only (not at runtime).
-  libraryDependencies += "com.nativelibs4java" %% "scalaxy-streams" % "0.1" % "provided"
+  libraryDependencies += "com.nativelibs4java" %% "scalaxy-streams" % "0.2" % "provided"
   ```
 
   And wrap some code with the `optimize` macro:
@@ -132,11 +132,8 @@ If you're using `sbt` 0.13.0+, just put the following lines in `build.sbt`:
   }
   ```
 
-  If you like to live on the bleeding edge, try the latest snapshot out:
+  You'll need an extra repository resolver for the latest snapshot out:
   ```scala
-  // Works with 2.11.x
-  scalaVersion := "2.11.1"
-
   libraryDependencies += "com.nativelibs4java" %% "scalaxy-streams" % "0.3-SNAPSHOT" % "provided"
 
   // Scalaxy snapshots are published on the Sonatype repository.
@@ -146,21 +143,18 @@ If you're using `sbt` 0.13.0+, just put the following lines in `build.sbt`:
 * To use the compiler plugin (optimizes all of your code):
 
   ```scala
-  // Only works with 2.11.0-RC1
-  scalaVersion := "2.11.0-RC1"
+  // Note that Scalaxy/Streams 0.1 only works with Scala 2.11.0-RC1.
+  scalaVersion := "2.11.1"
 
   autoCompilerPlugins := true
 
-  addCompilerPlugin("com.nativelibs4java" %% "scalaxy-streams" % "0.1")
+  addCompilerPlugin("com.nativelibs4java" %% "scalaxy-streams" % "0.2")
 
   scalacOptions += "-Xplugin-require:scalaxy-streams"
   ```
 
-  If you like to live on the bleeding edge, try the latest snapshot out:
+  You'll need an extra repository resolver for the latest snapshot out:
   ```scala
-  // Works with 2.11.x
-  scalaVersion := "2.11.1"
-
   addCompilerPlugin("com.nativelibs4java" %% "scalaxy-streams" % "0.3-SNAPSHOT")
 
   // Scalaxy snapshots are published on the Sonatype repository.
@@ -182,18 +176,18 @@ With Maven, you'll need this in your `pom.xml` file:
   <dependencies>
     <dependency>
       <groupId>com.nativelibs4java</groupId>
-      <artifactId>scalaxy-streams_2.11.0-RC1</artifactId>
-      <version>0.1</version>
+      <artifactId>scalaxy-streams_2.11.1</artifactId>
+      <version>0.2</version>
     </dependency>
   </dependencies>
   ```
 
-  If you like to live on the bleeding edge, try the latest snapshot out:
+  And to try the latest snapshot out:
   ```xml
   <dependencies>
     <dependency>
       <groupId>com.nativelibs4java</groupId>
-      <artifactId>scalaxy-streams_2.11.0-RC1</artifactId>
+      <artifactId>scalaxy-streams_2.11.1</artifactId>
       <version>0.3-SNAPSHOT</version>
     </dependency>
   </dependencies>
@@ -210,7 +204,7 @@ With Maven, you'll need this in your `pom.xml` file:
 
   ```xml
   <properties>
-    <scala.version>2.11.0-RC1</scala.version>
+    <scala.version>2.11.1</scala.version>
   </properties>
   <dependencies>
     <dependency>
@@ -239,7 +233,7 @@ With Maven, you'll need this in your `pom.xml` file:
             <compilerPlugin>
               <groupId>com.nativelibs4java</groupId>
               <artifactId>scalaxy-streams_${scala.version}</artifactId>
-              <version>0.3-SNAPSHOT</version>
+              <version>0.2</version>
             </compilerPlugin>
           </compilerPlugins>
         </configuration>
