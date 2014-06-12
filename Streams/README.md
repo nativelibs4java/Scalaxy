@@ -52,27 +52,30 @@ while (i < length) {
 
 * Be aware that *optimized code might behave differently* than normal code, especially with regards to side-effects: for instance, streams typically become lazy (akin to chained Iterators), so the optimization might change the number and order of side-effects (if there are any):
 
-```scala
-  (1 to 2).map(i => { println("first map, " + i); i })
-          .map(i => { println("second map, " + i); i })
-          .take(1)
-  // Without optimizations, this will print:
-  //   first map, 1
-  //   first map, 2
-  //   second map, 1
-  //   second map, 2
-
-  // With stream optimizations, this could *semantically* amount to the following:
-  (1 to 2).toIterator
-          .map(i => { println("first map, " + i); i })
-          .map(i => { println("second map, " + i); i })
-          .take(1)
-          .toSeq
-  // It will hence print:
-  //   first map, 1
-  //   second map, 1
-}
-```
+    ```scala
+      (1 to 2).map(i => { println("first map, " + i); i })
+              .map(i => { println("second map, " + i); i })
+              .take(1)
+      // Without optimizations, this will print:
+      //   first map, 1
+      //   first map, 2
+      //   second map, 1
+      //   second map, 2
+    
+      // With stream optimizations, this could *semantically* amount to the following:
+      (1 to 2).toIterator
+              .map(i => { println("first map, " + i); i })
+              .map(i => { println("second map, " + i); i })
+              .take(1)
+              .toSeq
+      // It will hence print:
+      //   first map, 1
+      //   second map, 1
+    }
+    ```
+    
+  A _safe_ optimization mode that retains the original Scala semantics is in the works, but focus for this release is to find bugs / crashes :-)
+  
 * If you're unsure about side effects in your streamed operations, just take it easy and introduce Scalaxy/Stream optimizations on a case-per-case basis, using its `optimized` macro (see below).
 * If you try and run micro-benchmarks, don't forget to use the following scalac optimization flags:
 
