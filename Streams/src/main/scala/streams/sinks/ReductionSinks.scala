@@ -24,6 +24,7 @@ private[streams] trait ReductionSinks extends StreamComponents {
       require(input.vars.alias.nonEmpty, s"input.vars = $input.vars")
 
       // println("inputVars.alias.get = " + inputVars.alias.get + ": " + inputVars.tpe)
+      val emptyMessage = s"empty.${describe.get}"
       val Block(List(
           resultDef,
           emptyDef,
@@ -34,7 +35,7 @@ private[streams] trait ReductionSinks extends StreamComponents {
         private[this] var $empty = true;
         $result = ${accumulate(Ident(result), input.vars.alias.get)};
         $result;
-        if ($empty) throw new UnsupportedOperationException("empty.reduceLeft");
+        if ($empty) throw new UnsupportedOperationException($emptyMessage);
         ""
       """)
 

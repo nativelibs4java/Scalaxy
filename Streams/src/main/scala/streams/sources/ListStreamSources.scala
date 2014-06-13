@@ -38,12 +38,12 @@ private[streams] trait ListStreamSources
       val Block(List(
           listVarDef,
           itemValDef,
-          emptyListTest,
+          nonEmptyListTest,
           listVarUpdate,
           itemValRef), _) = typed(q"""
         private[this] var $listVar = ${transform(list)};
         private[this] val $itemVal = $listVar.head;
-        $listVar.isEmpty;
+        $listVar ne Nil;
         $listVar = $listVar.tail;
         $itemVal;
         ""
@@ -58,7 +58,7 @@ private[streams] trait ListStreamSources
       sub.copy(body = List(typed(q"""
         $listVarDef;
 
-        while (!$emptyListTest) {
+        while ($nonEmptyListTest) {
           $itemValDef;
           ..$extractionCode
           ..${sub.body};
