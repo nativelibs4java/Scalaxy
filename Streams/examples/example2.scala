@@ -1,3 +1,5 @@
+package example
+
 object Example2 extends App {
   val n = 20;
   println {

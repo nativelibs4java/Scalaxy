@@ -12,7 +12,7 @@ object optimization {
   // /** Makes sure all possible lambdas are rewritten away. This may produce slower and unsafe code. */
   // implicit case object eliminateLambdas extends optimization
 
-  implicit val default: OptimizationStrategy = safe
-  //val default = aggressive
+  // implicit val default: OptimizationStrategy = safe
+  implicit val default: OptimizationStrategy = aggressive
 }
 

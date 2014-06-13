@@ -1,3 +1,5 @@
+package example
+
 // run examples/example4.scala -Xprint:scalaxy-streams
 object Example4 extends App {
   // println(for (p <- (20 until 0 by -2).zipWithIndex) yield p.toString)

@@ -1,3 +1,5 @@
+package example
+
 import scala.reflect.ClassTag
 object Test2 {
   def main(args: Array[String]) {

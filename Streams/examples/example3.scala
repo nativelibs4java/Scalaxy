@@ -1,3 +1,5 @@
+package example
+
 /*
 ~/bin/scala-2.11.0-M8/bin/scalac -Xprint:delambdafy -optimise -Yclosure-elim -Yinline examples/example3.scala
 */

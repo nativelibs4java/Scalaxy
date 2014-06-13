@@ -10,18 +10,25 @@ object Optimizations
   {
     import u._
 
-    if (tree == EmptyTree)
-      scalaxy.streams.optimization.default
-    else if (tree.symbol == rootMirror.staticModule("scalaxy.streams.optimization.safe"))
-      scalaxy.streams.optimization.safe
-    else if (tree.symbol == rootMirror.staticModule("scalaxy.streams.optimization.aggressive"))
-      scalaxy.streams.optimization.aggressive
-    else if (tree.symbol == rootMirror.staticModule("scalaxy.streams.optimization.default"))
-      scalaxy.streams.optimization.default
-    else {
-      println("Unknown optimization strategy: " + tree.symbol)
-      scalaxy.streams.optimization.default
-    }
+    // if (tree == EmptyTree)
+    //   scalaxy.streams.optimization.default
+    // else if (tree.symbol != NoSymbol && tree.symbol.owner == rootMirror.staticModule("scalaxy.streams.optimization")) {
+    //   tree.symbol.name.toString match {
+    //     case "safe" =>
+    //       scalaxy.streams.optimization.safe
+    //     case "aggressive" =>
+    //       scalaxy.streams.optimization.aggressive
+    //     case "default" =>
+    //       scalaxy.streams.optimization.default
+    //     case _ =>
+    //       println("Unknown optimization strategy: " + tree.symbol)
+    //       scalaxy.streams.optimization.default
+    //   }
+    // } else {
+    //   println("Unknown optimization strategy: " + tree.symbol)
+    //   scalaxy.streams.optimization.default
+    // }
+    scalaxy.streams.optimization.default
   }
 
   def optimize(u: scala.reflect.api.Universe)

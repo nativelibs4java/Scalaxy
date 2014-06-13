@@ -1,3 +1,4 @@
+package example
 
 object Example1 extends App {
   // import scalaxy.loops.optimize

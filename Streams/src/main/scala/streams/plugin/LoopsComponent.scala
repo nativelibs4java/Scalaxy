@@ -35,6 +35,8 @@ class StreamsComponent(
   override val runsAfter = runsRightAfter.toList
   override val runsBefore = List("patmat")
 
+  lazy val OptimizationStrategyTpe = rootMirror.staticClass("scalaxy.streams.OptimizationStrategy")
+
   override def newPhase(prev: Phase) = new StdPhase(prev) {
     def apply(unit: CompilationUnit) {
       if (!impl.disabled) {
@@ -53,7 +55,7 @@ class StreamsComponent(
             case SomeStream(stream) =>
               val strategyImplicitResult = analyzer.inferImplicit(
                 EmptyTree,
-                typeOf[OptimizationStrategy],
+                OptimizationStrategyTpe.asType.toType,
                 reportAmbiguous = true,
                 isView = false,
                 context = localTyper.context,
@@ -75,7 +77,16 @@ class StreamsComponent(
                 }
                 // println(result)
 
-                result
+                def resetLocalAttrs(tree: Tree): Tree =
+                  resetAttrs(duplicateAndKeepPositions(tree))
+
+                def untypecheck(tree: Tree): Tree =
+                  resetLocalAttrs(tree)
+
+                val retypedResult = typed(untypecheck(result))
+
+                // result
+                retypedResult
               } else {
                 super.transform(tree)
               }

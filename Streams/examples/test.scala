@@ -1,3 +1,5 @@
+package example
+
 object Test {
   def main(args: Array[String]) {
     val arrays = Array(Array(1, 2), Array(3, 4))
