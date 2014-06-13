@@ -35,7 +35,7 @@ class PerformanceTestBase extends StreamComponentsTestBase {
     val functionCode = s"""
       ($sizeParam: Int) => {
         $decls;
-        () => ${if (optimized) optimizedCode(code) else code}
+        () => ${if (optimized) optimizedCode(code, scalaxy.streams.optimization.aggressive) else code}
       }
     """
 

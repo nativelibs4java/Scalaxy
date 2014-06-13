@@ -53,7 +53,7 @@ class StreamsComponent(
             case SomeStream(stream) =>
               val strategyImplicitResult = analyzer.inferImplicit(
                 EmptyTree,
-                typeOf[scalaxy.optimization],
+                typeOf[OptimizationStrategy],
                 reportAmbiguous = true,
                 isView = false,
                 context = localTyper.context,

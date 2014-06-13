@@ -1,16 +1,18 @@
-package scalaxy;
+package scalaxy.streams;
 
-sealed trait optimization
+sealed trait OptimizationStrategy
 
 object optimization {
-  case object none extends optimization
+  implicit case object none extends OptimizationStrategy
   /** Performs optimizations that don't alter any Scala semantics. */
-  case object safe extends optimization
+  implicit case object safe extends OptimizationStrategy
   /** Performs unsafe rewrites. */
-  case object aggressive extends optimization
-  // /** Makes sure all possible lambdas are rewritten away. This may produce slower and unsafe code. */
-  // case object eliminateLambdas extends optimization
+  implicit case object aggressive extends OptimizationStrategy
 
-  val default = aggressive
+  // /** Makes sure all possible lambdas are rewritten away. This may produce slower and unsafe code. */
+  // implicit case object eliminateLambdas extends optimization
+
+  implicit val default: OptimizationStrategy = safe
+  //val default = aggressive
 }
 

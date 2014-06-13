@@ -6,21 +6,21 @@ object Optimizations
       "[Scalaxy] Optimized stream: " + streamDescription
 
   def matchStrategyTree(u: scala.reflect.api.Universe)
-                       (tree: u.Tree): scalaxy.optimization = 
+                       (tree: u.Tree): OptimizationStrategy = 
   {
     import u._
-    tree match {
-      case q"scalaxy.optimization.safe" =>
-        scalaxy.optimization.safe
 
-      case q"scalaxy.optimization.aggressive" =>
-        scalaxy.optimization.aggressive
-
-      case EmptyTree =>
-        scalaxy.optimization.default
-
-      case q"scalaxy.optimization.default" =>
-        scalaxy.optimization.default
+    if (tree == EmptyTree)
+      scalaxy.streams.optimization.default
+    else if (tree.symbol == rootMirror.staticModule("scalaxy.streams.optimization.safe"))
+      scalaxy.streams.optimization.safe
+    else if (tree.symbol == rootMirror.staticModule("scalaxy.streams.optimization.aggressive"))
+      scalaxy.streams.optimization.aggressive
+    else if (tree.symbol == rootMirror.staticModule("scalaxy.streams.optimization.default"))
+      scalaxy.streams.optimization.default
+    else {
+      println("Unknown optimization strategy: " + tree.symbol)
+      scalaxy.streams.optimization.default
     }
   }
 
@@ -30,7 +30,7 @@ object Optimizations
                 fresh: String => String,
                 info: (u.Position, String) => Unit,
                 recurse: Boolean = true,
-                strategy: => scalaxy.optimization): u.Tree =
+                strategy: => OptimizationStrategy): u.Tree =
   {
     object Optimize extends StreamTransforms {
       override val global = u

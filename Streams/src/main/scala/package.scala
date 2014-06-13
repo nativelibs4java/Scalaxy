@@ -36,14 +36,18 @@ package streams
           import c.universe._
           def typed(tree: Tree) = c.typecheck(tree.asInstanceOf[c.Tree]).asInstanceOf[Tree]
           c.Expr[A](
-            Optimizations.optimize(c.universe)(
-              a.tree,
-              typed(_),
-              c.freshName(_),
-              c.info(_, _, force = true),
-              recurse,
-              Optimizations.matchStrategyTree(c.universe)(
-                c.inferImplicitValue(typeOf[scalaxy.optimization]))))
+            // Untypechecking is needed for some local symbols captured by inner lambdas that fail to find their "proxy"
+            // TODO: Investigate (bug can happen in safe mode with no side-effect detection in macro integration tests).
+            c.untypecheck(
+              Optimizations.optimize(c.universe)(
+                a.tree,
+                typed(_),
+                c.freshName(_),
+                c.info(_, _, force = true),
+                recurse,
+                Optimizations.matchStrategyTree(c.universe)(
+                  // EmptyTree))))
+                  c.inferImplicitValue(typeOf[OptimizationStrategy])))))
         } catch {
           case ex: Throwable =>
             ex.printStackTrace()

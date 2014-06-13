@@ -36,16 +36,16 @@ private[streams] trait Streams extends StreamComponents
     def lambdaCount = ((source :: ops) :+ sink).map(_.lambdaCount).sum
 
     // TODO: refine this.
-    def isWorthOptimizing(strategy: scalaxy.optimization) = {
+    def isWorthOptimizing(strategy: OptimizationStrategy) = {
       strategy match {
-        case scalaxy.optimization.none =>
+        case scalaxy.streams.optimization.none =>
           false
 
-        case scalaxy.optimization.safe =>
+        case scalaxy.streams.optimization.safe =>
           // TODO: side-effects analysis to allow more cases where lambdaCount > 1
           lambdaCount == 1
 
-        case scalaxy.optimization.aggressive =>
+        case scalaxy.streams.optimization.aggressive =>
           lambdaCount >= 1
       }
     }

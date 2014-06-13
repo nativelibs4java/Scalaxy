@@ -37,12 +37,6 @@ private[streams] trait ArrayOpsSinks extends ArrayBuilderSinks {
       val arrayOutput = ArrayBuilderSink.emit(input, outputNeeds, nextOps)
       val componentTpe = input.vars.tpe.dealias
 
-      println(s"""
-        arrayOutput = $arrayOutput
-        componentTpe = $componentTpe
-        input.vars.tpe = ${input.vars.tpe}
-      """)
-
       def getResult(array: Tree) = typed(
         anyValOpsClassNameByType.get(componentTpe) match {
           case Some(primitiveOpsClass) =>

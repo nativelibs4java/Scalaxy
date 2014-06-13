@@ -70,11 +70,26 @@ trait StreamComponentsTestBase extends Utils
     }
   }
 
-  def optimizedCode(source: String): String = s"scalaxy.streams.optimize { $source }"
+  def getStrategyName(strategy: OptimizationStrategy) = strategy match {
+    case scalaxy.streams.optimization.none =>
+      "scalaxy.streams.optimization.none"
 
-  def assertMacroCompilesToSameValue(source: String): CompilerMessages = {
+    case scalaxy.streams.optimization.safe =>
+      "scalaxy.streams.optimization.safe"
+
+    case scalaxy.streams.optimization.aggressive =>
+      "scalaxy.streams.optimization.aggressive"
+  }
+
+  def optimizedCode(source: String, strategy: OptimizationStrategy): String = {
+    val src = s"{ import ${getStrategyName(strategy)} ; scalaxy.streams.optimize { $source } }"
+    // println(src)
+    src
+  }
+
+  def assertMacroCompilesToSameValue(source: String, strategy: OptimizationStrategy): CompilerMessages = {
     val (unoptimized, unoptimizedMessages) = compile(source)
-    val (optimized, optimizedMessages) = compile(optimizedCode(source))
+    val (optimized, optimizedMessages) = compile(optimizedCode(source, strategy))
 
     assertEqualValues(source, unoptimized(), optimized())
 
