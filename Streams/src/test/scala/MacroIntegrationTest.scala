@@ -13,6 +13,8 @@ import scala.collection.JavaConversions._
 @RunWith(classOf[Parameterized])
 class MacroIntegrationTest(source: String, expectedMessages: CompilerMessages) extends StreamComponentsTestBase with StreamTransforms {
   @Test def test = {
+    assertPluginCompilesSnippetFine(source)
+
     val actualMessages = assertMacroCompilesToSameValue(
       source, strategy = scalaxy.streams.optimization.aggressive)
     assertEquals(expectedMessages.infos, actualMessages.infos)

@@ -16,39 +16,42 @@ object StreamsCompiler {
   val scalaLibraryJar = jarOf(classOf[List[_]])
 
   def main(args: Array[String]) {
-    compile(
-      args,
-      settings => new ConsoleReporter(settings),
-      StreamsPlugin.getInternalPhases _)
-  }
-
-  def compile[R <: Reporter](args: Array[String],
-    reporterGetter: Settings => R,
-    internalPhasesGetter: Global => List[PluginComponent]): R = {
     try {
-      val settings = new Settings
-      val command =
-        new CompilerCommand(
-          scalaLibraryJar.map(jar => List("-bootclasspath", jar)).getOrElse(Nil) ++ args, settings)
-
-      if (!command.ok)
-        System.exit(1)
-
-      val reporter = reporterGetter(settings)
-      val global = new Global(settings, reporter) {
-        override protected def computeInternalPhases() {
-          super.computeInternalPhases
-          phasesSet ++= internalPhasesGetter(this)
-        }
-      }
-      new global.Run().compile(command.files)
-
-      reporter
+      compile(args, consoleReportGetter)
     } catch {
       case ex: Throwable =>
         ex.printStackTrace
         System.exit(2)
         throw ex
     }
+  }
+
+  def consoleReportGetter = (settings: Settings) => new ConsoleReporter(settings)
+
+  def defaultInternalPhasesGetter: Global => List[PluginComponent] =
+    StreamsPlugin.getInternalPhases _
+
+  def compile[R <: Reporter](args: Array[String],
+      reporterGetter: Settings => R,
+      internalPhasesGetter: Global => List[PluginComponent] = defaultInternalPhasesGetter): R =
+  {
+    val settings = new Settings
+    val command =
+      new CompilerCommand(
+        scalaLibraryJar.map(jar => List("-bootclasspath", jar)).getOrElse(Nil) ++ args, settings)
+
+    if (!command.ok)
+      System.exit(1)
+
+    val reporter = reporterGetter(settings)
+    val global = new Global(settings, reporter) {
+      override protected def computeInternalPhases() {
+        super.computeInternalPhases
+        phasesSet ++= internalPhasesGetter(this)
+      }
+    }
+    new global.Run().compile(command.files)
+
+    reporter
   }
 }

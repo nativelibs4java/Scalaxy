@@ -87,6 +87,22 @@ trait StreamComponentsTestBase extends Utils
     src
   }
 
+  def assertPluginCompilesSnippetFine(source: String) {
+    val sourceFile = {
+      import java.io._
+
+      val f = File.createTempFile("test-", ".scala")
+      val out = new PrintStream(f)
+      out.println(s"object Test { $source }")
+      out.close()
+
+      f
+    }
+
+    val args = Array(sourceFile.toString)
+    StreamsCompiler.compile(args, StreamsCompiler.consoleReportGetter)
+  }
+
   def assertMacroCompilesToSameValue(source: String, strategy: OptimizationStrategy): CompilerMessages = {
     val (unoptimized, unoptimizedMessages) = compile(source)
     val (optimized, optimizedMessages) = compile(optimizedCode(source, strategy))

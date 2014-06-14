@@ -35,7 +35,7 @@ class StreamsComponent(
   override val runsAfter = runsRightAfter.toList
   override val runsBefore = List("patmat")
 
-  lazy val OptimizationStrategyTpe = rootMirror.staticClass("scalaxy.streams.OptimizationStrategy")
+  // lazy val OptimizationStrategyTpe = rootMirror.staticClass("scalaxy.streams.OptimizationStrategy")
 
   override def newPhase(prev: Phase) = new StdPhase(prev) {
     def apply(unit: CompilationUnit) {
@@ -53,17 +53,17 @@ class StreamsComponent(
 
           override def transform(tree: Tree) = tree match {
             case SomeStream(stream) =>
-              val strategyImplicitResult = analyzer.inferImplicit(
-                EmptyTree,
-                OptimizationStrategyTpe.asType.toType,
-                reportAmbiguous = true,
-                isView = false,
-                context = localTyper.context,
-                saveAmbiguousDivergent = false,
-                pos = tree.pos)
-
-              val strategy = Optimizations.matchStrategyTree(global)(
-                if (strategyImplicitResult.isSuccess) strategyImplicitResult.tree else EmptyTree)
+              // val strategyImplicitResult = analyzer.inferImplicit(
+              //   EmptyTree,
+              //   OptimizationStrategyTpe.asType.toType,
+              //   reportAmbiguous = true,
+              //   isView = false,
+              //   context = localTyper.context,
+              //   saveAmbiguousDivergent = false,
+              //   pos = tree.pos)
+              // val strategy = Optimizations.matchStrategyTree(global)(
+              //   if (strategyImplicitResult.isSuccess) strategyImplicitResult.tree else EmptyTree)
+              val strategy = scalaxy.streams.optimization.aggressive
 
               if (stream.isWorthOptimizing(strategy)) {
                 reporter.info(tree.pos, Optimizations.optimizedStreamMessage(stream.describe()), force = true)
