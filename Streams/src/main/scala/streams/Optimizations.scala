@@ -37,7 +37,8 @@ object Optimizations
                 fresh: String => String,
                 info: (u.Position, String) => Unit,
                 recurse: Boolean = true,
-                strategy: => OptimizationStrategy): u.Tree =
+                strategy: => OptimizationStrategy = scalaxy.streams.optimization.default,
+                verbose: Boolean = true): u.Tree =
   {
     object Optimize extends StreamTransforms {
       override val global = u
@@ -66,8 +67,10 @@ object Optimizations
         }
       } transform tree.asInstanceOf[Tree]//typed(tree)
 
-      // println(result)
-      // println(showRaw(result, printTypes = true))
+      if (verbose) {
+        println(result)
+        // println(showRaw(result, printTypes = true))
+      }
     }
 
     typeCheck(Optimize.result.asInstanceOf[u.Tree])

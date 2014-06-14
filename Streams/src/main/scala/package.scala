@@ -20,9 +20,9 @@ package streams
       System.getenv("SCALAXY_STREAMS_OPTIMIZE") == "0" ||
       System.getProperty("scalaxy.streams.optimize") == "false"
 
-    // def verbose: Boolean =
-    //   System.getenv("SCALAXY_STREAMS_VERBOSE") == "0" ||
-    //   System.getProperty("scalaxy.streams.verbose") == "false"
+    def verbose: Boolean =
+      System.getenv("SCALAXY_STREAMS_VERBOSE") == "0" ||
+      System.getProperty("scalaxy.streams.verbose") == "false"
 
     def recursivelyOptimize[A : c.WeakTypeTag](c: Context)(a: c.Expr[A]): c.Expr[A] = {
       optimize[A](c)(a, recurse = true)
@@ -47,7 +47,8 @@ package streams
                 recurse,
                 Optimizations.matchStrategyTree(c.universe)(
                   // EmptyTree))))
-                  c.inferImplicitValue(typeOf[OptimizationStrategy])))))
+                  c.inferImplicitValue(typeOf[OptimizationStrategy])),
+                verbose = verbose)))
         } catch {
           case ex: Throwable =>
             ex.printStackTrace()
