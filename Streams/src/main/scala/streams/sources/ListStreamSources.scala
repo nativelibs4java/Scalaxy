@@ -31,18 +31,26 @@ private[streams] trait ListStreamSources
     {
       import input.{ fresh, transform, typed }
 
-      val listVar = fresh("list")
+      val listVal = fresh("list")
+      val listVar = fresh("currList")
       val itemVal = fresh("item")
+
+      // val componentTpe = input.vars.tpe.dealias
+      // println("componentTpe = " + componentTpe)
 
       // Early typing / symbolization.
       val Block(List(
+          listValDef,
           listVarDef,
           itemValDef,
+          listSize,
           nonEmptyListTest,
           listVarUpdate,
           itemValRef), _) = typed(q"""
-        private[this] var $listVar = ${transform(list)};
+        private[this] val $listVal = ${transform(list)}
+        private[this] var $listVar = $listVal;
         private[this] val $itemVal = $listVar.head;
+        $listVal.size;
         $listVar ne Nil;
         $listVar = $listVar.tail;
         $itemVal;
@@ -53,18 +61,23 @@ private[streams] trait ListStreamSources
       val sub = emitSub(
         input.copy(
           vars = outputVars,
-          outputSize = None),
+          // outputSize = None),
+          outputSize = Some(listSize)),
         nextOps)
-      sub.copy(body = List(typed(q"""
-        $listVarDef;
-
-        while ($nonEmptyListTest) {
-          $itemValDef;
-          ..$extractionCode
-          ..${sub.body};
-          $listVarUpdate
-        }
-      """)))
+      sub.copy(
+        beforeBody = Nil,
+        body = List(typed(q"""
+          $listValDef;
+          $listVarDef;
+          ..${sub.beforeBody};
+          while ($nonEmptyListTest) {
+            $itemValDef;
+            ..$extractionCode
+            ..${sub.body};
+            $listVarUpdate
+          }
+        """))
+      )
     }
   }
 }

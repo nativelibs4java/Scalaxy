@@ -10,6 +10,8 @@ private[streams] trait ListBufferSinks extends BuilderSinks {
   {
     override def describe = Some("List")
 
+    override def usesSizeHint = false
+
     override def createBuilder(inputVars: TuploidValue[Tree], typed: Tree => Tree) = {
       val builderModule =
         rootMirror.staticModule("scala.collection.mutable.ListBuffer")

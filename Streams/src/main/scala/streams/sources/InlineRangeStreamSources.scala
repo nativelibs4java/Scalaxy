@@ -92,16 +92,21 @@ private[streams] trait InlineRangeStreamSources
       val outputVars = ScalarValue[Tree](tpe = tpe, alias = Some(iValRef))
 
       val sub = emitSub(input.copy(vars = outputVars), nextOps)
-      sub.copy(body = List(typed(q"""
-        $startValDef;
-        $endValDef;
-        $iVarDef;
-        while ($test) {
-          $iValDef;
-          ..${sub.body};
-          $iVarIncr
-        }
-      """)))
+
+      sub.copy(
+        beforeBody = Nil,
+        body = List(typed(q"""
+          $startValDef;
+          $endValDef;
+          $iVarDef;
+          ..${sub.beforeBody}
+          while ($test) {
+            $iValDef;
+            ..${sub.body};
+            $iVarIncr
+          }
+        """))
+      )
     }
   }
 }

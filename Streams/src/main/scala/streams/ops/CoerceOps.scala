@@ -44,7 +44,7 @@ private[streams] trait CoerceOps
     {
       import input.typed
 
-      val sub = emitSub(input, nextOps)
+      val sub = emitSub(input.copy(outputSize = None), nextOps)
 
       val pathsThatCantBeNull = input.vars.collect({
         case (path, t @ TupleValue(_, _, _, false)) =>

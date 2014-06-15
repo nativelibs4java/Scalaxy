@@ -80,7 +80,7 @@ private[streams] trait ZipWithIndexOps
       val sub = emitSub(input.copy(vars = outputVars), nextOps)
       sub.copy(
         // TODO pass source collection to canBuildFrom if it exists.
-        prelude = sub.prelude :+ indexVarDef,
+        beforeBody = sub.beforeBody :+ indexVarDef,
         body = List(q"""
           $indexValDef;
           ..${if (needsPair) List(pairDef) else Nil}

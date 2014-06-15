@@ -33,10 +33,7 @@ private[streams] trait ForeachOps
 
       // require(outputVars.tpe.dealias =:= typeOf[Unit], "Expected Unit, got " + outputVars.tpe)
 
-      StreamOutput(
-        prelude = Nil,
-        body = replacedStatements,
-        ending = Nil)
+      StreamOutput(body = replacedStatements)
     }
   }
 }

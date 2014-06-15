@@ -12,6 +12,8 @@ private[streams] trait VectorBuilderSinks extends BuilderSinks {
 
     override def lambdaCount = 0
 
+    override def usesSizeHint = false
+
     // TODO build Vector of same size as source collection if it is known.
     override def createBuilder(inputVars: TuploidValue[Tree], typed: Tree => Tree) = {
       val module = rootMirror.staticModule("scala.collection.immutable.Vector")

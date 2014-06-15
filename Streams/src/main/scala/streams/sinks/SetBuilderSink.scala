@@ -10,6 +10,8 @@ private[streams] trait SetBuilderSinks extends BuilderSinks {
   {
     override def describe = Some("Set")
 
+    override def usesSizeHint = false
+
     override def createBuilder(inputVars: TuploidValue[Tree], typed: Tree => Tree) = {
       val setModule =
         rootMirror.staticModule("scala.collection.immutable.Set")

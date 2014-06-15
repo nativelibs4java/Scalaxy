@@ -21,8 +21,8 @@ package streams
       System.getProperty("scalaxy.streams.optimize") == "false"
 
     def verbose: Boolean =
-      System.getenv("SCALAXY_STREAMS_VERBOSE") == "0" ||
-      System.getProperty("scalaxy.streams.verbose") == "false"
+      System.getenv("SCALAXY_STREAMS_VERBOSE") == "1" ||
+      System.getProperty("scalaxy.streams.verbose") == "true"
 
     def recursivelyOptimize[A : c.WeakTypeTag](c: Context)(a: c.Expr[A]): c.Expr[A] = {
       optimize[A](c)(a, recurse = true)

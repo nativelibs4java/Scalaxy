@@ -128,15 +128,18 @@ private[streams] trait OptionStreamSources
           vars = outputVars,
           outputSize = None), // TODO 1 if nonEmpty, 0 otherwise.
         nextOps)
-      sub.copy(body = List(typed(q"""
-        $itemValDef;
-        $nonEmptyValDef;
-
-        if ($nonEmptyValRef) {
-          ..$extractionCode
-          ..${sub.body};
-        }
-      """)))
+      sub.copy(
+        beforeBody = Nil,
+        body = List(typed(q"""
+          $itemValDef;
+          $nonEmptyValDef;
+          ..${sub.beforeBody};
+          if ($nonEmptyValRef) {
+            ..$extractionCode
+            ..${sub.body};
+          }
+        """))
+      )
     }
   }
 }

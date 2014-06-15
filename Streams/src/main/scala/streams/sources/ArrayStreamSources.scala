@@ -62,18 +62,22 @@ private[streams] trait ArrayStreamSources
           vars = outputVars,
           outputSize = Some(lengthValRef)),
         nextOps)
-      sub.copy(body = List(typed(q"""
-        $arrayValDef;
-        $lengthValDef;
-        $iVarDef;
 
-        while ($iVarRef < $lengthValRef) {
-          $itemValDef;
-          ..$extractionCode
-          ..${sub.body};
-          $iVarRef += 1
-        }
-      """)))
+      sub.copy(
+        beforeBody = Nil,
+        body = List(typed(q"""
+          $arrayValDef;
+          $lengthValDef;
+          $iVarDef;
+          ..${sub.beforeBody};
+          while ($iVarRef < $lengthValRef) {
+            $itemValDef;
+            ..$extractionCode
+            ..${sub.body};
+            $iVarRef += 1
+          }
+        """))
+      )
     }
   }
 }

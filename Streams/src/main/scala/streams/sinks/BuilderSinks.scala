@@ -9,6 +9,8 @@ private[streams] trait BuilderSinks extends StreamComponents {
   {
     override def lambdaCount = 0
 
+    def usesSizeHint: Boolean
+
     def createBuilder(inputVars: TuploidValue[Tree], typed: Tree => Tree): Tree
 
     override def emit(input: StreamInput, outputNeeds: OutputNeeds, nextOps: OpsAndOutputNeeds): StreamOutput =
@@ -36,7 +38,8 @@ private[streams] trait BuilderSinks extends StreamComponents {
 
       StreamOutput(
         prelude = List(builderDef),
-        body = input.outputSize.map(_ => sizeHint).toList :+ builderAdd,
+        beforeBody = input.outputSize.filter(_ => usesSizeHint).map(_ => sizeHint).toList,
+        body = List(builderAdd),
         ending = List(result))
     }
   }

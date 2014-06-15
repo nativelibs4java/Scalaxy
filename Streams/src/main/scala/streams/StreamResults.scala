@@ -8,15 +8,16 @@ private[streams] trait StreamResults extends TuploidValues {
 
   case class StreamOutput(
       prelude: List[Tree] = Nil,
+      beforeBody: List[Tree] = Nil,
       body: List[Tree] = Nil,
       ending: List[Tree] = Nil)
   {
-    def compose(typed: Tree => Tree) = typed(q"..${prelude ++ body ++ ending}")
+    def compose(typed: Tree => Tree) = typed(q"..${prelude ++ beforeBody ++ body ++ ending}")
     def map(f: Tree => Tree): StreamOutput =
       copy(prelude = prelude.map(f), body = body.map(f), ending = ending.map(f))
   }
 
-  val NoStreamOutput = StreamOutput(prelude = Nil, body = Nil, ending = Nil)
+  val NoStreamOutput = StreamOutput()
 
   case class StreamInput(
     vars: TuploidValue[Tree],

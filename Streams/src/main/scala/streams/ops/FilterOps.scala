@@ -36,7 +36,7 @@ private[streams] trait FilterOps extends ClosureStreamOps with Strippers
 
       val (replacedStatements, outputVars) =
         transformationClosure.replaceClosureBody(
-          input.copy(outputSize = None),
+          input,
           outputNeeds + RootTuploidPath)
 
       var test = outputVars.alias.get
@@ -44,7 +44,7 @@ private[streams] trait FilterOps extends ClosureStreamOps with Strippers
         test = typed(q"!$test")
       }
 
-      var sub = emitSub(input, nextOps)
+      var sub = emitSub(input.copy(outputSize = None), nextOps)
       sub.copy(body = List(q"""
         ..$replacedStatements;
         if ($test) {

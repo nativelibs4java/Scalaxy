@@ -91,13 +91,13 @@ object MacroIntegrationTest
 
     "{ val list = List(1, 2, 3); list.map(_ * 2).filter(_ < 3) }"
       -> streamMsg("List.map.filter -> List", hasPureExpressions = true),
-    
+
     "(Nil: scala.collection.immutable.List[Int]).map(_ * 2).filter(_ < 3).toArray"
       -> streamMsg("List.map.filter -> Array", hasPureExpressions = true),
-    
+
     "(1 :: 2 :: 3 :: Nil).map(_ * 2).filter(_ < 3).toArray"
       -> streamMsg("List.map.filter -> Array", hasPureExpressions = true),
-    
+
     "(1 to 3).map(_ * 2).filter(_ < 3).toArray"
       -> streamMsg("Range.map.filter -> Array", hasPureExpressions = true),
 
@@ -151,6 +151,12 @@ object MacroIntegrationTest
         .map({ case (k, l) => k + l })"""
       -> streamMsg("Array.map.map -> Array", hasPureExpressions = true),
 
+    """
+      val col: List[Int] = (0 to 2).toList;
+      col.filter(v => (v % 2) == 0).map(_ * 2)
+    """
+      -> streamMsg("List.filter.map -> List", hasPureExpressions = true),
+
     """val n = 10;
       for (i <- 0 to n;
            j <- i to 1 by -1;
@@ -158,6 +164,13 @@ object MacroIntegrationTest
         yield { i + j }
     """
       -> streamMsg("Range.flatMap(Range.withFilter.map) -> IndexedSeq", hasPureExpressions = true),
+
+    """val n = 10;
+      for (i <- 0 to n;
+           j <- i to 0 by -1)
+        yield { i + j }
+    """
+      -> streamMsg("Range.flatMap(Range.map) -> IndexedSeq", hasPureExpressions = true),
 
     """val n = 20;
       for (i <- 0 to n;
@@ -181,6 +194,14 @@ object MacroIntegrationTest
         yield { (ii, jj, k) }
     """
       -> streamMsg("Range.map.flatMap(Range.map.withFilter.flatMap(Range.map)) -> IndexedSeq", hasPureExpressions = true),
+
+    """
+      val n = 5
+      for (i <- 0 until n; v <- (i to 0 by -1).toArray; j <- 0 until v) yield {
+        (i, v, j)
+      }
+    """
+      -> streamMsg("Range.flatMap(Array.flatMap(Range.map)) -> IndexedSeq", hasPureExpressions = true),
 
     """
       val start = 10
