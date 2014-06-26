@@ -71,6 +71,6 @@ object JavaScriptExterns {
     write(trees.mkString("\n"), new java.io.File("out.scala"))
 
     // println("OUT =\n" + trees.mkString("\n"))
-    c.Expr[Any](Block(trees, c.literalUnit.tree))
+    c.Expr[Any](Block(trees, q"()"))
   }
 }

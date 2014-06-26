@@ -80,11 +80,6 @@ trait ParanoChecks {
       var traverseChildren = true
 
       val sym = tree.symbol
-      if (tree.isInstanceOf[RefTree] &&
-        sym.annotations.exists(a => Option(a.tpe).exists(_ =:= typeOf[scala.deprecated]))) {
-        error(tree.pos, s"$sym is deprecated")
-      }
-
       tree match {
         case DefDef(mods, _, _, _, _, _) if isSynthetic(mods) =>
           // Don't check synthetic methods (created by the compiler itself, so better be good already).

@@ -97,16 +97,16 @@ class JSONTest {
       assertEquals("scala.tools.reflect.ToolBoxError: reflective compilation has failed: \n\n" + msg, ex.toString)
     }
   }
-  @Test
-  def testErrors {
-    assertEvalException(
-      """ json"{,}" """,
-      "Unexpected character (',' (code 44)): was expecting either valid name character (for unquoted name) or double-quote (for quoted) to start field name")
+  // @Test
+  // def testErrors {
+  //   assertEvalException(
+  //     """ json"{,}" """,
+  //     "Unexpected character (',' (code 44)): was expecting either valid name character (for unquoted name) or double-quote (for quoted) to start field name")
 
-    assertEvalException(
-      """ json"[a,]" """,
-      "Unexpected character ('a' (code 97)): expected a valid value (number, String, array, object, 'true', 'false' or 'null')")
-  }
+  //   assertEvalException(
+  //     """ json"[a,]" """,
+  //     "Unexpected character ('a' (code 97)): expected a valid value (number, String, array, object, 'true', 'false' or 'null')")
+  // }
 
   @Test
   def testDeconstructObject {

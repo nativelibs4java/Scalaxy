@@ -27,8 +27,8 @@ import scala.tools.nsc.transform.TypingTransformers
  *  > val DefDef(mods, name, tparams, vparamss, tpt, rhs) = ast // play with extractors to explore the tree and its properties.
  */
 class MacroExtensionsComponent(
-  val global: Global, 
-  macroExtensions: Boolean = true, 
+  val global: Global,
+  macroExtensions: Boolean = true,
   runtimeExtensions: Boolean = false,
   useThisForSelf: Boolean = true,
   useUntypedReify: Boolean = false)
@@ -108,81 +108,81 @@ class MacroExtensionsComponent(
               val extensionName = newExtensionName(name)
               val typeNamesInTarget = getTypeNames(targetTpt).toSet
               val (outerTParams, innerTParams) =
-                tparams.partition { 
-                  case tparam @ TypeDef(_, tname, _, _) => 
-                    typeNamesInTarget.contains(tname) 
+                tparams.partition {
+                  case tparam @ TypeDef(_, tname, _, _) =>
+                    typeNamesInTarget.contains(tname)
                 }
-                
+
               val typeNamesInSignature = typeNamesInTarget ++ tparams.flatMap(getTypeNames(_))
-              
+
               def containsReferenceToTParams(tpt: Tree) = {
                 val typeNames = getTypeNames(tpt)
                 typeNames.exists((tpn: TypeName) => typeNamesInSignature.contains(tpn))
               }
-              
+
               val tparamNames =
                 (tparams.map { case tparam @ TypeDef(_, tname, _, _) => tname.toString }).toSet
-              
+
               val selfTreeName: TermName = unit.fresh.newName("selfTree$")
               val selfExprName: TermName = unit.fresh.newName("self$Expr$")
-              
+
               // Don't rename the context, otherwise explicit macros are hard to write.
               val contextName: TermName = "c" //unit.fresh.newName("c")
 
-              def isImplicit(mods: Modifiers) = 
+              def isImplicit(mods: Modifiers) =
                 ((mods.flags & IMPLICIT): Long) != 0
-                
-              def isByName(mods: Modifiers) = 
+
+              def isByName(mods: Modifiers) =
                 ((mods.flags & BYNAMEPARAM): Long) != 0
-                
-              val isMacro = 
+
+              val isMacro =
                 ((flags & MACRO): Long) != 0
-                
+
               val byValueParamExprNames = mutable.HashMap[String, String]()
               val vparamss = vparamss0.map(_.map {
                 case vd @ ValDef(pmods, pname, ptpt, prhs) =>
-                  val newPTpt = 
+                  val newPTpt =
                     if (isByName(pmods)) {
                       if (isMacro)
                         unit.error(tree.pos, "Extensions expressed as macros cannot take by-name arguments")
-                      
+
                       if (isImplicit(pmods))
                         unit.error(vd.pos, "Scalaxy does not support for by-name implicit params yet")
-                    
+
                       val AppliedTypeTree(target, List(newPTpt)) = ptpt
                       assert(target.toString == "_root_.scala.<byname>")
                       newPTpt
                     } else {
-                      byValueParamExprNames += pname.toString -> unit.fresh.newName(pname + "$Expr$") 
-                      ptpt 
+                      byValueParamExprNames += pname.toString -> unit.fresh.newName(pname + "$Expr$")
+                      ptpt
                     }
-                    
+
                   if (!prhs.isEmpty)
                     unit.error(prhs.pos, "Default parameters are not supported yet")
 
                   ValDef(
-                    pmods, 
+                    pmods,
                     // Due to https://issues.scala-lang.org/browse/SI-7170, we can have evidence name clashes.
-                    pname,//if (isImplicit(pmods)) TermName(unit.fresh.newName(pname + "$")) else pname, 
-                    newPTpt, 
+                    pname,//if (isImplicit(pmods)) TermName(unit.fresh.newName(pname + "$")) else pname,
+                    newPTpt,
                     prhs)
               })
-              
+
               def getRealParamName(name: TermName): TermName = {
                 val n = name.toString
                 byValueParamExprNames.get(n).getOrElse(n): String
               }
-              def isByValueParam(name: TermName): Boolean = 
+              def isByValueParam(name: TermName): Boolean =
                 byValueParamExprNames.contains(name.toString)
-              
-              
-              val variableNames = (selfName.toString :: vparamss.flatten.map(_.name.toString)).toSet
+
+
+              val variableNames: Set[String] = (selfName.toString :: vparamss.flatten.map(_.name.toString)).toSet
               banVariableNames(
-                variableNames + "reify", 
+                variableNames + "reify",
                 rhs
               )
               banAmbiguousThis(rhs, targetTpt)
-              
+
               def typeGetter(tpt: Tree): Tree = {
                 //if (containsReferenceToTParams(tpt))
                 Select(
@@ -191,13 +191,13 @@ class MacroExtensionsComponent(
                     List(tpt)),
                   "tpe")
               }
-              
+
               def typeTreeGetter(tpt: Tree): Tree = {
                 Apply(
-                  Ident("TypeTree": TermName), 
+                  Ident("TypeTree": TermName),
                   List(typeGetter(tpt)))
               }
-              
+
               List(
                 newImportMacros(tree.pos),
                 ClassDef(
@@ -327,8 +327,8 @@ class MacroExtensionsComponent(
                           if (isMacro) {
                             def selfTransformer = new Transformer {
                               override def transform(tree: Tree) = tree match {
-                                case This(n) 
-                                if n.isEmpty || 
+                                case This(n)
+                                if n.isEmpty ||
                                    n.toString == targetTpt.toString =>
                                   Ident(selfName)
                                 case Ident(n: TermName) if n.toString == selfName =>
@@ -355,30 +355,30 @@ class MacroExtensionsComponent(
                               override def transform(tree: Tree) = tree match {
                                 case This(n) if useThisForSelf && n.isEmpty =>
                                   Ident(selfName)
-                                case Ident(n: TermName) 
+                                case Ident(n: TermName)
                                 if useThisForSelf && n.toString == selfName =>
                                   unit.warning(tree.pos, s"'$selfName' is deprecated, please use 'this' instead")
                                   tree
-                                case Ident(n: TermName) 
-                                if variableNames.contains(n.toString) &&
+                                case Ident(n @ TermName(nstr))
+                                if variableNames.contains(nstr) &&
                                    n.toString != selfName &&
-                                   !isByValueParam(n) && 
+                                   !isByValueParam(n) &&
                                    !useUntypedReify =>
-                                  newSplice(n)
+                                  newSplice(nstr)
                                 case _ =>
                                   super.transform(tree)
                               }
                             }
                             val selfParam =
                               ValDef(
-                                Modifiers(LOCAL), 
-                                selfName, 
-                                newEmptyTpt,//targetTpt.duplicate, 
+                                Modifiers(LOCAL),
+                                selfName,
+                                newEmptyTpt,//targetTpt.duplicate,
                                 newSplice(selfExprName)
                               )
-                              
+
                             val byValueParams = vparamss.flatten collect {
-                              case ValDef(pmods, pname, ptpt, prhs) 
+                              case ValDef(pmods, pname, ptpt, prhs)
                               if isByValueParam(pname) =>
                                 ValDef(
                                   Modifiers(if (isImplicit(pmods)) LOCAL | IMPLICIT else LOCAL),
@@ -388,7 +388,7 @@ class MacroExtensionsComponent(
                                   newSplice(getRealParamName(pname)))
                             }
 
-                            // When using untyped reification, only pass implicits through. 
+                            // When using untyped reification, only pass implicits through.
                             val result = if (useUntypedReify) {
                               /*val rei = Block(
                                 //byValueParams.filter(vd => isImplicit(vd.mods)) :+
@@ -396,7 +396,7 @@ class MacroExtensionsComponent(
                               )*/
                               val rei = splicer.transform(rhs)
 
-                              val untypedResult = 
+                              val untypedResult =
                                 new TreeReifyingTransformer(
                                   exprSplicer = tn => {
                                     val s = tn.toString
@@ -409,15 +409,15 @@ class MacroExtensionsComponent(
                                   typeGetter = typeGetter(_),
                                   typeTreeGetter = typeTreeGetter(_)
                                 ).transform(rei)
-                              
+
                               newExpr(
-                                contextName, 
+                                contextName,
                                 tpt,
                                 Block(
                                   Apply(Ident("println"), List(untypedResult)),
                                   //untypedResult))
                                   Apply(
-                                    termPath(contextName + ".typeCheck"), 
+                                    termPath(contextName + ".typeCheck"),
                                     List(
                                       untypedResult,
                                       typeGetter(tpt)))))
@@ -452,7 +452,7 @@ class MacroExtensionsComponent(
           {
             case Some(extendAnnotation @ ExtendAnnotation(targetTpt)) =>
               unit.warning(tree.pos, "This extension will create a runtime dependency. To use macro extensions, move this up to a publicly accessible module / object")
-              
+
               if (tpt.isEmpty)
                 unit.error(tree.pos, "Macro extensions require explicit return type annotation")
 
@@ -461,10 +461,10 @@ class MacroExtensionsComponent(
               val (outerTParams, innerTParams) =
                 tparams.partition({ case tparam @ TypeDef(_, tname, _, _) => typeNamesInTarget.contains(tname) })
               banVariableNames(
-                (selfName.toString :: "reify" :: vparamss.flatten.map(_.name.toString)).toSet, 
+                (selfName.toString :: "reify" :: vparamss.flatten.map(_.name.toString)).toSet,
                 rhs
               )
-              
+
               ClassDef(
                 Modifiers((flags | IMPLICIT) -- MACRO, privateWithin, Nil),
                 extensionName: TypeName,

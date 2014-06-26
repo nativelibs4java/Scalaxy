@@ -88,9 +88,9 @@ trait Json4sMacros extends JsonDriverMacros {
                   reify(key.splice -> value.splice)
                 }
               case None =>
-                val key = c.literal(n)
+                val key = q"$n"
                 val value = build(v)
-                reify(key.splice -> value.splice)
+                c.Expr[JField](q"$key -<> $value")
             }
         })
         reifyJsonObject(c)(fields, containsOptionalFields = containsOptionalFields)
@@ -99,22 +99,19 @@ trait Json4sMacros extends JsonDriverMacros {
       case JString(v) if replacements.contains(v) =>
         c.Expr[JValue](replacements(v)._1)
       case JString(v) =>
-        val x = c.literal(v)
-        reify(JString(x.splice))
+        c.Expr[JValue](q"JString($v)")
       case JBool(v) =>
-        val x = c.literal(v)
-        reify(JBool(x.splice))
+        c.Expr[JValue](q"JBool($v)")
       case JDouble(v) =>
-        val x = c.literal(v)
-        reify(JDouble(x.splice))
+        c.Expr[JValue](q"JDouble($v)")
       case JInt(v) =>
-        val x = reifyByteArray(c)(v.toByteArray)
-        reify(JInt(BigInt(x.splice)))
+        val x = q"${v.toByteArray}"
+        c.Expr[JValue](q"JInt(BigInt($x))")
       case JDecimal(v) =>
         val bd = v.bigDecimal
         val x = reifyByteArray(c)(bd.unscaledValue.toByteArray)
-        val s = c.literal(bd.scale)
-        reify(JDecimal(BigDecimal(BigInt(x.splice), s.splice)))
+        val s = q"${bd.scale}"
+        c.Expr[JValue](q"JDecimal(BigDecimal(BigInt($x), $s))")
     }
 
     build(v)
@@ -127,7 +124,7 @@ trait Json4sMacros extends JsonDriverMacros {
         val pos = ex.getLocation.getCharOffset.asInstanceOf[Int]
         val (from, to) = posMap.toSeq.takeWhile(_._1 <= pos).last
         val msg = ex.getMessage.replaceAll("""(.*?)\s+at \[[^\]]+\]""", "$1")
-        c.error(c.enclosingPosition.withPoint(to.startOrPoint + pos - from), msg)
+        c.error(c.enclosingPosition.withPoint(to.start + pos - from), msg)
         true
       case _ =>
         false

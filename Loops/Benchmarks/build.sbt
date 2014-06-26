@@ -5,7 +5,7 @@ name := "scalaxy-loops-test"
 version := "1.0-SNAPSHOT"
 
 // Only works with 2.10.0+
-scalaVersion := "2.10.3"
+scalaVersion := "2.10.4"
 
 // Dependency at compilation-time only (not at runtime).
 libraryDependencies += "com.nativelibs4java" %% "scalaxy-loops" % "0.1" % "provided"

@@ -11,7 +11,7 @@ The following expression:
 ```scala
 import scalaxy.loops._
 import scala.language.postfixOps // Optional.
-    
+
 for (i <- 0 until 100000000 optimized) {
   ...
 }
@@ -39,7 +39,7 @@ This is a rejuvenation of some code initially written for [ScalaCL](http://scala
 
 If you're using `sbt` 0.13.0+, just put the following lines in `build.sbt`:
 ```scala
-scalaVersion := "2.10.3"
+scalaVersion := "2.10.4"
 
 // Dependency at compilation-time only (not at runtime).
 libraryDependencies += "com.nativelibs4java" %% "scalaxy-loops" % "0.1" % "provided"
@@ -107,7 +107,7 @@ If you like to live on the bleeding edge, try the latest snapshot out:
 
 If you want to build / test / hack on this project:
 - Make sure to use [paulp's sbt script](https://github.com/paulp/sbt-extras) with `sbt` 0.12.2+
-- Use the following commands to checkout the sources and build the tests continuously: 
+- Use the following commands to checkout the sources and build the tests continuously:
 
     ```
     git clone git://github.com/ochafik/Scalaxy.git

@@ -1,5 +1,5 @@
 // Only works with 2.10.0+
-scalaVersion := "2.10.3"
+scalaVersion := "2.10.4"
 
 autoCompilerPlugins := true
 

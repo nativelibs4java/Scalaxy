@@ -31,7 +31,7 @@ val foo5 = Foo(theSecond, first)     // Error: ident theSecond used for param th
 
 If you're using `sbt` 0.13.0+, just put the following lines in `build.sbt`:
 ```scala
-scalaVersion := "2.10.3"
+scalaVersion := "2.10.4"
 
 autoCompilerPlugins := true
 

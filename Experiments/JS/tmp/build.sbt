@@ -1,6 +1,6 @@
 resolvers += Resolver.sonatypeRepo("snapshots")
 
-scalaVersion := "2.10.2"
+scalaVersion := "2.10.4"
 
 libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-reflect" % _)
 

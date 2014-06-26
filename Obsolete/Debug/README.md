@@ -13,7 +13,7 @@ val condition = a == b
 
 // Asserts and their corresponding message:
 assert(a == b)    // "assertion failed: a == b (10 != 12)"
-assert(a != aa)   // "assertion failed: a != aa (a == aa == 10)" 
+assert(a != aa)   // "assertion failed: a != aa (a == aa == 10)"
 assert(a != 12)   // "assertion failed: a != 12"
 assert(condition) // "assertion failed: condition"
 ```
@@ -25,7 +25,7 @@ assert(a == b)    // "assertion failed: a == b (10 != 12)"
 ```
 Is expanded to:
 ```scala
-{ 
+{
   val left = a
   val right = b
   assert(left == right, s"a == b ($left != $right)")
@@ -41,7 +41,7 @@ If you knew about `assert` but unsure what `assume` and `require` are, please [A
 If you're using `sbt` 0.13.0+, just put the following lines in `build.sbt`:
 ```scala
 // Only works with 2.10.0+
-scalaVersion := "2.10.3"
+scalaVersion := "2.10.4"
 
 // Dependency at compilation-time only (not at runtime).
 libraryDependencies += "com.nativelibs4java" %% "scalaxy-debug" % "0.3-SNAPSHOT" % "provided"
@@ -49,12 +49,12 @@ libraryDependencies += "com.nativelibs4java" %% "scalaxy-debug" % "0.3-SNAPSHOT"
 // Scalaxy/Debug snapshots are published on the Sonatype repository.
 resolvers += Resolver.sonatypeRepo("snapshots")
 ```
-    
+
 # Hacking
 
 If you want to build / test / hack on this project:
 - Make sure to use [paulp's sbt script](https://github.com/paulp/sbt-extras) with `sbt` 0.12.2+
-- Use the following commands to checkout the sources and build the tests continuously: 
+- Use the following commands to checkout the sources and build the tests continuously:
 
     ```
     git clone git://github.com/ochafik/Scalaxy.git

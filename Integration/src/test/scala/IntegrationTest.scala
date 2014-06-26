@@ -14,7 +14,7 @@ class IntegrationTest {
   @Test
   def testReifiedWithDebug {
     import scalaxy.reified._
-    scalaxy.debug.assert(10 == reify(10).compile()())
+    scalaxy.debug.assert(10 == q"10".compile()())
   }
 
   @Test
