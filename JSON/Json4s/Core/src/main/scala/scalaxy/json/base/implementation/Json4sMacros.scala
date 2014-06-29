@@ -90,7 +90,7 @@ trait Json4sMacros extends JsonDriverMacros {
               case None =>
                 val key = q"$n"
                 val value = build(v)
-                c.Expr[JField](q"$key -<> $value")
+                c.Expr[JField](q"$key -> $value")
             }
         })
         reifyJsonObject(c)(fields, containsOptionalFields = containsOptionalFields)

@@ -32,17 +32,16 @@ import scala.reflect.macros.blackbox.Context
   Doesn't bring any runtime dependency (macro is self-erasing).
   Don't expect code completion from your IDE as of yet.
 */
-package object beans
-{
-  implicit def beansExtensions[T <: AnyRef](bean: T) = new {
-    def set = new Dynamic {
-      def applyDynamicNamed(name: String)(args: (String, Any)*): T =
-        macro impl.applyDynamicNamedImpl[T]
-    }
+package object beans {
+  class BeanDynamic[T <: AnyRef](bean: T) extends Dynamic {
+    def applyDynamicNamed(name: String)(args: (String, Any)*): T = macro impl.applyDynamicNamedImpl[T]
+  }
+  implicit class beansExtensions[T <: AnyRef](bean: T) {
+    def set = new BeanDynamic[T](bean)
   }
 }
 
-package beans 
+package beans
 {
   package object impl
   {
@@ -53,23 +52,23 @@ package beans
       (args: c.Expr[(String, Any)]*) : c.Expr[T] =
     {
       import c.universe._
-  
+
       // Check that the method name is "create".
       name.tree match {
         case Literal(Constant(n)) =>
           if (n != "apply")
             c.error(name.tree.pos, s"Expected 'apply', got '$n'")
       }
-  
+
       // Get the bean.
       val Select(Apply(_, List(bean)), _) = c.typecheck(c.prefix.tree)
-  
+
       // Choose a non-existing name for our bean's val.
       val beanName = TermName(c.freshName("bean"))
-  
+
       // Create a declaration for our bean's val.
       val beanDef = ValDef(NoMods, beanName, TypeTree(bean.tpe), bean)
-  
+
       // Try to find a setter in the bean type that can take values of the type we've got.
       def getSetter(name: String) = {
         bean.tpe.member(TermName(name))
@@ -87,34 +86,34 @@ package beans
         case Apply(_, List(Literal(Constant(fieldName: String)), value)) =>
           (fieldName, value)
       }
-  
+
       // Forbid duplicates.
       for ((fieldName, dupes) <- values.groupBy(_._1); if dupes.size > 1) {
         for ((_, value) <- dupes.drop(1))
           c.error(value.pos, s"Duplicate value for property '$fieldName'")
       }
-      
+
       // Generate one setter call per argument.
-      val setterCalls = values map 
+      val setterCalls = values map
       {
         case (fieldName, value) =>
-        
+
           // Check that all parameters are named.
           if (fieldName == null || fieldName == "")
             c.error(value.pos, "Please use named parameters.")
-  
+
           // Get beans-style setter or Scala-style var setter.
           val setterSymbol =
             getSetter("set" + fieldName.capitalize)
               .orElse(getSetter(NameTransformer.encode(fieldName + "_=")))
-  
+
           if (setterSymbol == NoSymbol)
             c.error(value.pos, s"Couldn't find a setter for property '$fieldName' in type ${bean.tpe}")
-  
+
           val varTpe = getVarTypeFromSetter(setterSymbol)
           if (!(value.tpe weak_<:< varTpe))
             c.error(value.pos, s"Setter ${bean.tpe}.${setterSymbol.name}($varTpe) does not accept values of type ${value.tpe}")
-        
+
           Apply(Select(Ident(beanName), setterSymbol), List(value))
       }
       // Build a block with the bean declaration, the setter calls and return the bean.

@@ -17,14 +17,7 @@ private[fx] object PropertyMacros
       (ev: c.Expr[GenericType[_, _, _, _]]): c.Expr[P] =
   {
     import c.universe._
-    c.Expr[P](
-      Apply(
-        Select(
-          New(TypeTree(weakTypeTag[P].tpe)),
-          termNames.CONSTRUCTOR),
-        List(value.tree)
-      )
-    )
+    c.Expr[P](q"new ${weakTypeOf[P]}($value)")
   }
 
   def propertyValue
@@ -34,7 +27,7 @@ private[fx] object PropertyMacros
       (ev: c.Expr[GenericType[_, _, _, _]]): c.Expr[T] =
   {
     import c.universe._
-    c.Expr[T](Select(c.typecheck(p.tree), TermName("get")))
+    c.Expr[T](q"$p.getValue")
   }
 
   def bindingValue
@@ -44,6 +37,6 @@ private[fx] object PropertyMacros
       (ev: c.Expr[GenericType[_, _, _, _]]): c.Expr[T] =
   {
     import c.universe._
-    c.Expr[T](Select(c.typecheck(b.tree), TermName("get")))
+    c.Expr[T](q"$b.getValue")
   }
 }
