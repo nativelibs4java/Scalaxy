@@ -36,6 +36,7 @@ object Optimizations
                 typeCheck: u.Tree => u.Tree,
                 fresh: String => String,
                 info: (u.Position, String) => Unit,
+                error: (u.Position, String) => Unit,
                 recurse: Boolean = true,
                 strategy: => OptimizationStrategy = scalaxy.streams.optimization.default,
                 verbose: Boolean = true): u.Tree =
@@ -61,6 +62,12 @@ object Optimizations
             // println(result)
 
             typed(result)
+
+          case _ if !recurse =>
+            error(
+              tree.pos.asInstanceOf[u.Position],
+              "Failed to detect a top-level optimizable expression in " + tree)
+            tree
 
           case _ =>
             super.transform(tree)

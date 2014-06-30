@@ -88,8 +88,12 @@ package loops
         case Recompose(target) =>
           if (disabled)
             c.Expr[Unit](target)
-          else
-            scalaxy.streams.impl.recursivelyOptimize(c)(c.Expr[Unit](c.typecheck(target)))
+          else {
+            val res = scalaxy.streams.impl.optimizeTopLevelStream(c)(
+              c.Expr[Unit](c.typecheck(target)))
+            // println(s"res = $res")
+            res
+          }
 
         case _ =>
           c.error(c.macroApplication.pos, "This is not supported anymore")

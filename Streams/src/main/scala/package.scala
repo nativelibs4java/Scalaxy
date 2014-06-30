@@ -28,7 +28,11 @@ package streams
       optimize[A](c)(a, recurse = true)
     }
 
-    def optimize[A : c.WeakTypeTag](c: Context)(a: c.Expr[A], recurse: Boolean): c.Expr[A] = {
+    def optimizeTopLevelStream[A : c.WeakTypeTag](c: Context)(a: c.Expr[A]): c.Expr[A] = {
+      optimize[A](c)(a, recurse = false)
+    }
+
+    private[streams] def optimize[A : c.WeakTypeTag](c: Context)(a: c.Expr[A], recurse: Boolean): c.Expr[A] = {
       if (disabled) {
         a
       } else {
@@ -44,6 +48,7 @@ package streams
                 typed(_),
                 c.freshName(_),
                 c.info(_, _, force = true),
+                c.error(_, _),
                 recurse,
                 Optimizations.matchStrategyTree(c.universe)(
                   // EmptyTree))))
