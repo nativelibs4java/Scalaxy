@@ -19,51 +19,51 @@ package object debug
     macro impl.assumeImpl
 }
 
-package debug 
+package debug
 {
-  object impl 
+  object impl
   {
-    def assertImpl(c: Context)(condition: c.Expr[Boolean]): c.Expr[Unit] = 
+    def assertImpl(c: Context)(condition: c.Expr[Boolean]): c.Expr[Unit] =
     {
       import c.universe._
-      
+
       assertLikeImpl(c)(condition, (condExpr, messageExpr) => {
         reify(Predef.assert(condExpr.splice, messageExpr.splice))
       })
     }
-    
-    def requireImpl(c: Context)(condition: c.Expr[Boolean]): c.Expr[Unit] = 
+
+    def requireImpl(c: Context)(condition: c.Expr[Boolean]): c.Expr[Unit] =
     {
       import c.universe._
-      
+
       assertLikeImpl(c)(condition, (condExpr, messageExpr) => {
         reify(Predef.require(condExpr.splice, messageExpr.splice))
       })
     }
-    
-    def assumeImpl(c: Context)(condition: c.Expr[Boolean]): c.Expr[Unit] = 
+
+    def assumeImpl(c: Context)(condition: c.Expr[Boolean]): c.Expr[Unit] =
     {
       import c.universe._
-      
+
       assertLikeImpl(c)(condition, (condExpr, messageExpr) => {
         reify(Predef.assume(condExpr.splice, messageExpr.splice))
       })
     }
-    
+
     def assertLikeImpl
         (c: Context)
         (
-          condition: c.Expr[Boolean], 
+          condition: c.Expr[Boolean],
           callBuilder: (c.Expr[Boolean], c.Expr[String]) => c.Expr[Unit]
-        ): c.Expr[Unit] = 
+        ): c.Expr[Unit] =
     {
       import c.universe._
-      
+
       def newValDef(name: String, rhs: Tree, tpe: Type = null) = {
         ValDef(
-          NoMods, 
-          TermName(c.freshName(name)), 
-          TypeTree(Option(tpe).getOrElse(rhs.tpe.dealias)), 
+          NoMods,
+          TermName(c.freshName(name)),
+          TypeTree(Option(tpe).getOrElse(rhs.tpe.dealias)),
           rhs
         )
       }
@@ -76,15 +76,15 @@ package debug
           else None
         }
       }
-      
+
       def isConstant(tree: Tree) = tree match {
         case Literal(Constant(_)) => true
         case _ => false
       }
-      
+
       val typedCondition = c.typecheck(condition.tree)//, typeOf[Boolean])
       c.Expr[Unit](
-        typedCondition match 
+        typedCondition match
         {
           case Apply(Select(left, op @ EqualityOpName(isEqual)), List(right)) =>
             val leftDef = newValDef("left", left)
@@ -92,10 +92,10 @@ package debug
 
             val leftExpr = c.Expr[Any](Ident(leftDef.name))
             val rightExpr = c.Expr[Any](Ident(rightDef.name))
-            
+
             val rels = ("==", "!=")
             val (expectedRel, actualRel) = if (isEqual) rels else rels.swap
-            val actualRelExpr = c.literal(actualRel)
+            val actualRelExpr = q"$actualRel"
             val str = c.literal(s"$left $expectedRel $right")
             val condExpr = c.Expr[Boolean](
               Apply(Select(Ident(leftDef.name), op), List(Ident(rightDef.name)))
@@ -106,7 +106,9 @@ package debug
               if (isEqual)
                 callBuilder(
                   condExpr,
-                  reify(s"${str.splice} (${leftExpr.splice} ${actualRelExpr.splice} ${rightExpr.splice})")
+                  c.Expr(q""" ${""} + $str + " (" + $leftExpr + " " + $actualRelExpr + " " + $rightExpr + ")" """)
+                  // c.Expr[String](q""" "%s (%s %s %s)".format($str, $leftExpr, $actualRelExpr, $rightExpr)""")
+                  // reify(s"${str.splice} (${leftExpr.splice} ${actualRelExpr.splice} ${rightExpr.splice})")
                 ).tree
               else if (isConstant(left) || isConstant(right))
                 callBuilder(condExpr, str).tree

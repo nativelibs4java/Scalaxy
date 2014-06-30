@@ -89,7 +89,7 @@ package loops
           if (disabled)
             c.Expr[Unit](target)
           else
-            scalaxy.streams.impl.optimize(c)(c.Expr[Unit](c.typecheck(target)))
+            scalaxy.streams.impl.recursivelyOptimize(c)(c.Expr[Unit](c.typecheck(target)))
 
         case _ =>
           c.error(c.macroApplication.pos, "This is not supported anymore")

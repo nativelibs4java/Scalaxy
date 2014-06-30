@@ -30,24 +30,19 @@ object Scalaxy extends Build {
     .setPreference(PreserveDanglingCloseParenthesis, false)
 
   lazy val scalaSettings = Seq(
-    //exportJars := true, // use jars in classpath
-    // scalaVersion := "2.10.3"
-    //scalaVersion := "2.11.0-RC4",
     scalaVersion := "2.11.1",
-    //scalaVersion := "2.11.0-M4",
-    //scalaVersion := "2.11.0-SNAPSHOT",
     crossScalaVersions := Seq("2.10.4")
-    // crossScalaVersions := Seq("2.11.0-SNAPSHOT")
   )
 
   lazy val infoSettings = Seq(
-    organization := "com.nativelibs4java",
-    version := "0.3-SNAPSHOT",
-    licenses := Seq("BSD-3-Clause" -> url("http://www.opensource.org/licenses/BSD-3-Clause")),
-    homepage := Some(url("https://github.com/ochafik/Scalaxy")),
-    gitRemoteRepo := "git@github.com:ochafik/Scalaxy.git",
-    pomIncludeRepository := { _ => false },
-    pomExtra := (
+             organization := "com.nativelibs4java",
+                  version := "0.3-SNAPSHOT",
+                 licenses := Seq("BSD-3-Clause" -> url("http://www.opensource.org/licenses/BSD-3-Clause")),
+                 homepage := Some(url("https://github.com/ochafik/Scalaxy")),
+            gitRemoteRepo := "git@github.com:ochafik/Scalaxy.git",
+    testOptions in Global += Tests.Argument(TestFrameworks.JUnit, "-v"),
+     pomIncludeRepository := { _ => false },
+                 pomExtra := (
       <scm>
         <url>git@github.com:ochafik/Scalaxy.git</url>
         <connection>scm:git:git@github.com:ochafik/Scalaxy.git</connection>
@@ -123,7 +118,6 @@ object Scalaxy extends Build {
       libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-compiler" % _),
       libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-reflect" % _)
       // libraryDependencies <+= scalaVersion("org.scala-lang.macro-paradise" % "scala-reflect" % _)
-      // libraryDependencies += "org.scala-lang.macro-paradise" % "scala-reflect" % "2.10.3-SNAPSHOT"
     )
 
   lazy val sonatypeSettings = Seq(
@@ -322,8 +316,7 @@ object Scalaxy extends Build {
 
   lazy val js =
     Project(id = "scalaxy-js", base = file("Experiments/JS"), settings = reflectSettings ++ Seq(
-      // addCompilerPlugin("org.scala-lang.plugins" % "macro-paradise_2.10.3-RC1" % "2.0.0-SNAPSHOT"),
-      // addCompilerPlugin("org.scala-lang.plugins" % "macro-paradise_2.10.2" % "2.0.0-SNAPSHOT"),
+      // addCompilerPlugin("org.scala-lang.plugins" % "macro-paradise_2.10.4" % "2.0.1"),
       libraryDependencies += "com.google.javascript" % "closure-compiler" % "v20130722"
       // scalaVersion := "2.10.3-RC1"
 
@@ -339,7 +332,7 @@ object Scalaxy extends Build {
   lazy val jsonCore =
     Project(id = "scalaxy-json-core", base = file("JSON/Core"), settings = reflectSettings)
 
-  val json4sVersion = "3.2.9"
+  val json4sVersion = "3.2.10"
 
   lazy val jsonJson4sCore =
     Project(id = "scalaxy-json-json4s-core", base = file("JSON/Json4s/Core"), settings = reflectSettings ++ Seq(
@@ -395,7 +388,7 @@ object Scalaxy extends Build {
     ))
 
   lazy val debug =
-    Project(id = "scalaxy-debug", base = file("Debug"), settings = reflectSettings)
+    Project(id = "scalaxy-debug", base = file("Obsolete/Debug"), settings = reflectSettings)
 
   lazy val enum =
     Project(id = "scalaxy-enum", base = file("Enum"), settings = reflectSettings)

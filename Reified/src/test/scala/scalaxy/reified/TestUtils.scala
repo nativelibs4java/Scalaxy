@@ -19,6 +19,7 @@ trait TestUtils {
     private[test] def capturedValues: Seq[AnyRef] = {
       val b = ArrayBuffer[AnyRef]()
       import universe._
+      import compat._
       new Traverser {
         override def traverse(tree: Tree) {
           if (tree.symbol != null && tree.symbol.isFreeTerm) {

@@ -7,25 +7,9 @@ import scala.reflect.runtime.{ universe => ru }
 
 object impl
 {
-  def newListTree[T: ru.TypeTag](c: Context)(
-      values: List[c.universe.Tree]): c.Expr[List[T]] =
-  {
+  def newListTree[T: ru.TypeTag](c: Context)(values: List[c.universe.Tree]): c.Expr[List[T]] = {
     import c.universe._
-    c.Expr[List[T]](
-      Apply(
-        TypeApply(
-          Select(
-            Select(
-              Ident(TermName("scala")).setSymbol(definitions.ScalaPackage),
-              TermName("List")
-            ),
-            TermName("apply")
-          ),
-          List(TypeTree(typeOf[T]))
-        ),
-        values
-      )
-    )
+    c.Expr[List[T]](q"scala.List[$T](..$values)")
   }
 
   def traverse(u: scala.reflect.api.Universe)(tree: u.Tree)(f: PartialFunction[u.Tree, Unit]) {
@@ -36,12 +20,12 @@ object impl
         f.apply(tree)
     }}).traverse(tree)
   }
-  
+
   def assertNoUnsupportedConstructs(c: Context)(tree: c.universe.Tree) {
     import c.universe._
     def notSupported(t: Tree, what: String) =
       c.error(t.pos, what + " definitions are not supported by Scalaxy yet")
-    
+
     // Coarse validation of supported ASTs:
     traverse(c.universe)(tree) {
       case t @ DefDef(_, _, _, _, _, _) => notSupported(t, "Function / method")

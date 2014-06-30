@@ -9,13 +9,15 @@ import scala.reflect.macros.blackbox.Context
 package object internal {
 
   def <|<[A: c.WeakTypeTag, B: c.WeakTypeTag, T <: (A <|< B): c.WeakTypeTag](c: Context): c.Expr[T] = {
+    import c.universe._
     checkMatchesMemberOfUnion[A, B](c)
-    c.literalNull.asInstanceOf[c.Expr[T]]
+    c.Expr[T](q"null")
   }
 
   def =|=[A: c.WeakTypeTag, B: c.WeakTypeTag, T <: (A =|= B): c.WeakTypeTag](c: Context): c.Expr[T] = {
+    import c.universe._
     checkMemberOfUnion[A, B](c)
-    c.literalNull.asInstanceOf[c.Expr[T]]
+    c.Expr[T](q"null")
   }
 
   def as[A: c.WeakTypeTag, B: c.WeakTypeTag](c: Context): c.Expr[B] = {

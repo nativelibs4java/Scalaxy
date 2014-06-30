@@ -58,8 +58,8 @@ class HelloWorld extends Application {
               )
             )
           )
-        }, 
-        300, 
+        },
+        300,
         250
       )
     )
@@ -67,14 +67,14 @@ class HelloWorld extends Application {
   }
 }
 ```
-    
+
 # Usage
 
 To use with `sbt` 0.13.0+, please have a look at the [HelloWorld example](https://github.com/ochafik/Scalaxy/blob/master/Fx/Example) and make your `build.sbt` file look like:
 
 ```scala
 // Only works with 2.10.0+
-scalaVersion := "2.10.3"
+scalaVersion := "2.10.4"
 
 // Add JavaFX Runtime as an unmanaged dependency, hoping to find it in the JRE's library folder.
 unmanagedJars in Compile ++= Seq(new File(System.getProperty("java.home")) / "lib" / "jfxrt.jar")
@@ -88,11 +88,11 @@ fork := true
 // Scalaxy snapshots are published on the Sonatype repository.
 resolvers += Resolver.sonatypeRepo("snapshots")
 ```
-    
+
 # Features
 
 The syntactic facilities available so far are:
-- JavaFX Script-like syntax for setters (without any runtime penalty or loss of type-safetiness): 
+- JavaFX Script-like syntax for setters (without any runtime penalty or loss of type-safetiness):
 
     ```scala
     button.set(
@@ -102,7 +102,7 @@ The syntactic facilities available so far are:
       minHidth = 200
     )
     ```
-        
+
 - More natural bindings:
 
     ```scala
@@ -113,27 +113,27 @@ The syntactic facilities available so far are:
       cancelButton = true
     )
     ```
-        
+
   Instead of:
-  
+
     ```scala
     val moo = new SimpleIntegerProperty(10)
     val foo = new DoubleBinding() {
       super.bind(moo)
-      override def computeValue() = 
+      override def computeValue() =
         Math.sqrt(moo.get)
     }
     val button = new Button()
     button.textProperty.bind(
       new StringBinding() {
         super.bind(foo)
-        override def computeValue() = 
+        override def computeValue() =
           s"Foo is ${foo.get}"
       }
     ),
     button.setCancelButton(true)
     ```
-      
+
 - Simpler syntax for event handlers, with or without the event parameter:
 
     ```scala
@@ -141,21 +141,21 @@ The syntactic facilities available so far are:
       text = "Click me!",
       onAction = println("clicked")
     )
-    
+
     button2.set(
       text = "Click me!",
       onAction = (event: ActionEvent) => {
         println(s"clicked: $event")
       }
     )
-    
+
     button2.maxWidthProperty onChange {
       println("Constraint changed!")
     }
     ```
-        
+
   Instead of:
-  
+
     ```scala
     button3.setText("Click me!")
     button3.setOnAction(new EventHandler[ActionEvent]() {
@@ -169,7 +169,7 @@ The syntactic facilities available so far are:
       }
     }
     ```
-    
+
 # Internals
 
 `Scalaxy/Fx` uses some interesting techniques:
@@ -177,16 +177,16 @@ The syntactic facilities available so far are:
   (see [Scalaxy/Beans](https://github.com/ochafik/Scalaxy/tree/master/Beans) and [my blog post](http://ochafik.com/blog/?p=803) on the matter for more details on this technique)
 - [CanBuildFrom-style implicits](https://github.com/ochafik/Scalaxy/blob/master/Fx/Macros/src/main/scala/scalaxy/fx/GenericTypes.scala) to associate value types `T` to their `Binding[T]` or `Property[T]` subclasses.
   What's interesting here is that there is no implementation of these evidence objects, which only serve to the typer and are thrown away by the macros.
-  
+
   As a result, the following property and binding are correctly typed to their concrete implementation:
-  
+
     ```scala
     import scalaxy.fx._
-    
+
     val p: SimpleIntegerProperty = newProperty(10)
     val b: IntegerBinding = bind { p.get + 10 }
     ```
-  
+
 - Despite it not being officially supported, creates anonymous handler classes from inside macros.
   (see [EventHandlerMacros.scala](https://github.com/ochafik/Scalaxy/blob/master/Fx/Macros/src/main/scala/scalaxy/fx/impl/EventHandlerMacros.scala))
 - Macros all over, for absolutely no runtime dependency. This means the dependency in sbt / Maven can be marked as `provided`, and won't be needed when running your program.
@@ -196,7 +196,7 @@ The syntactic facilities available so far are:
 If you want to build / test / hack on this project:
 - Make sure to use [paulp's sbt script](https://github.com/paulp/sbt-extras) with `sbt` 0.12.2+
 - Install Oracle's JDK + JavaFX and make sure the `java` command in the path points to that version
-- Use the following commands to checkout the sources and build the tests continuously: 
+- Use the following commands to checkout the sources and build the tests continuously:
 
     ```
     git clone git://github.com/ochafik/Scalaxy.git

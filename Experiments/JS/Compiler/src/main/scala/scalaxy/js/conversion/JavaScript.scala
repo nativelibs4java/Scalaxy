@@ -25,7 +25,6 @@ object JavaScript {
         new File(c.enclosingPosition.source.path.toString)
           .getName.replaceAll("(.*?)\\.scala", "$1") + ".js"))
 
-
-    c.Expr[Any](Block(annottees.map(_.tree).toList, c.literalUnit.tree))
+    c.Expr[Any](q"{ ..$annottees ; () }")
   }
 }

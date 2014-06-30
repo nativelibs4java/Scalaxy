@@ -87,7 +87,7 @@ private[fx] object ObservableValueExtensionMacros
 
     val Apply(_, List(value)) = c.prefix.tree
     //val TypeRef(_, _, List(valueTpe)) = value.tpe
-    println(s"value.tpe ${value.tpe}, T ${weakTypeTag[T].tpe}")
+    // println(s"value.tpe ${value.tpe}, T ${weakTypeTag[T].tpe}")
     c.Expr[Unit](
       Apply(
         Select(value, getAddListenerMethod(c)(value.tpe)),

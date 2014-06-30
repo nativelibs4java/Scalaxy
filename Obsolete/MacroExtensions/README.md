@@ -6,16 +6,16 @@ There's some context [on my blog](http://ochafik.com/blog/?p=872), and a short [
 
 Scalaxy/MacroExtensions's compiler plugin supports the following syntax:
 ```scala
-@scalaxy.extension[Any] 
-def quoted(quote: String): String = 
+@scalaxy.extension[Any]
+def quoted(quote: String): String =
   quote + self + quote
-  
-@scalaxy.extension[Int] 
-def copiesOf[T : ClassTag](generator: => T): Array[T] = 
+
+@scalaxy.extension[Int]
+def copiesOf[T : ClassTag](generator: => T): Array[T] =
   Array.fill[T](self)(generator)
 
-@scalaxy.extension[Array[A]] 
-def tup[A, B](b: B): (A, B) = macro { 
+@scalaxy.extension[Array[A]]
+def tup[A, B](b: B): (A, B) = macro {
   // Explicit macro.
   println("Extension macro is executing!")
   reify((self.splice.head, b.splice))
@@ -29,7 +29,7 @@ println(10.quoted("'"))
 println(10 copiesOf new Entity)
 // macro-expanded to `Array.fill(3)(new Entity)`
 
-println(Array(3).tup(1.0)) 
+println(Array(3).tup(1.0))
 // macro-expanded to `(Array(3).head, 1.0)` (and prints a message during compilation)
 ```
 This is done by rewriting the `@scalaxy.extension[T]` declarations above during compilation of the extensions.
@@ -37,13 +37,13 @@ In the case of `str2`, this gives the following:
 ```scala
 import scala.language.experimental.macros
 implicit class scalaxy$extensions$str2$1(self: Any) {
-  def str2(quote$Expr$1: String) = 
+  def str2(quote$Expr$1: String) =
     macro scalaxy$extensions$str2$1.str2
 }
 object scalaxy$extensions$str2$1 {
   def str2(c: scala.reflect.macros.Context)
-          (quote$Expr$1: c.Expr[String]): 
-      c.Expr[String] = 
+          (quote$Expr$1: c.Expr[String]):
+      c.Expr[String] =
   {
     import c.universe._
     val Apply(_, List(selfTree$1)) = c.prefix.tree
@@ -68,7 +68,7 @@ object scalaxy$extensions$str2$1 {
 If you're using `sbt` 0.13.0+, just put the following lines in `build.sbt`:
 ```scala
 // Only works with 2.10.0+
-scalaVersion := "2.10.3"
+scalaVersion := "2.10.4"
 
 autoCompilerPlugins := true
 

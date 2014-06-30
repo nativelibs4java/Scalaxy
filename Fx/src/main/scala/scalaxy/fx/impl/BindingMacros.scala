@@ -24,12 +24,11 @@ private[fx] object BindingMacros
   {
     import c.universe._
 
-    val tpe = weakTypeTag[T].tpe
-    val bindingTpe = weakTypeTag[B].tpe
-
+    val tpe         = weakTypeOf[T]
+    val bindingTpe  = weakTypeOf[B]
     val bindingName = TermName(c.freshName("binding"))
-
     var observables: List[Tree] = Nil
+
     val observableCollector = new Traverser {
       override def traverse(tree: Tree) = {
         def isObservable(tpe: Type): Boolean =
@@ -46,10 +45,7 @@ private[fx] object BindingMacros
             case getterRx(_) => true
             case _ => false
           }
-          def looksStable(n: String): Boolean = {
-            isGetterName(n) ||
-            n.matches(".+?Property")
-          }
+          def looksStable(n: String) = isGetterName(n) || (n endsWith "Property")
 
           if (isStable(sel.qualifier.symbol)) {
             val n = sel.symbol.name.toString
@@ -99,60 +95,19 @@ private[fx] object BindingMacros
     )
   }
 
-  private def newBinding
-      [T : c.WeakTypeTag, B : c.WeakTypeTag]
-      (c: Context)
-      (value: c.Expr[T], observables: c.Expr[Observable]*): c.Expr[B] =
-  {
+  private def newBinding[T : c.WeakTypeTag, B : c.WeakTypeTag](c: Context)(value: c.Expr[T], observables: c.Expr[Observable]*): c.Expr[B] = {
     import c.universe._
+    val T = weakTypeOf[T]
 
-    val valueTpe = weakTypeTag[T].tpe
-    val superBindCall = c.Expr[Unit](
-      Apply(
-        Select(
-          Super(This(typeNames.EMPTY), typeNames.EMPTY),
-          TermName("bind")
-        ),
-        observables.toList.map(_.tree)
-      )
+    val BindingType: Type = (
+      if (T =:= typeOf[Int]) typeOf[IntegerBinding]
+      else if (T =:= typeOf[Long]) typeOf[LongBinding]
+      else if (T =:= typeOf[Float]) typeOf[FloatBinding]
+      else if (T =:= typeOf[Double]) typeOf[DoubleBinding]
+      else if (T =:= typeOf[String]) typeOf[StringBinding]
+      else if (T =:= typeOf[Boolean]) typeOf[BooleanBinding]
+      else weakTypeOf[ObjectBinding[T]]
     )
-
-    (
-      if (valueTpe =:= typeOf[Int])
-        reify(new IntegerBinding {
-           superBindCall.splice
-           override def computeValue = value.asInstanceOf[c.Expr[Int]].splice
-        })
-      else if (valueTpe =:= typeOf[Long])
-        reify(new LongBinding {
-           superBindCall.splice
-           override def computeValue = value.asInstanceOf[c.Expr[Long]].splice
-        })
-      else if (valueTpe =:= typeOf[Float])
-        reify(new FloatBinding {
-           superBindCall.splice
-           override def computeValue = value.asInstanceOf[c.Expr[Float]].splice
-        })
-      else if (valueTpe =:= typeOf[Double])
-        reify(new DoubleBinding {
-           superBindCall.splice
-           override def computeValue = value.asInstanceOf[c.Expr[Double]].splice
-        })
-      else if (valueTpe =:= typeOf[String])
-        reify(new StringBinding {
-           superBindCall.splice
-           override def computeValue = value.asInstanceOf[c.Expr[String]].splice
-        })
-      else if (valueTpe =:= typeOf[Boolean])
-        reify(new BooleanBinding {
-           superBindCall.splice
-           override def computeValue = value.asInstanceOf[c.Expr[Boolean]].splice
-        })
-      else
-        reify(new ObjectBinding[T] {
-           superBindCall.splice
-           override def computeValue = value.splice
-        })
-    ).asInstanceOf[c.Expr[B]]
+    c.Expr[B](c.typecheck(q"new $BindingType { super.bind(..$observables) ; override def computeValue: $T = $value.asInstanceOf[$T] }"))
   }
 }

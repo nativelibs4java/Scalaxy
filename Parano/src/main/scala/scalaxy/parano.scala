@@ -55,6 +55,7 @@ package object parano {
       //println(tree)
       //println(showRaw(tree))
 
-      c.literalUnit
+      import c.universe._
+      c.Expr(q"()")
     }
 }
