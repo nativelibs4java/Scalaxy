@@ -69,7 +69,7 @@ package loops
       System.getProperty("scalaxy.loops.optimized") == "false"
 
     // This needs to be public and statically accessible.
-    def rangeForeachImpl[U : c.WeakTypeTag]
+    def rangeForeachImpl[U]
         (c: Context)
         (f: c.Expr[Int => U]): c.Expr[Unit] =
     {
@@ -133,11 +133,13 @@ package loops
       }
 
       object OptimizedRange {
+        lazy val RangeType: Type = rootMirror.staticClass("scala.collection.immutable.Range").asType.toType
+        // lazy val OptimizedRangeType: Type = rootMirror.staticModule("scalaxy.loops.OptimizedRange").asType.toType
+
         def unapply(tree: Tree): Option[(Tree, InlineRange)] =
           Option(tree) collect {
             case Select(Apply(_, List(rangeTree @ InlineRangeTree(range))), N("optimized"))
-            if rangeTree.tpe <:< typeOf[Range] &&
-               tree.tpe <:< typeOf[OptimizedRange] =>
+            if rangeTree.tpe <:< RangeType => //&& tree.tpe <:< OptimizedRangeType =>
               (rangeTree, range)
             case Apply(Select(OptimizedRange(rangeTree, range), N(n @ ("filter" | "withFilter"))), List(filter @ Function(_, _))) =>
               (
@@ -158,9 +160,8 @@ package loops
       c.typeCheck(c.prefix.tree) match {
         case OptimizedRange(rangeTree, range) =>
           if (disabled) {
-            val rangeExpr = c.Expr[Range](rangeTree)
             c.info(c.macroApplication.pos, "Loop optimizations are disabled.", true)
-            reify(rangeExpr.splice.foreach(f.splice))
+            c.Expr[Unit](Apply(Select(rangeTree, newTermName("foreach")), List(f.tree)))
           } else {
             // import range._
             val step: Int = range.stepOpt match {
