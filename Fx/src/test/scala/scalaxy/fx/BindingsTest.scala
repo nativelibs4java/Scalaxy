@@ -19,12 +19,12 @@ class BindingsTest {
     val a: SimpleIntegerProperty = newProperty(2)
     val b = newProperty(3)
     val bb: SimpleIntegerProperty = b
-    val c = bind(a.getValue + b.getValue)
+    val c = bind(a.get + b.get)
 
-    assertEquals(5, c.getValue)
+    assertEquals(5, c.get)
     a.set(1)
     b.set(10)
-    assertEquals(11, c.getValue)
+    assertEquals(11, c.get)
   }
 
   @Test
@@ -63,5 +63,38 @@ class BindingsTest {
     assertEquals(fmt.format(20, 11), b.getText)
     b.set(minHeight = 21)
     assertEquals(fmt.format(20, 21), b.getText)
+  }
+
+  @Test
+  def propertyCreationAndConversionTest {
+    {
+      val p: SimpleIntegerProperty = newProperty(10)
+      val v: Int = p;
+      assertEquals(10, v);
+    }
+
+    {
+      val p: SimpleLongProperty = newProperty(10L)
+      val v: Long = p;
+      assertEquals(10L, v);
+    }
+
+    {
+      val p: SimpleFloatProperty = newProperty(10.0f)
+      val v: Float = p;
+      assertEquals(10.0f, v, 0);
+    }
+
+    {
+      val p: SimpleDoubleProperty = newProperty(10.0)
+      val v: Double = p;
+      assertEquals(10.0, v, 0);
+    }
+
+    {
+      val p: SimpleBooleanProperty = newProperty(true)
+      val v: Boolean = p;
+      assertEquals(true, v);
+    }
   }
 }

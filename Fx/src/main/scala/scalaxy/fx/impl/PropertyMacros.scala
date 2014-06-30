@@ -23,20 +23,18 @@ private[fx] object PropertyMacros
   def propertyValue
       [T : c.WeakTypeTag, P : c.WeakTypeTag]
       (c: Context)
-      (p: c.Expr[P])
-      (ev: c.Expr[GenericType[_, _, _, _]]): c.Expr[T] =
+      (p: c.Expr[P]): c.Expr[T] =
   {
     import c.universe._
-    c.Expr[T](q"$p.getValue")
+    c.Expr[T](q"$p.get")
   }
 
   def bindingValue
       [T : c.WeakTypeTag, B : c.WeakTypeTag]
       (c: Context)
-      (b: c.Expr[B])
-      (ev: c.Expr[GenericType[_, _, _, _]]): c.Expr[T] =
+      (b: c.Expr[B]): c.Expr[T] =
   {
     import c.universe._
-    c.Expr[T](q"$b.getValue")
+    c.Expr[T](q"$b.get")
   }
 }
