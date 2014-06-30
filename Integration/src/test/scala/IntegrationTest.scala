@@ -12,12 +12,6 @@ import org.junit.Assert._
 
 class IntegrationTest {
   @Test
-  def testReifiedWithDebug {
-    import scalaxy.reified._
-    scalaxy.debug.assert(10 == q"10".compile()())
-  }
-
-  @Test
   def testLoops {
     var tot = 0
     for (i <- 0 to 10 optimized;
