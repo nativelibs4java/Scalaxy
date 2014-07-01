@@ -5,15 +5,15 @@ set -e
 OPTIM_FLAGS="-optimise -Yclosure-elim -Yinline"
 #-Xprint:inliner -Xprint:typer
 
-#JAR="$HOME/.ivy2/local/com.nativelibs4java/scalaxy-loops_2.11/0.3-SNAPSHOT/jars/scalaxy-loops_2.11-0.3-SNAPSHOT.jar"
-JAR="$HOME/.ivy2/local/com.nativelibs4java/scalaxy-loops_2.11/0.3-SNAPSHOT/jars/scalaxy-loops_2.11.jar:$HOME/.ivy2/local/com.nativelibs4java/scalaxy-streams_2.11/0.3-SNAPSHOT/jars/scalaxy-streams_2.11.jar"
+#JAR="$HOME/.ivy2/local/com.nativelibs4java/scalaxy-loops_2.10/0.3-SNAPSHOT/jars/scalaxy-loops_2.10-0.3-SNAPSHOT.jar"
+JAR="$HOME/.ivy2/local/com.nativelibs4java/scalaxy-loops_2.10/0.3-SNAPSHOT/jars/scalaxy-loops_2.10.jar"
 NORMAL_ARGS="TestIntRangeLoops.scala TestUtils.scala"
 SCALAXY_ARGS="TestIntRangeLoopsOptimized.scala TestUtils.scala -cp $JAR"
 
 N=10
 
 function scalac() {
-  /opt/local/bin/scalac-2.11 "$@"
+  /opt/local/bin/scalac-2.10 "$@"
 }
 
 function normalBuild {
