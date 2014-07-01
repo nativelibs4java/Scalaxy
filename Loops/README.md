@@ -1,11 +1,14 @@
 # Scalaxy/Loops
 
-Optimized loops for Scala 2.10 (using a macro to rewrite them to an equivalent while loop), currently limited to Range foreach loops.
+Optimized Range foreach loops for Scala (using a macro to rewrite them to an equivalent while loop).
 ([BSD-licensed](https://github.com/ochafik/Scalaxy/blob/master/LICENSE))
+
+Works with Scala 2.10.x and Scala 2.11.x, but 2.11.x users are kindly advised to migrate to [Scalaxy/Streams](https://github.com/ochafik/Scalaxy/blob/master/Streams).
 
 **Caveats**:
 * Experimental material: use at your own risk (and avoid using in your tests :-D).
-* Designed for Scala 2.10.x. For 2.11.x, Scalaxy/Loops was rewritten as a special case of [Scalaxy/Streams](https://github.com/ochafik/Scalaxy/blob/master/Streams), which you are advised to eventually migrate to (although it's still quite experimental).
+* The Scala 2.10.x variant has some ad-hoc Range foreach loop optimization code.
+* The Scala 2.11.x variant leverages [Scalaxy/Streams](https://github.com/ochafik/Scalaxy/blob/master/Streams) in a non-recursive mode (which means only the stream in which the `optimized` range loop is involved is optimized). To get the full power of Scalaxy/Streams, please use it directly (this version is here to allow cross-compilation of 2.10.x code written with Scalaxy/Loops).
 
 The following expression:
 ```scala
@@ -16,7 +19,7 @@ for (i <- 0 until 100000000 optimized) {
   ...
 }
 ```
-Gets rewritten at compilation time into:
+Will get rewritten at compilation time into something like:
 ```scala
 {
   var ii = 0
@@ -39,10 +42,12 @@ This is a rejuvenation of some code initially written for [ScalaCL](http://scala
 
 If you're using `sbt` 0.13.0+, just put the following lines in `build.sbt`:
 ```scala
-scalaVersion := "2.10.4"
+scalaVersion := "2.11.1"
+// Or:
+// scalaVersion := "2.10.4"
 
 // Dependency at compilation-time only (not at runtime).
-libraryDependencies += "com.nativelibs4java" %% "scalaxy-loops" % "0.1" % "provided"
+libraryDependencies += "com.nativelibs4java" %% "scalaxy-loops" % "0.1.1" % "provided"
 
 // If you care about speed, you may want to enable these:
 // scalacOptions ++= Seq("-optimise", "-Yclosure-elim", "-Yinline")
@@ -79,7 +84,10 @@ With Maven, you'll need this in your `pom.xml` file:
 <dependencies>
   <dependency>
     <groupId>com.nativelibs4java</groupId>
+    <artifactId>scalaxy-loops_2.11</artifactId>
+    <!-- Or:
     <artifactId>scalaxy-loops_2.10</artifactId>
+    -->
     <version>0.1</version>
   </dependency>
 </dependencies>
@@ -90,7 +98,10 @@ If you like to live on the bleeding edge, try the latest snapshot out:
 <dependencies>
   <dependency>
     <groupId>com.nativelibs4java</groupId>
+    <artifactId>scalaxy-loops_2.11</artifactId>
+    <!-- Or:
     <artifactId>scalaxy-loops_2.10</artifactId>
+    -->
     <version>0.3-SNAPSHOT</version>
   </dependency>
 </dependencies>
@@ -115,18 +126,17 @@ If you want to build / test / hack on this project:
     sbt "project scalaxy-loops" "; clean ; ~test"
     ```
 
+  Or for the Scala 2.10.x version:
+
+    ```
+    cd Scalaxy
+    sbt "project scalaxy-loops-210" "; +clean ; +test"
+    ```
+
 # What's next?
 
-There's lots of work to reach the level of [ScalaCL 0.2](https://code.google.com/p/scalacl/wiki/ScalaCLPlugin), and that may never happen.
+No further optimizations will be specifically added to Scalaxy/Loops. Instead, work is now ongoing in [Scalaxy/Streams](https://github.com/ochafik/Scalaxy/blob/master/Streams), which Scalaxy/Loops delegates its optimizations to in its 2.11.x version.
 
-However, if there is a particular loop optimization that's very important to you, please let me know:
-- [@ochafik on Twitter](http://twitter.com/ochafik)
-- [NativeLibs4Java mailing-list](groups.google.com/group/nativelibs4java)
-
-You can also [file bugs and enhancement requests here](https://github.com/ochafik/Scalaxy/issues/new).
-
-Anyway, current plans are to support the following loop rewrites:
-- Range.{ foreach, map } with filters
-- Array.{ foreach, map } with filters
+Please [file bugs and enhancement requests here](https://github.com/ochafik/Scalaxy/issues/new).
 
 Any help (testing, patches, bug reports) will be greatly appreciated!

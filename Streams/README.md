@@ -6,7 +6,7 @@ Scalaxy/Streams makes your Scala 2.11.x collections code faster (official heir t
 * Avoids many unnecessary tuples (for instance, those introduced by `zipWithIndex`).
 * Usable as a compiler plugin (whole project) or as a macro (surgical strikes)
 
-  **Watch out**: version 0.2's aggressive optimizations alter Scala semantics (see below).
+  **Watch out**: version 0.2.1's aggressive optimizations alter Scala semantics (see below).
   
   Use with caution / [report bugs](https://github.com/ochafik/Scalaxy/issues/new) (_safe_ optimizations are on the TODO-list below)
 
@@ -127,7 +127,7 @@ If you're using `sbt` 0.13.0+, just put the following lines in `build.sbt`:
   scalaVersion := "2.11.1"
 
   // Dependency at compilation-time only (not at runtime).
-  libraryDependencies += "com.nativelibs4java" %% "scalaxy-streams" % "0.2" % "provided"
+  libraryDependencies += "com.nativelibs4java" %% "scalaxy-streams" % "0.2.1" % "provided"
   ```
 
   And wrap some code with the `optimize` macro:
@@ -156,7 +156,7 @@ If you're using `sbt` 0.13.0+, just put the following lines in `build.sbt`:
 
   autoCompilerPlugins := true
 
-  addCompilerPlugin("com.nativelibs4java" %% "scalaxy-streams" % "0.2")
+  addCompilerPlugin("com.nativelibs4java" %% "scalaxy-streams" % "0.2.1")
 
   scalacOptions += "-Xplugin-require:scalaxy-streams"
   ```
@@ -185,7 +185,7 @@ With Maven, you'll need this in your `pom.xml` file:
     <dependency>
       <groupId>com.nativelibs4java</groupId>
       <artifactId>scalaxy-streams_2.11.1</artifactId>
-      <version>0.2</version>
+      <version>0.2.1</version>
     </dependency>
   </dependencies>
   ```
@@ -241,7 +241,7 @@ With Maven, you'll need this in your `pom.xml` file:
             <compilerPlugin>
               <groupId>com.nativelibs4java</groupId>
               <artifactId>scalaxy-streams_${scala.version}</artifactId>
-              <version>0.2</version>
+              <version>0.2.1</version>
             </compilerPlugin>
           </compilerPlugins>
         </configuration>

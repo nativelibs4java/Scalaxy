@@ -6,7 +6,7 @@ addCompilerPlugin("com.nativelibs4java" %% "scalaxy-streams" % "0.3-SNAPSHOT")
 
 libraryDependencies += "com.nativelibs4java" %% "scalaxy-streams" % "0.3-SNAPSHOT"
 
-// addCompilerPlugin("com.nativelibs4java" %% "scalaxy-streams" % "0.2")
+// addCompilerPlugin("com.nativelibs4java" %% "scalaxy-streams" % "0.2.1")
 
 scalacOptions += "-Xplugin-require:scalaxy-streams"
 
