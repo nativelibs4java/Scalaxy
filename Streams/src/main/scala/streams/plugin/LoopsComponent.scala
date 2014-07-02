@@ -47,8 +47,7 @@ class StreamsComponent(
             (tree: Tree) => try {
               localTyper.typed(tree)
             } catch { case ex: Throwable =>
-              println("Failed to type " + tree)
-              throw ex
+              throw new RuntimeException("Failed to type " + tree, ex)
             }
 
           override def transform(tree: Tree) = tree match {
@@ -67,26 +66,31 @@ class StreamsComponent(
 
               if (stream.isWorthOptimizing(strategy)) {
                 reporter.info(tree.pos, Optimizations.optimizedStreamMessage(stream.describe()), force = true)
-                val result = {
-                  stream
-                    .emitStream(
-                      n => TermName(unit.fresh.newName(n)),
-                      transform(_),
-                      typed)
-                    .compose(localTyper.typed(_))
+
+                try {
+                  val result = {
+                    stream
+                      .emitStream(
+                        n => TermName(unit.fresh.newName(n)),
+                        transform(_),
+                        typed)
+                      .compose(localTyper.typed(_))
+                  }
+                  // println(result)
+
+                  // def resetLocalAttrs(tree: Tree): Tree =
+                  //   resetAttrs(duplicateAndKeepPositions(tree))
+                  //
+                  // def untypecheck(tree: Tree): Tree =
+                  //   resetLocalAttrs(tree)
+                  // 
+                  // typed(untypecheck(result))
+                  result
+                } catch {
+                  case ex: Throwable =>
+                    ex.printStackTrace()
+                    super.transform(tree)
                 }
-                // println(result)
-
-                def resetLocalAttrs(tree: Tree): Tree =
-                  resetAttrs(duplicateAndKeepPositions(tree))
-
-                def untypecheck(tree: Tree): Tree =
-                  resetLocalAttrs(tree)
-
-                val retypedResult = typed(untypecheck(result))
-
-                // result
-                retypedResult
               } else {
                 super.transform(tree)
               }

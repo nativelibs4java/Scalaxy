@@ -29,7 +29,7 @@ private[streams] trait ArrayBuilderSinks extends BuilderSinks {
         case Some(outputSize) =>//if false => // buggy
           // If the output size is known, just create an array.
           // println(s"outputSize in ArraySink is ${input.outputSize}")
-          new RuntimeException(s"outputSize in ArraySink is ${input.outputSize}").printStackTrace()
+          // new RuntimeException(s"outputSize in ArraySink is ${input.outputSize}").printStackTrace()
 
           require(input.vars.alias.nonEmpty, s"input.vars = $input.vars")
 
