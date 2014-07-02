@@ -8,6 +8,7 @@ private[streams] trait StreamOps
     with ForeachOps
     with MapOps
     with ZipWithIndexOps
+    with ToCollectionOps
 {
   val global: scala.reflect.api.Universe
   import global._
@@ -33,6 +34,9 @@ private[streams] trait StreamOps
         (src, ops :+ op)
 
       case SomeArrayOpsOp(SomeStreamOp(src, ops), op) =>
+        (src, ops :+ op)
+
+      case SomeToCollectionOp(SomeStreamOp(src, ops), op) =>
         (src, ops :+ op)
 
       case _ =>

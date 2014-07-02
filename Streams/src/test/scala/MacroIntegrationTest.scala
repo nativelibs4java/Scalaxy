@@ -59,6 +59,15 @@ object MacroIntegrationTest
     // """{ object Foo { def doit(args: Array[String]) = args.length } ; Foo.doit(Array("1")) }"""
     //   -> CompilerMessages(),
 
+    "val n = 3; (1 to n) map (_ * 2)"
+      -> streamMsg("Range.map -> IndexedSeq", hasPureExpressions = true),
+
+    "val n = 3; (1 to n).toList map (_ * 2)"
+      -> streamMsg("Range.toList.map -> List", hasPureExpressions = true),
+
+    "val n = 3; (1 to n).toArray map (_ * 2)"
+      -> streamMsg("Range.toArray.map -> Array", hasPureExpressions = true),
+
     "Option(1).map(_ * 2).filter(_ < 3)"
       -> streamMsg("Option.map.filter -> Option", hasPureExpressions = true),
 
@@ -201,7 +210,7 @@ object MacroIntegrationTest
         (i, v, j)
       }
     """
-      -> streamMsg("Range.flatMap(Array.flatMap(Range.map)) -> IndexedSeq", hasPureExpressions = true),
+      -> streamMsg("Range.flatMap(Range.toArray.flatMap(Range.map)) -> IndexedSeq", hasPureExpressions = true),
 
     """
       val start = 10
