@@ -22,7 +22,7 @@ private[streams] trait BuilderSinks extends StreamComponents {
       val builder = fresh("builder")
       require(input.vars.alias.nonEmpty, s"input.vars = $input.vars")
 
-      // println("inputVars.alias.get = " + inputVars.alias.get + ": " + inputVars.tpe)
+      // println("input.vars.alias.get = " + input.vars.alias.get + ": " + input.vars.tpe)
       val sizeHintOpt = input.outputSize.map(s => q"$builder.sizeHint($s)")
       val Block(List(
           builderDef,

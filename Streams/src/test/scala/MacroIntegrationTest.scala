@@ -59,6 +59,9 @@ object MacroIntegrationTest
     // """{ object Foo { def doit(args: Array[String]) = args.length } ; Foo.doit(Array("1")) }"""
     //   -> CompilerMessages(),
 
+    "Array(1, 2, 3).flatMap { case 1 => Some(10) case v => Some(v * 100) }"
+      -> streamMsg("Array.flatMap -> Array", hasPureExpressions = true),
+
     "val n = 3; (1 to n) map (_ * 2)"
       -> streamMsg("Range.map -> IndexedSeq", hasPureExpressions = true),
 

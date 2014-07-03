@@ -11,6 +11,8 @@ private[streams] trait FlatMapOps
 
   val SomeStream: Extractor[Tree, Stream]
 
+  lazy val GenTraversableOnceSym = rootMirror.staticClass("scala.collection.GenTraversableOnce")
+
   object SomeFlatMapOp {
     def unapply(tree: Tree): Option[(Tree, StreamOp)] = Option(tree) collect {
       case q"$target.flatMap[$tpt, ${_}](${fun @ Strip(Function(List(param), body))})($cbf)" =>
@@ -73,21 +75,32 @@ private[streams] trait FlatMapOps
           modifiedStream.emitStream(fresh, subTransform, typed).map(replacer)
 
         case None =>
-          val itemVal = fresh("item")
           val (replacedStatements, outputVars) =
             transformationClosure.replaceClosureBody(
               input.copy(
-                vars = ScalarValue(tpe, alias = Some(Ident(TermName(itemVal.toString)))),
                 outputSize = None,
                 index = None),
               outputNeeds)
 
-          val sub = emitSub(input.copy(vars = outputVars), nextOps)
+          val TypeRef(_, _, List(componentTpe)) =
+            outputVars.tpe.baseType(GenTraversableOnceSym)
+
+          val itemVal = fresh("item")
+          val Function(List(itemValDef @ ValDef(_, _, _, _)), itemValRef @ Ident(_)) = typed(q"""
+            ($itemVal: $componentTpe) => $itemVal
+          """)
+
+          val sub = emitSub(
+            input.copy(
+              vars = ScalarValue(componentTpe, alias = Some(itemValRef)),
+              outputSize = None,
+              index = None),
+            nextOps)
           sub.copy(body = List(typed(q"""
             ..$replacedStatements;
-            for ($itemVal <- ${outputVars.alias.get}) {
+            ${outputVars.alias.get}.foreach(($itemValDef) => {
               ..${sub.body};
-            }
+            })
           """)))
       }
     }
