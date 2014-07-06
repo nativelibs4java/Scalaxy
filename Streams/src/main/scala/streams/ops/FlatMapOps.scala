@@ -12,15 +12,26 @@ private[streams] trait FlatMapOps
   val SomeStream: Extractor[Tree, Stream]
 
   lazy val GenTraversableOnceSym = rootMirror.staticClass("scala.collection.GenTraversableOnce")
+  lazy val OptionModule = rootMirror.staticModule("scala.Option")
 
+  object Option2Iterable {
+    def unapply(tree: Tree): Option[Tree] = Option(tree) collect {
+      case q"$target.option2Iterable[${_}]($value)" if target.symbol == OptionModule =>
+        value
+    }
+  }
+  def stripOption2Iterable(tree: Tree): Tree = tree match {
+    case Option2Iterable(value) => value
+    case value => value
+  }
   object SomeFlatMapOp {
     def unapply(tree: Tree): Option[(Tree, StreamOp)] = Option(tree) collect {
       case q"$target.flatMap[$tpt, ${_}](${fun @ Strip(Function(List(param), body))})($cbf)" =>
-        (target, FlatMapOp(tpt.tpe, param, body, Some(cbf)))
+        (target, FlatMapOp(tpt.tpe, param, stripOption2Iterable(body), Some(cbf)))
 
       // Option.flatMap doesn't take a CanBuildFrom.
       case q"$target.flatMap[$tpt](${fun @ Strip(Function(List(param), body))})" =>
-        (target, FlatMapOp(tpt.tpe, param, body, None))
+        (target, FlatMapOp(tpt.tpe, param, stripOption2Iterable(body), None))
     }
   }
 
