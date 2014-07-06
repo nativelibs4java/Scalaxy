@@ -6,6 +6,8 @@ private[streams] trait OptionSinks extends StreamComponents {
 
   trait OptionSinkBase extends StreamSink
   {
+    override def lambdaCount = 0
+
     def whenSome(value: Tree): Tree
     def whenNone(): Tree
 
@@ -42,25 +44,21 @@ private[streams] trait OptionSinks extends StreamComponents {
     }
   }
 
-  case object OptionSink extends OptionSinkBase
-  {
+  case object OptionSink extends OptionSinkBase {
     override def describe = Some("Option")
-
-    override def lambdaCount = 0
-
     override def whenSome(value: Tree) = q"Some($value)"
-
     override def whenNone() = q"None"
   }
 
-  case class GetOrElseSink(defaultValue: Tree) extends OptionSinkBase
-  {
-    override def describe = None//Option(defaultValue.tpe).map(_.deconst.toString)
-
-    override def lambdaCount = 0
-
+  case class OptionGetOrElseSink(defaultValue: Tree) extends OptionSinkBase {
+    override def describe = None
     override def whenSome(value: Tree) = value
-
     override def whenNone() = defaultValue
+  }
+
+  case object OptionIsEmptySink extends OptionSinkBase {
+    override def describe = None
+    override def whenSome(value: Tree) = q"false"
+    override def whenNone() = q"true"
   }
 }

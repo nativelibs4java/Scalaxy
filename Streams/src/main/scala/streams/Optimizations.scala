@@ -59,7 +59,7 @@ object Optimizations
                 if (recurse) transform(_) else tree => tree,
                 typed)
               .compose(typed)
-            // println(result)
+            println(result)
 
             typed(result)
 
