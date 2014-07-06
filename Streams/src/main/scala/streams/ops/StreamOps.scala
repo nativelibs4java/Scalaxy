@@ -7,6 +7,7 @@ private[streams] trait StreamOps
     with FindOps
     with FlatMapOps
     with ForeachOps
+    with GetOrElseOps
     with MapOps
     with ToCollectionOps
     with ZipWithIndexOps
@@ -30,6 +31,9 @@ private[streams] trait StreamOps
 
       // case SomeFindOp(SomeStreamOp(src, ops), op) =>
       //   (src, ops :+ op)
+
+      case SomeGetOrElseOp(SomeStreamOp(src, ops), op) =>
+        (src, ops :+ op)
 
       case SomeFilterOp(SomeStreamOp(src, ops), op) =>
         (src, ops :+ op)

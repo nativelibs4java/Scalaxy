@@ -4,12 +4,10 @@ private[streams] trait OptionSinks extends StreamComponents {
   val global: scala.reflect.api.Universe
   import global._
 
-  // Base class for builder-based sinks.
-  case object OptionSink extends StreamSink
+  trait OptionSinkBase extends StreamSink
   {
-    override def describe = Some("Option")
-
-    override def lambdaCount = 0
+    def whenSome(value: Tree): Tree
+    def whenNone(): Tree
 
     override def emit(input: StreamInput, outputNeeds: OutputNeeds, nextOps: OpsAndOutputNeeds): StreamOutput =
     {
@@ -33,7 +31,7 @@ private[streams] trait OptionSinks extends StreamComponents {
           $value = ${input.vars.alias.get};
           $nonEmpty = true;
         };
-        if ($nonEmpty) Some($value) else None;
+        if ($nonEmpty) ${whenSome(q"$value")} else ${whenNone};
         ""
       """)
 
@@ -42,5 +40,27 @@ private[streams] trait OptionSinks extends StreamComponents {
         body = List(assignment),
         ending = List(result))
     }
+  }
+
+  case object OptionSink extends OptionSinkBase
+  {
+    override def describe = Some("Option")
+
+    override def lambdaCount = 0
+
+    override def whenSome(value: Tree) = q"Some($value)"
+
+    override def whenNone() = q"None"
+  }
+
+  case class GetOrElseSink(defaultValue: Tree) extends OptionSinkBase
+  {
+    override def describe = None//Option(defaultValue.tpe).map(_.deconst.toString)
+
+    override def lambdaCount = 0
+
+    override def whenSome(value: Tree) = value
+
+    override def whenNone() = defaultValue
   }
 }
