@@ -59,6 +59,9 @@ object MacroIntegrationTest
     // """{ object Foo { def doit(args: Array[String]) = args.length } ; Foo.doit(Array("1")) }"""
     //   -> CompilerMessages(),
 
+    "Array((1, 2), (3, 4), (5, 6)) find (_._1 > 1) map (_._2)"
+      -> streamMsg("Array.find.map -> Option", hasPureExpressions = true),
+
     "Array(1, 2, 3).flatMap { case 1 => Some(10) case v => Some(v * 100) }"
       -> streamMsg("Array.flatMap -> Array", hasPureExpressions = true),
 

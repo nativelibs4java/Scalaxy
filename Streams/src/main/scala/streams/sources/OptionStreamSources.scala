@@ -2,6 +2,7 @@ package scalaxy.streams
 
 private[streams] trait OptionStreamSources
     extends OptionSinks
+    with StreamInterruptors
 {
   val global: scala.reflect.api.Universe
   import global._
@@ -66,16 +67,19 @@ private[streams] trait OptionStreamSources
       """)
       val (extractionCode, outputVars) = createTuploidPathsExtractionDecls(itemValRef, outputNeeds, fresh, typed)
 
+      val interruptor = new StreamInterruptor(input, nextOps)
       val sub = emitSub(
         input.copy(
           vars = outputVars,
+          loopInterruptor = interruptor.loopInterruptor,
           outputSize = None), // TODO 1 if nonEmpty, 0 otherwise.
         nextOps)
       sub.copy(body = List(typed(q"""
         $optionValDef;
         $nonEmptyValDef;
+        ..${interruptor.defs}
 
-        if ($nonEmptyValRef) {
+        if ($nonEmptyValRef && ${interruptor.test}) {
           $itemValDef;
           ..$extractionCode
           ..${sub.body};
@@ -123,9 +127,11 @@ private[streams] trait OptionStreamSources
       """)
       val (extractionCode, outputVars) = createTuploidPathsExtractionDecls(itemValRef, outputNeeds, fresh, typed)
 
+      val interruptor = new StreamInterruptor(input, nextOps)
       val sub = emitSub(
         input.copy(
           vars = outputVars,
+          loopInterruptor = interruptor.loopInterruptor,
           outputSize = None), // TODO 1 if nonEmpty, 0 otherwise.
         nextOps)
       sub.copy(
@@ -133,8 +139,9 @@ private[streams] trait OptionStreamSources
         body = List(typed(q"""
           $itemValDef;
           $nonEmptyValDef;
+          ..${interruptor.defs}
           ..${sub.beforeBody};
-          if ($nonEmptyValRef) {
+          if ($nonEmptyValRef && ${interruptor.test}) {
             ..$extractionCode
             ..${sub.body};
           }

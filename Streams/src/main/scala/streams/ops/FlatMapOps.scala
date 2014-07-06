@@ -40,6 +40,8 @@ private[streams] trait FlatMapOps
 
     override def lambdaCount = 1 + nestedStream.map(_.lambdaCount).getOrElse(0)
 
+    override def canInterruptLoop = nestedStream.map(_.ops.exists(_.canInterruptLoop)).getOrElse(false)
+
     override def transmitOutputNeedsBackwards(paths: Set[TuploidPath]) = {
       super.transmitOutputNeedsBackwards(paths) ++
       nestedStream.toList.flatMap(_.ops.foldRight(paths)({ case (op, refs) =>

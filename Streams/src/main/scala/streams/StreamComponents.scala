@@ -34,6 +34,8 @@ private[streams] trait StreamComponents extends StreamResults {
 
   trait StreamOp extends StreamComponent
   {
+    def canInterruptLoop: Boolean = false
+
     def transmitOutputNeedsBackwards(paths: Set[TuploidPath]): Set[TuploidPath]
   }
 

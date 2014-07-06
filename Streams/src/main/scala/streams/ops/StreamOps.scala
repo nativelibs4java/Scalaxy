@@ -4,11 +4,12 @@ private[streams] trait StreamOps
     extends ArrayOpsOps
     with CoerceOps
     with FilterOps
+    with FindOps
     with FlatMapOps
     with ForeachOps
     with MapOps
-    with ZipWithIndexOps
     with ToCollectionOps
+    with ZipWithIndexOps
 {
   val global: scala.reflect.api.Universe
   import global._
@@ -26,6 +27,9 @@ private[streams] trait StreamOps
 
       case SomeFlatMapOp(SomeStreamOp(src, ops), op) =>
         (src, ops :+ op)
+
+      // case SomeFindOp(SomeStreamOp(src, ops), op) =>
+      //   (src, ops :+ op)
 
       case SomeFilterOp(SomeStreamOp(src, ops), op) =>
         (src, ops :+ op)

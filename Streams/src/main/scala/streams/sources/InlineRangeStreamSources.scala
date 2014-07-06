@@ -4,6 +4,7 @@ import scala.reflect.NameTransformer.{ encode, decode }
 private[streams] trait InlineRangeStreamSources
     extends StreamComponents
     with VectorBuilderSinks
+    with StreamInterruptors
 {
   val global: scala.reflect.api.Universe
   import global._
@@ -91,7 +92,13 @@ private[streams] trait InlineRangeStreamSources
 
       val outputVars = ScalarValue[Tree](tpe = tpe, alias = Some(iValRef))
 
-      val sub = emitSub(input.copy(vars = outputVars), nextOps)
+      val interruptor = new StreamInterruptor(input, nextOps)
+
+      val sub = emitSub(
+        input.copy(
+          vars = outputVars,
+          loopInterruptor = interruptor.loopInterruptor),
+        nextOps)
 
       sub.copy(
         beforeBody = Nil,
@@ -99,8 +106,9 @@ private[streams] trait InlineRangeStreamSources
           $startValDef;
           $endValDef;
           $iVarDef;
+          ..${interruptor.defs}
           ..${sub.beforeBody}
-          while ($test) {
+          while ($test && ${interruptor.test}) {
             $iValDef;
             ..${sub.body};
             $iVarIncr

@@ -2,6 +2,7 @@ package scalaxy.streams
 
 private[streams] trait ListStreamSources
     extends ListBufferSinks
+    with StreamInterruptors
 {
   val global: scala.reflect.api.Universe
   import global._
@@ -35,9 +36,6 @@ private[streams] trait ListStreamSources
       val listVar = fresh("currList")
       val itemVal = fresh("item")
 
-      // val componentTpe = input.vars.tpe.dealias
-      // println("componentTpe = " + componentTpe)
-
       // Early typing / symbolization.
       val Block(List(
           listValDef,
@@ -58,10 +56,12 @@ private[streams] trait ListStreamSources
       """)
       val (extractionCode, outputVars) = createTuploidPathsExtractionDecls(itemValRef, outputNeeds, fresh, typed)
 
+      val interruptor = new StreamInterruptor(input, nextOps)
+
       val sub = emitSub(
         input.copy(
           vars = outputVars,
-          // outputSize = None),
+          loopInterruptor = interruptor.loopInterruptor,
           outputSize = Some(listSize)),
         nextOps)
       sub.copy(
@@ -69,8 +69,9 @@ private[streams] trait ListStreamSources
         body = List(typed(q"""
           $listValDef;
           $listVarDef;
+          ..${interruptor.defs}
           ..${sub.beforeBody};
-          while ($nonEmptyListTest) {
+          while ($nonEmptyListTest && ${interruptor.test}) {
             $itemValDef;
             ..$extractionCode
             ..${sub.body};

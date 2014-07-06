@@ -3,6 +3,7 @@ package scalaxy.streams
 private[streams] trait ArrayStreamSources
     extends ArrayBuilderSinks
     with ArrayOpsOps
+    with StreamInterruptors
 {
   val global: scala.reflect.api.Universe
   import global._
@@ -57,9 +58,12 @@ private[streams] trait ArrayStreamSources
       """)
       val (extractionCode, outputVars) = createTuploidPathsExtractionDecls(itemValRef, outputNeeds, fresh, typed)
 
+      val interruptor = new StreamInterruptor(input, nextOps)
+
       val sub = emitSub(
         input.copy(
           vars = outputVars,
+          loopInterruptor = interruptor.loopInterruptor,
           outputSize = Some(lengthValRef)),
         nextOps)
 
@@ -69,8 +73,9 @@ private[streams] trait ArrayStreamSources
           $arrayValDef;
           $lengthValDef;
           $iVarDef;
+          ..${interruptor.defs}
           ..${sub.beforeBody};
-          while ($iVarRef < $lengthValRef) {
+          while ($iVarRef < $lengthValRef && ${interruptor.test}) {
             $itemValDef;
             ..$extractionCode
             ..${sub.body};
