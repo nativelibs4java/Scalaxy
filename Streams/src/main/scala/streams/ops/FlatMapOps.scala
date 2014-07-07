@@ -51,7 +51,7 @@ private[streams] trait FlatMapOps
 
     override def lambdaCount = 1 + nestedStream.map(_.lambdaCount).getOrElse(0)
 
-    // Do not leak the interruptility out of a flatMap.
+    // Do not leak the interruptibility out of a flatMap.
     override def canInterruptLoop = false//nestedStream.map(_.ops.exists(_.canInterruptLoop)).getOrElse(false)
 
     override def transmitOutputNeedsBackwards(paths: Set[TuploidPath]) = {
@@ -86,7 +86,7 @@ private[streams] trait FlatMapOps
           val outerOps = outerOpsRev.reverse
           val modifiedStream = stream.copy(ops = stream.ops ++ outerOps, sink = outerSink)
 
-          modifiedStream.emitStream(fresh, subTransform, typed).map(replacer)
+          modifiedStream.emitStream(fresh, subTransform, typed, loopInterruptor = input.loopInterruptor).map(replacer)
 
         case None =>
           val (replacedStatements, outputVars) =

@@ -21,12 +21,18 @@ private[streams] trait StreamInterruptors extends StreamComponents
 
     private[this] val needsContinue = nextOps.exists(_._1.canInterruptLoop)
 
-    val loopInterruptor = if (needsContinue) Some(continueVarRef) else None
+    val loopInterruptor: Option[Tree] = input.loopInterruptor orElse {
+      if (needsContinue) Some(continueVarRef) else None
+    }
 
     val (defs, test) =
-      if (needsContinue)
-        (Seq(continueVarDef), continueVarRef)
-      else
-        (Seq(), q"true")
+      if (!input.loopInterruptor.isEmpty) {
+        (Seq(), input.loopInterruptor.get)
+      } else {
+        if (needsContinue)
+          (Seq(continueVarDef), continueVarRef)
+        else
+          (Seq(), q"true")
+      }
   }
 }
