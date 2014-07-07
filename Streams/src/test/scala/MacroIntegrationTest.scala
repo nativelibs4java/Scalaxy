@@ -67,7 +67,7 @@ object MacroIntegrationTest
       -> streamMsg("Array.flatMap(Array.find) -> Array", hasPureExpressions = true),
 
     "Array(1, 2, 3, 4).flatMap(v => List(v, v * 2).map(_ + 1)).find(_ > 2)"
-      // -> streamMsg("Array.flatMap(List.map).find -> Option", hasPureExpressions = true),
+      -> streamMsg("Array.flatMap(List.map).find -> Option", hasPureExpressions = true),
 
     "Option(10).map(_ * 2).getOrElse(10)"
       -> streamMsg("Option.map.getOrElse", hasPureExpressions = true),
