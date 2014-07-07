@@ -10,10 +10,11 @@ import org.junit.runners.Parameterized.Parameters
 
 import scala.collection.JavaConversions._
 
-@RunWith(classOf[Parameterized])
+// @RunWith(classOf[Parameterized])
+@RunWith(classOf[Parallelized])
 class MacroIntegrationTest(source: String, expectedMessages: CompilerMessages) extends StreamComponentsTestBase with StreamTransforms {
   @Test def test = {
-    // assertPluginCompilesSnippetFine(source)
+    assertPluginCompilesSnippetFine(source)
 
     val actualMessages = assertMacroCompilesToSameValue(
       source, strategy = scalaxy.streams.optimization.aggressive)
@@ -59,44 +60,20 @@ object MacroIntegrationTest
     // """{ object Foo { def doit(args: Array[String]) = args.length } ; Foo.doit(Array("1")) }"""
     //   -> CompilerMessages(),
 
-    // "Array((1, 2), (3, 4), (5, 6)) find (_._1 > 1) map (_._2)"
-    //   -> streamMsg("Array.find.map -> Option", hasPureExpressions = true),
+    "Array((1, 2), (3, 4), (5, 6)) find (_._1 > 1) map (_._2)"
+      -> streamMsg("Array.find.map -> Option", hasPureExpressions = true),
 
-    // "Array(1, 2, 3, 4).flatMap(v => Array(v, v * 2).find(_ > 2))"
-    //   -> streamMsg("Array.flatMap(Array.find) -> Array", hasPureExpressions = true),
+    "Array(1, 2, 3, 4).flatMap(v => Array(v, v * 2).find(_ > 2))"
+      -> streamMsg("Array.flatMap(Array.find) -> Array", hasPureExpressions = true),
 
-    // "var v = 100; Array(1).map(v => v + 1).map(x => v)"
-    //   -> streamMsg("Array.map.map -> Array", hasPureExpressions = true),
-
-    // "var v = 100; Array(1).map(v => v + 1).map(x => { v += 2; v })"
-    //   -> streamMsg("Array.map.map -> Array", hasPureExpressions = true),
-
-    // "var v = 100; Array(1).flatMap(v => Array(v, v + 1)).map(x => v)"
-    //   -> streamMsg("Array.flatMap(Array).map -> Array", hasPureExpressions = true),
-
-    // "var v = 100; Array(1).flatMap(v => Array(v, v + 1)).map(x => { v += 2; v })"
-    //   -> streamMsg("Array.flatMap(Array).map -> Array", hasPureExpressions = true),
-
-    // """
-    //   var vv = 0;
-    //   val r = Array(1, 2, 3, 4)
-    //     .flatMap(v => List(v, v * 2).map(x => { vv = vv + 1; x + 1 }))
-    //     .find(_ >= 0);
-    //   (vv, r)
-    // """
-    //   -> streamMsg("Array.flatMap(List.map).find -> Array", hasPureExpressions = true)
-
-    // """
-    //   var vv = 0;
-    //   val r = Array(1, 2, 3, 4)
-    //     .flatMap(v => List(v, v * 2).map(x => { vv = vv + 1; x + 1 }))
-    //     .find(_ != null);
-    //   (vv, r)
-    // """
-    //   -> streamMsg("Array.flatMap(List.map).find -> Array", hasPureExpressions = true)
+    "Array(1, 2, 3, 4).flatMap(v => List(v, v * 2).map(_ + 1)).find(_ > 2)"
+      // -> streamMsg("Array.flatMap(List.map).find -> Option", hasPureExpressions = true),
 
     "Option(10).map(_ * 2).getOrElse(10)"
       -> streamMsg("Option.map.getOrElse", hasPureExpressions = true),
+
+    "Option(10).filter(_ < 5).isEmpty"
+      -> streamMsg("Option.filter.isEmpty", hasPureExpressions = true),
 
     "Some(10).map(_ * 2).get"
       -> streamMsg("Some.map.get", hasPureExpressions = true),
