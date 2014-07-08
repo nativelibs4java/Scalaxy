@@ -39,7 +39,7 @@ private[streams] trait StreamInterruptors extends StreamComponents
       case q"true" =>
         condition
       case _ =>
-        q"$condition && $test"
+        q"$test && $condition"
     }
   }
 }

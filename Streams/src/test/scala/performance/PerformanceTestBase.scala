@@ -32,6 +32,8 @@ class PerformanceTestBase extends StreamComponentsTestBase {
       code: String,
       sizeParam: String = "n"): PerformanceRunner =
   {
+    if (optimized) println(code)
+
     val functionCode = s"""
       ($sizeParam: Int) => {
         $decls;
