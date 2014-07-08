@@ -60,6 +60,16 @@ object MacroIntegrationTest
     // """{ object Foo { def doit(args: Array[String]) = args.length } ; Foo.doit(Array("1")) }"""
     //   -> CompilerMessages(),
 
+    /// Range.takeWhile and .dropWhile return a Range, which doesn't fit nicely with WhileOps.
+    "(1 to 10).takeWhile(_ < 5)" -> CompilerMessages(),
+    "(1 to 10).dropWhile(_ < 5)" -> CompilerMessages(),
+
+    "(1 to 10).takeWhile(_ < 5).map(_ * 2)"
+      -> streamMsg("Range.takeWhile.map -> IndexedSeq", hasPureExpressions = true),
+
+    "(1 to 10).dropWhile(_ < 5).map(_ * 2)"
+      -> streamMsg("Range.dropWhile.map -> IndexedSeq", hasPureExpressions = true),
+
     "Array((1, 2), (3, 4), (5, 6)) find (_._1 > 1) map (_._2)"
       -> streamMsg("Array.find.map -> Option", hasPureExpressions = true),
 
@@ -85,13 +95,13 @@ object MacroIntegrationTest
       -> streamMsg("Array.flatMap -> Array", hasPureExpressions = true),
 
     "val n = 3; (1 to n) map (_ * 2)"
-      -> streamMsg("Range.map -> IndexedSeq", hasPureExpressions = true),
+      -> streamMsg("Range.map -> IndexedSeq", hasPureExpressions = false),
 
     "val n = 3; (1 to n).toList map (_ * 2)"
-      -> streamMsg("Range.toList.map -> List", hasPureExpressions = true),
+      -> streamMsg("Range.toList.map -> List", hasPureExpressions = false),
 
     "val n = 3; (1 to n).toArray map (_ * 2)"
-      -> streamMsg("Range.toArray.map -> Array", hasPureExpressions = true),
+      -> streamMsg("Range.toArray.map -> Array", hasPureExpressions = false),
 
     "Option(1).map(_ * 2).filter(_ < 3)"
       -> streamMsg("Option.map.filter -> Option", hasPureExpressions = true),
@@ -145,7 +155,7 @@ object MacroIntegrationTest
       -> streamMsg("Array.map -> product", hasPureExpressions = true),
 
     "val n = 10; for (v <- 0 to n) yield v"
-      -> streamMsg("Range.map -> IndexedSeq", hasPureExpressions = true),
+      -> streamMsg("Range.map -> IndexedSeq", hasPureExpressions = false),
 
     "Array(1, 2, 3).map(_ * 2).filterNot(_ < 3)"
       -> streamMsg("Array.map.filterNot -> Array", hasPureExpressions = true),
@@ -154,7 +164,7 @@ object MacroIntegrationTest
       -> streamMsg("Range.map.filter -> IndexedSeq", hasPureExpressions = true),
 
     "(2 until 10 by 2).map(_ * 2)"
-      -> streamMsg("Range.map -> IndexedSeq", hasPureExpressions = true),
+      -> streamMsg("Range.map -> IndexedSeq", hasPureExpressions = false),
 
     "(20 to 7 by -3).map(_ * 2).filter(_ < 3)"
       -> streamMsg("Range.map.filter -> IndexedSeq", hasPureExpressions = true),
@@ -163,13 +173,13 @@ object MacroIntegrationTest
       -> streamMsg("Array.map.map -> Array", hasPureExpressions = true),
 
     "(10 to 20).map(i => () => i).map(_())"
-      -> streamMsg("Range.map.map -> IndexedSeq", hasPureExpressions = true),
+      -> streamMsg("Range.map.map -> IndexedSeq", hasPureExpressions = false),
 
     "(10 to 20).map(_ + 1).map(i => () => i).map(_())"
-      -> streamMsg("Range.map.map.map -> IndexedSeq", hasPureExpressions = true),
+      -> streamMsg("Range.map.map.map -> IndexedSeq", hasPureExpressions = false),
 
     "(10 to 20).map(_ * 10).map(i => () => i).reverse.map(_())"
-      -> streamMsg("Range.map.map -> IndexedSeq", hasPureExpressions = true),
+      -> streamMsg("Range.map.map -> IndexedSeq", hasPureExpressions = false),
 
     "for (p <- (20 until 0 by -2).zipWithIndex) yield p.toString"
       -> streamMsg("Range.zipWithIndex.map -> IndexedSeq", hasPureExpressions = true),
@@ -204,7 +214,7 @@ object MacroIntegrationTest
            j <- i to 0 by -1)
         yield { i + j }
     """
-      -> streamMsg("Range.flatMap(Range.map) -> IndexedSeq", hasPureExpressions = true),
+      -> streamMsg("Range.flatMap(Range.map) -> IndexedSeq", hasPureExpressions = false),
 
     """val n = 20;
       for (i <- 0 to n;
@@ -216,7 +226,7 @@ object MacroIntegrationTest
            m <- l to n)
         yield { sum * m }
     """
-      -> streamMsg("Range.flatMap(Range.flatMap(Range.flatMap(Range.map.withFilter.flatMap(Range.map)))) -> IndexedSeq", hasPureExpressions = true),
+      -> streamMsg("Range.flatMap(Range.flatMap(Range.flatMap(Range.map.withFilter.flatMap(Range.map)))) -> IndexedSeq", hasPureExpressions = false),
 
     """val n = 20;
       for (i <- 0 to n;
@@ -227,7 +237,7 @@ object MacroIntegrationTest
            k <- (i + j) to n)
         yield { (ii, jj, k) }
     """
-      -> streamMsg("Range.map.flatMap(Range.map.withFilter.flatMap(Range.map)) -> IndexedSeq", hasPureExpressions = true),
+      -> streamMsg("Range.map.flatMap(Range.map.withFilter.flatMap(Range.map)) -> IndexedSeq", hasPureExpressions = false),
 
     """
       val n = 5
@@ -235,7 +245,7 @@ object MacroIntegrationTest
         (i, v, j)
       }
     """
-      -> streamMsg("Range.flatMap(Range.toArray.flatMap(Range.map)) -> IndexedSeq", hasPureExpressions = true),
+      -> streamMsg("Range.flatMap(Range.toArray.flatMap(Range.map)) -> IndexedSeq", hasPureExpressions = false),
 
     """
       val start = 10
@@ -244,7 +254,7 @@ object MacroIntegrationTest
           (() => (i * 2))
       ).map(_())
     """
-      -> streamMsg("Range.map.map -> IndexedSeq", hasPureExpressions = true)
+      -> streamMsg("Range.map.map -> IndexedSeq", hasPureExpressions = false)
 
   ).map({ case (src, msgs) => Array[AnyRef](src, msgs) })
 }

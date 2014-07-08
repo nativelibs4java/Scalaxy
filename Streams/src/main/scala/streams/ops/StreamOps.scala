@@ -9,6 +9,7 @@ private[streams] trait StreamOps
     with ForeachOps
     with OptionOps
     with MapOps
+    with WhileOps
     with ToCollectionOps
     with ZipWithIndexOps
 {
@@ -30,6 +31,9 @@ private[streams] trait StreamOps
         (src, ops :+ op)
 
       case SomeFindOp(SomeStreamOp(src, ops), op) =>
+        (src, ops :+ op)
+
+      case SomeWhileOp(SomeStreamOp(src, ops), op) =>
         (src, ops :+ op)
 
       case SomeOptionOp(SomeStreamOp(src, ops), op) =>

@@ -40,14 +40,14 @@ class ListChainedPerformanceTest extends ListPerformanceTest with ChainedPerform
 }
 class RangePerformanceTest extends CollectionPerformanceTests with NoRightTests with NoScalarReductionTests {
   override def col = (null: String, "(0 until n)")
-  override def simpleToArray = {}
-  override def simpleToList = {}
-  override def simpleTakeWhile = {}
-  override def simpleDropWhile = {}
-  override def simpleSum = {}
-  override def simpleProduct = {}
-  override def simpleMin = {}
-  override def simpleMax = {}
+  // override def simpleToArray = {}
+  // override def simpleToList = {}
+  // override def simpleTakeWhile = {}
+  // override def simpleDropWhile = {}
+  // override def simpleSum = {}
+  // override def simpleProduct = {}
+  // override def simpleMin = {}
+  // override def simpleMax = {}
 }
 class RangeChainedPerformanceTest extends CollectionPerformanceTests with ChainedPerformanceTests with NoRightTests with NoScalarReductionTests {
   override def col = chain((null, "(0 until n)"))
@@ -69,8 +69,8 @@ trait CollectionPerformanceTests extends PerformanceTests {
   @Ignore @Test def simpleCount = testCount(col)
   @Ignore @Test def simpleExists = testExists(col)
   @Ignore @Test def simpleForall = testForall(col)
-  @Ignore @Test def simpleTakeWhile = testTakeWhile(col)
-  @Ignore @Test def simpleDropWhile = testDropWhile(col)
+  @Test def simpleTakeWhile = testTakeWhile(col)
+  @Test def simpleDropWhile = testDropWhile(col)
   @Test def simpleForeach = testForeach(col)
   @Test def simpleMap = testMap(col)
   @Test def simpleSum = testSum(col)
