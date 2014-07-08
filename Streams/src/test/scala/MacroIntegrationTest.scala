@@ -71,6 +71,12 @@ object MacroIntegrationTest
     "(1 to 10).dropWhile(_ < 5).map(_ * 2)"
       -> streamMsg("Range.dropWhile.map -> IndexedSeq", hasPureExpressions = true),
 
+    "(1 to 10).map(_ * 2).toSet.toList"
+      -> streamMsg("Range.map -> Set", hasPureExpressions = false),
+
+    "(1 to 10).map(_ * 2).toVector.toList"
+      -> streamMsg("Range.map.toVector -> List", hasPureExpressions = false),
+
     "Array((1, 2), (3, 4), (5, 6)) find (_._1 > 1) map (_._2)"
       -> streamMsg("Array.find.map -> Option", hasPureExpressions = true),
 

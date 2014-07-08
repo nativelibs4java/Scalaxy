@@ -97,9 +97,12 @@ Scalaxy/Streams rewrites streams with the following components:
   * `withFilter`,
   * `map`,
   * `flatMap` (with or without nested streams),
+  * `find`
+  * `takeWhile`, `dropWhile` (with some exceptions)
   * `zipWithIndex`
   * `sum`, `product`
   * `toList`, `toArray`, `toVector`, `toSet`
+  * `Option.get`, `getOrElse`, `isEmpty`
 
 The output type of each optimized stream is always the same as the original, but when nested streams are encountered in `flatMap` operations many intermediate outputs can typically be skipped, saving up on memory usage and execution time.
 
