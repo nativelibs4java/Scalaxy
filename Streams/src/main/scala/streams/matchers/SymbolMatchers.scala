@@ -60,6 +60,7 @@ private[streams] trait SymbolMatchers
           if (needed && reusableName.isEmpty) {
             val name = fresh("_" + path.map(_ + 1).mkString("_"))
             val uninitializedValue = Literal(Constant(defaultValue(tpe)))
+            // TODO: ${tpe.dealias}?
             val Block(List(decl), ref) = typed(q"""
               private[this] var $name: $tpe = $uninitializedValue;
               $name
