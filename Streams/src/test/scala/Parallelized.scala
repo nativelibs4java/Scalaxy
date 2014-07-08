@@ -10,7 +10,7 @@ private[streams] class ThreadPoolScheduler extends RunnerScheduler
   private[this] val numThreads = Integer.parseInt(
     System.getProperty(
       "junit.parallel.threads",
-      Runtime.getRuntime().availableProcessors + ""))
+      (Runtime.getRuntime().availableProcessors * 2) + ""))
   private[this] val executor = Executors.newFixedThreadPool(numThreads)
 
   override def finished() {
