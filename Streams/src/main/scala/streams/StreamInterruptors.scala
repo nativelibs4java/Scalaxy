@@ -34,5 +34,12 @@ private[streams] trait StreamInterruptors extends StreamComponents
         else
           (Seq(), q"true")
       }
+
+    def composeTest(condition: Tree) = test match {
+      case q"true" =>
+        condition
+      case _ =>
+        q"$condition && $test"
+    }
   }
 }

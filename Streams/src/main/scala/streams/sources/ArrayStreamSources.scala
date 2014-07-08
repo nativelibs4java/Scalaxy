@@ -75,7 +75,7 @@ private[streams] trait ArrayStreamSources
           $iVarDef;
           ..${interruptor.defs}
           ..${sub.beforeBody};
-          while ($iVarRef < $lengthValRef && ${interruptor.test}) {
+          while (${interruptor.composeTest(q"$iVarRef < $lengthValRef")}) {
             $itemValDef;
             ..$extractionCode
             ..${sub.body};

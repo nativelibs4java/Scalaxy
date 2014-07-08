@@ -79,7 +79,7 @@ private[streams] trait OptionStreamSources
         $nonEmptyValDef;
         ..${interruptor.defs}
 
-        if ($nonEmptyValRef && ${interruptor.test}) {
+        if (${interruptor.composeTest(nonEmptyValRef)}) {
           $itemValDef;
           ..$extractionCode
           ..${sub.body};
@@ -141,7 +141,7 @@ private[streams] trait OptionStreamSources
           $nonEmptyValDef;
           ..${interruptor.defs}
           ..${sub.beforeBody};
-          if ($nonEmptyValRef && ${interruptor.test}) {
+          if (${interruptor.composeTest(nonEmptyValRef)}) {
             ..$extractionCode
             ..${sub.body};
           }

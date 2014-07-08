@@ -71,7 +71,7 @@ private[streams] trait ListStreamSources
           $listVarDef;
           ..${interruptor.defs}
           ..${sub.beforeBody};
-          while ($nonEmptyListTest && ${interruptor.test}) {
+          while (${interruptor.composeTest(nonEmptyListTest)}) {
             $itemValDef;
             ..$extractionCode
             ..${sub.body};

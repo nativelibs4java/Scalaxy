@@ -56,6 +56,8 @@ private[streams] trait InlineRangeStreamSources
       val endVal = fresh("end")
       val iVar = fresh("i")
       val iVal = fresh("iVal")
+      val size = fresh("size")
+      val gap = fresh("gap")
 
       val testOperator = TermName(
         encode(
@@ -67,12 +69,33 @@ private[streams] trait InlineRangeStreamSources
         )
       )
 
+      def divideTree(lhs: Tree, rhs: Tree) = rhs match {
+        case q"1" => lhs
+        case _ => q"$lhs / $rhs"
+      }
+
+      def ifTree(condition: Tree, thenTree: Tree, otherwiseTree: Tree) = condition match {
+        case q"true" => thenTree
+        case q"false" => otherwiseTree
+        case _ => q"if ($condition) $thenTree else $otherwiseTree"
+      }
+
+      val hasStubTree =
+        if (isInclusive)
+          q"true"
+        else if (by == 1)
+          q"false"
+        else
+          q"!($gap % $by == 0)"
+
       // Force typing of declarations and get typed references to various vars and vals.
       val b @ Block(List(
           startValDef,
           endValDef,
           iVarDef,
           iValDef,
+          sizeDef,
+          sizeRef,
           iValRef,
           iVarRef,
           endValRef,
@@ -82,6 +105,11 @@ private[streams] trait InlineRangeStreamSources
         private[this] val $endVal: $tpe = ${transform(end)};
         private[this] var $iVar: $tpe = $startVal;
         private[this] val $iVal: $tpe = $iVar;
+        private[this] val $size = {
+          val $gap = $endVal - $startVal
+          ${divideTree(q"$gap", q"$by")} + ${ifTree(hasStubTree, q"1", q"0")}
+        };
+        $size;
         $iVal;
         $iVar;
         $endVal;
@@ -97,6 +125,7 @@ private[streams] trait InlineRangeStreamSources
       val sub = emitSub(
         input.copy(
           vars = outputVars,
+          outputSize = Some(sizeRef),
           loopInterruptor = interruptor.loopInterruptor),
         nextOps)
 
@@ -106,9 +135,10 @@ private[streams] trait InlineRangeStreamSources
           $startValDef;
           $endValDef;
           $iVarDef;
+          $sizeDef
           ..${interruptor.defs}
           ..${sub.beforeBody}
-          while ($test && ${interruptor.test}) {
+          while (${interruptor.composeTest(test)}) {
             $iValDef;
             ..${sub.body};
             $iVarIncr
