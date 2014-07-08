@@ -18,13 +18,16 @@ private[streams] trait ForeachOps
   {
     override def describe = Some("foreach")
 
-    override def sinkOption = Some(UnusableSink)
+    override def sinkOption = Some(UnitSink)
+
+    /// Technically, the output size of the Unit output is zero, so it's altered.
+    override def canAlterSize = true
 
     override def emit(input: StreamInput,
                       outputNeeds: OutputNeeds,
                       nextOps: OpsAndOutputNeeds): StreamOutput =
     {
-      val List((UnusableSink, _)) = nextOps
+      val List((UnitSink, _)) = nextOps
 
       val (replacedStatements, outputVars) =
         transformationClosure.replaceClosureBody(input, outputNeeds)

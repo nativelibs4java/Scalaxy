@@ -4,7 +4,7 @@ private[streams] trait UnusableSinks extends StreamComponents {
   val global: scala.reflect.api.Universe
   import global._
 
-  case object UnusableSink extends StreamSink
+  trait UnusableSinkBase extends StreamSink
   {
     override def describe = None
 
@@ -15,4 +15,10 @@ private[streams] trait UnusableSinks extends StreamComponents {
     override def emit(input: StreamInput, outputNeeds: OutputNeeds, nextOps: OpsAndOutputNeeds): StreamOutput =
       ???
   }
+
+  /// Sink is explicitly invalid: a stream cannot end with it.
+  case object InvalidSink extends UnusableSinkBase
+
+  /// Sink that outputs a Unit (e.g. for a foreach).
+  case object UnitSink extends UnusableSinkBase
 }

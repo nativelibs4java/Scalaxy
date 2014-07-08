@@ -122,10 +122,11 @@ private[streams] trait InlineRangeStreamSources
 
       val interruptor = new StreamInterruptor(input, nextOps)
 
+      val needsSize = !nextOps.exists(_._1.canAlterSize)
       val sub = emitSub(
         input.copy(
           vars = outputVars,
-          outputSize = Some(sizeRef),
+          outputSize = if (needsSize) Some(sizeRef) else None,
           loopInterruptor = interruptor.loopInterruptor),
         nextOps)
 
@@ -135,7 +136,7 @@ private[streams] trait InlineRangeStreamSources
           $startValDef;
           $endValDef;
           $iVarDef;
-          $sizeDef
+          ..${if (needsSize) Seq(sizeDef) else Seq()};
           ..${interruptor.defs}
           ..${sub.beforeBody}
           while (${interruptor.composeTest(test)}) {

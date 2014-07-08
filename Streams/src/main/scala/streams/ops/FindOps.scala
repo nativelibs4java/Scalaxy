@@ -20,6 +20,8 @@ private[streams] trait FindOps extends ClosureStreamOps with Strippers with Opti
 
     override def canInterruptLoop = true
 
+    override def canAlterSize = true
+
     override def isMapLike = false
 
     override def emit(input: StreamInput,

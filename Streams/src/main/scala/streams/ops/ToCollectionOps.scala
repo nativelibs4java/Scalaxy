@@ -22,6 +22,7 @@ private[streams] trait ToCollectionOps
     override def describe = Some(name)
     override def sinkOption = Some(sink)
     override def lambdaCount = 0
+    override def canAlterSize = false
   }
 
   case object ToListOp extends ToCollectionOp("toList", ListBufferSink)

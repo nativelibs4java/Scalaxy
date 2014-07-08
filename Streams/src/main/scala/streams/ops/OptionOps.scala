@@ -27,6 +27,9 @@ private[streams] trait OptionOps
 
     override val sinkOption = Some(sink)
 
+    /// Since this output scalars, the size is brought down to 0.
+    override def canAlterSize = true
+
     override def lambdaCount = 0
   }
 }

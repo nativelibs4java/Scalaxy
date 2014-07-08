@@ -31,6 +31,7 @@ private[streams] trait CoerceOps
     override def describe = Some("withFilter") // Some("withFilter(checkIfRefutable)") //None
     override def lambdaCount = 1
     override def sinkOption = None
+    override def canAlterSize = true
 
     override def transmitOutputNeedsBackwards(paths: Set[TuploidPath]) =
       if (paths.isEmpty)

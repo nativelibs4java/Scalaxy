@@ -25,6 +25,8 @@ private[streams] trait MapOps
 
     override val sinkOption = canBuildFrom.map(CanBuildFromSink(_))
 
+    override def canAlterSize = false
+
     override def emit(input: StreamInput,
                       outputNeeds: OutputNeeds,
                       nextOps: OpsAndOutputNeeds): StreamOutput =

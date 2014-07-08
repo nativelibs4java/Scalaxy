@@ -35,6 +35,7 @@ private[streams] trait StreamComponents extends StreamResults {
   trait StreamOp extends StreamComponent
   {
     def canInterruptLoop: Boolean = false
+    def canAlterSize: Boolean
 
     def transmitOutputNeedsBackwards(paths: Set[TuploidPath]): Set[TuploidPath]
   }
@@ -43,6 +44,7 @@ private[streams] trait StreamComponents extends StreamResults {
   {
     /** If true, this sink is skipped unless it's at the end of the stream, i.e. after all ops. */
     def isFinalOnly: Boolean = false
+    override def canAlterSize = false
     override def sinkOption = Some(this)
 
     def outputNeeds: Set[TuploidPath] = Set(RootTuploidPath)
@@ -67,6 +69,8 @@ private[streams] trait StreamComponents extends StreamResults {
   trait PassThroughStreamOp extends StreamOp {
 
     override def describe: Option[String] = None
+
+    override def canAlterSize = false
 
     override def transmitOutputNeedsBackwards(paths: Set[TuploidPath]) = paths
 

@@ -26,6 +26,8 @@ private[streams] trait FilterOps extends ClosureStreamOps with Strippers
 
     override def isMapLike = false
 
+    override def canAlterSize = true
+
     override def emit(input: StreamInput,
                       outputNeeds: OutputNeeds,
                       nextOps: OpsAndOutputNeeds): StreamOutput =

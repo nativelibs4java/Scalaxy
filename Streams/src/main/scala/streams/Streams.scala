@@ -1,6 +1,8 @@
 package scalaxy.streams
 
-private[streams] trait Streams extends StreamComponents
+private[streams] trait Streams
+    extends StreamComponents
+    with UnusableSinks
 {
   val global: scala.reflect.api.Universe
   import global._
@@ -20,7 +22,8 @@ private[streams] trait Streams extends StreamComponents
         Some(new Stream(source, ops, sink))
 
       case SomeStreamOp(SomeStreamSource(source), ops) =>
-        findSink(source :: ops).map(sink => new Stream(source, ops, sink))
+        findSink(source :: ops).filter(_ != InvalidSink)
+          .map(sink => new Stream(source, ops, sink))
 
       case _ =>
         None
