@@ -16,13 +16,25 @@ package streams
 {
   object impl
   {
+    private[this] val verboseProperty = "scalaxy.streams.verbose"
+    private[this] val veryVerboseProperty = "scalaxy.streams.veryVerbose"
+    private[this] val optimizeProperty = "scalaxy.streams.optimize"
+
     def disabled: Boolean =
       System.getenv("SCALAXY_STREAMS_OPTIMIZE") == "0" ||
-      System.getProperty("scalaxy.streams.optimize") == "false"
+      System.getProperty(optimizeProperty) == "false"
 
     def verbose: Boolean =
       System.getenv("SCALAXY_STREAMS_VERBOSE") == "1" ||
-      System.getProperty("scalaxy.streams.verbose") == "true"
+      System.getProperty(verboseProperty) == "true"
+
+    def verbose_=(v: Boolean) {
+      System.setProperty(verboseProperty, v.toString)
+    }
+
+    def veryVerbose: Boolean =
+      System.getenv("SCALAXY_STREAMS_VERY_VERBOSE") == "1" ||
+      System.getProperty(veryVerboseProperty) == "true"
 
     def recursivelyOptimize[A : c.WeakTypeTag](c: Context)(a: c.Expr[A]): c.Expr[A] = {
       optimize[A](c)(a, recurse = true)
@@ -47,13 +59,16 @@ package streams
                 a.tree,
                 typed(_),
                 c.freshName(_),
-                c.info(_, _, force = true),
+                c.info(_, _, force = verbose),
                 c.error(_, _),
                 recurse,
                 Optimizations.matchStrategyTree(c.universe)(
                   // EmptyTree))))
-                  c.inferImplicitValue(typeOf[OptimizationStrategy])),
-                verbose = verbose)))
+                  c.inferImplicitValue(typeOf[OptimizationStrategy])
+                )
+              )
+            )
+          )
         } catch {
           case ex: Throwable =>
             ex.printStackTrace()

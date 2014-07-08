@@ -54,6 +54,7 @@ object MacroIntegrationTest
 
   // def mkIntOps(n: Int): Seq[String] =
   //   for (in <- ranges ++ intArrays)
+  scalaxy.streams.impl.verbose = true
 
   @Parameters(name = "{0}") def data: java.util.Collection[Array[AnyRef]] = List[(String, CompilerMessages)](
 

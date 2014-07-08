@@ -65,7 +65,10 @@ class StreamsComponent(
               val strategy = scalaxy.streams.optimization.aggressive
 
               if (stream.isWorthOptimizing(strategy)) {
-                reporter.info(tree.pos, Optimizations.optimizedStreamMessage(stream.describe()), force = true)
+                reporter.info(
+                  tree.pos,
+                  Optimizations.optimizedStreamMessage(stream.describe()),
+                  force = impl.verbose)
 
                 try {
                   val result = {
