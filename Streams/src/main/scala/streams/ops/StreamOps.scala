@@ -3,20 +3,56 @@ package scalaxy.streams
 private[streams] trait StreamOps
     extends ArrayOpsOps
     with CoerceOps
+    with CountOps
     with FilterOps
     with FindOps
     with FlatMapOps
     with ForeachOps
-    with OptionOps
     with MapOps
-    with WhileOps
+    with OptionOps
     with ToCollectionOps
+    with WhileOps
     with ZipWithIndexOps
 {
   val global: scala.reflect.api.Universe
   import global._
 
-  object SomeStreamOp extends Extractor[Tree, (Tree, List[StreamOp])]  {
+  object SomeStreamOp extends Extractor[Tree, (Tree, List[StreamOp])] {
+    // val extractors = List[StreamOpExtractor](
+    //   SomeArrayOpsOp,
+    //   SomeCoerceOp,
+    //   SomeCountOp,
+    //   SomeFilterOp,
+    //   SomeFindOp,
+    //   SomeFlatMapOp,
+    //   SomeForeachOp,
+    //   SomeMapOp,
+    //   SomeOptionOp,
+    //   SomeToCollectionOp,
+    //   SomeWhileOp,
+    //   SomeZipWithIndexOp
+    // )
+
+    // object ExtractOps {
+    //   def unapply(extractorAndTree: (StreamOpExtractor, Tree)): Option[(Tree, List[StreamOp])] = {
+    //     val (extractor, tree) = extractorAndTree
+    //     extractor.unapply(tree) collect {
+    //       case (SomeStreamOp(src, ops), op) =>
+    //         (src, ops :+ op)
+
+    //       case (src, op) =>
+    //         (src, List(op))
+    //     }
+    //   }
+    // }
+
+    // def unapply(tree: Tree): Option[(Tree, List[StreamOp])] = {
+    //   extractors.toIterator.map(x => (x, tree)).collectFirst({
+    //     case ExtractOps(src, ops) =>
+    //       (src, ops)
+    //   })
+    // }
+
     def unapply(tree: Tree): Option[(Tree, List[StreamOp])] = Option(tree) collect {
       case SomeForeachOp(SomeStreamOp(src, ops), op) =>
         (src, ops :+ op)
@@ -25,6 +61,9 @@ private[streams] trait StreamOps
         (src, ops :+ op)
 
       case SomeMapOp(SomeStreamOp(src, ops), op) =>
+        (src, ops :+ op)
+
+      case SomeCountOp(SomeStreamOp(src, ops), op) =>
         (src, ops :+ op)
 
       case SomeFlatMapOp(SomeStreamOp(src, ops), op) =>
