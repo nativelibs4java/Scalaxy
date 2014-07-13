@@ -40,7 +40,7 @@ private[streams] trait Streams
 
     // TODO: refine this.
     def isWorthOptimizing(strategy: OptimizationStrategy) = {
-      strategy match {
+      val result = strategy match {
         case scalaxy.streams.optimization.none =>
           false
 
@@ -51,11 +51,16 @@ private[streams] trait Streams
         case scalaxy.streams.optimization.aggressive =>
           lambdaCount >= 1
       }
+      // if (!result) {
+      //   println(s"Not worth optimizing: ${this.describe()}")
+      // }
+      result
     }
 
     def emitStream(fresh: String => TermName,
                    transform: Tree => Tree,
                    typed: Tree => Tree,
+                   untyped: Tree => Tree,
                    sinkNeeds: Set[TuploidPath] = sink.outputNeeds,
                    loopInterruptor: Option[Tree] = None): StreamOutput =
     {
@@ -72,7 +77,8 @@ private[streams] trait Streams
           loopInterruptor = loopInterruptor,
           fresh = fresh,
           transform = transform,
-          typed = typed),
+          typed = typed,
+          untyped = untyped),
         outputNeeds = sourceNeeds,
         nextOps = nextOps)
     }

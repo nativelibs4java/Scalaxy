@@ -69,6 +69,9 @@ object MacroIntegrationTest
     "List(1, 2, 3).flatMap(v => List(v * 2, v * 2 + 1)).count(_ % 2 == 0)"
       -> streamMsg("List.flatMap(List).count"),
 
+    "List(1, 2, 3).flatMap(v => List(v * 2, v * 2 + 1).map(_ + 1)).count(_ % 2 == 0)"
+      -> streamMsg("List.flatMap(List.map).count"),
+
     "Array(1, 2, 3, 4).flatMap(v => Array(v, v * 2).find(_ > 2))"
       -> streamMsg("Array.flatMap(Array.find) -> Array"),
 

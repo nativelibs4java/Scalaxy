@@ -26,5 +26,6 @@ private[streams] trait StreamResults extends TuploidValues {
     loopInterruptor: Option[Tree] = None,
     fresh: String => TermName,
     transform: Tree => Tree,
-    typed: Tree => Tree)
+    typed: Tree => Tree,
+    untyped: Tree => Tree)
 }

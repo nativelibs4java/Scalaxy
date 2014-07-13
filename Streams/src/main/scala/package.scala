@@ -51,6 +51,7 @@ package streams
         try {
           import c.universe._
           def typed(tree: Tree) = c.typecheck(tree.asInstanceOf[c.Tree]).asInstanceOf[Tree]
+          def untyped(tree: Tree) = c.untypecheck(tree.asInstanceOf[c.Tree]).asInstanceOf[Tree]
           c.Expr[A](
             // Untypechecking is needed for some local symbols captured by inner lambdas that fail to find their "proxy"
             // TODO: Investigate (bug can happen in safe mode with no side-effect detection in macro integration tests).
@@ -58,6 +59,7 @@ package streams
               Optimizations.optimize(c.universe)(
                 a.tree,
                 typed(_),
+                untyped(_),
                 c.freshName(_),
                 c.info(_, _, force = verbose),
                 c.error(_, _),

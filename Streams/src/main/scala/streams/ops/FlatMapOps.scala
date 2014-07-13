@@ -69,7 +69,7 @@ private[streams] trait FlatMapOps
                       outputNeeds: OutputNeeds,
                       nextOps: OpsAndOutputNeeds): StreamOutput =
     {
-      import input.{ fresh, transform, typed }
+      import input.{ fresh, transform, typed, untyped }
 
       nestedStream match {
         case Some(stream) =>
@@ -88,7 +88,10 @@ private[streams] trait FlatMapOps
           val outerOps = outerOpsRev.reverse
           val modifiedStream = stream.copy(ops = stream.ops ++ outerOps, sink = outerSink)
 
-          modifiedStream.emitStream(fresh, subTransform, typed, loopInterruptor = input.loopInterruptor).map(replacer)
+          modifiedStream.emitStream(
+            fresh, subTransform,
+            typed, untyped,
+            loopInterruptor = input.loopInterruptor).map(replacer)
 
         case None =>
           val (replacedStatements, outputVars) =
@@ -112,10 +115,11 @@ private[streams] trait FlatMapOps
               outputSize = None,
               index = None),
             nextOps)
+          // It's important to untype sub.body because local vars will now live inside the new lambda.
           sub.copy(body = List(typed(q"""
             ..$replacedStatements;
             ${outputVars.alias.get}.foreach(($itemValDef) => {
-              ..${sub.body};
+              ..${sub.body.map(untyped)};
             })
           """)))
       }

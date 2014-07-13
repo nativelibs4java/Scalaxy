@@ -49,6 +49,14 @@ class StreamsComponent(
             } catch { case ex: Throwable =>
               throw new RuntimeException("Failed to type " + tree, ex)
             }
+            
+          private[this] val untyped: Tree => Tree =
+            (tree: Tree) => try {
+              resetAttrs(tree)
+              // localTyper.untypecheck(tree)
+            } catch { case ex: Throwable =>
+              throw new RuntimeException("Failed to untype " + tree, ex)
+            }
 
           override def transform(tree: Tree) = tree match {
             case SomeStream(stream) =>
@@ -76,7 +84,8 @@ class StreamsComponent(
                       .emitStream(
                         n => TermName(unit.fresh.newName(n)),
                         transform(_),
-                        typed)
+                        typed,
+                        untyped)
                       .compose(localTyper.typed(_))
                   }
                   // println(result)

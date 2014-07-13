@@ -34,6 +34,7 @@ object Optimizations
   def optimize(u: scala.reflect.api.Universe)
               (tree: u.Tree,
                 typeCheck: u.Tree => u.Tree,
+                untypeCheck: u.Tree => u.Tree,
                 fresh: String => String,
                 info: (u.Position, String) => Unit,
                 error: (u.Position, String) => Unit,
@@ -45,6 +46,7 @@ object Optimizations
       import global._
 
       private[this] val typed = typeCheck.asInstanceOf[Tree => Tree]
+      private[this] val untyped = untypeCheck.asInstanceOf[Tree => Tree]
 
       val result = new Transformer {
         override def transform(tree: Tree) = tree match {
@@ -56,7 +58,8 @@ object Optimizations
               stream.emitStream(
                 n => TermName(fresh(n)),
                 if (recurse) transform(_) else tree => tree,
-                typed)
+                typed,
+                untyped)
               .compose(typed)
             // println(result)
 
