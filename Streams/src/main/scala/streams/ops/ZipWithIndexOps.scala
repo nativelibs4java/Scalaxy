@@ -9,8 +9,8 @@ private[streams] trait ZipWithIndexOps
   val global: scala.reflect.api.Universe
   import global._
 
-  object SomeZipWithIndexOp {
-    def unapply(tree: Tree): Option[(Tree, ZipWithIndexOp)] = Option(tree) collect {
+  object SomeZipWithIndexOp extends StreamOpExtractor {
+    override def unapply(tree: Tree) = Option(tree) collect {
       case q"$target.zipWithIndex[${_}, ${_}]($canBuildFrom)" =>
         (target, ZipWithIndexOp(canBuildFrom))
     }

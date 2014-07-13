@@ -88,6 +88,8 @@ private[streams] trait StreamComponents extends StreamResults {
   val SomeStreamOp: Extractor[Tree, (Tree, List[StreamOp])]
   val SomeStreamSink: Extractor[Tree, (Tree, StreamSink)]
 
+  type StreamOpExtractor = Extractor[Tree, (Tree, StreamOp)]
+
   private[streams] def printOps(ops: List[StreamOp]) {
     println(s"ops = " + ops.map(_.getClass.getSimpleName).mkString("\n\t"))
     // println(s"ops = " + ops.mkString("\n\t"))

@@ -18,80 +18,80 @@ private[streams] trait StreamOps
   import global._
 
   object SomeStreamOp extends Extractor[Tree, (Tree, List[StreamOp])] {
-    // val extractors = List[StreamOpExtractor](
-    //   SomeArrayOpsOp,
-    //   SomeCoerceOp,
-    //   SomeCountOp,
-    //   SomeFilterOp,
-    //   SomeFindOp,
-    //   SomeFlatMapOp,
-    //   SomeForeachOp,
-    //   SomeMapOp,
-    //   SomeOptionOp,
-    //   SomeToCollectionOp,
-    //   SomeWhileOp,
-    //   SomeZipWithIndexOp
-    // )
+    val extractors = List[StreamOpExtractor](
+      SomeArrayOpsOp,
+      SomeCoerceOp,
+      SomeCountOp,
+      SomeFilterOp,
+      SomeFindOp,
+      SomeFlatMapOp,
+      SomeForeachOp,
+      SomeMapOp,
+      SomeOptionOp,
+      SomeToCollectionOp,
+      SomeWhileOp,
+      SomeZipWithIndexOp
+    )
 
-    // object ExtractOps {
-    //   def unapply(extractorAndTree: (StreamOpExtractor, Tree)): Option[(Tree, List[StreamOp])] = {
-    //     val (extractor, tree) = extractorAndTree
-    //     extractor.unapply(tree) collect {
-    //       case (SomeStreamOp(src, ops), op) =>
-    //         (src, ops :+ op)
+    object ExtractOps {
+      def unapply(extractorAndTree: (StreamOpExtractor, Tree)): Option[(Tree, List[StreamOp])] = {
+        val (extractor, tree) = extractorAndTree
+        extractor.unapply(tree) collect {
+          case (SomeStreamOp(src, ops), op) =>
+            (src, ops :+ op)
 
-    //       case (src, op) =>
-    //         (src, List(op))
-    //     }
-    //   }
-    // }
-
-    // def unapply(tree: Tree): Option[(Tree, List[StreamOp])] = {
-    //   extractors.toIterator.map(x => (x, tree)).collectFirst({
-    //     case ExtractOps(src, ops) =>
-    //       (src, ops)
-    //   })
-    // }
-
-    def unapply(tree: Tree): Option[(Tree, List[StreamOp])] = Option(tree) collect {
-      case SomeForeachOp(SomeStreamOp(src, ops), op) =>
-        (src, ops :+ op)
-
-      case SomeCoerceOp(SomeStreamOp(src, ops), op) =>
-        (src, ops :+ op)
-
-      case SomeMapOp(SomeStreamOp(src, ops), op) =>
-        (src, ops :+ op)
-
-      case SomeCountOp(SomeStreamOp(src, ops), op) =>
-        (src, ops :+ op)
-
-      case SomeFlatMapOp(SomeStreamOp(src, ops), op) =>
-        (src, ops :+ op)
-
-      case SomeFindOp(SomeStreamOp(src, ops), op) =>
-        (src, ops :+ op)
-
-      case SomeWhileOp(SomeStreamOp(src, ops), op) =>
-        (src, ops :+ op)
-
-      case SomeOptionOp(SomeStreamOp(src, ops), op) =>
-        (src, ops :+ op)
-
-      case SomeFilterOp(SomeStreamOp(src, ops), op) =>
-        (src, ops :+ op)
-
-      case SomeZipWithIndexOp(SomeStreamOp(src, ops), op) =>
-        (src, ops :+ op)
-
-      case SomeArrayOpsOp(SomeStreamOp(src, ops), op) =>
-        (src, ops :+ op)
-
-      case SomeToCollectionOp(SomeStreamOp(src, ops), op) =>
-        (src, ops :+ op)
-
-      case _ =>
-        (tree, Nil)
+          case (src, op) =>
+            (src, List(op))
+        }
+      }
     }
+
+    def unapply(tree: Tree): Option[(Tree, List[StreamOp])] = {
+      extractors.toIterator.map(x => (x, tree)).collectFirst({
+        case ExtractOps(src, ops) =>
+          (src, ops)
+      })
+    }
+
+    // def unapply(tree: Tree): Option[(Tree, List[StreamOp])] = Option(tree) collect {
+    //   case SomeForeachOp(SomeStreamOp(src, ops), op) =>
+    //     (src, ops :+ op)
+
+    //   case SomeCoerceOp(SomeStreamOp(src, ops), op) =>
+    //     (src, ops :+ op)
+
+    //   case SomeMapOp(SomeStreamOp(src, ops), op) =>
+    //     (src, ops :+ op)
+
+    //   case SomeCountOp(SomeStreamOp(src, ops), op) =>
+    //     (src, ops :+ op)
+
+    //   case SomeFlatMapOp(SomeStreamOp(src, ops), op) =>
+    //     (src, ops :+ op)
+
+    //   case SomeFindOp(SomeStreamOp(src, ops), op) =>
+    //     (src, ops :+ op)
+
+    //   case SomeWhileOp(SomeStreamOp(src, ops), op) =>
+    //     (src, ops :+ op)
+
+    //   case SomeOptionOp(SomeStreamOp(src, ops), op) =>
+    //     (src, ops :+ op)
+
+    //   case SomeFilterOp(SomeStreamOp(src, ops), op) =>
+    //     (src, ops :+ op)
+
+    //   case SomeZipWithIndexOp(SomeStreamOp(src, ops), op) =>
+    //     (src, ops :+ op)
+
+    //   case SomeArrayOpsOp(SomeStreamOp(src, ops), op) =>
+    //     (src, ops :+ op)
+
+    //   case SomeToCollectionOp(SomeStreamOp(src, ops), op) =>
+    //     (src, ops :+ op)
+
+    //   case _ =>
+    //     (tree, Nil)
+    // }
   }
 }

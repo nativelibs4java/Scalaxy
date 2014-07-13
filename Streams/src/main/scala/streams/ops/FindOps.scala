@@ -5,8 +5,8 @@ private[streams] trait FindOps extends ClosureStreamOps with Strippers with Opti
   val global: scala.reflect.api.Universe
   import global._
 
-  object SomeFindOp {
-    def unapply(tree: Tree): Option[(Tree, FindOp)] = Option(tree) collect {
+  object SomeFindOp extends StreamOpExtractor {
+    override def unapply(tree: Tree) = Option(tree) collect {
       case q"$target.find(${Strip(Function(List(param), body))})" =>
         (target, FindOp(param, body))
     }

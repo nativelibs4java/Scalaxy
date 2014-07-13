@@ -5,8 +5,8 @@ private[streams] trait FilterOps extends ClosureStreamOps with Strippers
   val global: scala.reflect.api.Universe
   import global._
 
-  object SomeFilterOp {
-    def unapply(tree: Tree): Option[(Tree, FilterOp)] = Option(tree) collect {
+  object SomeFilterOp extends StreamOpExtractor {
+    override def unapply(tree: Tree)= Option(tree) collect {
       case q"$target.filter(${Strip(Function(List(param), body))})" =>
         (target, FilterOp(param, body, false, "filter"))
 

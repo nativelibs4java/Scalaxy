@@ -9,14 +9,14 @@ private[streams] trait WhileOps
   val global: scala.reflect.api.Universe
   import global._
 
-  object SomeWhileOp {
+  object SomeWhileOp extends StreamOpExtractor {
     def sinkOptionForReturnType(tpe: Type) =
       if (tpe <:< typeOf[Range])
         Some(InvalidSink)
       else
         None
 
-    def unapply(tree: Tree): Option[(Tree, WhileOp)] = Option(tree) collect {
+    override def unapply(tree: Tree) = Option(tree) collect {
       case q"$target.takeWhile(${Strip(Function(List(param), body))})" =>
         (target, TakeWhileOp(param, body, sinkOptionForReturnType(tree.tpe)))
 

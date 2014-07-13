@@ -7,8 +7,8 @@ private[streams] trait CoerceOps
   val global: scala.reflect.api.Universe
   import global._
 
-  object SomeCoerceOp {
-    def unapply(tree: Tree): Option[(Tree, StreamOp)] = tree match {
+  object SomeCoerceOp  extends StreamOpExtractor {
+    override def unapply(tree: Tree) = tree match {
       case q"$target.withFilter(${Strip(Function(List(param), body))})" =>
         body match {
           case q"""

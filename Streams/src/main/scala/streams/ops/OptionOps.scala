@@ -6,8 +6,8 @@ private[streams] trait OptionOps
   val global: scala.reflect.api.Universe
   import global._
 
-  object SomeOptionOp {
-    def unapply(tree: Tree): Option[(Tree, OptionOp)] = Option(tree) collect {
+  object SomeOptionOp extends StreamOpExtractor {
+    override def unapply(tree: Tree) = Option(tree) collect {
       case q"$target.get" =>
         (target, OptionOp("get", OptionGetOrElseSink(q"""
           throw new NoSuchElementException("None.get")

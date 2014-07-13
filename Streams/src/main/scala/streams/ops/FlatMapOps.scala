@@ -24,8 +24,8 @@ private[streams] trait FlatMapOps
     case Option2Iterable(value) => value
     case value => value
   }
-  object SomeFlatMapOp {
-    def unapply(tree: Tree): Option[(Tree, StreamOp)] = Option(tree) collect {
+  object SomeFlatMapOp extends StreamOpExtractor {
+    override def unapply(tree: Tree) = Option(tree) collect {
       case q"$target.flatMap[$tpt, ${_}](${fun @ Strip(Function(List(param), body))})($cbf)" =>
         (target, FlatMapOp(tpt.tpe, param, stripOption2Iterable(body), Some(cbf)))
 

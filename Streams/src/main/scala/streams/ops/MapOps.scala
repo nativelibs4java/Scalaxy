@@ -7,8 +7,8 @@ private[streams] trait MapOps
   val global: scala.reflect.api.Universe
   import global._
 
-  object SomeMapOp {
-    def unapply(tree: Tree): Option[(Tree, MapOp)] = Option(tree) collect {
+  object SomeMapOp extends StreamOpExtractor {
+    override def unapply(tree: Tree) = Option(tree) collect {
       case q"$target.map[${_}, ${_}](${Strip(Function(List(param), body))})($canBuildFrom)" =>
         (target, MapOp(param, body, canBuildFrom = Some(canBuildFrom)))
 

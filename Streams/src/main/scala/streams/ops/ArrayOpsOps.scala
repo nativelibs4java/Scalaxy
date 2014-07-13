@@ -15,8 +15,8 @@ private[streams] trait ArrayOpsOps extends StreamComponents with ArrayOpsSinks {
     }
   }
 
-  object SomeArrayOpsOp {
-    def unapply(tree: Tree): Option[(Tree, ArrayOpsOp.type)] = Option(tree) collect {
+  object SomeArrayOpsOp extends StreamOpExtractor {
+    override def unapply(tree: Tree) = Option(tree) collect {
       case q"scala.this.Predef.${AnyValArrayOpsName()}($array)" => (array, ArrayOpsOp)
       case q"scala.this.Predef.refArrayOps[${_}]($array)" => (array, ArrayOpsOp)
     }

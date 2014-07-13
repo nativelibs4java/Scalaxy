@@ -9,8 +9,8 @@ private[streams] trait ToCollectionOps
   val global: scala.reflect.api.Universe
   import global._
 
-  object SomeToCollectionOp {
-    def unapply(tree: Tree): Option[(Tree, ToCollectionOp)] = Option(tree) collect {
+  object SomeToCollectionOp extends StreamOpExtractor {
+    override def unapply(tree: Tree) = Option(tree) collect {
       case q"$target.toList" =>
         (target, ToListOp)
 

@@ -7,8 +7,8 @@ private[streams] trait ForeachOps
   val global: scala.reflect.api.Universe
   import global._
 
-  object SomeForeachOp {
-    def unapply(tree: Tree): Option[(Tree, ForeachOp)] = Option(tree) collect {
+  object SomeForeachOp extends StreamOpExtractor {
+    override def unapply(tree: Tree) = Option(tree) collect {
       case q"$target.foreach[${_}](${Strip(Function(List(param), body))})" =>
         (target, ForeachOp(param, body))
     }
@@ -18,7 +18,7 @@ private[streams] trait ForeachOps
   {
     override def describe = Some("foreach")
 
-    override def sinkOption = Some(UnitSink)
+    override def sinkOption = Some(ScalarSink)
 
     /// Technically, the output size of the Unit output is zero, so it's altered.
     override def canAlterSize = true
@@ -27,7 +27,7 @@ private[streams] trait ForeachOps
                       outputNeeds: OutputNeeds,
                       nextOps: OpsAndOutputNeeds): StreamOutput =
     {
-      val List((UnitSink, _)) = nextOps
+      val List((ScalarSink, _)) = nextOps
 
       val (replacedStatements, outputVars) =
         transformationClosure.replaceClosureBody(input, outputNeeds)
