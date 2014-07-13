@@ -25,6 +25,10 @@ private[streams] trait Streams
         findSink(source :: ops).filter(_ != InvalidSink)
           .map(sink => new Stream(source, ops, sink))
 
+      case SomeStreamSource(source) =>
+        findSink(List(source)).filter(_ != InvalidSink)
+          .map(sink => new Stream(source, Nil, sink))
+
       case _ =>
         None
     }
