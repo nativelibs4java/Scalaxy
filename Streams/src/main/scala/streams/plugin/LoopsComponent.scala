@@ -47,7 +47,7 @@ class StreamsComponent(
             (tree: Tree) => try {
               localTyper.typed(tree)
             } catch { case ex: Throwable =>
-              throw new RuntimeException("Failed to type " + tree, ex)
+              throw new RuntimeException("Failed to type " + tree + "\n(" + ex + ")", ex)
             }
             
           private[this] val untyped: Tree => Tree =

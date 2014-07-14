@@ -27,7 +27,8 @@ private[streams] trait OptionSinks extends StreamComponents {
           nonEmptyDef,
           assignment,
           result), _) = typed(q"""
-        private[this] var $value: $tpe = ${Literal(Constant(defaultValue(input.vars.tpe)))};
+        private[this] var $value: $tpe =
+          ${Literal(Constant(defaultValue(input.vars.tpe)))};
         private[this] var $nonEmpty = false;
         {
           $value = ${input.vars.alias.get};
