@@ -30,7 +30,7 @@ object Scalaxy extends Build {
     .setPreference(PreserveDanglingCloseParenthesis, false)
 
   lazy val scalaSettings = Seq(
-    scalaVersion := "2.11.1",
+    scalaVersion := "2.11.2",
     crossScalaVersions := Seq("2.10.4")
   )
 
@@ -370,20 +370,20 @@ object Scalaxy extends Build {
 
   lazy val loops =
     Project(id = "scalaxy-loops", base = file("Loops"), settings = reflectSettings ++ Seq(
-      version := "0.1.2"
+      // version := "0.1.1"
     ))
     .dependsOn(streams)
 
   lazy val loops210 =
     Project(id = "scalaxy-loops-210", base = file("Loops-2.10"), settings = reflectSettings ++ Seq(
-      version := "0.1.2",
+      // version := "0.1.1",
       name := "scalaxy-loops",
       scalaVersion := "2.10.4"
     ))
 
   lazy val streams =
     Project(id = "scalaxy-streams", base = file("Streams"), settings = reflectSettings ++ Seq(
-      version := "0.2.2",
+      // version := "0.2.1",
       // addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.0-SNAPSHOT" cross CrossVersion.full),
       watchSources <++= baseDirectory map { path => (path / "examples" ** "*.scala").get }
     ))
