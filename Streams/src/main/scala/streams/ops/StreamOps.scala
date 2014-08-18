@@ -3,6 +3,7 @@ package scalaxy.streams
 private[streams] trait StreamOps
     extends ArrayOpsOps
     with CoerceOps
+    with CollectOps
     with CountOps
     with FilterOps
     with FindOps
@@ -21,6 +22,8 @@ private[streams] trait StreamOps
     val extractors = List[StreamOpExtractor](
       SomeArrayOpsOp,
       SomeCoerceOp,
+      // TODO: fix intractable typing issues with case classes:
+      //   SomeCollectOp,
       SomeCountOp,
       SomeFilterOp,
       SomeFindOp,
@@ -64,6 +67,9 @@ private[streams] trait StreamOps
     //     (src, ops :+ op)
 
     //   case SomeCountOp(SomeStreamOp(src, ops), op) =>
+    //     (src, ops :+ op)
+
+    //   case SomeCollectOp(SomeStreamOp(src, ops), op) =>
     //     (src, ops :+ op)
 
     //   case SomeFlatMapOp(SomeStreamOp(src, ops), op) =>
