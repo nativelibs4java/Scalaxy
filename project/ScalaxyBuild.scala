@@ -103,8 +103,9 @@ object Scalaxy extends Build {
       //scalacOptions in Test ++= Seq("-Xprint:typer"),
       //fork in Test := true,
       fork := true,
-      parallelExecution in Test := false,
+      // parallelExecution in Test := false,
       libraryDependencies ++= Seq(
+        // "org.scalatest" % "scalatest" % "2.2.0" % "test",
         "junit" % "junit" % "4.11" % "test",
         "com.novocode" % "junit-interface" % "0.10" % "test"
       )
