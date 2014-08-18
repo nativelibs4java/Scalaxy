@@ -41,6 +41,16 @@ object MacroIntegrationTest
     // """{ object Foo { def doit(args: Array[String]) = args.length } ; Foo.doit(Array("1")) }"""
     //   -> CompilerMessages(),
 
+    // "(1 to 10).collect({ case x if x < 5 => x + 1 })"
+    //   -> streamMsg("Range.collect -> IndexedSeq")
+
+    """
+      case class Foo(i: Int)
+      val arr = new Array[Foo](5);
+      for (Foo(i) <- arr) yield i
+    """
+      -> streamMsg("Array.withFilter.map -> Array"),
+
     /// Range.takeWhile and .dropWhile return a Range, which doesn't fit nicely with WhileOps.
     "(1 to 10).takeWhile(_ < 5)" -> CompilerMessages(),
     "(1 to 10).dropWhile(_ < 5)" -> CompilerMessages(),

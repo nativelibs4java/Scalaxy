@@ -31,6 +31,14 @@ private[streams] trait Utils {
       None
     }
 
+  def tryOrNone[T](v: => Option[T]): Option[T] =
+    try {
+      v
+    } catch { case ex: Throwable =>
+      ex.printStackTrace
+      None
+    }
+
   private lazy val defaultValues = Map[Type, Any](
     typeOf[Int] -> 0,
     typeOf[Boolean] -> false,

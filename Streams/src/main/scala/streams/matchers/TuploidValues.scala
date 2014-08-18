@@ -247,14 +247,14 @@ private[streams] trait TuploidValues extends Utils
         })(breakOut)
 
       require(caseDef.tpe != null && caseDef.tpe != NoType)
-      trySome {
-        caseDef match {
-          case cq"($tuple(..$binds)) => $body" =>
+      tryOrNone {
+        Option(caseDef) collect {
+          case cq"($tuple(..$binds)) => $body" if TupleType.unapply(caseDef.pat.tpe) =>
             TupleValue(
               tpe = caseDef.pat.tpe,
               values = sub(binds), alias = None) -> body
 
-          case cq"($alias @ $tuple(..$binds)) => $body" =>
+          case cq"($alias @ $tuple(..$binds)) => $body" if TupleType.unapply(caseDef.pat.tpe) =>
             TupleValue(
               tpe = caseDef.pat.tpe,
               values = sub(binds), alias = caseDef.pat.symbol.asOption) -> body

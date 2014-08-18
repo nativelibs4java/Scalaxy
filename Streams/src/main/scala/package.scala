@@ -55,7 +55,7 @@ package streams
           c.Expr[A](
             // Untypechecking is needed for some local symbols captured by inner lambdas that fail to find their "proxy"
             // TODO: Investigate (bug can happen in safe mode with no side-effect detection in macro integration tests).
-            c.untypecheck(
+            // c.untypecheck(
               Optimizations.optimize(c.universe)(
                 a.tree,
                 typed(_),
@@ -69,7 +69,7 @@ package streams
                   c.inferImplicitValue(typeOf[OptimizationStrategy])
                 )
               )
-            )
+            // )
           )
         } catch {
           case ex: Throwable =>
