@@ -98,7 +98,6 @@ private[streams] trait InlineRangeStreamSources
           sizeRef,
           iValRef,
           iVarRef,
-          endValRef,
           test,
           iVarIncr), _) = typed(q"""
         private[this] val $startVal: $tpe = ${transform(start)};
@@ -112,7 +111,6 @@ private[streams] trait InlineRangeStreamSources
         $size;
         $iVal;
         $iVar;
-        $endVal;
         $iVar $testOperator $endVal;
         $iVar = $iVar + $by;
         ""
