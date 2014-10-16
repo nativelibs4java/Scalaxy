@@ -133,6 +133,9 @@ trait StreamComponentsTestBase extends Utils
         assertArrayEquals(message, expected.map(_.toString: AnyRef), actual.map(_.toString: AnyRef))
       case (expected, actual) =>
         assertEquals(message, expected, actual)
+        assertEquals(message + " (different classes)",
+          Option(expected).map(_.getClass).orNull,
+          Option(actual).map(_.getClass).orNull)
     }
   }
 }
