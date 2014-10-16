@@ -74,7 +74,7 @@ package streams
                     Optimizations.optimizedStreamMessage(stream.describe()),
                     force = impl.verbose)
 
-                  def untyped(tree: Tree) = ???
+                  def untyped(tree: Tree): Tree = cast(c.untypecheck(cast(tree)))
 
                   try {
                     stream
