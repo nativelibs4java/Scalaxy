@@ -46,6 +46,7 @@ package streams
       optimize[A](c)(a, recurse = false)
     }
 
+    // TODO(ochafik): Remove this!
     private[this] def cast[A](a: Any): A = a.asInstanceOf[A]
 
     private[streams] def optimize[A : c.WeakTypeTag](c: Context)(a: c.Expr[A], recurse: Boolean): c.Expr[A] = {
@@ -63,6 +64,7 @@ package streams
             c.internal.typingTransform(cast(a.tree))((tree_, api) => {
               val tree: Tree = cast(tree_)
 
+              // TODO(ochafik): Remove these warts (needed because of dependent types mess).
               def apiDefault(tree: Tree): Tree = cast(api.default(cast(tree)))
               def apiRecur(tree: Tree): Tree = cast(api.recur(cast(tree)))
               def apiTypecheck(tree: Tree): Tree = cast(api.typecheck(cast(tree)))

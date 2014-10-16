@@ -311,6 +311,10 @@ If you want to build / test / hack on this project:
         # Print internal trees before and after Scalaxy/Streams
         SCALAXY_STREAMS_OPTIMIZE=1 sbt 'set scalacOptions ++= Seq("-Xprint:typer", "-Xprint:scalaxy-streams")' clean compile
 
+* Want to test performance?
+
+        SCALAXY_TEST_PERF=1 sbt "project scalaxy-streams" "; clean ; ~test"
+
 Found a bug? Please [report it](https://github.com/ochafik/Scalaxy/issues/new) (your help will be much appreciated!).
 
 # Size optimizations
