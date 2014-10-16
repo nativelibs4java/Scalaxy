@@ -12,7 +12,9 @@ private[streams] trait StreamResults extends TuploidValues {
       body: List[Tree] = Nil,
       ending: List[Tree] = Nil)
   {
-    def compose(typed: Tree => Tree) = typed(q"..${prelude ++ beforeBody ++ body ++ ending}")
+    def compose(typed: Tree => Tree) =
+      typed(q"..${prelude ++ beforeBody ++ body ++ ending}")
+
     def map(f: Tree => Tree): StreamOutput =
       copy(prelude = prelude.map(f), body = body.map(f), ending = ending.map(f))
   }

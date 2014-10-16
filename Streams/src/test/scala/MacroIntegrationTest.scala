@@ -18,8 +18,11 @@ class MacroIntegrationTest(source: String, expectedMessages: CompilerMessages) e
     def filterWarnings(warnings: List[String]) =
       warnings.filterNot(_ == "a pure expression does nothing in statement position; you may be omitting necessary parentheses")
 
-    val actualMessages = assertMacroCompilesToSameValue(
-      source, strategy = scalaxy.streams.optimization.aggressive)
+    val actualMessages =
+      assertMacroCompilesToSameValue(
+        source,
+        strategy = scalaxy.streams.optimization.aggressive)
+
     assertEquals(expectedMessages.infos, actualMessages.infos)
     assertEquals(filterWarnings(expectedMessages.warnings).toSet,
       filterWarnings(actualMessages.warnings).toSet)
@@ -29,9 +32,9 @@ class MacroIntegrationTest(source: String, expectedMessages: CompilerMessages) e
 
 object MacroIntegrationTest
 {
-  def streamMsg(streamDescription: String) =
+  def streamMsg(streamDescriptions: String*) =
     CompilerMessages(
-      infos = List(Optimizations.optimizedStreamMessage(streamDescription)))
+      infos = streamDescriptions.map(Optimizations.optimizedStreamMessage(_)).toList)
 
   scalaxy.streams.impl.verbose = true
 
@@ -43,10 +46,13 @@ object MacroIntegrationTest
     // "(1 to 10).collect({ case x if x < 5 => x + 1 })"
     //   -> streamMsg("Range.collect -> IndexedSeq")
 
-    "(0 to 10 by 2).exists(_ % 2 == 0)" -> streamMsg("Range.exists"),
-    "(0 to 10 by 2).forall(_ % 2 == 0)" -> streamMsg("Range.forall"),
-    "(1 to 10 by 2).exists(_ % 2 == 0)" -> streamMsg("Range.exists"),
-    "(1 to 10 by 2).forall(_ % 2 == 0)" -> streamMsg("Range.forall"),
+    // TODO investigate performance:
+    // col.filter(v => (v % 2) == 0).map(_ * 2).toArray.toSeq
+    // (0 until n).dropWhile(x => x < n / 2).toSeq
+    // (0 until n).filter(v => (v % 2) == 0).map(_ * 2).toArray.toSeq
+
+    "(0 to 10).filter(v => (v % 2) == 0).map(_ * 2).toArray.toSeq"
+      -> streamMsg("Range.filter.map.toArray -> ArrayOps"),
 
     """
       class Foo {
@@ -108,6 +114,11 @@ object MacroIntegrationTest
 
     "Array(1, 2, 3, 4).flatMap(v => Array(v, v * 2).find(_ > 2))"
       -> streamMsg("Array.flatMap(Array.find) -> Array"),
+
+    "(0 to 10 by 2).exists(_ % 2 == 0)" -> streamMsg("Range.exists"),
+    "(0 to 10 by 2).forall(_ % 2 == 0)" -> streamMsg("Range.forall"),
+    "(1 to 10 by 2).exists(_ % 2 == 0)" -> streamMsg("Range.exists"),
+    "(1 to 10 by 2).forall(_ % 2 == 0)" -> streamMsg("Range.forall"),
 
     "Array(1, 2, 3, 4).flatMap(v => List(v, v * 2).map(_ + 1)).find(_ > 2)"
       -> streamMsg("Array.flatMap(List.map).find -> Option"),
@@ -287,7 +298,13 @@ object MacroIntegrationTest
           (() => (i * 2))
       ).map(_())
     """
-      -> streamMsg("Range.map.map -> IndexedSeq")
+      -> streamMsg("Range.map.map -> IndexedSeq"),
+
+    "var tot = 0; for (i <- 0 until 10; x = new AnyRef) { tot += i }; tot"
+      -> streamMsg("Range.map.foreach"),
+
+    "var tot = 0; for (i <- 0 until 10; x = 8) { tot += i }; tot"
+      -> streamMsg("Range.map.foreach")
 
   ).map({ case (src, msgs) => Array[AnyRef](src, msgs) })
 }

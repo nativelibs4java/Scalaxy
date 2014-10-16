@@ -66,9 +66,9 @@ trait CollectionPerformanceTests extends PerformanceTests {
 
   @Test def simpleFilter = testFilter(col)
   @Test def simpleFilterNot = testFilterNot(col)
-  @Ignore @Test def simpleCount = testCount(col)
-  @Ignore @Test def simpleExists = testExists(col)
-  @Ignore @Test def simpleForall = testForall(col)
+  @Test def simpleCount = testCount(col)
+  @Test def simpleExists = testExists(col)
+  @Test def simpleForall = testForall(col)
   @Test def simpleTakeWhile = testTakeWhile(col)
   @Test def simpleDropWhile = testDropWhile(col)
   @Test def simpleForeach = testForeach(col)
