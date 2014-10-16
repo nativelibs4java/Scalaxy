@@ -7,6 +7,7 @@ private[streams] trait StreamOps
     with CountOps
     with FilterOps
     with FindOps
+    with ExistsOps
     with FlatMapOps
     with ForeachOps
     with MapOps
@@ -25,6 +26,7 @@ private[streams] trait StreamOps
       // TODO: fix intractable typing issues with case classes:
       //   SomeCollectOp,
       SomeCountOp,
+      SomeExistsOp,
       SomeFilterOp,
       SomeFindOp,
       SomeFlatMapOp,

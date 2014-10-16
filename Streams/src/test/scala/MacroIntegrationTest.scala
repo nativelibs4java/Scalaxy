@@ -10,7 +10,6 @@ import org.junit.runners.Parameterized.Parameters
 
 import scala.collection.JavaConversions._
 
-// @RunWith(classOf[Parameterized])
 @RunWith(classOf[Parallelized])
 class MacroIntegrationTest(source: String, expectedMessages: CompilerMessages) extends StreamComponentsTestBase with StreamTransforms {
   @Test def test = {
@@ -43,6 +42,31 @@ object MacroIntegrationTest
 
     // "(1 to 10).collect({ case x if x < 5 => x + 1 })"
     //   -> streamMsg("Range.collect -> IndexedSeq")
+
+    "(0 to 10 by 2).exists(_ % 2 == 0)" -> streamMsg("Range.exists"),
+    "(0 to 10 by 2).forall(_ % 2 == 0)" -> streamMsg("Range.forall"),
+    "(1 to 10 by 2).exists(_ % 2 == 0)" -> streamMsg("Range.exists"),
+    "(1 to 10 by 2).forall(_ % 2 == 0)" -> streamMsg("Range.forall"),
+
+    """
+      class Foo {
+        var col = for (i <- 0 to 10 by 2) yield (() => (i * 3))
+        val res = col.map(_())
+      }
+      new Foo().res
+    """
+      -> streamMsg("Range.map -> IndexedSeq"),
+
+    """
+      class Foo {
+        val res = (for (i <- 0 to 10 by 2) yield (() => (i * 3))).map(_())
+      }
+      new Foo().res
+    """
+      -> streamMsg("Range.map.map -> IndexedSeq"),
+
+    "def foo = (1 to 10).map(i => () => i * 3).map(_()); foo"
+       -> streamMsg("Range.map.map -> IndexedSeq"),
 
     """
       case class Foo(i: Int)
