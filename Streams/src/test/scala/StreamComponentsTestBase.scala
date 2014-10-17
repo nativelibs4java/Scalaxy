@@ -16,7 +16,7 @@ case class CompilerMessages(
 trait StreamComponentsTestBase extends Utils
 {
   val global = scala.reflect.runtime.universe
-  val commonOptions = "-usejavacp -optimise -Yclosure-elim -Yinline "
+  val commonOptions = "-usejavacp -optimise -Yclosure-elim -Yinline "//-Ybackend:GenBCode"
   import scala.reflect.runtime.currentMirror
 
   object S {
@@ -47,6 +47,7 @@ trait StreamComponentsTestBase extends Utils
           case WARNING => warningsBuilder
           case ERROR => errorsBuilder
         }
+
         builder += info.msg
       }
       override def interactive() {}
@@ -70,19 +71,8 @@ trait StreamComponentsTestBase extends Utils
     }
   }
 
-  def getStrategyName(strategy: OptimizationStrategy) = strategy match {
-    case scalaxy.streams.optimization.none =>
-      "scalaxy.streams.optimization.none"
-
-    case scalaxy.streams.optimization.safe =>
-      "scalaxy.streams.optimization.safe"
-
-    case scalaxy.streams.optimization.aggressive =>
-      "scalaxy.streams.optimization.aggressive"
-  }
-
   def optimizedCode(source: String, strategy: OptimizationStrategy): String = {
-    val src = s"{ import ${getStrategyName(strategy)} ; scalaxy.streams.optimize { $source } }"
+    val src = s"{ import ${strategy.fullName} ; scalaxy.streams.optimize { $source } }"
     // println(src)
     src
   }

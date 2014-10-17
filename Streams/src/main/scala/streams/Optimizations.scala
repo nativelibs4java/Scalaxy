@@ -28,6 +28,6 @@ object Optimizations
     //   println("Unknown optimization strategy: " + tree.symbol)
     //   scalaxy.streams.optimization.default
     // }
-    scalaxy.streams.optimization.default
+    scalaxy.streams.optimization.global
   }
 }

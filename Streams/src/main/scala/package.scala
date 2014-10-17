@@ -6,9 +6,11 @@ import scala.language.experimental.macros
 import scala.language.implicitConversions
 
 import scala.reflect.NameTransformer
-import scala.reflect.macros.whitebox.Context
+import scala.reflect.macros.blackbox.Context
 
 import scala.reflect.runtime.{ universe => ru }
+
+import scalaxy.streams.HacksAndWorkarounds.{cast, removeMacroSymbols}
 
 package object streams {
   def optimize[A](a: A): A = macro impl.recursivelyOptimize[A]
@@ -46,9 +48,6 @@ package streams
       optimize[A](c)(a, recurse = false)
     }
 
-    // TODO(ochafik): Remove this!
-    private[this] def cast[A](a: Any): A = a.asInstanceOf[A]
-
     private[streams] def optimize[A : c.WeakTypeTag](c: Context)(a: c.Expr[A], recurse: Boolean): c.Expr[A] = {
       if (disabled) {
         a
@@ -79,13 +78,18 @@ package streams
                   def untyped(tree: Tree): Tree = cast(c.untypecheck(cast(tree)))
 
                   try {
-                    stream
+                    val res = stream
                       .emitStream(
                         n => TermName(c.freshName(n)),
                         apiRecur(_),
+//                        t => apiRecur(apiTypecheck(t)),//
                         apiTypecheck(_),
                         untyped)
                       .compose(apiTypecheck(_))
+
+//                    println(s"RESULT = $res")
+//                    HacksAndWorkarounds.removeMacroSymbols(c)(cast(res))
+                    res
                   } catch {
                     case ex: Throwable =>
                       ex.printStackTrace()

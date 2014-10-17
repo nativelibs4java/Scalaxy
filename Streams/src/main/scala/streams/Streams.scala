@@ -45,8 +45,6 @@ private[streams] trait Streams
     // TODO: refine this.
     def isWorthOptimizing(strategy: OptimizationStrategy) = {
       val result = strategy match {
-        case scalaxy.streams.optimization.none =>
-          false
 
         case scalaxy.streams.optimization.safe =>
           // TODO: side-effects analysis to allow more cases where lambdaCount > 1
@@ -54,6 +52,13 @@ private[streams] trait Streams
 
         case scalaxy.streams.optimization.aggressive =>
           lambdaCount >= 1
+
+        case scalaxy.streams.optimization.eager =>
+          true
+
+        case _ =>
+          assert(strategy == scalaxy.streams.optimization.none)
+          false
       }
       // if (!result) {
       //   println(s"Not worth optimizing: ${this.describe()}")
