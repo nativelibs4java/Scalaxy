@@ -262,6 +262,13 @@ With Maven, you'll need this in your `pom.xml` file:
   </repositories>
   ```
 
+## Usage on Eclipse
+
+The Scalaxy/Stream compiler plugin is easy to setup in Eclipse with the Scala IDE plugin:
+* Download the [scalaxy_streams_2.11 JAR on Maven Central](http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22scalaxy-streams_2.11%22).
+* Provide the full path to the jar in Project / Properties / Scala Compiler / Advanced / Xplugin
+* That's it!
+
 ## A note on architecture
 
 Scalaxy/Streams is a rewrite of [ScalaCL](https://code.google.com/p/scalacl/) using the awesome new (and experimental) reflection APIs from Scala 2.10, and the awesome [quasiquotes](http://docs.scala-lang.org/overviews/macros/quasiquotes.html) from Scala 2.11.
