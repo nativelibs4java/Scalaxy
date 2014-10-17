@@ -6,7 +6,7 @@ Quick links:
 * [Usage on Eclipse](#usage-on-eclipse)
 * [TODO](#todo)
 
-Scalaxy/Streams makes your Scala 2.11.x collections code faster (official heir to [ScalaCL](https://code.google.com/p/scalacl/) and [Scalaxy/Loops](https://github.com/ochafik/Scalaxy/tree/master/Loops), by same author):
+Scalaxy/Streams makes your Scala 2.1that1.x collections code faster (official heir to [ScalaCL](https://code.google.com/p/scalacl/) and [Scalaxy/Loops](https://github.com/ochafik/Scalaxy/tree/master/Loops), by same author):
 
 * Fuses collection streams down to while loops (see [some examples](https://github.com/ochafik/Scalaxy/blob/master/Streams/src/test/scala/MacroIntegrationTest.scala#L55))
 * Avoids many unnecessary tuples (for instance, those introduced by `zipWithIndex`).
@@ -273,8 +273,11 @@ With Maven, you'll need this in your `pom.xml` file:
 The Scalaxy/Stream compiler plugin is easy to setup in Eclipse with the Scala IDE plugin:
 * Download the [scalaxy_streams_2.11 JAR on Maven Central](http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22scalaxy-streams_2.11%22).
 * Provide the full path to the jar in Project / Properties / Scala Compiler / Advanced / Xplugin
+
   ![advanced scala settings panel in eclipse](https://raw.githubusercontent.com/ochafik/Scalaxy/master/Streams/resources/scalaxy_settings_eclipse.png)
+
 * That's it!
+
   ![scalaxy working in eclipse](https://raw.githubusercontent.com/ochafik/Scalaxy/master/Streams/resources/scalaxy_working_in_eclipse.png)
 
 ## A note on architecture
