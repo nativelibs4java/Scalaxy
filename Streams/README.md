@@ -1,5 +1,11 @@
 # Scalaxy/Streams
 
+Quick links:
+* [Usage with Sbt](##Usage with Sbt)
+* [Usage with Maven](##Usage with Maven)
+* [Usage on Eclipse](##Usage on Eclipse)
+* [TODO](#TODO)
+
 Scalaxy/Streams makes your Scala 2.11.x collections code faster (official heir to [ScalaCL](https://code.google.com/p/scalacl/) and [Scalaxy/Loops](https://github.com/ochafik/Scalaxy/tree/master/Loops), by same author):
 
 * Fuses collection streams down to while loops (see [some examples](https://github.com/ochafik/Scalaxy/blob/master/Streams/src/test/scala/MacroIntegrationTest.scala#L55))
@@ -7,7 +13,7 @@ Scalaxy/Streams makes your Scala 2.11.x collections code faster (official heir t
 * Usable as a compiler plugin (whole project) or as a macro (surgical strikes)
 
   **Watch out**: version 0.2.1's aggressive optimizations alter Scala semantics (see below).
-  
+
   Use with caution / [report bugs](https://github.com/ochafik/Scalaxy/issues/new) (_safe_ optimizations are on the TODO-list below)
 
 ```scala
