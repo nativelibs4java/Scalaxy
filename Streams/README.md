@@ -275,6 +275,7 @@ The Scalaxy/Stream compiler plugin is easy to setup in Eclipse with the Scala ID
 * Provide the full path to the jar in Project / Properties / Scala Compiler / Advanced / Xplugin
   ![advanced scala settings panel in eclipse](https://raw.githubusercontent.com/ochafik/Scalaxy/master/Streams/resources/scalaxy_settings_eclipse.png)
 * That's it!
+  ![scalaxy working in eclipse](https://raw.githubusercontent.com/ochafik/Scalaxy/master/Streams/resources/scalaxy_working_in_eclipse.png)
 
 ## A note on architecture
 
