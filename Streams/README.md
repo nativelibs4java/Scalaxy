@@ -129,7 +129,7 @@ If you're using `sbt` 0.13.0+, just put the following lines in `build.sbt`:
 
   ```scala
   // Note that Scalaxy/Streams 0.1 only works with Scala 2.11.0-RC1.
-  scalaVersion := "2.11.1"
+  scalaVersion := "2.11.2"
 
   // Dependency at compilation-time only (not at runtime).
   libraryDependencies += "com.nativelibs4java" %% "scalaxy-streams" % "0.2.1" % "provided"
@@ -157,7 +157,7 @@ If you're using `sbt` 0.13.0+, just put the following lines in `build.sbt`:
 
   ```scala
   // Note that Scalaxy/Streams 0.1 only works with Scala 2.11.0-RC1.
-  scalaVersion := "2.11.1"
+  scalaVersion := "2.11.2"
 
   autoCompilerPlugins := true
 
