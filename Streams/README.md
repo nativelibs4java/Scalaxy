@@ -1,9 +1,9 @@
 # Scalaxy/Streams
 
 Quick links:
-* [Usage with Sbt](##Usage with Sbt)
-* [Usage with Maven](##Usage with Maven)
-* [Usage on Eclipse](##Usage on Eclipse)
+* [Usage with Sbt](#Usage-with-Sbt)
+* [Usage with Maven](#Usage-with-Maven)
+* [Usage on Eclipse](#Usage-on-Eclipse)
 * [TODO](#TODO)
 
 Scalaxy/Streams makes your Scala 2.11.x collections code faster (official heir to [ScalaCL](https://code.google.com/p/scalacl/) and [Scalaxy/Loops](https://github.com/ochafik/Scalaxy/tree/master/Loops), by same author):
