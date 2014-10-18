@@ -2,8 +2,10 @@ package scalaxy.streams
 
 object Optimizations
 {
+  def messageHeader = "[Scalaxy] "
+
   def optimizedStreamMessage(streamDescription: String): String =
-      "[Scalaxy] Optimized stream: " + streamDescription
+      messageHeader + "Optimized stream: " + streamDescription
 
   def matchStrategyTree(u: scala.reflect.api.Universe)
                        (staticClass: String => u.TypeSymbol,

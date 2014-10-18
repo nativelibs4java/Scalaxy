@@ -58,7 +58,7 @@ class StreamsComponent(
               throw new RuntimeException("Failed to untype " + tree, ex)
             }
 
-          def strategy(pos: Position) =
+          def getStrategy(pos: Position) =
             Optimizations.matchStrategyTree(global)(
               rootMirror.staticClass(_),
               tpe => analyzer.inferImplicit(
@@ -73,36 +73,55 @@ class StreamsComponent(
             )
 
           override def transform(tree: Tree) = tree match {
-            case SomeStream(stream) if stream.isWorthOptimizing(strategy(tree.pos)) =>
-              reporter.info(
-                tree.pos,
-                Optimizations.optimizedStreamMessage(stream.describe()),
-                force = impl.verbose)
+            case SomeStream(stream) =>
+              val strategy = getStrategy(tree.pos)
+              if (stream.isWorthOptimizing(strategy)) {
 
-              try {
-                val result = {
-                  stream
-                    .emitStream(
-                      n => TermName(unit.fresh.newName(n)),
-                      transform(_),
-                      typed,
-                      untyped)
-                    .compose(localTyper.typed(_))
+                reporter.info(
+                  tree.pos,
+                  Optimizations.optimizedStreamMessage(stream.describe()),
+                  force = impl.verbose)
+
+                try {
+                  val result = {
+                    stream
+                      .emitStream(
+                        n => TermName(unit.fresh.newName(n)),
+                        transform(_),
+                        typed,
+                        untyped)
+                      .compose(localTyper.typed(_))
+                  }
+
+                  if (impl.veryVerbose) {
+                    reporter.info(
+                      tree.pos,
+                      s"${Optimizations.messageHeader}Result for ${stream.describe()}:\n$result",
+                      force = impl.verbose)
+                  }
+                  // println(result)
+
+                  // def resetLocalAttrs(tree: Tree): Tree =
+                  //   resetAttrs(duplicateAndKeepPositions(tree))
+                  //
+                  // def untypecheck(tree: Tree): Tree =
+                  //   resetLocalAttrs(tree)
+                  // 
+                  // typed(untypecheck(result))
+                  result
+                } catch {
+                  case ex: Throwable =>
+                    ex.printStackTrace()
+                    super.transform(tree)
                 }
-                // println(result)
-
-                // def resetLocalAttrs(tree: Tree): Tree =
-                //   resetAttrs(duplicateAndKeepPositions(tree))
-                //
-                // def untypecheck(tree: Tree): Tree =
-                //   resetLocalAttrs(tree)
-                // 
-                // typed(untypecheck(result))
-                result
-              } catch {
-                case ex: Throwable =>
-                  ex.printStackTrace()
-                  super.transform(tree)
+              } else {
+                if (impl.verbose) {
+                  reporter.info(
+                    tree.pos,
+                    s"${Optimizations.messageHeader}Stream ${stream.describe()} is not worth optimizing with strategy $strategy",
+                    force = impl.verbose)
+                }
+                super.transform(tree)
               }
 
             case _ =>

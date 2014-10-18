@@ -31,11 +31,11 @@ class ListPerformanceTest extends CollectionPerformanceTests with NoRightTests {
 class ListChainedPerformanceTest extends ListPerformanceTest with ChainedPerformanceTests {
   override def col = chain(super.col)
 }
-@Ignore class ArrayPerformanceTest extends CollectionPerformanceTests {
+class ArrayPerformanceTest extends CollectionPerformanceTests {
   override def col = ("val col = Array.tabulate(n)(i => i)", "col")
   @Test def simpleArrayTabulate =  if (!skip) ensureFasterCodeWithSameResult(null, "Array.tabulate(n)(i => i).toSeq")
 }
-@Ignore class ArrayChainedPerformanceTest extends ArrayPerformanceTest with ChainedPerformanceTests {
+class ArrayChainedPerformanceTest extends ArrayPerformanceTest with ChainedPerformanceTests {
   override def col = chain(super.col)
 }
 class RangePerformanceTest extends CollectionPerformanceTests with NoRightTests with NoScalarReductionTests {

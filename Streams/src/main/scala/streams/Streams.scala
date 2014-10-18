@@ -19,22 +19,26 @@ private[streams] trait Streams
 
     def unapply(tree: Tree): Option[Stream] = tree match {
       case SomeStreamSink(SomeStreamOp(SomeStreamSource(source), ops), sink) =>
-        Some(new Stream(source, ops, sink))
+        Some(new Stream(source, ops, sink, hasExplicitSink = true))
 
       case SomeStreamOp(SomeStreamSource(source), ops) =>
         findSink(source :: ops).filter(_ != InvalidSink)
-          .map(sink => new Stream(source, ops, sink))
+          .map(sink => new Stream(source, ops, sink, hasExplicitSink = false))
 
       case SomeStreamSource(source) =>
         findSink(List(source)).filter(_ != InvalidSink)
-          .map(sink => new Stream(source, Nil, sink))
+          .map(sink => new Stream(source, Nil, sink, hasExplicitSink = false))
 
       case _ =>
         None
     }
   }
 
-  case class Stream(source: StreamSource, ops: List[StreamOp], sink: StreamSink)
+  case class Stream(
+      source: StreamSource,
+      ops: List[StreamOp],
+      sink: StreamSink,
+      hasExplicitSink: Boolean)
   {
     def describe(describeSink: Boolean = true) =
       (source :: ops).flatMap(_.describe).mkString(".") +
@@ -54,15 +58,13 @@ private[streams] trait Streams
           lambdaCount >= 1
 
         case scalaxy.streams.optimization.foolish =>
-          ops.length > 0
+          ops.length > 0 || hasExplicitSink
+          // true
 
         case _ =>
           assert(strategy == scalaxy.streams.optimization.none)
           false
       }
-      // if (!result) {
-      //   println(s"Not worth optimizing: ${this.describe()}")
-      // }
       result
     }
 

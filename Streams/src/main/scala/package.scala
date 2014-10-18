@@ -40,6 +40,10 @@ package streams
       System.getenv("SCALAXY_STREAMS_VERY_VERBOSE") == "1" ||
       System.getProperty(veryVerboseProperty) == "true"
 
+    def veryVerbose_=(v: Boolean) {
+      System.setProperty(veryVerboseProperty, v.toString)
+    }
+
     def recursivelyOptimize[A : c.WeakTypeTag](c: Context)(a: c.Expr[A]): c.Expr[A] = {
       optimize[A](c)(a, recurse = true)
     }
@@ -74,31 +78,46 @@ package streams
               def apiTypecheck(tree: Tree): Tree = cast(api.typecheck(cast(tree)))
 
               val result = tree match {
-                case tree @ SomeStream(stream) if stream.isWorthOptimizing(strategy) =>
-                  c.info(
-                    cast(tree.pos),
-                    Optimizations.optimizedStreamMessage(stream.describe()),
-                    force = impl.verbose)
+                case tree @ SomeStream(stream) =>
+                  if (stream.isWorthOptimizing(strategy)) {
+                    c.info(
+                      cast(tree.pos),
+                      Optimizations.optimizedStreamMessage(stream.describe()),
+                      force = impl.verbose)
 
-                  def untyped(tree: Tree): Tree = cast(c.untypecheck(cast(tree)))
+                    def untyped(tree: Tree): Tree = cast(c.untypecheck(cast(tree)))
 
-                  try {
-                    val res = stream
-                      .emitStream(
-                        n => TermName(c.freshName(n)),
-                        apiRecur(_),
-//                        t => apiRecur(apiTypecheck(t)),//
-                        apiTypecheck(_),
-                        untyped)
-                      .compose(apiTypecheck(_))
+                    try {
+                      val result = stream
+                        .emitStream(
+                          n => TermName(c.freshName(n)),
+                          apiRecur(_),
+  //                        t => apiRecur(apiTypecheck(t)),//
+                          apiTypecheck(_),
+                          untyped)
+                        .compose(apiTypecheck(_))
 
-                    // println(s"RESULT = $res")
-                    // safelyUnSymbolize(c)(cast(res))
-                    res
-                  } catch {
-                    case ex: Throwable =>
-                      ex.printStackTrace()
-                      apiDefault(tree)
+                      if (impl.veryVerbose) {
+                        c.info(
+                          cast(tree.pos),
+                          s"${Optimizations.messageHeader}Result for ${stream.describe()}:\n$result",
+                          force = impl.verbose)
+                      }
+                      // safelyUnSymbolize(c)(cast(result))
+                      result
+                    } catch {
+                      case ex: Throwable =>
+                        ex.printStackTrace()
+                        apiDefault(tree)
+                    }
+                  } else {
+                    if (impl.verbose) {
+                      c.info(
+                        cast(tree.pos),
+                        s"${Optimizations.messageHeader}Stream ${stream.describe()} is not worth optimizing with strategy $strategy",
+                        force = impl.verbose)
+                    }
+                    apiDefault(tree)
                   }
 
                 case tree if recurse =>

@@ -77,14 +77,21 @@ trait StreamComponentsTestBase extends Utils
     src
   }
 
-  def testMessages(source: String, expectedMessages: CompilerMessages) {
+  def testMessages(source: String, expectedMessages: CompilerMessages, strategy: OptimizationStrategy = scalaxy.streams.optimization.aggressive) {
+
     def filterWarnings(warnings: List[String]) =
       warnings.filterNot(_ == "a pure expression does nothing in statement position; you may be omitting necessary parentheses")
 
-    val actualMessages =
+    val actualMessages = try {
       assertMacroCompilesToSameValue(
         source,
-        strategy = scalaxy.streams.optimization.aggressive)
+        strategy = strategy)
+    } catch { case ex: Throwable =>
+      ex.printStackTrace()
+      if (ex.getCause != null)
+        ex.getCause.printStackTrace()
+      throw new RuntimeException(ex)
+    }
 
     assertEquals(expectedMessages.infos, actualMessages.infos)
     assertEquals(filterWarnings(expectedMessages.warnings).toSet,

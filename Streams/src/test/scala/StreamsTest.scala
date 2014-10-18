@@ -19,15 +19,33 @@ class StreamsTest extends StreamComponentsTestBase with StreamTransforms {
 
   @Test
   def testArrayMapMapFilterMap {
-    val SomeStream(Stream(ArrayStreamSource(_, _, _), ops, CanBuildFromSink(_))) = typecheck(q"""
+    val SomeStream(Stream(ArrayStreamSource(_, _, _), ops, ArrayBuilderSink, false)) = typecheck(q"""
       Array(1).map(_ + 1).map(_ * 10).filter(_ < 10)
     """)
     val List(ArrayOpsOp, MapOp(_, _, _), ArrayOpsOp, MapOp(_, _, _), ArrayOpsOp, FilterOp(_, _, false, "filter")) = ops
   }
 
   @Test
+  def testArrayMap {
+    val SomeStream(Stream(ArrayStreamSource(_, _, _), ops, ArrayBuilderSink, false)) = typecheck(q"""
+      Array(1).map(_ + 1)
+    """)
+    val List(ArrayOpsOp, MapOp(_, _, _)) = ops
+  }
+
+  @Test
+  def testListMap {
+    val SomeStream(s) = typecheck(q"""
+      List(1).map(_ + 1)
+    """)
+    // Inline list creation is rewritten to an array.
+    val Stream(ArrayStreamSource(_, _, _), ops, CanBuildFromSink(_), false) = s
+    val List(MapOp(_, _, _)) = ops
+  }
+
+  @Test
   def testRangeMapMapFilterMap {
-    val SomeStream(Stream(InlineRangeStreamSource(_, _, 2, true, _), ops, CanBuildFromSink(_))) = typecheck(q"""
+    val SomeStream(Stream(InlineRangeStreamSource(_, _, 2, true, _), ops, CanBuildFromSink(_), false)) = typecheck(q"""
       (1 to 10 by 2).map(_ + 1).map(_ * 10).filter(_ < 10)
     """)
     val List(MapOp(_, _, _), MapOp(_, _, _), FilterOp(_, _, false, "filter")) = ops
@@ -35,7 +53,7 @@ class StreamsTest extends StreamComponentsTestBase with StreamTransforms {
 
   @Test
   def testFlatMap {
-    val SomeStream(Stream(source, ops, sink)) = typecheck(q"""
+    val SomeStream(Stream(source, ops, sink, false)) = typecheck(q"""
       for (a <- Array(Array(1)); len = a.length; v <- a) yield (a, len, v)
     """)
   }
@@ -45,14 +63,14 @@ class StreamsTest extends StreamComponentsTestBase with StreamTransforms {
     val tree = typecheck(q"""
       Array(1, 2, 3).map(_ + 1).toVector
     """)
-    val SomeStream(Stream(source, ops, sink)) = tree
+    val SomeStream(Stream(source, ops, sink, _)) = tree
     val List(ArrayOpsOp, MapOp(_, _, _), ArrayOpsOp) = ops
     val VectorBuilderSink = sink
   }
 
   @Test
   def testMaps {
-    val SomeStream(Stream(source, ops, sink)) = typecheck(q"""
+    val SomeStream(Stream(source, ops, sink, _)) = typecheck(q"""
       for ((a, i) <- Array(Array(1)).zipWithIndex; len = a.length; if len < i) {
         println(a + ", " + len + ", " + i)
       }
