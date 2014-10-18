@@ -1,9 +1,14 @@
 package scalaxy.streams;
 
 sealed class OptimizationStrategy(val name: String) {
-  def fullName = getClass.getPackage.getName + "." + name
+  def fullName = getClass.getPackage.getName + ".optimization." + name
 }
 
+/**
+ * Example:
+ *   import scalaxy.streams.optimization.eager
+ *   for (x <- Array(1, 2, 3); y = x * 10; z = y + 2) print(z)
+ */
 object optimization {
   implicit case object none extends OptimizationStrategy("none")
   /** Performs optimizations that don't alter any Scala semantics. */
@@ -21,6 +26,8 @@ object optimization {
 
   private[this] val strategyByName =
     strategies.map(s => (s.name, s)).toMap
+
+  def forName(name: String) = strategyByName(name)
 
   val STRATEGY_PROPERTY = "scalaxy.streams.strategy"
   val STRATEGY_ENV_VAR = "SCALAXY_STREAMS_STRATEGY"

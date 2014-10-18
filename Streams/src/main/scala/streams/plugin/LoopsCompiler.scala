@@ -14,6 +14,7 @@ object StreamsCompiler {
   def jarOf(c: Class[_]) =
     Option(c.getProtectionDomain.getCodeSource).map(_.getLocation.getFile)
   val scalaLibraryJar = jarOf(classOf[List[_]])
+  val streamsLibraryJar = jarOf(classOf[OptimizationStrategy])
 
   def main(args: Array[String]) {
     try {
@@ -36,9 +37,10 @@ object StreamsCompiler {
       internalPhasesGetter: Global => List[PluginComponent] = defaultInternalPhasesGetter): R =
   {
     val settings = new Settings
-    val command =
-      new CompilerCommand(
-        scalaLibraryJar.map(jar => List("-bootclasspath", jar)).getOrElse(Nil) ++ args, settings)
+
+    val jars = scalaLibraryJar ++ streamsLibraryJar
+    val bootclasspathArg = if (jars.isEmpty) Nil else List("-bootclasspath", jars.reduce(_ + ":" + _))
+    val command = new CompilerCommand(bootclasspathArg ++ args, settings)
 
     if (!command.ok)
       System.exit(1)

@@ -54,7 +54,7 @@ private[streams] trait Streams
           lambdaCount >= 1
 
         case scalaxy.streams.optimization.eager =>
-          true
+          ops.length > 0
 
         case _ =>
           assert(strategy == scalaxy.streams.optimization.none)

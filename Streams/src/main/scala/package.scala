@@ -49,6 +49,13 @@ package streams
     }
 
     private[streams] def optimize[A : c.WeakTypeTag](c: Context)(a: c.Expr[A], recurse: Boolean): c.Expr[A] = {
+
+      val strategy = Optimizations.matchStrategyTree(c.universe)(
+        c.mirror.staticClass(_),
+        tpe => c.inferImplicitValue(tpe, pos = a.tree.pos))
+
+      // println(s"strategy = $strategy")
+
       if (disabled) {
         a
       } else {
@@ -57,8 +64,6 @@ package streams
           import global._
 
           val result = try {
-
-            val strategy = scalaxy.streams.optimization.aggressive
 
             c.internal.typingTransform(cast(a.tree))((tree_, api) => {
               val tree: Tree = cast(tree_)

@@ -49,7 +49,7 @@ class StreamsComponent(
             } catch { case ex: Throwable =>
               throw new RuntimeException("Failed to type " + tree + "\n(" + ex + ")", ex)
             }
-            
+
           private[this] val untyped: Tree => Tree =
             (tree: Tree) => try {
               resetAttrs(tree)
@@ -58,53 +58,51 @@ class StreamsComponent(
               throw new RuntimeException("Failed to untype " + tree, ex)
             }
 
+          def strategy(pos: Position) =
+            Optimizations.matchStrategyTree(global)(
+              rootMirror.staticClass(_),
+              tpe => analyzer.inferImplicit(
+                EmptyTree,
+                tpe,
+                reportAmbiguous = true,
+                isView = false,
+                context = localTyper.context,
+                saveAmbiguousDivergent = false,
+                pos = pos
+              ).tree
+            )
+
           override def transform(tree: Tree) = tree match {
-            case SomeStream(stream) =>
-              // val strategyImplicitResult = analyzer.inferImplicit(
-              //   EmptyTree,
-              //   OptimizationStrategyTpe.asType.toType,
-              //   reportAmbiguous = true,
-              //   isView = false,
-              //   context = localTyper.context,
-              //   saveAmbiguousDivergent = false,
-              //   pos = tree.pos)
-              // val strategy = Optimizations.matchStrategyTree(global)(
-              //   if (strategyImplicitResult.isSuccess) strategyImplicitResult.tree else EmptyTree)
-              val strategy = scalaxy.streams.optimization.aggressive
+            case SomeStream(stream) if stream.isWorthOptimizing(strategy(tree.pos)) =>
+              reporter.info(
+                tree.pos,
+                Optimizations.optimizedStreamMessage(stream.describe()),
+                force = impl.verbose)
 
-              if (stream.isWorthOptimizing(strategy)) {
-                reporter.info(
-                  tree.pos,
-                  Optimizations.optimizedStreamMessage(stream.describe()),
-                  force = impl.verbose)
-
-                try {
-                  val result = {
-                    stream
-                      .emitStream(
-                        n => TermName(unit.fresh.newName(n)),
-                        transform(_),
-                        typed,
-                        untyped)
-                      .compose(localTyper.typed(_))
-                  }
-                  // println(result)
-
-                  // def resetLocalAttrs(tree: Tree): Tree =
-                  //   resetAttrs(duplicateAndKeepPositions(tree))
-                  //
-                  // def untypecheck(tree: Tree): Tree =
-                  //   resetLocalAttrs(tree)
-                  // 
-                  // typed(untypecheck(result))
-                  result
-                } catch {
-                  case ex: Throwable =>
-                    ex.printStackTrace()
-                    super.transform(tree)
+              try {
+                val result = {
+                  stream
+                    .emitStream(
+                      n => TermName(unit.fresh.newName(n)),
+                      transform(_),
+                      typed,
+                      untyped)
+                    .compose(localTyper.typed(_))
                 }
-              } else {
-                super.transform(tree)
+                // println(result)
+
+                // def resetLocalAttrs(tree: Tree): Tree =
+                //   resetAttrs(duplicateAndKeepPositions(tree))
+                //
+                // def untypecheck(tree: Tree): Tree =
+                //   resetLocalAttrs(tree)
+                // 
+                // typed(untypecheck(result))
+                result
+              } catch {
+                case ex: Throwable =>
+                  ex.printStackTrace()
+                  super.transform(tree)
               }
 
             case _ =>

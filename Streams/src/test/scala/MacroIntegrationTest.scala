@@ -21,7 +21,7 @@ class MacroIntegrationTest(source: String, expectedMessages: CompilerMessages) e
     val actualMessages =
       assertMacroCompilesToSameValue(
         source,
-        strategy = scalaxy.streams.optimization.eager)
+        strategy = scalaxy.streams.optimization.aggressive)
 
     assertEquals(expectedMessages.infos, actualMessages.infos)
     assertEquals(filterWarnings(expectedMessages.warnings).toSet,
