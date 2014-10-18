@@ -10,7 +10,7 @@ import scala.reflect.macros.blackbox.Context
 
 import scala.reflect.runtime.{ universe => ru }
 
-import scalaxy.streams.HacksAndWorkarounds.{cast, removeMacroSymbols}
+import scalaxy.streams.HacksAndWorkarounds.{cast, safelyUnSymbolize}
 
 package object streams {
   def optimize[A](a: A): A = macro impl.recursivelyOptimize[A]
@@ -92,8 +92,8 @@ package streams
                         untyped)
                       .compose(apiTypecheck(_))
 
-//                    println(s"RESULT = $res")
-//                    HacksAndWorkarounds.removeMacroSymbols(c)(cast(res))
+                    // println(s"RESULT = $res")
+                    // safelyUnSymbolize(c)(cast(res))
                     res
                   } catch {
                     case ex: Throwable =>
@@ -119,6 +119,7 @@ package streams
           }
         }
 
+        //c.Expr[A](c.typecheck(c.untypecheck(Optimize.result)))
         c.Expr[A](Optimize.result)
       }
     }

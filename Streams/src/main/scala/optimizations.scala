@@ -6,7 +6,7 @@ sealed class OptimizationStrategy(val name: String) {
 
 /**
  * Example:
- *   import scalaxy.streams.optimization.eager
+ *   import scalaxy.streams.optimization.aggressive
  *   for (x <- Array(1, 2, 3); y = x * 10; z = y + 2) print(z)
  */
 object optimization {
@@ -15,14 +15,14 @@ object optimization {
   implicit case object safe extends OptimizationStrategy("safe")
   /** Performs unsafe rewrites. */
   implicit case object aggressive extends OptimizationStrategy("aggressive")
-  /** Performs all possible rewrites, regardless of safety. */
-  implicit case object eager extends OptimizationStrategy("eager")
+  /** Performs all possible rewrites, even those known to be slower or unsafe. */
+  implicit case object foolish extends OptimizationStrategy("foolish")
 
   // /** Makes sure all possible lambdas are rewritten away. This may produce slower and unsafe code. */
   // implicit case object eliminateLambdas extends OptimizationStrategy("eliminateLambdas")
 
   private[this] val strategies =
-    List(none, safe, aggressive, eager)
+    List(none, safe, aggressive, foolish)
 
   private[this] val strategyByName =
     strategies.map(s => (s.name, s)).toMap

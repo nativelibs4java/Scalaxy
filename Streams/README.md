@@ -184,6 +184,7 @@ And of course, if you're serious about performance you should add the following 
 ```scala
 scalacOptions += "-optimise -Yclosure-elim -Yinline"
 ```
+(also consider `-Ybackend:GenBCode`)
 
 ## Usage with Maven
 

@@ -53,7 +53,7 @@ private[streams] trait Streams
         case scalaxy.streams.optimization.aggressive =>
           lambdaCount >= 1
 
-        case scalaxy.streams.optimization.eager =>
+        case scalaxy.streams.optimization.foolish =>
           ops.length > 0
 
         case _ =>
