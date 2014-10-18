@@ -7,8 +7,13 @@ object HacksAndWorkarounds
   def call(obj: Any, method: String, args: Any*): Any = {
     val cls = obj.getClass
     val ms = cls.getMethods
-    val List(m) = ms.filter(_.getName == method).toList
-    m.invoke(obj, args.map(_.asInstanceOf[Object]).toArray:_*)
+    val name = method.replace("=", "$eq")
+    ms.filter(_.getName == name) match {
+      case Array(m) =>
+        m.invoke(obj, args.map(_.asInstanceOf[Object]).toArray:_*)
+      case Array() =>
+        sys.error(s"No method $name in $cls:\n\t${ms.map(_.getName).sorted.reduce(_ + "\n" + _)}")
+    }
   }
 
   // TODO(ochafik): Remove this!

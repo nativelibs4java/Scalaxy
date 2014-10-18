@@ -88,8 +88,9 @@ class StreamsComponent(
                       .emitStream(
                         n => TermName(unit.fresh.newName(n)),
                         transform(_),
-                        typed,
-                        untyped)
+                        currentOwner = currentOwner,
+                        typed = typed,
+                        untyped = untyped)
                       .compose(localTyper.typed(_))
                   }
 

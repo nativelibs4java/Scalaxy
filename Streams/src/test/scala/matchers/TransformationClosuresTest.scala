@@ -27,7 +27,8 @@ class TransformationClosureTest extends StreamComponentsTestBase with Transforma
           _,
           outputValues,
           None,
-          false))) = f
+          false),
+        closureSymbol)) = f
 
     val List(
       (0, ScalarValue(_, None, Some(S("x")))),
@@ -57,7 +58,8 @@ class TransformationClosureTest extends StreamComponentsTestBase with Transforma
   def testNoOpScalar {
     val f = typecheck(q"(x: Int) => x")
 
-    val SomeTransformationClosure(tc @ TransformationClosure(inputs, statements, outputs)) = f
+    val SomeTransformationClosure(
+      tc @ TransformationClosure(inputs, statements, outputs, closureSymbol)) = f
     val ScalarValue(_, None, Some(S("x"))) = inputs
     val ScalarValue(_, None, Some(S("x"))) = outputs
   }
@@ -66,7 +68,8 @@ class TransformationClosureTest extends StreamComponentsTestBase with Transforma
   def testScalarToPrintln {
     val f = typecheck(q"(x: Int) => println(x)")
 
-    val SomeTransformationClosure(tc @ TransformationClosure(inputs, statements, outputs)) = f
+    val SomeTransformationClosure(
+      tc @ TransformationClosure(inputs, statements, outputs, closureSymbol)) = f
     val ScalarValue(_, None, Some(S("x"))) = inputs
     val ScalarValue(_, Some(q"scala.this.Predef.println(x)"), None) = outputs
   }
@@ -75,7 +78,8 @@ class TransformationClosureTest extends StreamComponentsTestBase with Transforma
   def testScalarToTuple {
     val f = typecheck(q"(x: Int) => (1, x)")
 
-    val SomeTransformationClosure(tc @ TransformationClosure(inputs, statements, outputs)) = f
+    val SomeTransformationClosure(
+      tc @ TransformationClosure(inputs, statements, outputs, closureSymbol)) = f
     val ScalarValue(_, None, Some(S("x"))) = inputs
     val TupleValue(
       _,
@@ -127,7 +131,7 @@ class TransformationClosureTest extends StreamComponentsTestBase with Transforma
       })
     """)
     val SomeTransformationClosure(tc) = f
-    val TransformationClosure(inputs, statements, outputs) = tc
+    val TransformationClosure(inputs, statements, outputs, closureSymbol) = tc
 
     val IntTpe = typeOf[Int]
     val IntIntTpe = typeOf[(Int, Int)]

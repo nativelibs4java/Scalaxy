@@ -26,20 +26,27 @@ private[streams] trait FlatMapOps
   }
   object SomeFlatMapOp extends StreamOpExtractor {
     override def unapply(tree: Tree) = Option(tree) collect {
-      case q"$target.flatMap[$tpt, ${_}](${fun @ Strip(Function(List(param), body))})($cbf)" =>
-        (target, FlatMapOp(tpt.tpe, param, stripOption2Iterable(body), Some(cbf)))
+      case q"$target.flatMap[$tpt, ${_}](${Closure(closure)})($cbf)" =>
+        (target, FlatMapOp(tpt.tpe, closure, Some(cbf)))
 
       // Option.flatMap doesn't take a CanBuildFrom.
-      case q"$target.flatMap[$tpt](${fun @ Strip(Function(List(param), body))})" =>
-        (target, FlatMapOp(tpt.tpe, param, stripOption2Iterable(body), None))
+      case q"$target.flatMap[$tpt](${Closure(closure)})" =>
+        (target, FlatMapOp(tpt.tpe, closure, None))
     }
   }
 
-  case class FlatMapOp(tpe: Type, param: ValDef, body: Tree, canBuildFrom: Option[Tree])
+  case class FlatMapOp(tpe: Type, closure: Function, canBuildFrom: Option[Tree])
       extends ClosureStreamOp
   {
+    override def stripBody(tree: Tree) = stripOption2Iterable(tree)
+
     val nestedStream: Option[Stream] = q"($param) => $body" match {
-      case SomeTransformationClosure(TransformationClosure(_, Nil, ScalarValue(_, Some(SomeStream(stream)), _))) =>
+      case SomeTransformationClosure(
+        TransformationClosure(
+          _,
+          Nil,
+          ScalarValue(_, Some(SomeStream(stream)), _),
+          _)) =>
         Some(stream)
 
       case _ =>
@@ -69,7 +76,7 @@ private[streams] trait FlatMapOps
                       outputNeeds: OutputNeeds,
                       nextOps: OpsAndOutputNeeds): StreamOutput =
     {
-      import input.{ fresh, transform, typed, untyped }
+      import input.{ fresh, transform, typed, untyped, currentOwner }
 
       nestedStream match {
         case Some(stream) =>
@@ -90,7 +97,8 @@ private[streams] trait FlatMapOps
 
           modifiedStream.emitStream(
             fresh, subTransform,
-            typed, untyped,
+            currentOwner = currentOwner,
+            typed = typed, untyped = untyped,
             loopInterruptor = input.loopInterruptor).map(replacer)
 
         case None =>

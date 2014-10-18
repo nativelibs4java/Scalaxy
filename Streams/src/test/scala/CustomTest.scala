@@ -14,15 +14,35 @@ class CustomTest extends StreamComponentsTestBase with StreamTransforms {
   scalaxy.streams.impl.verbose = true
   scalaxy.streams.impl.veryVerbose = true
 
-  @Ignore @Test 
+  @Ignore
+  @Test
   def test = testMessages(
     """
       val n = 10
+      val start = 0
+      val end = 100
+
+      import scala.collection.mutable.ArrayBuffer
+
+      private def withBuf[T : ClassTag](f: ArrayBuffer[T] => Unit): List[T] = {
+        val buf = ArrayBuffer[T]()
+        f(buf)
+        buf.toList
+      }
+
+      withBuf[() => Int](res =>
+        optimize {
+          for (i <- start to end by 2)
+            res += (() => (i * 2))
+        }
+      )
+
+
 
      // (0 until n).toList
 //
       // (0 until n).dropWhile(x => x < n / 2).toSeq
-    List(0, 1, 2).map(_ + 1).toSeq
+    // List(0, 1, 2).map(_ + 1).toSeq
 
      // (0 until n).filter(v => (v % 2) == 0).map(_ * 2).toArray.toSeq
 

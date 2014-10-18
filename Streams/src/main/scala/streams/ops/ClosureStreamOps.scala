@@ -6,13 +6,19 @@ private[streams] trait ClosureStreamOps extends StreamComponents with Transforma
   import global._
 
   trait ClosureStreamOp extends StreamOp {
-    def param: ValDef
-    def body: Tree
+    def closure: Function
     def isMapLike: Boolean = true
     def lambdaCount = 1
 
-    lazy val SomeTransformationClosure(transformationClosure) = q"($param) => $body"
+    lazy val closureSymbol = closure.symbol
 
+    // TODO: remove this stripBody nonsense (here to allow FlatMapOps to do some magics)
+    lazy val q"($param) => $body_" = transformationClosure
+    lazy val body = stripBody(body_)
+    def stripBody(tree: Tree): Tree = tree
+
+    lazy val SomeTransformationClosure(transformationClosure) = closure// q"($param) => $body"
+    
     override def transmitOutputNeedsBackwards(paths: Set[TuploidPath]) =
       transformationClosure.getPreviousReferencedPaths(paths, isMapLike = isMapLike)
   }

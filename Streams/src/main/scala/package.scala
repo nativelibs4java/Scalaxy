@@ -21,6 +21,7 @@ package streams
   object impl
   {
     private[this] val verboseProperty = "scalaxy.streams.verbose"
+    private[this] val debugProperty = "scalaxy.streams.debug"
     private[this] val veryVerboseProperty = "scalaxy.streams.veryVerbose"
     private[this] val optimizeProperty = "scalaxy.streams.optimize"
 
@@ -28,7 +29,12 @@ package streams
       System.getenv("SCALAXY_STREAMS_OPTIMIZE") == "0" ||
       System.getProperty(optimizeProperty) == "false"
 
+    def debug: Boolean =
+      System.getenv("SCALAXY_STREAMS_DEBUG") == "1" ||
+      System.getProperty(debugProperty) == "true"
+
     def verbose: Boolean =
+      veryVerbose ||
       System.getenv("SCALAXY_STREAMS_VERBOSE") == "1" ||
       System.getProperty(verboseProperty) == "true"
 
@@ -37,6 +43,7 @@ package streams
     }
 
     def veryVerbose: Boolean =
+      debug ||
       System.getenv("SCALAXY_STREAMS_VERY_VERBOSE") == "1" ||
       System.getProperty(veryVerboseProperty) == "true"
 
@@ -93,8 +100,9 @@ package streams
                           n => TermName(c.freshName(n)),
                           apiRecur(_),
   //                        t => apiRecur(apiTypecheck(t)),//
-                          apiTypecheck(_),
-                          untyped)
+                          currentOwner = cast[Symbol](api.currentOwner),
+                          typed = apiTypecheck(_),
+                          untyped = untyped)
                         .compose(apiTypecheck(_))
 
                       if (impl.veryVerbose) {
@@ -105,6 +113,7 @@ package streams
                       }
                       // safelyUnSymbolize(c)(cast(result))
                       result
+
                     } catch {
                       case ex: Throwable =>
                         ex.printStackTrace()

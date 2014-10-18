@@ -11,12 +11,12 @@ private[streams] trait CountOps
 
   object SomeCountOp extends StreamOpExtractor {
     override def unapply(tree: Tree) = Option(tree) collect {
-      case q"$target.count(${Strip(Function(List(param), body))})" =>
-        (target, CountOp(param, body))
+      case q"$target.count(${Closure(closure)})" =>
+        (target, CountOp(closure))
     }
   }
 
-  case class CountOp(param: ValDef, body: Tree) extends ClosureStreamOp {
+  case class CountOp(closure: Function) extends ClosureStreamOp {
     override def canInterruptLoop = false
     override def canAlterSize = true
     override def isMapLike = false

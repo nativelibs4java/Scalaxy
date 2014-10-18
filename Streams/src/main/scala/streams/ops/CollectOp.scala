@@ -1,8 +1,7 @@
 package scalaxy.streams
 
 private[streams] trait CollectOps
-    extends ClosureStreamOps
-    with CanBuildFromSinks
+    extends CanBuildFromSinks
     with Strippers
 {
   val global: scala.reflect.api.Universe

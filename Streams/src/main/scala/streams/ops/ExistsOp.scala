@@ -11,21 +11,21 @@ private[streams] trait ExistsOps
 
   object SomeExistsOp extends StreamOpExtractor {
     override def unapply(tree: Tree) = Option(tree) collect {
-      case q"$target.exists(${Strip(Function(List(param), body))})" =>
-        (target, ExistsOp(param, body))
+      case q"$target.exists(${Closure(closure)})" =>
+        (target, ExistsOp(closure))
 
-      case q"$target.forall(${Strip(Function(List(param), body))})" =>
-        (target, ForallOp(param, body))
+      case q"$target.forall(${Closure(closure)})" =>
+        (target, ForallOp(closure))
     }
   }
 
-  case class ExistsOp(override val param: ValDef, override val body: Tree)
-      extends ExistsOpLike("exists", exists = true, param, body)
+  case class ExistsOp(override val closure: Function)
+      extends ExistsOpLike("exists", exists = true, closure)
 
-  case class ForallOp(override val param: ValDef, override val body: Tree)
-      extends ExistsOpLike("forall", exists = false, param, body)
+  case class ForallOp(override val closure: Function)
+      extends ExistsOpLike("forall", exists = false, closure)
 
-  class ExistsOpLike(name: String, exists: Boolean, val param: ValDef, val body: Tree) extends ClosureStreamOp {
+  class ExistsOpLike(name: String, exists: Boolean, val closure: Function) extends ClosureStreamOp {
     override def canInterruptLoop = true
     override def canAlterSize = true
     override def isMapLike = false

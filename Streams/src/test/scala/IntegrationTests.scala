@@ -278,17 +278,17 @@ object IntegrationTests
     """
       -> streamMsg("Range.map.map -> IndexedSeq"),
 
-    // """
-    //   var tot = 0;
-    //   val n, m, o, p = 3;
-    //   for (i <- 0 until n)
-    //       for (j <- 0 until m)
-    //         for (k <- 0 until o)
-    //           for (l <- 0 until p)
-    //             tot += (i * 1 + j * 10 + k * 100 + l * 1000) / 10;
-    //   tot
-    // """
-    //   -> streamMsg("Range.foreach", "Range.foreach", "Range.foreach", "Range.foreach"),
+    """
+      var tot = 0;
+      val n, m, o, p = 3;
+      for (i <- 0 until n)
+          for (j <- 0 until m)
+            for (k <- 0 until o)
+              for (l <- 0 until p)
+                tot += (i * 1 + j * 10 + k * 100 + l * 1000) / 10;
+      tot
+    """
+      -> streamMsg("Range.foreach", "Range.foreach", "Range.foreach", "Range.foreach"),
 
     "var tot = 0; for (i <- 0 until 10; x = new AnyRef) { tot += i }; tot"
       -> streamMsg("Range.map.foreach"),

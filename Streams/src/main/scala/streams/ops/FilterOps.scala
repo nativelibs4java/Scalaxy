@@ -7,17 +7,17 @@ private[streams] trait FilterOps extends ClosureStreamOps with Strippers
 
   object SomeFilterOp extends StreamOpExtractor {
     override def unapply(tree: Tree)= Option(tree) collect {
-      case q"$target.filter(${Strip(Function(List(param), body))})" =>
-        (target, FilterOp(param, body, false, "filter"))
+      case q"$target.filter(${Closure(closure)})" =>
+        (target, FilterOp(closure, false, "filter"))
 
-      case q"$target.filterNot(${Strip(Function(List(param), body))})" =>
-        (target, FilterOp(param, body, true, "filterNot"))
+      case q"$target.filterNot(${Closure(closure)})" =>
+        (target, FilterOp(closure, true, "filterNot"))
 
-      case q"$target.withFilter(${Strip(Function(List(param), body))})" =>
-        (target, FilterOp(param, body, false, "withFilter"))
+      case q"$target.withFilter(${Closure(closure)})" =>
+        (target, FilterOp(closure, false, "withFilter"))
     }
   }
-  case class FilterOp(param: ValDef, body: Tree, isNegative: Boolean, name: String)
+  case class FilterOp(closure: Function, isNegative: Boolean, name: String)
       extends ClosureStreamOp
   {
     override def describe = Some(name)

@@ -11,6 +11,13 @@ private[streams] trait TransformationClosures
   val global: scala.reflect.api.Universe
   import global._
 
+  object Closure {
+    def unapply(tree: Tree): Option[Function] = Option(tree) collect {
+      case Strip(closure @ Function(List(_), _)) =>
+        closure
+    }
+  }
+
   object SomeTransformationClosure {
     def unapply(closure: Tree): Option[TransformationClosure] = {
 
@@ -24,7 +31,8 @@ private[streams] trait TransformationClosures
           (ScalarValue(param.symbol.typeSignature, alias = param.symbol.asOption), body)
       } collect {
         case (inputValue, BlockOrNot(statements, TuploidValue(outputValue))) =>
-          TransformationClosure(inputValue, statements, outputValue)
+          print(s"closureSymbol = ${closure.symbol}; tpe = ${closure.tpe}")
+          TransformationClosure(inputValue, statements, outputValue, closureSymbol = closure.symbol)
       }
     }
   }
@@ -32,7 +40,8 @@ private[streams] trait TransformationClosures
   case class TransformationClosure(
       inputs: TuploidValue[Symbol],
       statements: List[Tree],
-      outputs: TuploidValue[Symbol])
+      outputs: TuploidValue[Symbol],
+      closureSymbol: Symbol)
   {
     private[this] val inputSymbols: Set[Symbol] = inputs.collectAliases
     private[this] val outputSymbols: Set[Symbol] = outputs.collectAliases
@@ -65,10 +74,16 @@ private[streams] trait TransformationClosures
 
     def replaceClosureBody(streamInput: StreamInput, outputNeeds: OutputNeeds): (List[Tree], TuploidValue[Tree]) =
     {
-      import streamInput.{ fresh, transform, typed }
+      import streamInput.{ fresh, transform, typed, currentOwner }
 
       val replacer = getReplacer(inputs, streamInput.vars)
-      val fullTransform = (tree: Tree) => transform(replacer(tree))
+      val fullTransform = (tree: Tree) => {
+        transform(
+          replaceDeletedOwner(
+            replacer(tree),
+            deletedOwner = closureSymbol,
+            newOwner = currentOwner))
+      }
 
       val ClosureWiringResult(pre, post, outputVars) =
         wireInputsAndOutputs(

@@ -17,11 +17,11 @@ private[streams] trait WhileOps
         None
 
     override def unapply(tree: Tree) = Option(tree) collect {
-      case q"$target.takeWhile(${Strip(Function(List(param), body))})" =>
-        (target, TakeWhileOp(param, body, sinkOptionForReturnType(tree.tpe)))
+      case q"$target.takeWhile(${Closure(closure)})" =>
+        (target, TakeWhileOp(closure, sinkOptionForReturnType(tree.tpe)))
 
-      case q"$target.dropWhile(${Strip(Function(List(param), body))})" =>
-        (target, DropWhileOp(param, body, sinkOptionForReturnType(tree.tpe)))
+      case q"$target.dropWhile(${Closure(closure)})" =>
+        (target, DropWhileOp(closure, sinkOptionForReturnType(tree.tpe)))
     }
   }
 
@@ -32,7 +32,7 @@ private[streams] trait WhileOps
     override def isMapLike = false
   }
 
-  case class TakeWhileOp(param: ValDef, body: Tree, sinkOption: Option[StreamSink]) extends WhileOp
+  case class TakeWhileOp(closure: Function, sinkOption: Option[StreamSink]) extends WhileOp
   {
     override def describe = Some("takeWhile")
 
@@ -61,7 +61,7 @@ private[streams] trait WhileOps
     }
   }
 
-  case class DropWhileOp(param: ValDef, body: Tree, sinkOption: Option[StreamSink]) extends WhileOp
+  case class DropWhileOp(closure: Function, sinkOption: Option[StreamSink]) extends WhileOp
   {
     override def describe = Some("dropWhile")
 

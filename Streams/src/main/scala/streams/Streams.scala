@@ -71,6 +71,7 @@ private[streams] trait Streams
     def emitStream(fresh: String => TermName,
                    transform: Tree => Tree,
                    typed: Tree => Tree,
+                   currentOwner: Symbol,
                    untyped: Tree => Tree,
                    sinkNeeds: Set[TuploidPath] = sink.outputNeeds,
                    loopInterruptor: Option[Tree] = None): StreamOutput =
@@ -88,6 +89,7 @@ private[streams] trait Streams
           loopInterruptor = loopInterruptor,
           fresh = fresh,
           transform = transform,
+          currentOwner = currentOwner,
           typed = typed,
           untyped = untyped),
         outputNeeds = sourceNeeds,

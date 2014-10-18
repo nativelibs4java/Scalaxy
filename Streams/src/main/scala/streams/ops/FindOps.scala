@@ -7,11 +7,11 @@ private[streams] trait FindOps extends ClosureStreamOps with Strippers with Opti
 
   object SomeFindOp extends StreamOpExtractor {
     override def unapply(tree: Tree) = Option(tree) collect {
-      case q"$target.find(${Strip(Function(List(param), body))})" =>
-        (target, FindOp(param, body))
+      case q"$target.find(${Closure(closure)})" =>
+        (target, FindOp(closure))
     }
   }
-  case class FindOp(param: ValDef, body: Tree)
+  case class FindOp(closure: Function)
       extends ClosureStreamOp
   {
     override def describe = Some("find")

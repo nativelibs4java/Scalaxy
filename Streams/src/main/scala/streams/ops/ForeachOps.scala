@@ -9,11 +9,11 @@ private[streams] trait ForeachOps
 
   object SomeForeachOp extends StreamOpExtractor {
     override def unapply(tree: Tree) = Option(tree) collect {
-      case q"$target.foreach[${_}](${Strip(Function(List(param), body))})" =>
-        (target, ForeachOp(param, body))
+      case q"$target.foreach[${_}](${Closure(closure)})" =>
+        (target, ForeachOp(closure))
     }
   }
-  case class ForeachOp(param: ValDef, body: Tree)
+  case class ForeachOp(closure: Function)
       extends ClosureStreamOp
   {
     override def describe = Some("foreach")
