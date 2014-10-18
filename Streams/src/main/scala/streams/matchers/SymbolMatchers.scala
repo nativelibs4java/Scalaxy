@@ -118,31 +118,6 @@ private[streams] trait SymbolMatchers
     ClosureWiringResult(pre.result, post.result, outputVars)
   }
 
-  def replaceDeletedOwner(tree: Tree, deletedOwner: Symbol, newOwner: Symbol) = {
-    val dup = tree // TODO: tree.duplicate (but does it keep positions??)
-
-    new Traverser {
-      override def traverse(tree: Tree) {
-        for (sym <- Option(tree.symbol); if sym != NoSymbol) {
-          if (sym.owner == deletedOwner) {
-            // println(s"FOUND SYM $sym WITH DELETED OWNER $deletedOwner;\n\tREPLACING WITH $newOwner")
-            HacksAndWorkarounds.call(sym, "owner_=", newOwner)
-            if (tree.isInstanceOf[DefTree]) {
-              // println(s"\nENTERING SYM IN NEW OWNER.")
-              HacksAndWorkarounds.call(newOwner.info.decls, "enter", sym)
-            }
-          }
-          // else {
-          //   println(s"sym = $sym; owner = ${sym.owner}; deletedOwner = $deletedOwner; newOwner = $newOwner")
-          // }
-        }
-        super.traverse(tree)
-      }
-    } traverse dup
-
-    dup
-  }
-
   def getReplacer(inputs: TuploidValue[Symbol], inputVars: TuploidValue[Tree]): Tree => Tree = {
     val repls = getReplacements(inputs, inputVars).toMap
 

@@ -16,6 +16,7 @@ class MacroIntegrationTest(name: String, source: String, expectedMessages: Compi
 
 object MacroIntegrationTest {
   scalaxy.streams.impl.verbose = true
+  scalaxy.streams.impl.veryVerbose = false
 
   @Parameters(name = "{0}")
   def data: java.util.Collection[Array[AnyRef]] =

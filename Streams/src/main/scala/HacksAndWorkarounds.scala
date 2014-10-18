@@ -16,6 +16,36 @@ object HacksAndWorkarounds
     }
   }
 
+  def replaceDeletedOwner(u: scala.reflect.api.Universe)
+                         (tree: u.Tree, deletedOwner: u.Symbol, newOwner: u.Symbol) = {
+    import u._
+    val dup = tree // TODO: tree.duplicate (but does it keep positions??)
+
+    new Traverser {
+      override def traverse(tree: Tree) {
+        for (sym <- Option(tree.symbol); if sym != NoSymbol) {
+          if (sym.owner == deletedOwner) {
+            // println(s"FOUND SYM $sym WITH DELETED OWNER $deletedOwner;\n\tREPLACING WITH $newOwner")
+            call(sym, "owner_=", newOwner)
+            if (tree.isInstanceOf[DefTree]) {
+              val decls = newOwner.info.decls
+              // EmptyScope
+              if (decls.toString == "[]") {
+                // println(s"\nENTERING SYM IN NEW OWNER.")
+                call(decls, "enter", sym)
+              }
+            }
+          }
+          // else {
+          //   println(s"sym = $sym; owner = ${sym.owner}; deletedOwner = $deletedOwner; newOwner = $newOwner")
+          // }
+        }
+        super.traverse(tree)
+      }
+    } traverse dup
+
+    dup
+  }
   // TODO(ochafik): Remove this!
   def cast[A](a: Any): A = a.asInstanceOf[A]
 

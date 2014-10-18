@@ -31,7 +31,7 @@ private[streams] trait TransformationClosures
           (ScalarValue(param.symbol.typeSignature, alias = param.symbol.asOption), body)
       } collect {
         case (inputValue, BlockOrNot(statements, TuploidValue(outputValue))) =>
-          print(s"closureSymbol = ${closure.symbol}; tpe = ${closure.tpe}")
+          // println(s"closureSymbol = ${closure.symbol}; tpe = ${closure.tpe}")
           TransformationClosure(inputValue, statements, outputValue, closureSymbol = closure.symbol)
       }
     }
@@ -79,7 +79,7 @@ private[streams] trait TransformationClosures
       val replacer = getReplacer(inputs, streamInput.vars)
       val fullTransform = (tree: Tree) => {
         transform(
-          replaceDeletedOwner(
+          HacksAndWorkarounds.replaceDeletedOwner(global)(
             replacer(tree),
             deletedOwner = closureSymbol,
             newOwner = currentOwner))

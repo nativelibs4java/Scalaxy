@@ -21,17 +21,12 @@ package streams
   object impl
   {
     private[this] val verboseProperty = "scalaxy.streams.verbose"
-    private[this] val debugProperty = "scalaxy.streams.debug"
     private[this] val veryVerboseProperty = "scalaxy.streams.veryVerbose"
     private[this] val optimizeProperty = "scalaxy.streams.optimize"
 
     def disabled: Boolean =
       System.getenv("SCALAXY_STREAMS_OPTIMIZE") == "0" ||
       System.getProperty(optimizeProperty) == "false"
-
-    def debug: Boolean =
-      System.getenv("SCALAXY_STREAMS_DEBUG") == "1" ||
-      System.getProperty(debugProperty) == "true"
 
     def verbose: Boolean =
       veryVerbose ||
@@ -43,7 +38,6 @@ package streams
     }
 
     def veryVerbose: Boolean =
-      debug ||
       System.getenv("SCALAXY_STREAMS_VERY_VERBOSE") == "1" ||
       System.getProperty(veryVerboseProperty) == "true"
 
@@ -120,7 +114,7 @@ package streams
                         apiDefault(tree)
                     }
                   } else {
-                    if (impl.verbose) {
+                    if (impl.veryVerbose) {
                       c.info(
                         cast(tree.pos),
                         s"${Optimizations.messageHeader}Stream ${stream.describe()} is not worth optimizing with strategy $strategy",

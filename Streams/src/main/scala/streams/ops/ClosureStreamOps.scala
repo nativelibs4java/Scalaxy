@@ -13,7 +13,8 @@ private[streams] trait ClosureStreamOps extends StreamComponents with Transforma
     lazy val closureSymbol = closure.symbol
 
     // TODO: remove this stripBody nonsense (here to allow FlatMapOps to do some magics)
-    lazy val q"($param) => $body_" = transformationClosure
+    //lazy val q"($param) => $body_" = transformationClosure
+    lazy val q"($param) => $body_" = closure
     lazy val body = stripBody(body_)
     def stripBody(tree: Tree): Tree = tree
 

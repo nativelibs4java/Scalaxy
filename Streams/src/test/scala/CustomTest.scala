@@ -18,24 +18,26 @@ class CustomTest extends StreamComponentsTestBase with StreamTransforms {
   @Test
   def test = testMessages(
     """
-      val n = 10
-      val start = 0
-      val end = 100
+      val n = 10; for (i <- 0 to n; j <- i to 0 by -1) yield { i + j }
+      
+      // val n = 10
+      // val start = 0
+      // val end = 100
 
-      import scala.collection.mutable.ArrayBuffer
+      // import scala.collection.mutable.ArrayBuffer
 
-      private def withBuf[T : ClassTag](f: ArrayBuffer[T] => Unit): List[T] = {
-        val buf = ArrayBuffer[T]()
-        f(buf)
-        buf.toList
-      }
+      // private def withBuf[T : ClassTag](f: ArrayBuffer[T] => Unit): List[T] = {
+      //   val buf = ArrayBuffer[T]()
+      //   f(buf)
+      //   buf.toList
+      // }
 
-      withBuf[() => Int](res =>
-        optimize {
-          for (i <- start to end by 2)
-            res += (() => (i * 2))
-        }
-      )
+      // withBuf[() => Int](res =>
+      //   optimize {
+      //     for (i <- start to end by 2)
+      //       res += (() => (i * 2))
+      //   }
+      // )
 
 
 

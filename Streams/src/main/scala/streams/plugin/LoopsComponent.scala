@@ -116,7 +116,7 @@ class StreamsComponent(
                     super.transform(tree)
                 }
               } else {
-                if (impl.verbose) {
+                if (impl.veryVerbose) {
                   reporter.info(
                     tree.pos,
                     s"${Optimizations.messageHeader}Stream ${stream.describe()} is not worth optimizing with strategy $strategy",
