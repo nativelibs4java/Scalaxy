@@ -26,10 +26,13 @@ sealed trait Doc extends Dynamic {
   }
 
   @peel def selectDynamic(name: String): Col
+
   /** `doc.a = b` => `$set(a -> b)` */
   @updateDynFunc("$set") def updateDynamic(name: String)(value: Col): Col
+
   /** `doc -= a` => `$unset(a)` */
   @func1("$unset") def -=(n: String): Col
+
   /**  `doc.contains(k)` => `k $exists true`
    *  `!doc.contains(k)` => `k $exists false` */
   @testMeth1("$exists") def contains(key: String): BoolCol

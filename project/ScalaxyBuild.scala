@@ -74,11 +74,6 @@ object Scalaxy extends Build {
       }
     )
 
-  lazy val macroParadiseSettings =
-    Seq(
-      addCompilerPlugin("org.scala-lang.plugins" % "macro-paradise" % "2.0.0-SNAPSHOT" cross CrossVersion.full)
-    )
-
   lazy val standardSettings =
     Defaults.defaultSettings ++
     infoSettings ++
@@ -89,9 +84,12 @@ object Scalaxy extends Build {
       javacOptions ++= Seq("-Xlint:unchecked"),
       scalacOptions ++= Seq(
         "-encoding", "UTF-8",
-        // "-optimise",
         "-deprecation",
         "-Xlog-free-types",
+        "-optimise",
+        "-Yclosure-elim",
+        "-Yinline",
+        // "-Ybackend:GenBCode",
         // "-Xlog-free-terms",
         // "-Yinfer-debug",
         //"-Xlog-implicits",
@@ -317,10 +315,7 @@ object Scalaxy extends Build {
 
   lazy val js =
     Project(id = "scalaxy-js", base = file("Experiments/JS"), settings = reflectSettings ++ Seq(
-      // addCompilerPlugin("org.scala-lang.plugins" % "macro-paradise_2.10.4" % "2.0.1"),
       libraryDependencies += "com.google.javascript" % "closure-compiler" % "v20130722"
-      // scalaVersion := "2.10.3-RC1"
-
     ))
 
   lazy val json =
@@ -362,8 +357,8 @@ object Scalaxy extends Build {
 
   lazy val casbahDSL =
     Project(id = "scalaxy-casbah-dsl", base = file("CasbahDSL"), settings = reflectSettings ++ Seq(
-      libraryDependencies += "org.mongodb" %% "casbah" % "2.6.3"
-    ) ++ macroParadiseSettings)
+      libraryDependencies += "org.mongodb" %% "casbah" % "2.7.3"
+    ))
 
   lazy val beans =
     Project(id = "scalaxy-beans", base = file("Beans"), settings = reflectSettings)
@@ -384,7 +379,6 @@ object Scalaxy extends Build {
   lazy val streams =
     Project(id = "scalaxy-streams", base = file("Streams"), settings = reflectSettings ++ Seq(
       // version := "0.2.1",
-      // addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.0-SNAPSHOT" cross CrossVersion.full),
       watchSources <++= baseDirectory map { path => (path / "examples" ** "*.scala").get }
     ))
 
