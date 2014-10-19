@@ -74,22 +74,24 @@ private[streams] trait Streams
 
         // TODO: List.map is not worth optimizing, because of its (unfair) hand-optimized implementation.
         // TODO: explain when veryVerbose
-        case scalaxy.streams.optimization.safer =>
+        case scalaxy.streams.strategy.safer =>
           // At least one lambda, at most one closure with any severity of side-effect.
+          // This means hashCode / equals / toString / + and similar methods
+          // are not trusted in this mode.
           lambdaCount >= 1 &&
           closureSideEffectss.filter(_ != Nil).size <= 1
 
-        case scalaxy.streams.optimization.safe =>
+        case scalaxy.streams.strategy.safe =>
           // At least one lambda, at most one closure with Unsafe side-effects (allow ProbablySafe side-effects).
           lambdaCount >= 1 && !hasMoreThanOneLambdaWithUnsafeSideEffect
 
-        case scalaxy.streams.optimization.aggressive =>
+        case scalaxy.streams.strategy.aggressive =>
           // At least one lambda, warn if there is more than one closure with Unsafe side-effects.
           reportIgnoredUnsafeSideEffects()
 
           lambdaCount >= 1
 
-        case scalaxy.streams.optimization.foolish =>
+        case scalaxy.streams.strategy.foolish =>
           // Optimize everything, even when there's no lambda at all (e.g. `(0 to 10).toList`), with same side-effect
           // warnings as for `aggressive`.
           reportIgnoredUnsafeSideEffects()
@@ -97,7 +99,7 @@ private[streams] trait Streams
           ops.length > 0 || hasExplicitSink
 
         case _ =>
-          assert(strategy == scalaxy.streams.optimization.none)
+          assert(strategy == scalaxy.streams.strategy.none)
           false
       }
 

@@ -76,7 +76,7 @@ class StreamsComponent(
           override def transform(tree: Tree) = tree match {
             case SomeStream(stream) =>
               val strategy = getStrategy(tree.pos)
-              if (impl.verbose && strategy != lastStrategy) {
+              if (impl.veryVerbose && strategy != lastStrategy) {
                 reporter.info(tree.pos, s"${Optimizations.messageHeader}Strategy = $strategy", force = true)
                 lastStrategy = strategy
               }

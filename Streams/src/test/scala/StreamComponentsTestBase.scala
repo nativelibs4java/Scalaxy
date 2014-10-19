@@ -19,18 +19,6 @@ trait StreamComponentsTestBase extends Utils
   val commonOptions = "-usejavacp -optimise -Yclosure-elim -Yinline "//-Ybackend:GenBCode"
   import scala.reflect.runtime.currentMirror
 
-  object S {
-    import global._
-    def unapply(symbol: Symbol): Option[String] =
-      Option(symbol).map(_.name.toString)
-  }
-
-  object N {
-    import global._
-    def unapply(name: Name): Option[String] =
-      Option(name).map(_.toString)
-  }
-
   def typecheck(t: global.Tree): global.Tree = {
     val toolbox = currentMirror.mkToolBox(options = commonOptions)
     toolbox.typecheck(t.asInstanceOf[toolbox.u.Tree]).asInstanceOf[global.Tree]
@@ -77,7 +65,7 @@ trait StreamComponentsTestBase extends Utils
     src
   }
 
-  def testMessages(source: String, expectedMessages: CompilerMessages, strategy: OptimizationStrategy = scalaxy.streams.optimization.aggressive) {
+  def testMessages(source: String, expectedMessages: CompilerMessages, strategy: OptimizationStrategy = scalaxy.streams.strategy.aggressive) {
 
     def filterWarnings(warnings: List[String]) =
       warnings.filterNot(_ == "a pure expression does nothing in statement position; you may be omitting necessary parentheses")

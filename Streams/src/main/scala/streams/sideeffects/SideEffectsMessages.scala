@@ -19,13 +19,9 @@ private[streams] trait SideEffectsMessages
 
   private[this] val assumedSideEffectFreeMessageSuffix = "generally assumed to be side-effect free"
 
-  private[this] def anyMethodMessage(name: String) =
+  def anyMethodMessage(name: String) =
     s"Any.$name is $assumedSideEffectFreeMessageSuffix"
 
-  lazy val ProbablySafeNullaryNames = termNamesMessages(Map(
-    "hashCode" -> anyMethodMessage("hashCode"),
-    "toString" -> anyMethodMessage("toString")
-  ))
   private[this] val aritMessage = s"Arithmetic / ensemblist operators are $assumedSideEffectFreeMessageSuffix"
 
   lazy val ProbablySafeUnaryNames = termNamesMessages(Map(
@@ -33,7 +29,6 @@ private[streams] trait SideEffectsMessages
     "-" -> aritMessage,
     "/" -> aritMessage,
     "*" -> aritMessage,
-    "equals" -> anyMethodMessage("equals"),
     "++" -> s"Collection composition is $assumedSideEffectFreeMessageSuffix",
     "--" -> s"Collection composition is $assumedSideEffectFreeMessageSuffix"
     // "canBuildFrom" -> s"CanBuildFrom's are $assumedSideEffectFreeMessageSuffix",

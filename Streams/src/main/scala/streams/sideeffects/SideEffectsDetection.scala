@@ -89,13 +89,31 @@ private[streams] trait SideEffectsDetection
       }
     }
 
+    // println("TRAVERSING " + tree)
+
     new Traverser {
       override def traverse(tree: Tree) {
         tree match {
           case SomeStream(stream) if !stream.ops.isEmpty || stream.hasExplicitSink =>
+            // println("FOUND stream " + stream)
             for (sub <- stream.subTrees; if tree != sub) {
               assert(tree != sub, s"stream = $stream, sub = $sub")
+              // println("\tFOUND sub " + sub)
+            
               traverse(sub)
+            }
+
+          case SelectOrApply(qualifier, N(name @ ("hashCode" | "toString")), Nil, Nil | List(Nil)) =>
+            keepWorstSideEffect {
+              addEffect(SideEffect(tree, anyMethodMessage(name), SideEffectSeverity.ProbablySafe))
+              traverse(qualifier)
+            }
+
+          case SelectOrApply(qualifier, N("equals"), Nil, List(List(other))) =>
+            keepWorstSideEffect {
+              addEffect(SideEffect(tree, anyMethodMessage("equals"), SideEffectSeverity.ProbablySafe))
+              traverse(qualifier)
+              traverse(other)
             }
 
           case Assign(_, _) | Function(_, _) |
@@ -117,9 +135,6 @@ private[streams] trait SideEffectsDetection
                 isSideEffectFree(sym)
               if (!safeSymbol) {
                 (name, argss) match {
-                  case (ProbablySafeNullaryNames(msg), (Nil | List(Nil))) =>
-                    addEffect(SideEffect(tree, msg, SideEffectSeverity.ProbablySafe))
-
                   case (ProbablySafeUnaryNames(msg), (List(_) :: _)) =>
                     addEffect(SideEffect(tree, msg, SideEffectSeverity.ProbablySafe))
 
@@ -127,7 +142,7 @@ private[streams] trait SideEffectsDetection
                     addEffect(
                       SideEffect(
                         tree,
-                        s"Unknown reference / call (local symbols: $localSymbols",
+                        s"Unknown reference / call",// (local symbols: $localSymbols",
                         SideEffectSeverity.Unsafe))
                 }
               }

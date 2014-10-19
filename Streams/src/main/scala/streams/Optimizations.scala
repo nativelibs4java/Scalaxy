@@ -22,10 +22,10 @@ object Optimizations
 
     optimizationStrategyValue match {
       case EmptyTree =>
-        scalaxy.streams.optimization.global
+        scalaxy.streams.strategy.global
 
       case strategyTree =>
-        scalaxy.streams.optimization.forName(strategyTree.symbol.name.toString)
+        scalaxy.streams.OptimizationStrategy.forName(strategyTree.symbol.name.toString).get
     }
   }
 }

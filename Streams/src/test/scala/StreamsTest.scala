@@ -2,6 +2,8 @@ package scalaxy.streams
 
 package test
 
+import SideEffectSeverity._
+
 import org.junit._
 import org.junit.Assert._
 
@@ -77,39 +79,16 @@ class StreamsTest extends StreamComponentsTestBase with StreamTransforms {
     """)
   }
 
-  import SideEffectSeverity._
-
-  @Test
-  def testFlatMapSideEffects {
-    val SomeStream(stream) = typecheck(q"""
-      for (i <- 0 to 10;
-           j <- i to 1 by -1;
-           if i % 2 == 1)
-        yield { i + j }
-    """)
-    assertEquals(Nil, stream.closureSideEffectss.flatten)
-  }
-
   @Test
   def testBasicSideEffects {
-    // val SomeStream(stream) = typecheck(q"""
-    //   (0 to 10).map(i => { println(i); i }).map(i => { new Object().toString + i })
-    // """)
-    // assertEquals(List(Unsafe, ProbablySafe), stream.closureSideEffectss.flatten)
-
-
     val SomeStream(stream) = typecheck(q"""
+      (0 to 10).map(i => { println(i); i }).map(println)
+    """)
+    assertEquals(List(Unsafe, Unsafe), stream.closureSideEffectss.flatten.map(_.severity))
+
+    val SomeStream(stream2) = typecheck(q"""
       (0 to 10).map(i => { new Object().toString + i })
     """)
-    assertEquals(List(Unsafe, ProbablySafe), stream.closureSideEffectss.flatten)
+    assertEquals(List(Unsafe), stream2.closureSideEffectss.flatten.map(_.severity))
   }
-
-  // @Test
-  // def testNest {
-  //   val x = q"""
-  //     ((x$2: (Int, Int)) => (x$2: (Int, Int) @unchecked) match {
-  //       case (_1: Int, _2: Int)(Int, Int)((j @ _), (jj @ _)) => scala.this.Predef.intWrapper(i.+(j)).to(Example2.this.n).map[(Int, Int, Int), scala.collection.immutable.IndexedSeq[(Int, Int, Int)]](((k: Int) => scala.Tuple3.apply[Int, Int, Int](ii, jj, k)))(immutable.this.IndexedSeq.canBuildFrom[(Int, Int, Int)])
-  //     })
-  //   """
-  // }
 }

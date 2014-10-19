@@ -10,6 +10,14 @@ private[streams] trait Utils {
     def unapply(from: From): Option[To]
   }
 
+  object S {
+    def unapply(symbol: Symbol) = Option(symbol).map(_.name.toString)
+  }
+
+  object N {
+    def unapply(name: Name) = Option(name).map(_.toString)
+  }
+
   implicit class SymbolExtensions(s: Symbol) {
     def asOption: Option[Symbol] =
       if (s == NoSymbol) None else Some(s)

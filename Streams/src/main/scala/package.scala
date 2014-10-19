@@ -60,7 +60,7 @@ package streams
         c.mirror.staticClass(_),
         tpe => c.inferImplicitValue(tpe, pos = a.tree.pos))
 
-      if (impl.verbose) {
+      if (impl.veryVerbose) {
         c.info(a.tree.pos, s"${Optimizations.messageHeader}Strategy = $strategy", force = true)
       }
 

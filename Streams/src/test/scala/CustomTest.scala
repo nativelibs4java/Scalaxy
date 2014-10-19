@@ -51,6 +51,6 @@ class CustomTest extends StreamComponentsTestBase with StreamTransforms {
 //      for (v <- Array(1, 2, 3)) yield v + 1
     """,
     streamMsg("Array.map -> Array"),
-    strategy = scalaxy.streams.optimization.foolish
+    strategy = scalaxy.streams.strategy.foolish
   )
 }
