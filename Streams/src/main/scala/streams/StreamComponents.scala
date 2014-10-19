@@ -14,7 +14,7 @@ private[streams] trait StreamComponents extends StreamResults with SideEffects {
 
     def lambdaCount: Int = 0
 
-    def closureSideEffects: List[SideEffect] = Nil
+    def closureSideEffectss: List[List[SideEffect]] = Nil
 
     def emit(input: StreamInput,
              outputNeeds: OutputNeeds,

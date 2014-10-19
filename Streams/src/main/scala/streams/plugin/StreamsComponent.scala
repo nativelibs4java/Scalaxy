@@ -58,6 +58,8 @@ class StreamsComponent(
               throw new RuntimeException("Failed to untype " + tree, ex)
             }
 
+          private var lastStrategy: OptimizationStrategy = null
+
           def getStrategy(pos: Position) =
             Optimizations.matchStrategyTree(global)(
               rootMirror.staticClass(_),
@@ -75,6 +77,10 @@ class StreamsComponent(
           override def transform(tree: Tree) = tree match {
             case SomeStream(stream) =>
               val strategy = getStrategy(tree.pos)
+              if (impl.verbose && strategy != lastStrategy) {
+                reporter.info(tree.pos, s"${Optimizations.messageHeader}Strategy = $strategy", force = true)
+                lastStrategy = strategy
+              }
               if (stream.isWorthOptimizing(strategy, reporter.info(_, _, force = true), reporter.warning)) {
 
                 reporter.info(

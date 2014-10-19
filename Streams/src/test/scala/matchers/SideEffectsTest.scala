@@ -13,83 +13,113 @@ class SideEffectsTest extends StreamComponentsTestBase with SideEffects {
   import global._
   import SideEffectSeverity._
 
-  def sideEffects(tree: Tree): List[SideEffectSeverity] = {
+  def expectSideEffectSeverities(expected: List[SideEffectSeverity], tree: Tree) {
     val effects = analyzeSideEffects(typecheck(tree))
-    // effects.foreach(println(_))
-    effects.map(_.severity)
+    val actual = effects.map(_.severity)
+    if (actual != expected) {
+      effects.foreach(println(_))
+      assertEquals(expected, actual)
+    }
   }
 
   @Test
   def safeCases {
-    assertEquals(List(), sideEffects(
-      q"(x: Int) => x + 1"))
-    assertEquals(List(), sideEffects(
-      q"""(x: String) => x + "" """))
-    assertEquals(List(), sideEffects(
-      q"(x: List[Int]) => x ++ List(1, 2)"))
-    assertEquals(List(), sideEffects(
-      q"(x: List[Int]) => 1 :: x"))
-    assertEquals(List(), sideEffects(
-      q"(x: Set[Int]) => x + 1"))
-    assertEquals(List(), sideEffects(
-      q"(x: Set[Int]) => x ++ Set(1)"))
-    assertEquals(List(), sideEffects(
-      q"{ val x = 10; x + 1 }"))
-    assertEquals(List(), sideEffects(
-      q"{ var x = 10; x += 1 }"))
-    assertEquals(List(), sideEffects(
-      q"{ def x = 10; x }"))
+    expectSideEffectSeverities(List(),
+      q"(x: Int) => x + 1")
+    expectSideEffectSeverities(List(),
+      q"""(x: String) => x + "" """)
+    expectSideEffectSeverities(List(),
+      q"(x: List[Int]) => x ++ List(1, 2)")
+    expectSideEffectSeverities(List(),
+      q"(x: List[Int]) => 1 :: x")
+    expectSideEffectSeverities(List(),
+      q"(x: Set[Int]) => x + 1")
+    expectSideEffectSeverities(List(),
+      q"(x: Set[Int]) => x ++ Set(1)")
+    expectSideEffectSeverities(List(),
+      q"{ val x = 10; x + 1 }")
+    expectSideEffectSeverities(List(),
+      q"{ var x = 10; x += 1 }")
+    expectSideEffectSeverities(List(),
+      q"{ def x = 10; x }")
+
+    expectSideEffectSeverities(List(),
+      q"Array.canBuildFrom[String]")
   }
 
   @Test
   def probablySafeCases {
-    assertEquals(List(ProbablySafe), sideEffects(
-      q"(x: { def +(a: Any): Any }) => x + 1"))
-    assertEquals(List(ProbablySafe), sideEffects(
-      q"(x: { def -(a: Any): Any }) => x - 1"))
-    assertEquals(List(ProbablySafe), sideEffects(
-      q"(x: { def *(a: Any): Any }) => x * 1"))
-    assertEquals(List(ProbablySafe), sideEffects(
-      q"(x: { def -(a: Any): Any }) => x - 1"))
-    assertEquals(List(ProbablySafe), sideEffects(
-      q"(x: { def ++(a: Any): Any }) => x ++ 1"))
-    assertEquals(List(ProbablySafe), sideEffects(
-      q"(x: { def --(a: Any): Any }) => x -- 1"))
-    assertEquals(List(ProbablySafe), sideEffects(
-      q"(x: Any) => x.toString"))
-    assertEquals(List(ProbablySafe), sideEffects(
-      q"(x: Any) => x.hashCode"))
+    expectSideEffectSeverities(List(ProbablySafe),
+      q"(x: { def +(a: Any): Any }) => x + 1")
+    expectSideEffectSeverities(List(ProbablySafe),
+      q"(x: { def -(a: Any): Any }) => x - 1")
+    expectSideEffectSeverities(List(ProbablySafe),
+      q"(x: { def *(a: Any): Any }) => x * 1")
+    expectSideEffectSeverities(List(ProbablySafe),
+      q"(x: { def -(a: Any): Any }) => x - 1")
+    expectSideEffectSeverities(List(ProbablySafe),
+      q"(x: { def ++(a: Any): Any }) => x ++ 1")
+    expectSideEffectSeverities(List(ProbablySafe),
+      q"(x: { def --(a: Any): Any }) => x -- 1")
+    expectSideEffectSeverities(List(ProbablySafe),
+      q"(x: Any) => x.toString")
+    expectSideEffectSeverities(List(ProbablySafe),
+      q"(x: Any) => x.hashCode")
 
-    assertEquals(List(ProbablySafe), sideEffects(
-      q"(x: collection.mutable.Set[Int]) => x + 1"))
-    assertEquals(List(ProbablySafe), sideEffects(
-      q"(x: collection.mutable.Set[Int]) => x ++ Set(1)"))
+    expectSideEffectSeverities(List(ProbablySafe),
+      q"(x: collection.mutable.Set[Int]) => x + 1")
+    expectSideEffectSeverities(List(ProbablySafe),
+      q"(x: collection.mutable.Set[Int]) => x ++ Set(1)")
   }
 
   @Test
   def unsafeCases {
-    assertEquals(List(Unsafe), sideEffects(
-      q"(x: { def beh: Any }) => x.beh"))
-    assertEquals(List(Unsafe), sideEffects(
-      q"(x: { def +=(a: Any): Any }) => x += 1"))
-    assertEquals(List(Unsafe), sideEffects(
-      q"(x: { def -=(a: Any): Any }) => x -= 1"))
+    expectSideEffectSeverities(List(Unsafe),
+      q"new Object()")
+    expectSideEffectSeverities(List(Unsafe),
+      q"new Object().toString")
+    expectSideEffectSeverities(List(Unsafe),
+      q"(x: { def beh: Any }) => x.beh")
+    expectSideEffectSeverities(List(Unsafe),
+      q"(x: { def +=(a: Any): Any }) => x += 1")
+    expectSideEffectSeverities(List(Unsafe),
+      q"(x: { def -=(a: Any): Any }) => x -= 1")
 
-    assertEquals(List(Unsafe), sideEffects(
-      q"(x: Int) => x + scalaxy.streams.test.SideEffectsTest.foo"))
-    assertEquals(List(Unsafe), sideEffects(
-      q"(x: List[Int]) => scalaxy.streams.test.SideEffectsTest.list ++= x"))
-    assertEquals(List(Unsafe), sideEffects(
-      q"(x: collection.mutable.ListBuffer[Int]) => x += 1"))
-    assertEquals(List(Unsafe), sideEffects(
-      q"System.getProperty(null)"))
+    expectSideEffectSeverities(List(Unsafe),
+      q"(x: Int) => x + scalaxy.streams.test.SideEffectsTest.foo")
+    expectSideEffectSeverities(List(Unsafe),
+      q"(x: List[Int]) => scalaxy.streams.test.SideEffectsTest.list ++= x")
+    expectSideEffectSeverities(List(Unsafe),
+      q"(x: collection.mutable.ListBuffer[Int]) => x += 1")
+    expectSideEffectSeverities(List(Unsafe),
+      q"System.getProperty(null)")
   }
 
   @Test
   def unsafeCasesThatShouldBeRelaxedToProbablySafe {
-    assertEquals(List(Unsafe), sideEffects(q"""{
-      var x: collection.mutable.ListBuffer[Int] = null
-      x += 1
-    }"""))
+    expectSideEffectSeverities(List(Unsafe),
+      q"""{
+        var x: collection.mutable.ListBuffer[Int] = null
+        x += 1
+      }""")
+  }
+
+  @Test
+  def collections {
+    // Note: these will likely be rewritten away by Scalaxy's optimizer.
+    expectSideEffectSeverities(List(),
+      q"""{
+        val n = 10;
+        for (i <- 0 to n;
+             j <- i to 1 by -1;
+             if i % 2 == 1)
+          yield { i + j }
+      }""")
+    expectSideEffectSeverities(List(ProbablySafe),
+      q"""
+        for ((a, i) <- Array(Array(1)).zipWithIndex; len = a.length; if len < i) yield {
+          a + ", " + len + ", " + i
+        }
+      """)
   }
 }

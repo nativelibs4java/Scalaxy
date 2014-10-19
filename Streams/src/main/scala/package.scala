@@ -28,6 +28,7 @@ package streams
       System.getenv("SCALAXY_STREAMS_OPTIMIZE") == "0" ||
       System.getProperty(optimizeProperty) == "false"
 
+    // TODO: optimize this (trait).
     def verbose: Boolean =
       veryVerbose ||
       System.getenv("SCALAXY_STREAMS_VERBOSE") == "1" ||
@@ -59,7 +60,9 @@ package streams
         c.mirror.staticClass(_),
         tpe => c.inferImplicitValue(tpe, pos = a.tree.pos))
 
-      // println(s"strategy = $strategy")
+      if (impl.verbose) {
+        c.info(a.tree.pos, s"${Optimizations.messageHeader}Strategy = $strategy", force = true)
+      }
 
       if (disabled) {
         a

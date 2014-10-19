@@ -43,14 +43,17 @@ private[streams] trait SideEffectsMessages
     "toString" -> anyMethodMessage("toString")
   ))
   private[this] val aritMessage = s"Arithmetic / ensemblist operators are $assumedSideEffectFreeMessageSuffix"
+
   lazy val ProbablySafeUnaryNames = termNamesMessages(Map(
     "+" -> aritMessage,
     "-" -> aritMessage,
     "/" -> aritMessage,
     "*" -> aritMessage,
     "equals" -> anyMethodMessage("equals"),
-    "++" -> (s"Collection composition is $assumedSideEffectFreeMessageSuffix"),
-    "--" -> (s"Collection composition is $assumedSideEffectFreeMessageSuffix")
+    "++" -> s"Collection composition is $assumedSideEffectFreeMessageSuffix",
+    "--" -> s"Collection composition is $assumedSideEffectFreeMessageSuffix",
+    "canBuildFrom" -> s"CanBuildFrom's are $assumedSideEffectFreeMessageSuffix",
+    "zipWithIndex" -> s"zipWithIndex is $assumedSideEffectFreeMessageSuffix"
   ))
 }
 
@@ -61,68 +64,38 @@ private[streams] trait SideEffects extends SideEffectsMessages
 
   case class SideEffect(tree: Tree, description: String, severity: SideEffectSeverity)
 
-  private[this] def hasSymbol(sym: Symbol): Boolean = sym != null && sym != NoSymbol
-
-  private[this] lazy val immutablePackage = rootMirror.staticPackage("scala.collection.immutable")
-
-  lazy val PredefModule = rootMirror.staticModule("scala.Predef")
-  lazy val PredefTpe = PredefModule.moduleClass.asType.toType
-
-  private[this] lazy val predefImmutableSymbols = Set[Symbol](
-    rootMirror.staticClass("java.lang.String"),
-    rootMirror.staticClass("scala.collection.SetLike"),
-    rootMirror.staticClass("scala.collection.SeqLike"),
-    rootMirror.staticClass("scala.collection.generic.GenericCompanion"),
-//    (PredefTpe member TermName("Set")),
-//    (PredefTpe member TermName("Map")),
-    definitions.LongTpe.typeSymbol,
-    definitions.IntTpe.typeSymbol,
-    definitions.ShortTpe.typeSymbol,
-    definitions.ByteTpe.typeSymbol,
-    definitions.CharTpe.typeSymbol,
-    definitions.FloatTpe.typeSymbol,
-    definitions.DoubleTpe.typeSymbol,
-    definitions.UnitTpe.typeSymbol,
-    definitions.BooleanTpe.typeSymbol
-  )
-  private[this] def isImmutableSymbol(sym: Symbol): Boolean = {
-    val isImmutable = predefImmutableSymbols(sym) ||
-      // TODO: fix this symbol equality issue, as usual...
-      sym.owner.fullName == immutablePackage.fullName// ||
-      // sym.owner == PredefModule && (
-      //   sym.typeSignature <:< typeOf[Set[_]] ||
-      //   sym.typeSignature <:< typeOf[List[_]]
-      // )
-
-    // if (!isImmutable) {
-    //   println(s"isImmutableSymbol($sym = ${sym.fullName}) = $isImmutable (owner = ${sym.owner.fullName})")
-    // }
-
-    isImmutable
-  }
-  private[this] def isSideEffectFree(sym: Symbol): Boolean = {
-    // TODO support @nosideeffects annotation.
-    val result = {
-      if (sym.isPackage) {
-        // Note: class-loader and other similar runtime side-effects are negliged.
-        true
-      } else if (sym.isMethod) {
-        isImmutableSymbol(sym.owner)
-      } else if (isImmutableSymbol(sym)) {
-        true
-      // } else if (sym.isModule || sym.isClass) {
-      //   isImmutableSymbol(sym)
-      } else if (sym.isTerm) {
-        // TODO: what is considered stable?
-        sym.asTerm.isStable
-      } else {
-        // println(s"TODO Symbol $sym (${sym.getClass}")
-        false
-      }
+  implicit class RichSymbol(sym: Symbol) {
+    def enclosingPackage: Symbol = {
+      var sym = this.sym
+      while (sym != NoSymbol && !sym.isPackageClass && !sym.isPackage)
+        sym = sym.owner
+      sym
     }
+    def enclosingClass: Symbol = {
+      def encl(sym: Symbol): Symbol =
+        if (sym.isClass || sym == NoSymbol) sym else encl(sym.owner)
+      encl(this.sym)
+    }
+  }
+
+  private[this] def isSideEffectFree(sym: Symbol): Boolean = {
+    import SideEffectsWhitelists._
+
+    val result =
+      sym.isPackage ||
+      whitelistedSymbols(sym.fullName) ||
+      whitelistedClasses(sym.enclosingClass.fullName) ||
+      whitelistedPackages(sym.enclosingPackage.fullName)
+
     // if (!result) {
-    //   println(s"isSideEffectFree($sym = ${sym.fullName}) = $result (owner = ${sym.owner.fullName}, owner.isImmutable = ${isImmutableSymbol(sym.owner)}")
+    //   println(s"""
+    //     isSideEffectFree($sym = ${sym.fullName}) = $result
+    //       owner = ${sym.owner.fullName}
+    //       enclosingClass = ${sym.enclosingClass.fullName}
+    //       enclosingPackage = ${sym.enclosingPackage.fullName}
+    //   """)
     // }
+
     result
   }
 
@@ -149,7 +122,20 @@ private[streams] trait SideEffects extends SideEffectsMessages
 
   def analyzeSideEffects(tree: Tree): List[SideEffect] = {
     val effects = ArrayBuffer[SideEffect]()
+    def addEffect(e: SideEffect) {
+      effects += e
+    }
     var localSymbols = Set[Symbol]()
+    new Traverser {
+      override def traverse(tree: Tree) {
+        tree match {
+          case (_: DefTree) | ValDef(_, _, _, _) if Option(tree.symbol).exists(_ != NoSymbol) =>
+            localSymbols += tree.symbol
+          case _ =>
+        }
+        super.traverse(tree)
+      }
+    } traverse tree
 
     def keepWorstSideEffect(block: => Unit) {
       val size = effects.size
@@ -160,59 +146,73 @@ private[streams] trait SideEffects extends SideEffectsMessages
         var worstEffect = effects.find(_.severity == worstSeverity).get
         effects.remove(size, effects.size - size)
         effects += worstEffect
+
+        // println(s"""
+        //   Side-Effect:
+        //     tree: ${worstEffect.tree}
+        //     tree.symbol = ${worstEffect.tree.symbol} (${Option(worstEffect.tree.symbol).map(_.fullName)}}
+        //     description: ${worstEffect.description}
+        //     severity: ${worstEffect.severity}
+        // """)
       }
     }
 
     new Traverser {
 
       override def traverse(tree: Tree) {
-        def treeHasSafeSymbol: Boolean =
-          localSymbols.contains(tree.symbol) ||
-          isSideEffectFree(tree.symbol)
-
+        
         tree match {
-          case TypeTree() | EmptyTree | Function(_, _) | Literal(_) | Block(_, _) =>
+          case Assign(_, _) |
+              TypeTree() | EmptyTree | Function(_, _) | Literal(_) | Block(_, _) |
+              Match(_, _) | Typed(_, _) | This(_) |
+              (_: DefTree) =>
             super.traverse(tree)
 
-          case Assign(_, _) =>
-            super.traverse(tree)
-
-          case SelectOrApply(qualifier, ProbablySafeNullaryNames(msg), _, List(Nil)) =>
-            if (!treeHasSafeSymbol) {
-              keepWorstSideEffect {
-                effects += SideEffect(tree, msg, SideEffectSeverity.ProbablySafe)
-                traverse(qualifier)
-              }
-            }
-
-          case SelectOrApply(qualifier, ProbablySafeUnaryNames(msg), _, argss @ (List(_) :: _)) =>
-            // println(s"SelectOrApply(argss = $argss)")
-            if (!treeHasSafeSymbol) {
-              keepWorstSideEffect {
-                effects += SideEffect(tree, msg, SideEffectSeverity.ProbablySafe)
-                traverse(qualifier)
-              }
-            }
-            argss.foreach(_.foreach(traverse(_)))
+          case CaseDef(_, guard, body) =>
+            traverse(guard)
+            traverse(body)
 
           case SelectOrApply(qualifier, name, _, argss) =>
-            if (!treeHasSafeSymbol) {
-              keepWorstSideEffect {
-                effects += SideEffect(tree, "Unknown reference / call",
-                  SideEffectSeverity.Unsafe)
-                traverse(qualifier)
-              }
-            }
-            argss.foreach(_.foreach(traverse(_)))
+            keepWorstSideEffect {
+              val sym = tree.symbol
+              val safeSymbol =
+                localSymbols.contains(sym) ||
+                isSideEffectFree(sym)
+              if (!safeSymbol) {
+                (name, argss) match {
+                  case (ProbablySafeNullaryNames(msg), (Nil | List(Nil))) =>
+                    addEffect(SideEffect(tree, msg, SideEffectSeverity.ProbablySafe))
 
-          case (_: DefTree) | ValDef(_, _, _, _) if hasSymbol(tree.symbol) =>
-            localSymbols += tree.symbol
-            super.traverse(tree)
+                  case (ProbablySafeUnaryNames(msg), (List(_) :: _)) =>
+                    addEffect(SideEffect(tree, msg, SideEffectSeverity.ProbablySafe))
+
+                  case _ =>
+                    addEffect(
+                      SideEffect(
+                        tree,
+                        s"Unknown reference / call (local symbols: $localSymbols",
+                        SideEffectSeverity.Unsafe))
+                }
+              }
+
+              traverse(qualifier)
+              // if (!(safeSymbol && sym.isTerm && sym.asTerm.isStable)) {
+                // println(s"""
+                //   sym: $sym
+                //   sym.isStable: ${sym.asTerm.isStable}
+                // """)
+              // }
+              argss.foreach(_.foreach(traverse(_)))
+            }
+
+          // case (_: DefTree) | ValDef(_, _, _, _) if Option(tree.symbol).exists(_ != NoSymbol) =>
+          //   localSymbols += tree.symbol
+          //   super.traverse(tree)
 
           case _ =>
             val msg = s"TODO: proper message for ${tree.getClass.getName}: $tree"
             // new RuntimeException(msg).printStackTrace()
-            effects += SideEffect(tree, msg, SideEffectSeverity.Unsafe)
+            addEffect(SideEffect(tree, msg, SideEffectSeverity.Unsafe))
             super.traverse(tree)
         }
       }

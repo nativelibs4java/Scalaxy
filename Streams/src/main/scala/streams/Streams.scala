@@ -46,7 +46,8 @@ private[streams] trait Streams
 
     val components: List[StreamComponent] = (source :: ops) :+ sink
     def lambdaCount: Int = components.map(_.lambdaCount).sum
-    lazy val closureSideEffectss: List[List[SideEffect]] = components.map(_.closureSideEffects)
+    lazy val closureSideEffectss: List[List[SideEffect]] =
+      components.flatMap(_.closureSideEffectss)
 
     // TODO: refine this.
     def isWorthOptimizing(strategy: OptimizationStrategy,
@@ -66,6 +67,7 @@ private[streams] trait Streams
           }
         }
       }
+
       val result = strategy match {
 
         // TODO: List.map is not worth optimizing, because of its (unfair) hand-optimized implementation.

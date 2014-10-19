@@ -77,6 +77,33 @@ class StreamsTest extends StreamComponentsTestBase with StreamTransforms {
     """)
   }
 
+  import SideEffectSeverity._
+
+  @Test
+  def testFlatMapSideEffects {
+    val SomeStream(stream) = typecheck(q"""
+      for (i <- 0 to 10;
+           j <- i to 1 by -1;
+           if i % 2 == 1)
+        yield { i + j }
+    """)
+    assertEquals(Nil, stream.closureSideEffectss.flatten)
+  }
+
+  @Test
+  def testBasicSideEffects {
+    // val SomeStream(stream) = typecheck(q"""
+    //   (0 to 10).map(i => { println(i); i }).map(i => { new Object().toString + i })
+    // """)
+    // assertEquals(List(Unsafe, ProbablySafe), stream.closureSideEffectss.flatten)
+
+
+    val SomeStream(stream) = typecheck(q"""
+      (0 to 10).map(i => { new Object().toString + i })
+    """)
+    assertEquals(List(Unsafe, ProbablySafe), stream.closureSideEffectss.flatten)
+  }
+
   // @Test
   // def testNest {
   //   val x = q"""
