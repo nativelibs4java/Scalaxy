@@ -10,6 +10,8 @@ private[streams] trait CanBuildFromSinks
 
   class CanBuildFromSink(canBuildFrom: Tree) extends BuilderSink
   {
+    override def subTrees = List(canBuildFrom)
+
     val TypeRef(_, _, List(_, _, toTpe: Type)) = {
       val sym = rootMirror.staticClass("scala.collection.generic.CanBuildFrom")
       canBuildFrom.tpe.baseType(sym)

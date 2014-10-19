@@ -8,6 +8,8 @@ private[streams] trait OptionSinks extends StreamComponents {
   {
     override def lambdaCount = 0
 
+    override def subTrees = Nil
+
     def whenSome(value: Tree): Tree
     def whenNone(): Tree
 

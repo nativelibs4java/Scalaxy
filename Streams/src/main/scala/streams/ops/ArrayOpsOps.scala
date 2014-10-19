@@ -1,6 +1,9 @@
 package scalaxy.streams
 
-private[streams] trait ArrayOpsOps extends StreamComponents with ArrayOpsSinks {
+private[streams] trait ArrayOpsOps
+    extends StreamComponents
+    with ArrayOpsSinks
+{
   val global: scala.reflect.api.Universe
   import global._
 

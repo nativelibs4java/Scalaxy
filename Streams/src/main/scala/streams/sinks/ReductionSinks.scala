@@ -57,6 +57,7 @@ private[streams] trait ReductionSinks extends StreamComponents {
     override def describe = Some("sum")
     override def initialAccumulatorValue = q"0"
     override def throwsIfEmpty = false
+    override def subTrees = Nil
     override def accumulate(accumulator: Tree, newValue: Tree): Tree =
       q"$accumulator + $newValue"
   }
@@ -66,6 +67,7 @@ private[streams] trait ReductionSinks extends StreamComponents {
     override def describe = Some("product")
     override def initialAccumulatorValue = q"1"
     override def throwsIfEmpty = false
+    override def subTrees = Nil
     override def accumulate(accumulator: Tree, newValue: Tree): Tree =
       q"$accumulator * $newValue"
   }

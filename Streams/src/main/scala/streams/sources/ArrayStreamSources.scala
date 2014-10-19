@@ -26,6 +26,7 @@ private[streams] trait ArrayStreamSources
     extends StreamSource
   {
     override def lambdaCount = 0
+    override def subTrees = List(array)
 
     override def emit(input: StreamInput,
                       outputNeeds: OutputNeeds,

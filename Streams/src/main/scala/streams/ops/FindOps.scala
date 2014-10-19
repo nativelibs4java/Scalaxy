@@ -1,6 +1,9 @@
 package scalaxy.streams
 
-private[streams] trait FindOps extends ClosureStreamOps with Strippers with OptionSinks
+private[streams] trait FindOps
+    extends ClosureStreamOps
+    with Strippers
+    with OptionSinks
 {
   val global: scala.reflect.api.Universe
   import global._

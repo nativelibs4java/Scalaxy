@@ -48,6 +48,8 @@ private[streams] trait Streams
     def lambdaCount: Int = components.map(_.lambdaCount).sum
     lazy val closureSideEffectss: List[List[SideEffect]] =
       components.flatMap(_.closureSideEffectss)
+    lazy val subTrees: List[Tree] =
+      components.flatMap(_.subTrees)
 
     // TODO: refine this.
     def isWorthOptimizing(strategy: OptimizationStrategy,

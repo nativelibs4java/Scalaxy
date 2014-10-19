@@ -22,6 +22,8 @@ private[streams] trait ZipWithIndexOps
 
     override def canAlterSize = false
 
+    override def subTrees = List(canBuildFrom)
+
     override val sinkOption = Some(CanBuildFromSink(canBuildFrom))
 
     override def transmitOutputNeedsBackwards(paths: Set[TuploidPath]) = {

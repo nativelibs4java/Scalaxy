@@ -12,6 +12,8 @@ private[streams] trait ArrayBuilderSinks extends BuilderSinks {
 
     override def lambdaCount = 0
 
+    override def subTrees = Nil
+
     override def usesSizeHint = true
 
     // TODO build array of same size as source collection if it is known.

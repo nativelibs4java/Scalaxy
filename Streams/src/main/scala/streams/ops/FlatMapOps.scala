@@ -58,6 +58,10 @@ private[streams] trait FlatMapOps
 
     override def lambdaCount = 1 + nestedStream.map(_.lambdaCount).getOrElse(0)
 
+    override def subTrees =
+      nestedStream.map(_.subTrees).
+        getOrElse(super.subTrees)
+
     override def closureSideEffectss =
       nestedStream.map(_.closureSideEffectss).
         getOrElse(super.closureSideEffectss)

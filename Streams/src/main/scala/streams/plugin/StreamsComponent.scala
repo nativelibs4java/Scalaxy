@@ -42,7 +42,6 @@ class StreamsComponent(
       if (!impl.disabled) {
         val transformer = new TypingTransformer(unit) {
 
-          // val typed: Tree => Tree = localTyper.typed(_)
           private[this] val typed: Tree => Tree =
             (tree: Tree) => try {
               localTyper.typed(tree)

@@ -1,6 +1,8 @@
 package scalaxy.streams
 
-private[streams] trait ClosureStreamOps extends StreamComponents with TransformationClosures
+private[streams] trait ClosureStreamOps
+    extends StreamComponents
+    with TransformationClosures
 {
   val global: scala.reflect.api.Universe
   import global._
@@ -9,6 +11,7 @@ private[streams] trait ClosureStreamOps extends StreamComponents with Transforma
     def closure: Function
     def isMapLike: Boolean = true
     override def lambdaCount = 1
+    override def subTrees: List[Tree] = List(closure)
     private[this] def closureSideEffects = analyzeSideEffects(closure)
     override def closureSideEffectss = List(closureSideEffects)
 

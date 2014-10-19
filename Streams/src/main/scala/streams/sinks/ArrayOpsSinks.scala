@@ -11,6 +11,7 @@ private[streams] trait ArrayOpsSinks extends ArrayBuilderSinks {
     override def isFinalOnly = true
     override def describe = Some("ArrayOps")
     override def lambdaCount = 0
+    override def subTrees = Nil
 
     private[this] val arrayOpsClass = "scala.collection.mutable.ArrayOps"
     private[this] lazy val anyValOpsClassNameByType: Map[Type, String] = Map(

@@ -9,7 +9,11 @@ object SideEffectsTest {
   var list = List[Int]()
 }
 
-class SideEffectsTest extends StreamComponentsTestBase with SideEffects {
+class SideEffectsTest
+    extends StreamComponentsTestBase
+    with SideEffectsDetection
+    with StreamTransforms
+{
   import global._
   import SideEffectSeverity._
 
@@ -115,7 +119,7 @@ class SideEffectsTest extends StreamComponentsTestBase with SideEffects {
              if i % 2 == 1)
           yield { i + j }
       }""")
-    expectSideEffectSeverities(List(ProbablySafe),
+    expectSideEffectSeverities(List(),
       q"""
         for ((a, i) <- Array(Array(1)).zipWithIndex; len = a.length; if len < i) yield {
           a + ", " + len + ", " + i

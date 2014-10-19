@@ -11,6 +11,8 @@ private[streams] trait VectorBuilderSinks extends BuilderSinks {
     override def describe = Some("Vector")
 
     override def lambdaCount = 0
+    
+    override def subTrees = Nil
 
     override def usesSizeHint = false
 

@@ -41,6 +41,8 @@ private[streams] trait OptionStreamSources
 
     override def lambdaCount = 0
 
+    override def subTrees = List(option)
+
     override def emit(input: StreamInput,
                       outputNeeds: OutputNeeds,
                       nextOps: OpsAndOutputNeeds): StreamOutput =
@@ -97,6 +99,8 @@ private[streams] trait OptionStreamSources
     override def describe = Some(if (isSome) "Some" else "Option")
 
     override def lambdaCount = 0
+
+    override def subTrees = List(item)
 
     override def emit(input: StreamInput,
                       outputNeeds: OutputNeeds,

@@ -10,6 +10,8 @@ private[streams] trait UnusableSinks extends StreamComponents {
 
     override def lambdaCount = 0
 
+    override def subTrees = Nil
+
     override def outputNeeds = Set()
 
     override def emit(input: StreamInput, outputNeeds: OutputNeeds, nextOps: OpsAndOutputNeeds): StreamOutput =

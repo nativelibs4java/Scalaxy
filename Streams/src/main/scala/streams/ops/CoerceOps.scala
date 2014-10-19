@@ -32,6 +32,7 @@ private[streams] trait CoerceOps
     override def lambdaCount = 1
     override def sinkOption = None
     override def canAlterSize = true
+    override def subTrees = Nil
 
     override def transmitOutputNeedsBackwards(paths: Set[TuploidPath]) =
       if (paths.isEmpty)

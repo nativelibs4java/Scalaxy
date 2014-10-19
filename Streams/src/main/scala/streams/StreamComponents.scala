@@ -1,6 +1,9 @@
 package scalaxy.streams
 
-private[streams] trait StreamComponents extends StreamResults with SideEffects {
+private[streams] trait StreamComponents
+    extends StreamResults
+    with SideEffects
+{
   val global: scala.reflect.api.Universe
   import global._
 
@@ -11,6 +14,8 @@ private[streams] trait StreamComponents extends StreamResults with SideEffects {
     def describe: Option[String]
 
     def sinkOption: Option[StreamSink]
+
+    def subTrees: List[Tree]
 
     def lambdaCount: Int = 0
 
@@ -73,6 +78,8 @@ private[streams] trait StreamComponents extends StreamResults with SideEffects {
     override def describe: Option[String] = None
 
     override def canAlterSize = false
+
+    override def subTrees = Nil
 
     override def transmitOutputNeedsBackwards(paths: Set[TuploidPath]) = paths
 

@@ -44,6 +44,8 @@ private[streams] trait InlineRangeStreamSources
 
     override def lambdaCount = 0
 
+    override def subTrees = List(start, end)
+
     override def sinkOption = Some(VectorBuilderSink)
 
     override def emit(input: StreamInput,
