@@ -12,9 +12,11 @@ case class IntegrationTest(name: String, source: String, expectedMessages: Compi
 
 object IntegrationTests
 {
+  def strategy = scalaxy.streams.strategy.default
+
   def streamMsg(streamDescriptions: String*) =
     CompilerMessages(
-      infos = streamDescriptions.map(Optimizations.optimizedStreamMessage(_)).toList)
+      infos = streamDescriptions.map(Optimizations.optimizedStreamMessage(_, strategy)).toList)
 
   def data: List[IntegrationTest] = List[(String, CompilerMessages)](
 

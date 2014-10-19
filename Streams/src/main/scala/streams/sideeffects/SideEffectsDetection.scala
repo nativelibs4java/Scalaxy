@@ -99,7 +99,7 @@ private[streams] trait SideEffectsDetection
             for (sub <- stream.subTrees; if tree != sub) {
               assert(tree != sub, s"stream = $stream, sub = $sub")
               // println("\tFOUND sub " + sub)
-            
+
               traverse(sub)
             }
 

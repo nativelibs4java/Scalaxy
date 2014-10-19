@@ -57,8 +57,6 @@ class StreamsComponent(
               throw new RuntimeException("Failed to untype " + tree, ex)
             }
 
-          private var lastStrategy: OptimizationStrategy = null
-
           def getStrategy(pos: Position) =
             Optimizations.matchStrategyTree(global)(
               rootMirror.staticClass(_),
@@ -76,15 +74,11 @@ class StreamsComponent(
           override def transform(tree: Tree) = tree match {
             case SomeStream(stream) =>
               val strategy = getStrategy(tree.pos)
-              if (impl.veryVerbose && strategy != lastStrategy) {
-                reporter.info(tree.pos, s"${Optimizations.messageHeader}Strategy = $strategy", force = true)
-                lastStrategy = strategy
-              }
               if (stream.isWorthOptimizing(strategy, reporter.info(_, _, force = true), reporter.warning)) {
 
                 reporter.info(
                   tree.pos,
-                  Optimizations.optimizedStreamMessage(stream.describe()),
+                  Optimizations.optimizedStreamMessage(stream.describe(), strategy),
                   force = impl.verbose)
 
                 try {
@@ -102,7 +96,7 @@ class StreamsComponent(
                   if (impl.veryVerbose) {
                     reporter.info(
                       tree.pos,
-                      s"${Optimizations.messageHeader}Result for ${stream.describe()}:\n$result",
+                      Optimizations.messageHeader + s"Result for ${stream.describe()}:\n$result",
                       force = impl.verbose)
                   }
                   // println(result)
@@ -124,7 +118,7 @@ class StreamsComponent(
                 if (impl.veryVerbose) {
                   reporter.info(
                     tree.pos,
-                    s"${Optimizations.messageHeader}Stream ${stream.describe()} is not worth optimizing with strategy $strategy",
+                    Optimizations.messageHeader + s"Stream ${stream.describe()} is not worth optimizing with strategy $strategy",
                     force = impl.verbose)
                 }
                 super.transform(tree)

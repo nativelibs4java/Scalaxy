@@ -19,15 +19,15 @@ private[streams] trait Streams
 
     def unapply(tree: Tree): Option[Stream] = tree match {
       case SomeStreamSink(SomeStreamOp(SomeStreamSource(source), ops), sink) =>
-        Some(new Stream(source, ops, sink, hasExplicitSink = true))
+        Some(new Stream(tree, source, ops, sink, hasExplicitSink = true))
 
       case SomeStreamOp(SomeStreamSource(source), ops) =>
         findSink(source :: ops).filter(_ != InvalidSink)
-          .map(sink => new Stream(source, ops, sink, hasExplicitSink = false))
+          .map(sink => new Stream(tree, source, ops, sink, hasExplicitSink = false))
 
       case SomeStreamSource(source) =>
         findSink(List(source)).filter(_ != InvalidSink)
-          .map(sink => new Stream(source, Nil, sink, hasExplicitSink = false))
+          .map(sink => new Stream(tree, source, Nil, sink, hasExplicitSink = false))
 
       case _ =>
         None
@@ -35,6 +35,7 @@ private[streams] trait Streams
   }
 
   case class Stream(
+      tree: Tree,
       source: StreamSource,
       ops: List[StreamOp],
       sink: StreamSink,
@@ -58,14 +59,14 @@ private[streams] trait Streams
       var reportedSideEffects = Set[SideEffect]()
 
       lazy val hasMoreThanOneLambdaWithUnsafeSideEffect =
-        closureSideEffectss.filter(_.contains(SideEffectSeverity.Unsafe)).size > 1
+        closureSideEffectss.filter(_.exists(_.severity == SideEffectSeverity.Unsafe)).size > 1
 
       def reportIgnoredUnsafeSideEffects(): Unit = {
         if (hasMoreThanOneLambdaWithUnsafeSideEffect) {
           for (effects <- closureSideEffectss; effect <- effects; if effect.severity == SideEffectSeverity.Unsafe) {
             reportedSideEffects += effect
             warning(effect.tree.pos, Optimizations.messageHeader +
-              s"Side effect might be cause issue with ${strategy.name} optimization strategy: ${effect.description}")
+              s"Potential side effect could cause issues with ${strategy.name} optimization strategy: ${effect.description}")
           }
         }
       }
@@ -108,6 +109,10 @@ private[streams] trait Streams
           info(effect.tree.pos, Optimizations.messageHeader + s"Side effect: ${effect.description}")
         }
       }
+      // if (impl.veryVerbose) {
+      //   info(this.tree.pos, Optimizations.messageHeader + s"strategy = $strategy, lambdaCount = $lambdaCount, closureSideEffectss = $closureSideEffectss\n\t" +
+      //     "isWorthOptimizing = " + result)
+      // }
 
       result
     }

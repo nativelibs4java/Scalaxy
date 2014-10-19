@@ -4,8 +4,10 @@ object Optimizations
 {
   def messageHeader = "[Scalaxy] "
 
-  def optimizedStreamMessage(streamDescription: String): String =
-      messageHeader + "Optimized stream: " + streamDescription
+  def optimizedStreamMessage(streamDescription: String, strategy: OptimizationStrategy): String =
+      messageHeader +
+      "Optimized stream " + streamDescription +
+      " (strategy: " + strategy.name + ")"
 
   def matchStrategyTree(u: scala.reflect.api.Universe)
                        (staticClass: String => u.TypeSymbol,
@@ -16,7 +18,7 @@ object Optimizations
     val optimizationStrategyValue: Tree = try {
       val tpe = staticClass("scalaxy.streams.OptimizationStrategy").asType.toType
       inferImplicitValue(tpe)
-    } catch { case _: Throwable =>
+    } catch { case ex: Throwable =>
       EmptyTree
     }
 
@@ -25,7 +27,7 @@ object Optimizations
         scalaxy.streams.strategy.global
 
       case strategyTree =>
-        scalaxy.streams.OptimizationStrategy.forName(strategyTree.symbol.name.toString).get
+        scalaxy.streams.strategy.forName(strategyTree.symbol.name.toString).get
     }
   }
 }

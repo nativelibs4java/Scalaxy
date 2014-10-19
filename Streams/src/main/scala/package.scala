@@ -60,9 +60,9 @@ package streams
         c.mirror.staticClass(_),
         tpe => c.inferImplicitValue(tpe, pos = a.tree.pos))
 
-      if (impl.veryVerbose) {
-        c.info(a.tree.pos, s"${Optimizations.messageHeader}Strategy = $strategy", force = true)
-      }
+      // if (impl.veryVerbose) {
+      //   c.info(a.tree.pos, Optimizations.messageHeader + s"Strategy = $strategy", force = true)
+      // }
 
       if (disabled) {
         a
@@ -90,7 +90,7 @@ package streams
                     // TODO: move this (+ equiv code in StreamsComponent) to isWorthOptimizing
                     c.info(
                       cast(tree.pos),
-                      Optimizations.optimizedStreamMessage(stream.describe()),
+                      Optimizations.optimizedStreamMessage(stream.describe(), strategy),
                       force = impl.verbose)
 
                     def untyped(tree: Tree): Tree = cast(c.untypecheck(cast(tree)))
@@ -109,7 +109,7 @@ package streams
                       if (impl.veryVerbose) {
                         c.info(
                           cast(tree.pos),
-                          s"${Optimizations.messageHeader}Result for ${stream.describe()}:\n$result",
+                          Optimizations.messageHeader + "Result for ${stream.describe()}:\n$result",
                           force = impl.verbose)
                       }
                       // safelyUnSymbolize(c)(cast(result))
@@ -124,7 +124,7 @@ package streams
                     if (impl.veryVerbose) {
                       c.info(
                         cast(tree.pos),
-                        s"${Optimizations.messageHeader}Stream ${stream.describe()} is not worth optimizing with strategy $strategy",
+                        Optimizations.messageHeader + s"Stream ${stream.describe()} is not worth optimizing with strategy $strategy",
                         force = impl.verbose)
                     }
                     apiDefault(tree)
