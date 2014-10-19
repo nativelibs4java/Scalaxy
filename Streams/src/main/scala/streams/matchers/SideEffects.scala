@@ -33,24 +33,24 @@ private[streams] trait SideEffectsMessages
   def termNamesMessages(m: Map[String, String]): ExtractibleMap[TermName, String] =
     m.map({ case (k, v) => TermName(NameTransformer.encode(k)) -> v })
 
-  private[this] val assumedMessageSuffix = "generally assumed to be side-effect free"
+  private[this] val assumedSideEffectFreeMessageSuffix = "generally assumed to be side-effect free"
 
   private[this] def anyMethodMessage(name: String) =
-    s"Any.$name is $assumedMessageSuffix"
+    s"Any.$name is $assumedSideEffectFreeMessageSuffix"
 
   lazy val ProbablySafeNullaryNames = termNamesMessages(Map(
     "hashCode" -> anyMethodMessage("hashCode"),
     "toString" -> anyMethodMessage("toString")
   ))
-  private[this] val aritMessage = s"Arithmetic / ensemblist operators are $assumedMessageSuffix"
+  private[this] val aritMessage = s"Arithmetic / ensemblist operators are $assumedSideEffectFreeMessageSuffix"
   lazy val ProbablySafeUnaryNames = termNamesMessages(Map(
     "+" -> aritMessage,
     "-" -> aritMessage,
     "/" -> aritMessage,
     "*" -> aritMessage,
     "equals" -> anyMethodMessage("equals"),
-    "++" -> (s"Collection composition is $assumedMessageSuffix"),
-    "--" -> (s"Collection composition is $assumedMessageSuffix")
+    "++" -> (s"Collection composition is $assumedSideEffectFreeMessageSuffix"),
+    "--" -> (s"Collection composition is $assumedSideEffectFreeMessageSuffix")
   ))
 }
 
@@ -67,20 +67,14 @@ private[streams] trait SideEffects extends SideEffectsMessages
 
   lazy val PredefModule = rootMirror.staticModule("scala.Predef")
   lazy val PredefTpe = PredefModule.moduleClass.asType.toType
-  // lazy val (PredefSetModule, PredefMapModule) = {
-  //   val q"$m; $s" = typed(q"Map; Set")
-  //   (m.symbol, s.symbol)
-  // }
 
   private[this] lazy val predefImmutableSymbols = Set[Symbol](
     rootMirror.staticClass("java.lang.String"),
     rootMirror.staticClass("scala.collection.SetLike"),
     rootMirror.staticClass("scala.collection.SeqLike"),
     rootMirror.staticClass("scala.collection.generic.GenericCompanion"),
-    (PredefTpe member TermName("Set")),
-    (PredefTpe member TermName("Map")),
-    // PredefSetModule,
-    // PredefMapModule,
+//    (PredefTpe member TermName("Set")),
+//    (PredefTpe member TermName("Map")),
     definitions.LongTpe.typeSymbol,
     definitions.IntTpe.typeSymbol,
     definitions.ShortTpe.typeSymbol,

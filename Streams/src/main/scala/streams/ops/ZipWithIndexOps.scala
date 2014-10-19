@@ -20,8 +20,6 @@ private[streams] trait ZipWithIndexOps
   {
     override def describe = Some("zipWithIndex")
 
-    override def lambdaCount = 0
-
     override def canAlterSize = false
 
     override val sinkOption = Some(CanBuildFromSink(canBuildFrom))

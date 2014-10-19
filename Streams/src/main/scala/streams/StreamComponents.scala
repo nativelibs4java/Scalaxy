@@ -1,6 +1,6 @@
 package scalaxy.streams
 
-private[streams] trait StreamComponents extends StreamResults {
+private[streams] trait StreamComponents extends StreamResults with SideEffects {
   val global: scala.reflect.api.Universe
   import global._
 
@@ -12,7 +12,9 @@ private[streams] trait StreamComponents extends StreamResults {
 
     def sinkOption: Option[StreamSink]
 
-    def lambdaCount: Int
+    def lambdaCount: Int = 0
+
+    def closureSideEffects: List[SideEffect] = Nil
 
     def emit(input: StreamInput,
              outputNeeds: OutputNeeds,

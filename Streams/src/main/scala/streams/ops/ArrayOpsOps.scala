@@ -25,8 +25,6 @@ private[streams] trait ArrayOpsOps extends StreamComponents with ArrayOpsSinks {
   case object ArrayOpsOp extends PassThroughStreamOp {
     // override def describe = Some("arrayOps")
     override val sinkOption = Some(ArrayOpsSink)
-
-    override def lambdaCount = 0
   }
 
 }

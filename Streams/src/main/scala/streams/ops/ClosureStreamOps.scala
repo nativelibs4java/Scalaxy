@@ -8,7 +8,8 @@ private[streams] trait ClosureStreamOps extends StreamComponents with Transforma
   trait ClosureStreamOp extends StreamOp {
     def closure: Function
     def isMapLike: Boolean = true
-    def lambdaCount = 1
+    override def lambdaCount = 1
+    override lazy val closureSideEffects = analyzeSideEffects(closure)
 
     lazy val closureSymbol = closure.symbol
 

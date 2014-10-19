@@ -44,27 +44,65 @@ private[streams] trait Streams
       (source :: ops).flatMap(_.describe).mkString(".") +
       sink.describe.filter(_ => describeSink).map(" -> " + _).getOrElse("")
 
-    def lambdaCount = ((source :: ops) :+ sink).map(_.lambdaCount).sum
+    val components: List[StreamComponent] = (source :: ops) :+ sink
+    def lambdaCount: Int = components.map(_.lambdaCount).sum
+    lazy val closureSideEffectss: List[List[SideEffect]] = components.map(_.closureSideEffects)
 
     // TODO: refine this.
-    def isWorthOptimizing(strategy: OptimizationStrategy) = {
+    def isWorthOptimizing(strategy: OptimizationStrategy,
+                          info: (Position, String) => Unit,
+                          warning: (Position, String) => Unit) = {
+      var reportedSideEffects = Set[SideEffect]()
+
+      lazy val hasMoreThanOneLambdaWithUnsafeSideEffect =
+        closureSideEffectss.filter(_.contains(SideEffectSeverity.Unsafe)).size > 1
+
+      def reportIgnoredUnsafeSideEffects(): Unit = {
+        if (hasMoreThanOneLambdaWithUnsafeSideEffect) {
+          for (effects <- closureSideEffectss; effect <- effects; if effect.severity == SideEffectSeverity.Unsafe) {
+            reportedSideEffects += effect
+            warning(effect.tree.pos, Optimizations.messageHeader +
+              s"Side effect might be cause issue with ${strategy.name} optimization strategy: ${effect.description}")
+          }
+        }
+      }
       val result = strategy match {
 
+        // TODO: List.map is not worth optimizing, because of its (unfair) hand-optimized implementation.
+        // TODO: explain when veryVerbose
+        case scalaxy.streams.optimization.safer =>
+          // At least one lambda, at most one closure with any severity of side-effect.
+          lambdaCount >= 1 &&
+          closureSideEffectss.filter(_ != Nil).size <= 1
+
         case scalaxy.streams.optimization.safe =>
-          // TODO: side-effects analysis to allow more cases where lambdaCount > 1
-          lambdaCount == 1
+          // At least one lambda, at most one closure with Unsafe side-effects (allow ProbablySafe side-effects).
+          lambdaCount >= 1 && !hasMoreThanOneLambdaWithUnsafeSideEffect
 
         case scalaxy.streams.optimization.aggressive =>
+          // At least one lambda, warn if there is more than one closure with Unsafe side-effects.
+          reportIgnoredUnsafeSideEffects()
+
           lambdaCount >= 1
 
         case scalaxy.streams.optimization.foolish =>
+          // Optimize everything, even when there's no lambda at all (e.g. `(0 to 10).toList`), with same side-effect
+          // warnings as for `aggressive`.
+          reportIgnoredUnsafeSideEffects()
+
           ops.length > 0 || hasExplicitSink
-          // true
 
         case _ =>
           assert(strategy == scalaxy.streams.optimization.none)
           false
       }
+
+      if (impl.veryVerbose) {
+        for (effects <- closureSideEffectss; effect <- effects; if !reportedSideEffects(effect)) {
+          info(effect.tree.pos, Optimizations.messageHeader + s"Side effect: ${effect.description}")
+        }
+      }
+
       result
     }
 

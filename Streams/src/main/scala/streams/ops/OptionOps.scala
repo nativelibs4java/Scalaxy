@@ -29,7 +29,5 @@ private[streams] trait OptionOps
 
     /// Since this output scalars, the size is brought down to 0.
     override def canAlterSize = true
-
-    override def lambdaCount = 0
   }
 }

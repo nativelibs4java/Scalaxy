@@ -68,6 +68,9 @@ package streams
           override val global = c.universe
           import global._
 
+          val info = (pos: Position, msg: String) => c.info(cast(pos), cast(msg), force = impl.verbose)
+          val warning = (pos: Position, msg: String) => c.warning(cast(pos), cast(msg))
+
           val result = try {
 
             c.internal.typingTransform(cast(a.tree))((tree_, api) => {
@@ -80,7 +83,8 @@ package streams
 
               val result = tree match {
                 case tree @ SomeStream(stream) =>
-                  if (stream.isWorthOptimizing(strategy)) {
+                  if (stream.isWorthOptimizing(strategy, info, warning)) {
+                    // TODO: move this (+ equiv code in StreamsComponent) to isWorthOptimizing
                     c.info(
                       cast(tree.pos),
                       Optimizations.optimizedStreamMessage(stream.describe()),

@@ -39,6 +39,7 @@ private[streams] trait CollectOps
     override def canInterruptLoop = false
     override def canAlterSize = true
     override def lambdaCount = 1
+    override def closureSideEffects = ???
     override val sinkOption = canBuildFrom.map(CanBuildFromSink(_))
     override def describe = Some("collect")
     override def transmitOutputNeedsBackwards(paths: Set[TuploidPath]) =
