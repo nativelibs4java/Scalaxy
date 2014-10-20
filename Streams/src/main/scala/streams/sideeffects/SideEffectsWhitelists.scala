@@ -22,7 +22,8 @@ object SideEffectsWhitelists {
   )
 
   private[this] lazy val whitelistedMethods = Set[String](
-    "scala.Array.canBuildFrom"
+    "scala.Array.canBuildFrom",
+    "scala.collection.generic.GenericCompanion.apply"
   )
 
   /**
@@ -36,10 +37,7 @@ object SideEffectsWhitelists {
 
   private[this] lazy val tupleSymbols: Set[String] = (2 until 22).map("scala.Tuple" + _).toSet
 
-  /**
-   * Any method of these classes is whitelisted.
-   */
-  lazy val whitelistedClasses = tupleSymbols ++ Set[String](
+  lazy val trulyImmutableClasses = tupleSymbols ++ Set[String](
     "scala.Long",
     "scala.Int",
     "scala.Short",
@@ -65,18 +63,25 @@ object SideEffectsWhitelists {
     "java.lang.Character",
     "java.lang.Float",
     "java.lang.Double",
-    "scala.reflect.ClassTag",
-    "scala.collection.TraversableLike",
-    "scala.collection.generic.FilterMonadic",
-    "scala.collection.SetLike",
-    "scala.collection.SeqLike",
-    "scala.collection.generic.GenericCompanion",
+    "java.lang.Class",
+    "scala.Predef.Class",
+    "scala.reflect.ClassTag"
+  )
+
+  /**
+   * Any method of these classes is whitelisted.
+   */
+  lazy val whitelistedClasses = trulyImmutableClasses ++ tupleSymbols ++ Set[String](
+    // "scala.collection.TraversableLike",
+    // "scala.collection.generic.FilterMonadic",
+    // "scala.collection.SetLike",
+    // "scala.collection.SeqLike",
+    // "scala.collection.generic.GenericCompanion",
 
     "scala.LowPriorityImplicits",
     "scala.Predef.any2stringadd",
     "scala.Predef.ArrayCharSequence",
     "scala.Predef.ArrowAssoc",
-    "scala.Predef.Class",
     "scala.Predef.DummyImplicit",
     "scala.Predef.Ensuring",
     "scala.Predef.Function",

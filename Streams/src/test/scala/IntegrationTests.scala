@@ -12,13 +12,12 @@ case class IntegrationTest(name: String, source: String, expectedMessages: Compi
 
 object IntegrationTests
 {
-  def strategy = scalaxy.streams.strategy.default
-
-  def streamMsg(streamDescriptions: String*) =
+  def streamMsg(streamDescriptions: String*)
+               (implicit strategy: scalaxy.streams.OptimizationStrategy) =
     CompilerMessages(
       infos = streamDescriptions.map(Optimizations.optimizedStreamMessage(_, strategy)).toList)
 
-  def data: List[IntegrationTest] = List[(String, CompilerMessages)](
+  def data(implicit strategy: scalaxy.streams.OptimizationStrategy): List[IntegrationTest] = List[(String, CompilerMessages)](
 
     // """{ object Foo { def doit(args: Array[String]) = args.length } ; Foo.doit(Array("1")) }"""
     //   -> CompilerMessages(),

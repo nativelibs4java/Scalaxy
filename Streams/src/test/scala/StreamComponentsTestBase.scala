@@ -65,7 +65,8 @@ trait StreamComponentsTestBase extends Utils
     src
   }
 
-  def testMessages(source: String, expectedMessages: CompilerMessages, strategy: OptimizationStrategy = scalaxy.streams.strategy.aggressive) {
+  def testMessages(source: String, expectedMessages: CompilerMessages)
+                  (implicit strategy: OptimizationStrategy = scalaxy.streams.strategy.aggressive) {
 
     def filterWarnings(warnings: List[String]) =
       warnings.filterNot(_ == "a pure expression does nothing in statement position; you may be omitting necessary parentheses")

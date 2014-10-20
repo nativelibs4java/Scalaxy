@@ -29,6 +29,8 @@ class SideEffectsTest
   @Test
   def safeCases {
     expectSideEffectSeverities(List(),
+      q""" "x".hashCode """)
+    expectSideEffectSeverities(List(),
       q"(x: Int) => x + 1")
     expectSideEffectSeverities(List(),
       q"""(x: String) => x + "" """)

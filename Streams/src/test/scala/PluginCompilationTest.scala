@@ -15,6 +15,9 @@ class PluginCompilationTest(name: String, source: String)
 }
 
 object PluginCompilationTest {
+
+  implicit def strategy = scalaxy.streams.strategy.default
+
   @Parameters(name = "{0}")
   def data: java.util.Collection[Array[AnyRef]] =
     IntegrationTests.data.map(t =>

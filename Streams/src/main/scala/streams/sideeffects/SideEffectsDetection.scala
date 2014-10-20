@@ -2,6 +2,8 @@ package scalaxy.streams
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.ListBuffer
 
+import scalaxy.streams.SideEffectsWhitelists._
+
 private[streams] trait SideEffectsDetection
     extends Streams
     with SideEffectsMessages
@@ -24,14 +26,22 @@ private[streams] trait SideEffectsDetection
   }
 
   private[this] def isSideEffectFree(sym: Symbol): Boolean = {
-    import SideEffectsWhitelists._
-
     val result =
       sym.isPackage ||
       whitelistedSymbols(sym.fullName) ||
       whitelistedClasses(sym.enclosingClass.fullName) ||
       whitelistedPackages(sym.enclosingPackage.fullName)
 
+    result
+  }
+
+  def isTrulyImmutableClass(tpe: Type): Boolean = tpe != null && {
+    val sym = tpe.typeSymbol
+    val result =
+      sym != null && sym != NoSymbol &&
+      trulyImmutableClasses(sym.fullName)
+
+    // println(s"isTrulyImmutableClass($sym) = $result")
     result
   }
 
@@ -103,13 +113,15 @@ private[streams] trait SideEffectsDetection
               traverse(sub)
             }
 
-          case SelectOrApply(qualifier, N(name @ ("hashCode" | "toString")), Nil, Nil | List(Nil)) =>
+          case SelectOrApply(qualifier, N(name @ ("hashCode" | "toString")), Nil, Nil | List(Nil))
+              if !isTrulyImmutableClass(qualifier.tpe) =>
             keepWorstSideEffect {
               addEffect(SideEffect(tree, anyMethodMessage(name), SideEffectSeverity.ProbablySafe))
               traverse(qualifier)
             }
 
-          case SelectOrApply(qualifier, N("equals"), Nil, List(List(other))) =>
+          case SelectOrApply(qualifier, N("equals" | "$eq$eq"), Nil, List(List(other)))
+              if !isTrulyImmutableClass(qualifier.tpe) =>
             keepWorstSideEffect {
               addEffect(SideEffect(tree, anyMethodMessage("equals"), SideEffectSeverity.ProbablySafe))
               traverse(qualifier)
@@ -132,17 +144,19 @@ private[streams] trait SideEffectsDetection
               val sym = tree.symbol
               val safeSymbol =
                 localSymbols.contains(sym) ||
-                isSideEffectFree(sym)
+                isSideEffectFree(sym) ||
+                isTrulyImmutableClass(tree.tpe)
+
               if (!safeSymbol) {
                 (name, argss) match {
                   case (ProbablySafeUnaryNames(msg), (List(_) :: _)) =>
-                    addEffect(SideEffect(tree, msg, SideEffectSeverity.ProbablySafe))
+                    addEffect(SideEffect(tree, msg + " (symbol: " + sym.fullName + ")", SideEffectSeverity.ProbablySafe))
 
                   case _ =>
                     addEffect(
                       SideEffect(
                         tree,
-                        s"Unknown reference / call",// (local symbols: $localSymbols",
+                        s"Reference to " + sym.fullName,// (local symbols: $localSymbols",
                         SideEffectSeverity.Unsafe))
                 }
               }

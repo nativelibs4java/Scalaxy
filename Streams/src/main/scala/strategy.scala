@@ -41,7 +41,7 @@ object strategy {
     if (name == null || name == "") None
     else Some(strategyByName(name))
 
-  val default: OptimizationStrategy = safe
+  implicit val default: OptimizationStrategy = safe
 
   private[streams] lazy val global: OptimizationStrategy =
     javaProp.orElse(envVarOpt).
