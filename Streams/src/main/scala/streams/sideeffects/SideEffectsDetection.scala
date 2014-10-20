@@ -54,7 +54,8 @@ private[streams] trait SideEffectsDetection
         case Select(target, name) =>
           (target, name, Nil, Nil)
 
-        case TypeApply(Select(target, name), targs) =>
+        case TypeApply(SelectOrApply(target, name, Nil, Nil), targs) =>
+        // case TypeApply(Select(target, name), targs) =>
           (target, name, targs, Nil)
 
         case Apply(SelectOrApply(target, name, targs, argss), newArgs) =>
@@ -128,25 +129,33 @@ private[streams] trait SideEffectsDetection
               traverse(other)
             }
 
-          case Assign(_, _) | Function(_, _) |
-              TypeTree() | EmptyTree |
-              Literal(_) | Block(_, _) |
-              Match(_, _) | Typed(_, _) | This(_) |
-              (_: DefTree) =>
-            super.traverse(tree)
-
-          case CaseDef(_, guard, body) =>
-            traverse(guard)
-            traverse(body)
-
           case SelectOrApply(qualifier, name, _, argss) =>
             keepWorstSideEffect {
               val sym = tree.symbol
+
+              def qualifierIsImmutable =
+                qualifier != EmptyTree &&
+                qualifier.tpe != null &&
+                qualifier.tpe != NoType &&
+                isTrulyImmutableClass(qualifier.tpe)
+
               val safeSymbol =
                 localSymbols.contains(sym) ||
                 isSideEffectFree(sym) ||
-                isTrulyImmutableClass(tree.tpe)
+                qualifierIsImmutable
 
+              // if (safeSymbol) {
+              //   println(s"""
+              //     SAFE SYMBOL(${sym.fullName})
+              //       qualifier: $qualifier
+              //       qualifier.tpe: ${qualifier.tpe}
+              //       qualifier.tpe.typeSymbol: ${qualifier.tpe.typeSymbol}
+              //       name: $name
+              //       localSymbols.contains(sym): ${localSymbols.contains(sym)}
+              //       isSideEffectFree(sym): ${isSideEffectFree(sym)}
+              //       isSideEffectFree(qualifier.tpe.typeSymbol): ${isSideEffectFree(qualifier.tpe.typeSymbol)}
+              //   """)
+              // }
               if (!safeSymbol) {
                 (name, argss) match {
                   case (ProbablySafeUnaryNames(msg), (List(_) :: _)) =>
@@ -171,8 +180,20 @@ private[streams] trait SideEffectsDetection
               argss.foreach(_.foreach(traverse(_)))
             }
 
+          case Assign(_, _) | Function(_, _) |
+              TypeTree() | EmptyTree |
+              Literal(_) | Block(_, _) |
+              Match(_, _) | Typed(_, _) | This(_) |
+              (_: DefTree) =>
+            super.traverse(tree)
+
+          case CaseDef(_, guard, body) =>
+            traverse(guard)
+            traverse(body)
+
           case _ =>
             val msg = s"TODO: proper message for ${tree.getClass.getName}: $tree"
+
             // new RuntimeException(msg).printStackTrace()
             addEffect(SideEffect(tree, msg, SideEffectSeverity.Unsafe))
             super.traverse(tree)

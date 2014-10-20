@@ -24,25 +24,25 @@ package streams
     private[this] val veryVerboseProperty = "scalaxy.streams.veryVerbose"
     private[this] val optimizeProperty = "scalaxy.streams.optimize"
 
-    def disabled: Boolean =
+    private[streams] def disabled: Boolean =
       System.getenv("SCALAXY_STREAMS_OPTIMIZE") == "0" ||
       System.getProperty(optimizeProperty) == "false"
 
     // TODO: optimize this (trait).
-    def verbose: Boolean =
+    private[streams] def verbose: Boolean =
       veryVerbose ||
       System.getenv("SCALAXY_STREAMS_VERBOSE") == "1" ||
       System.getProperty(verboseProperty) == "true"
 
-    def verbose_=(v: Boolean) {
+    private[streams] def verbose_=(v: Boolean) {
       System.setProperty(verboseProperty, v.toString)
     }
 
-    def veryVerbose: Boolean =
+    private[streams] def veryVerbose: Boolean =
       System.getenv("SCALAXY_STREAMS_VERY_VERBOSE") == "1" ||
       System.getProperty(veryVerboseProperty) == "true"
 
-    def veryVerbose_=(v: Boolean) {
+    private[streams] def veryVerbose_=(v: Boolean) {
       System.setProperty(veryVerboseProperty, v.toString)
     }
 
@@ -109,7 +109,7 @@ package streams
                       if (impl.veryVerbose) {
                         c.info(
                           cast(tree.pos),
-                          Optimizations.messageHeader + "Result for ${stream.describe()}:\n$result",
+                          Optimizations.messageHeader + s"Result for ${stream.describe()}:\n$result",
                           force = impl.verbose)
                       }
                       // safelyUnSymbolize(c)(cast(result))

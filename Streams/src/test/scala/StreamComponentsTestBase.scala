@@ -65,8 +65,9 @@ trait StreamComponentsTestBase extends Utils
     src
   }
 
-  def testMessages(source: String, expectedMessages: CompilerMessages)
-                  (implicit strategy: OptimizationStrategy = scalaxy.streams.strategy.aggressive) {
+  def testMessages(source: String, expectedMessages: CompilerMessages,
+                   expectWarningCount: Option[Int] = None)
+                  (implicit strategy: OptimizationStrategy) {
 
     def filterWarnings(warnings: List[String]) =
       warnings.filterNot(_ == "a pure expression does nothing in statement position; you may be omitting necessary parentheses")
@@ -83,8 +84,17 @@ trait StreamComponentsTestBase extends Utils
     }
 
     assertEquals(expectedMessages.infos, actualMessages.infos)
-    assertEquals(filterWarnings(expectedMessages.warnings).toSet,
-      filterWarnings(actualMessages.warnings).toSet)
+    expectWarningCount match {
+      case Some(count) =>
+        assert(expectedMessages.warnings.isEmpty)
+        assertEquals(actualMessages.warnings.toString,
+          count, actualMessages.warnings.size)
+
+      case None =>
+        assertEquals(
+          filterWarnings(expectedMessages.warnings).toSet,
+          filterWarnings(actualMessages.warnings).toSet)
+    }
     assertEquals(expectedMessages.errors, actualMessages.errors)
   }
 

@@ -1,6 +1,6 @@
 package scalaxy.streams
 
-object Optimizations
+private[streams] object Optimizations
 {
   def messageHeader = "[Scalaxy] "
 

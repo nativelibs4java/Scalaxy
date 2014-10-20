@@ -12,8 +12,8 @@ import scala.collection.JavaConversions._
 class MacroIntegrationTest(name: String, source: String, expectedMessages: CompilerMessages)
     extends StreamComponentsTestBase with StreamTransforms {
 
-  import MacroIntegrationTest.strategy
-  @Test def test = testMessages(source, expectedMessages)
+  @Test
+  def test = testMessages(source, expectedMessages)(MacroIntegrationTest.strategy)
 }
 
 object MacroIntegrationTest {

@@ -17,10 +17,10 @@ import scala.tools.nsc.transform.TypingTransformers
  *  > nodeToString(ast)
  *  > val DefDef(mods, name, tparams, vparamss, tpt, rhs) = ast // play with extractors to explore the tree and its properties.
  */
-object StreamsComponent {
+private[streams] object StreamsComponent {
   val phaseName = "scalaxy-streams"
 }
-class StreamsComponent(
+private[streams] class StreamsComponent(
   val global: Global, runAfter: String = "typer")
     extends PluginComponent
     with StreamTransforms

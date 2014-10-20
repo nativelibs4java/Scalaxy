@@ -2,7 +2,7 @@ package scalaxy.streams
 
 import scala.reflect.macros.blackbox.Context
 
-object HacksAndWorkarounds
+private[scalaxy] object HacksAndWorkarounds
 {
   def call(obj: Any, method: String, args: Any*): Any = {
     val cls = obj.getClass

@@ -4,7 +4,7 @@ import scala.collection.breakOut
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.ListBuffer
 
-object SideEffectsWhitelists {
+private[streams] object SideEffectsWhitelists {
 
   lazy val whitelistedSymbols: Set[String] =
     whitelistedPackages ++

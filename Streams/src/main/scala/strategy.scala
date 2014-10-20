@@ -28,6 +28,8 @@ object strategy {
   /** Performs all possible rewrites, even those known to be slower or unsafe. */
   implicit case object foolish extends OptimizationStrategy("foolish")
 
+  implicit val default: OptimizationStrategy = safe
+
   // /** Makes sure all possible lambdas are rewritten away. This may produce slower and unsafe code. */
   // implicit case object eliminateLambdas extends OptimizationStrategy("eliminateLambdas")
 
@@ -40,8 +42,6 @@ object strategy {
   def forName(name: String): Option[OptimizationStrategy] =
     if (name == null || name == "") None
     else Some(strategyByName(name))
-
-  implicit val default: OptimizationStrategy = safe
 
   private[streams] lazy val global: OptimizationStrategy =
     javaProp.orElse(envVarOpt).

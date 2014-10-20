@@ -58,8 +58,9 @@ private[streams] trait Streams
                           warning: (Position, String) => Unit) = {
       var reportedSideEffects = Set[SideEffect]()
 
-      lazy val hasMoreThanOneLambdaWithUnsafeSideEffect =
+      lazy val hasMoreThanOneLambdaWithUnsafeSideEffect = {
         closureSideEffectss.filter(_.exists(_.severity == SideEffectSeverity.Unsafe)).size > 1
+      }
 
       def reportIgnoredUnsafeSideEffects(): Unit = {
         if (hasMoreThanOneLambdaWithUnsafeSideEffect) {
@@ -106,7 +107,7 @@ private[streams] trait Streams
 
       if (impl.veryVerbose) {
         for (effects <- closureSideEffectss; effect <- effects; if !reportedSideEffects(effect)) {
-          info(effect.tree.pos, Optimizations.messageHeader + s"Side effect: ${effect.description}")
+          info(effect.tree.pos, Optimizations.messageHeader + s"Side effect: ${effect.description} (${effect.severity.description})")
         }
       }
       // if (impl.veryVerbose) {
