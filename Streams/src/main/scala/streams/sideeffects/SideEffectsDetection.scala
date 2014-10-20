@@ -28,9 +28,26 @@ private[streams] trait SideEffectsDetection
   private[this] def isSideEffectFree(sym: Symbol): Boolean = {
     val result =
       sym.isPackage ||
+      sym.isTerm && {
+        val tsym = sym.asTerm
+        tsym.isVal && tsym.isStable && !tsym.isLazy
+      } ||
       whitelistedSymbols(sym.fullName) ||
       whitelistedClasses(sym.enclosingClass.fullName) ||
       whitelistedPackages(sym.enclosingPackage.fullName)
+
+    // if (sym.isTerm) {
+    //   val tsym = sym.asTerm
+    //   println(s"""
+    //     sym = $sym
+    //     isFinal = ${tsym.isFinal}
+    //     isGetter = ${tsym.isGetter}
+    //     isLazy = ${tsym.isLazy}
+    //     isStable = ${tsym.isStable}
+    //     isVal = ${tsym.isVal}
+    //     result = $result
+    //   """)
+    // }
 
     result
   }
@@ -109,7 +126,6 @@ private[streams] trait SideEffectsDetection
             // println("FOUND stream " + stream)
             for (sub <- stream.subTrees; if tree != sub) {
               assert(tree != sub, s"stream = $stream, sub = $sub")
-              // println("\tFOUND sub " + sub)
 
               traverse(sub)
             }
@@ -171,12 +187,6 @@ private[streams] trait SideEffectsDetection
               }
 
               traverse(qualifier)
-              // if (!(safeSymbol && sym.isTerm && sym.asTerm.isStable)) {
-                // println(s"""
-                //   sym: $sym
-                //   sym.isStable: ${sym.asTerm.isStable}
-                // """)
-              // }
               argss.foreach(_.foreach(traverse(_)))
             }
 
@@ -194,12 +204,16 @@ private[streams] trait SideEffectsDetection
           case _ =>
             val msg = s"TODO: proper message for ${tree.getClass.getName}: $tree"
 
-            // new RuntimeException(msg).printStackTrace()
             addEffect(SideEffect(tree, msg, SideEffectSeverity.Unsafe))
             super.traverse(tree)
         }
       }
     } traverse tree
+
+    // println(s"SIDE EFFECTS $tree: ${effects.size}")
+    // for (e <- effects) {
+    //   println(s"\t$e")
+    // }
 
     effects.toList
   }

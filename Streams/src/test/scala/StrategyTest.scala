@@ -14,7 +14,6 @@ class StrategyTest extends StreamComponentsTestBase with StreamTransforms {
   scalaxy.streams.impl.verbose = true
   scalaxy.streams.impl.veryVerbose = false
 
-  // @Ignore
   @Test
   def testPrints {
     val src = """
@@ -22,29 +21,22 @@ class StrategyTest extends StreamComponentsTestBase with StreamTransforms {
       println()
     """
 
-    {
-      import scalaxy.streams.strategy.safer
-      testMessages(src, streamMsg("Range.map.map -> IndexedSeq"))
-    }
+    { import scalaxy.streams.strategy.safer
+      testMessages(src, streamMsg("Range.map.map -> IndexedSeq")) }
 
-    {
-      import scalaxy.streams.strategy.safe
-      testMessages(src, streamMsg("Range.map.map -> IndexedSeq"))
-    }
+    { import scalaxy.streams.strategy.safe
+      testMessages(src, streamMsg("Range.map.map -> IndexedSeq")) }
 
-    {
-      import scalaxy.streams.strategy.aggressive
+    { import scalaxy.streams.strategy.aggressive
       testMessages(src, streamMsg("Range.map.map.map -> IndexedSeq").
-        copy(warnings = potentialSideEffectMsgs("scala.Predef.print")))
-    }
+        copy(warnings = potentialSideEffectMsgs("scala.Predef.print"))) }
 
-    {
-      import scalaxy.streams.strategy.foolish
+    { import scalaxy.streams.strategy.foolish
       testMessages(src, streamMsg("Range.map.map.map -> IndexedSeq").
-        copy(warnings = potentialSideEffectMsgs("scala.Predef.print")))
-    }
+        copy(warnings = potentialSideEffectMsgs("scala.Predef.print"))) }
   }
 
+  // @Ignore
   @Test
   def testOutsider {
     val src = """
@@ -52,22 +44,17 @@ class StrategyTest extends StreamComponentsTestBase with StreamTransforms {
       print((0 to 10).map(outsider).map(_.toString + new Object().toString).map(outsider))
     """
 
-    {
-      import scalaxy.streams.strategy.safer
-      testMessages(src, streamMsg("Range.map -> IndexedSeq"))
-    }
-    {
-      // TODO: proper warnings regexp instead of just dummy count
-      import scalaxy.streams.strategy.safe
+    { import scalaxy.streams.strategy.safer
+      testMessages(src, streamMsg("Range.map -> IndexedSeq")) }
+
+    // TODO: proper warnings regexp instead of just dummy count
+    { import scalaxy.streams.strategy.safe
       testMessages(src, streamMsg("Range.map -> IndexedSeq"),
-        expectWarningCount = Some(2))
-    }
-    {
-      // TODO: proper warnings regexp instead of just dummy count
-      import scalaxy.streams.strategy.aggressive
+        expectWarningCount = Some(2)) }
+
+    { import scalaxy.streams.strategy.aggressive
       testMessages(src, streamMsg("Range.map.map.map -> IndexedSeq"),
-        expectWarningCount = Some(5))
-    }
+        expectWarningCount = Some(5)) }
   }
 
   // @Ignore
@@ -79,16 +66,12 @@ class StrategyTest extends StreamComponentsTestBase with StreamTransforms {
       def f(v: List[Tpe]) = v.map(_ +++ "ha!").filter(_.toString == null).map(_.hashCode)
     """
 
-    {
-      import scalaxy.streams.strategy.safer
+    { import scalaxy.streams.strategy.safer
       testMessages(src, streamMsg(
         "List.map -> List"//, "List.filter -> List", "List.map -> List"
-      ))
-    }
+      )) }
 
-    {
-      import scalaxy.streams.strategy.safe
-      testMessages(src, streamMsg("List.map.filter.map -> List"))
-    }
+    { import scalaxy.streams.strategy.safe
+      testMessages(src, streamMsg("List.map.filter.map -> List")) }
   }
 }

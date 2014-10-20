@@ -74,7 +74,7 @@ private[streams] class StreamsComponent(
           override def transform(tree: Tree) = tree match {
             case SomeStream(stream) =>
               val strategy = getStrategy(tree.pos)
-              if (stream.isWorthOptimizing(strategy, reporter.info(_, _, force = true), reporter.warning)) {
+              if (isWorthOptimizing(stream, strategy, reporter.info(_, _, force = true), reporter.warning)) {
 
                 reporter.info(
                   tree.pos,

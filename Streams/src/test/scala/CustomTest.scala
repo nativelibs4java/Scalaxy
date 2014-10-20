@@ -28,31 +28,26 @@ class CustomTest extends StreamComponentsTestBase with StreamTransforms {
   @Test
   def testPrints {
     val src = """
-      (0 to 1).map(i => { print(i); i }).map(_ * 2).map(i => { print(i); i })
-      println()
+      val n = 10;
+      for (i <- 0 to n;
+           j <- i to 1 by -1;
+           if i % 2 == 1)
+      yield { i + j }
     """
 
-    {
-      import scalaxy.streams.strategy.safer
-      testMessages(src, streamMsg("Range.map.map -> IndexedSeq"))
-    }
+    // { import scalaxy.streams.strategy.safer
+    //   testMessages(src, streamMsg("Range.flatMap(Range.withFilter.map) -> IndexedSeq")) }
 
-    {
-      import scalaxy.streams.strategy.safe
-      testMessages(src, streamMsg("Range.map.map -> IndexedSeq"))
-    }
+    // // TODO: proper warnings regexp instead of just dummy count
+    // { import scalaxy.streams.strategy.safe
+    //   testMessages(src, streamMsg("Range.flatMap(Range.withFilter.map) -> IndexedSeq")) }
 
-    {
-      import scalaxy.streams.strategy.aggressive
-      testMessages(src, streamMsg("Range.map.map.map -> IndexedSeq").
-        copy(warnings = potentialSideEffectMsgs("scala.Predef.print")))
-    }
+    { import scalaxy.streams.strategy.safer
+      testMessages(src, streamMsg("Range.flatMap(Range.withFilter.map) -> IndexedSeq")) }
 
-    {
-      import scalaxy.streams.strategy.foolish
-      testMessages(src, streamMsg("Range.map.map.map -> IndexedSeq").
-        copy(warnings = potentialSideEffectMsgs("scala.Predef.print")))
-    }
+    // { import scalaxy.streams.strategy.aggressive
+    //   testMessages(src, streamMsg("Range.flatMap(Range.withFilter.map) -> IndexedSeq").
+    //     copy(warnings = potentialSideEffectMsgs("scala.Predef.print"))) }
   }
 
   @Ignore

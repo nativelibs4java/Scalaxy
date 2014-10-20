@@ -5,4 +5,4 @@ private[streams] trait StreamTransforms
   with StreamSources
   with StreamSinks
   with StreamOps
-  with SideEffectsDetection
+  with Strategies
