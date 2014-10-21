@@ -4,6 +4,7 @@ Quick links:
 * [Usage with Sbt](#usage-with-sbt)
 * [Usage with Maven](#usage-with-maven)
 * [Usage on Eclipse](#usage-on-eclipse)
+* [Optimization Strategies](#optimization-strategies)
 * [TODO](#todo)
 
 Scalaxy/Streams makes your Scala 2.11.x collections code faster (official heir to [ScalaCL](https://code.google.com/p/scalacl/) and [Scalaxy/Loops](https://github.com/ochafik/Scalaxy/tree/master/Loops), by same author):
@@ -85,57 +86,6 @@ Scalaxy/Streams rewrites streams with the following components:
   * `Option.get`, `getOrElse`, `isEmpty`
 
 The output type of each optimized stream is always the same as the original, but when nested streams are encountered in `flatMap` operations many intermediate outputs can typically be skipped, saving up on memory usage and execution time.
-
-# Optimization Strategies
-
-Some collection streams should not be optimized, either because they're known to be already "as fast as possible", or because some of their operations have side-effects would behave differently once "optimized".
-
-There are 4 different optimization strategies:
-* `none`: don't optimize anything. This can be used to force the compiler plugin to skip a file / block of code:
-
-    ```scala
-    import scalaxy.streams.strategy.none
-    ...
-    ```
-
-* `safe` (default): only perform rewrites with an expected runtime benefit; assumes some common methods are reasonably side-effect-free: `hashCode`, `toString`, `equals`, `+`, `++`...
-* `safer`: like `safe` but does not trust `toString` methods and al.
-* `aggressive`: only perform rewrites with an expected runtime benefit, but don't pay attention to side-effects (some warnings will be issued, though). Code optimized with the `aggressive` strategy might behave differently than normal code: for instance, streams typically become lazy (akin to chained Iterators), so the optimization might change the number and order of side-effects:
-
-    ```scala
-      import scalaxy.streams.strategy.aggressive
-      (1 to 2).map(i => { println("first map, " + i); i })
-              .map(i => { println("second map, " + i); i })
-              .take(1)
-      // Without optimizations, this will print:
-      //   first map, 1
-      //   first map, 2
-      //   second map, 1
-      //   second map, 2
-
-      // With stream optimizations, this could *semantically* amount to the following:
-      (1 to 2).toIterator
-              .map(i => { println("first map, " + i); i })
-              .map(i => { println("second map, " + i); i })
-              .take(1)
-              .toSeq
-      // It will hence print:
-      //   first map, 1
-      //   second map, 1
-    }
-    ```
-
-* `foolish`: rewrites everything it can, even if it doesn't make sense regarding side-effects or performance. Don't use this unless you have specific goals such as reducing your code's runtime dependency to the standard library ([ScalaCL](https://code.google.com/p/scalacl/) uses this strategy).
-
-A strategy can be enabled by importing it in the scope of the compilation (works with the `optimize` macro as well as the compiler plugin):
-
-    ```scala
-    import scalaxy.streams.optimize
-    import scalaxy.streams.strategy.safer
-    optimize {
-      ...
-    }
-    ```
 
 # Usage
 
@@ -336,6 +286,65 @@ Special care is taken of tuples, by representing input and output values of stre
 Careful tracking of input, transformation and output of tuploids across stream components allows to optimize unneeded tuples away, while materializing or preserving needed ones (making `TransformationClosure` the most complex piece of code of the project).
 
 Finally, the cake pattern is used to assemble the source, ops, sink and stream extractors together with macro or compiler plugin universes.
+
+
+# Optimization Strategies
+
+Some collection streams should not be optimized, either because they're known to be already "as fast as possible", or because some of their operations have side-effects would behave differently once "optimized".
+
+There are 4 different optimization strategies:
+* `none`: don't optimize anything.
+* `safe` (default): only perform rewrites with an expected runtime benefit; assumes some common methods are reasonably side-effect-free: `hashCode`, `toString`, `equals`, `+`, `++`...
+* `safer`: like `safe` but does not trust `toString` methods and al.
+* `aggressive`: only perform rewrites with an expected runtime benefit, but don't pay attention to side-effects (some warnings will be issued, though). Code optimized with the `aggressive` strategy might behave differently than normal code: for instance, streams typically become lazy (akin to chained Iterators), so the optimization might change the number and order of side-effects:
+
+    ```scala
+      import scalaxy.streams.optimize
+      import scalaxy.streams.strategy.aggressive
+      optimize {
+        (1 to 2).map(i => { println("first map, " + i); i })
+                .map(i => { println("second map, " + i); i })
+                .take(1)
+      }
+      // Without optimizations, this would print:
+      //   first map, 1
+      //   first map, 2
+      //   second map, 1
+      //   second map, 2
+
+      // With stream optimizations, this *semantically* amounts to the following:
+      (1 to 2).toIterator
+              .map(i => { println("first map, " + i); i })
+              .map(i => { println("second map, " + i); i })
+              .take(1)
+              .toSeq
+      // It will hence print:
+      //   first map, 1
+      //   second map, 1
+    }
+    ```
+
+* `foolish`: rewrites everything it can, even if it doesn't make sense regarding side-effects or performance. Don't use this unless you have specific goals such as reducing your code's runtime dependency to the standard library ([ScalaCL](https://code.google.com/p/scalacl/) uses this strategy).
+
+When using the `optimize` macro, strategies can be enabled locally by an import:
+
+    ```scala
+    import scalaxy.streams.optimize
+    import scalaxy.streams.strategy.safer
+    optimize {
+      ...
+    }
+    ```
+
+The global strategy can also be set through the `SCALAXY_STREAMS_STRATEGY` environment variable, or the `scalaxy.streams.strategy` Java property:
+
+    ```
+    SCALAXY_STREAMS_STRATEGY=aggressive sbt clean run
+    ```
+
+    ```
+    scalac -J-Dscalaxy.streams.strategy=aggressive ...
+    ```
 
 # Hacking
 
