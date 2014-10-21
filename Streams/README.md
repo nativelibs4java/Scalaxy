@@ -241,7 +241,7 @@ With Maven, you'll need this in your `pom.xml` file:
 ## Usage on Eclipse
 
 The Scalaxy/Stream compiler plugin is easy to setup in Eclipse with the Scala IDE plugin:
-* Download the [stable scalaxy_streams_2.11 JAR on Maven Central](http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22scalaxy-streams_2.11%22), or the [snapshot JAR on Sonatype OSS](https://oss.sonatype.org/#nexus-search;quick~scalaxy_streams_2.11)
+* Download the [stable scalaxy_streams_2.11 JAR on Maven Central](http://search.maven.org/remotecontent?filepath=com/nativelibs4java/scalaxy-streams_2.11/0.3.0/scalaxy-streams_2.11-0.3.0.jar), or the [snapshot JAR on Sonatype OSS](https://oss.sonatype.org/#nexus-search;quick~scalaxy_streams_2.11)
 * Provide the full path to the jar in Project / Properties / Scala Compiler / Advanced / Xplugin
 
   ![advanced scala settings panel in eclipse](https://raw.githubusercontent.com/ochafik/Scalaxy/master/Streams/resources/scalaxy_settings_eclipse.png)
