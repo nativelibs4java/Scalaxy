@@ -96,6 +96,12 @@ object IntegrationTests
     "(0 to 2).map(i => (1, i))"
       -> streamMsg("Range.map -> IndexedSeq"),
 
+    "(0 to 2).map(i => (i, i))"
+      -> streamMsg("Range.map -> IndexedSeq"),
+
+    "(0 to 2).map(i => (i, 1))"
+      -> streamMsg("Range.map -> IndexedSeq"),
+
     "List(1, 2, 3).flatMap(v => List(v * 2, v * 2 + 1)).count(_ % 2 == 0)"
       -> streamMsg("List.flatMap(List).count"),
 

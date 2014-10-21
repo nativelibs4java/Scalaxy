@@ -54,6 +54,9 @@ private[streams] trait TuploidValues extends Utils
     def collectSet[B](pf: PartialFunction[(TuploidPath, TuploidValue[A]), B]): Set[B] =
       collect(pf).toSet
 
+    def collectMap[B, C](pf: PartialFunction[(TuploidPath, TuploidValue[A]), (B, C)]): Map[B, C] =
+      collect(pf).toMap
+
     def collect[B](pf: PartialFunction[(TuploidPath, TuploidValue[A]), B]): List[B] = {
       val res = collection.mutable.ListBuffer[B]()
       foreachDefined(pf andThen {
@@ -72,10 +75,10 @@ private[streams] trait TuploidValues extends Utils
       } traverse (RootTuploidPath, this)
     }
 
-    def collectAliases: Set[A] =
-      collectSet {
+    def collectAliases: Map[TuploidPath, A] =
+      collectMap {
         case (path, t) if t.alias.nonEmpty =>
-          t.alias.get
+          path -> t.alias.get
       }
 
     def collectValues: Seq[Tree] =

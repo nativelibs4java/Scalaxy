@@ -43,18 +43,30 @@ private[streams] trait TransformationClosures
       outputs: TuploidValue[Symbol],
       closureSymbol: Symbol)
   {
-    private[this] val inputSymbols: Set[Symbol] = inputs.collectAliases
-    private[this] val outputSymbols: Set[Symbol] = outputs.collectAliases
+    private[this] val inputSymbols: Set[Symbol] = inputs.collectAliases.values.toSet
+    private[this] val outputSymbols: Map[TuploidPath, Symbol] = outputs.collectAliases
 
     private[this] def usedInputs: Set[Symbol] = (statements ++ outputs.collectValues).flatMap(_.collect {
       case t: RefTree if inputSymbols(t.symbol) =>
         t.symbol
     })(breakOut)
 
-    private[this] val outputPathToInputPath: Map[TuploidPath, TuploidPath] =
-      outputSymbols.filter(inputSymbols).map(s =>
-        outputs.find(s).get -> inputs.find(s).get
-      )(breakOut)
+
+    val outputPathToInputPath: Map[TuploidPath, TuploidPath] = {
+
+      outputSymbols.toSeq.collect({
+        case (path, s) if inputSymbols(s) =>
+          path -> inputs.find(s).get
+      })(breakOut)
+    }
+    // println(s"""
+    //   outputSymbols = $outputSymbols
+    //   inputSymbols = $inputSymbols
+    //   outputs = $outputs
+    //   inputs = $inputs
+    //   closureSymbol = $closureSymbol
+    //   outputPathToInputPath = $outputPathToInputPath
+    // """)
 
     def getPreviousReferencedPaths(
       nextReferencedPaths: Set[TuploidPath],
@@ -74,6 +86,16 @@ private[streams] trait TransformationClosures
 
     def replaceClosureBody(streamInput: StreamInput, outputNeeds: OutputNeeds): (List[Tree], TuploidValue[Tree]) =
     {
+      // println(s"""
+      //   inputs = $inputs
+      //   statements = $statements
+      //   outputs = $outputs
+      //   closureSymbol = $closureSymbol
+      //   streamInput = $streamInput
+      //   outputNeeds = $outputNeeds
+      //   outputPathToInputPath = $outputPathToInputPath
+      // """)
+
       import streamInput.{ fresh, transform, typed, currentOwner }
 
       val replacer = getReplacer(inputs, streamInput.vars)
