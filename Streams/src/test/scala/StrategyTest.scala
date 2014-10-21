@@ -72,11 +72,11 @@ class StrategyTest extends StreamComponentsTestBase with StreamTransforms {
 
     { import scalaxy.streams.strategy.aggressive
       testMessages(src, streamMsg("Range.map.map.takeWhile -> IndexedSeq"),
-        expectWarningRegexp = Some(List(fnRx, fnRx))) }
+        expectWarningRegexp = Some(List(fnRx))) }
 
     { import scalaxy.streams.strategy.foolish
       testMessages(src, streamMsg("Range.map.map.takeWhile -> IndexedSeq"),
-        expectWarningRegexp = Some(List(fnRx, fnRx))) }
+        expectWarningRegexp = Some(List(fnRx))) }
   }
 
   @Test

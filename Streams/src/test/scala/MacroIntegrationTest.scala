@@ -19,6 +19,7 @@ class MacroIntegrationTest(name: String, source: String, expectedMessages: Compi
 object MacroIntegrationTest {
   scalaxy.streams.impl.verbose = true
   scalaxy.streams.impl.veryVerbose = false
+  scalaxy.streams.impl.quietWarnings = true
 
   implicit def strategy = scalaxy.streams.strategy.aggressive
 

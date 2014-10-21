@@ -39,6 +39,9 @@ package streams
       System.getenv("SCALAXY_STREAMS_VERY_VERBOSE") == "1" ||
       System.getProperty("scalaxy.streams.veryVerbose") == "true"
 
+    /** For testing */
+    private[streams] var quietWarnings = false
+
     def recursivelyOptimize[A : c.WeakTypeTag](c: Context)(a: c.Expr[A]): c.Expr[A] = {
       optimize[A](c)(a, recurse = true)
     }

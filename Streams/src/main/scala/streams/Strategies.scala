@@ -48,7 +48,7 @@ private[streams] trait Strategies
       return false
     }
 
-    def reportIgnoredUnsafeSideEffects(): Unit = {
+    def reportIgnoredUnsafeSideEffects(): Unit = if (!impl.quietWarnings) {
       for (effects <- stream.closureSideEffectss;
            effect <- effects;
            if effect.severity == SideEffectSeverity.Unsafe) {

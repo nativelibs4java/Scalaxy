@@ -22,7 +22,8 @@ class SideEffectsTest
     val actual = effects.map(_.severity)
     if (actual != expected) {
       effects.foreach(println(_))
-      assertEquals(expected, actual)
+      assertEquals(tree.toString,
+        expected, actual)
     }
   }
 
@@ -38,10 +39,6 @@ class SideEffectsTest
       q"(x: List[Int]) => x ++ List(1, 2)")
     expectSideEffectSeverities(List(),
       q"(x: List[Int]) => 1 :: x")
-    expectSideEffectSeverities(List(),
-      q"(x: Set[Int]) => x + 1")
-    expectSideEffectSeverities(List(),
-      q"(x: Set[Int]) => x ++ Set(1)")
     expectSideEffectSeverities(List(),
       q"{ val x = 10; x + 1 }")
     expectSideEffectSeverities(List(),
@@ -108,6 +105,14 @@ class SideEffectsTest
         var x: collection.mutable.ListBuffer[Int] = null
         x += 1
       }""")
+  }
+
+  @Test
+  def probablySafeCasesThatShouldBeRelaxedToSafe {
+    expectSideEffectSeverities(List(ProbablySafe),
+      q"(x: Set[Int]) => x + 1")
+    expectSideEffectSeverities(List(ProbablySafe),
+      q"(x: Set[Int]) => x ++ Set(1)")
   }
 
   @Test
