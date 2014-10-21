@@ -11,10 +11,8 @@ Scalaxy/Streams makes your Scala 2.11.x collections code faster (official heir t
 
 * Fuses collection streams down to while loops (see [some examples](https://github.com/ochafik/Scalaxy/blob/master/Streams/src/test/scala/MacroIntegrationTest.scala#L55))
 * Avoids many unnecessary tuples (for instance, those introduced by `zipWithIndex`).
-* Now "safe by default" (optimizations preserve Scala semantics, with side-effect analysis), with configurable optimization strategies.
-* Usable as a compiler plugin (whole project) or as a macro (surgical strikes)
-
-  Use with caution / [report bugs](https://github.com/ochafik/Scalaxy/issues/new)
+* "Safe by default" (optimizations preserve Scala semantics, with side-effect analysis).
+* Available as a compiler plugin (whole project) or as a macro (surgical strikes). No runtime deps.
 
 ```scala
 // For instance, given the following array:
@@ -50,13 +48,15 @@ while (i < length) {
 }
 ```
 
-**Caveat**: Scalaxy/Streams is an **experimental work in progress**, so:
+**Caveat**: Scalaxy/Streams is still a young project and relies on experimental Scala features (macros), so:
 
-* Don't use it in production yet. If you insist on doing it, please test your code thoroughly and make sure your tests aren't compiled with it, maybe with something (untested) like this in your `build.sbt`:
+* Be careful about using it in production yet. In particular, please test your code thoroughly and make sure your tests aren't compiled with Scalaxy/Streams, maybe with something like this in your `build.sbt`:
 
         scalacOptions in Test += "-Xplugin-disable:scalaxy-streams"
 
-* If you try and run micro-benchmarks, don't forget to use the following scalac optimization flags:
+* Spend some time analyzing the verbose or very-verbose output (`SCALAXY_STREAMS_VERY_VERBOSE=1 sbt ...`) to make sure you understand what the plugin / macro do.
+
+* If you run micro-benchmarks, don't forget to use the following scalac optimization flags (also consider `-Ybackend:GenBCode`):
 
         -optimise -Yclosure-elim -Yinline
 
@@ -71,15 +71,13 @@ Scalaxy/Streams rewrites streams with the following components:
   * explicit `Seq(a, b, ...)` (array-based rewrite),
   * `List` (with special array-based rewrite for explicit `List(a, b, ...)`)
 * Stream operations:
-  * `filter`,
-  * `filterNot`,
-  * `withFilter`,
+  * `filter`, `filterNot`, `withFilter`,
   * `map`,
   * `flatMap` (with or without nested streams),
   * `count`,
   * `exists`, `forall`,
   * `find`
-  * `takeWhile`, `dropWhile` (with some exceptions)
+  * `takeWhile`, `dropWhile` (except on Range)
   * `zipWithIndex`
   * `sum`, `product`
   * `toList`, `toArray`, `toVector`, `toSet`
@@ -107,7 +105,6 @@ If you're using `sbt` 0.13.0+, just put the following lines in `build.sbt`:
 * To use the macro (manually decide which parts of your code are optimized):
 
   ```scala
-  // Note that Scalaxy/Streams 0.1 only works with Scala 2.11.0-RC1.
   scalaVersion := "2.11.2"
 
   // Dependency at compilation-time only (not at runtime).
@@ -135,7 +132,6 @@ If you're using `sbt` 0.13.0+, just put the following lines in `build.sbt`:
 * To use the compiler plugin (optimizes all of your code):
 
   ```scala
-  // Note that Scalaxy/Streams 0.1 only works with Scala 2.11.0-RC1.
   scalaVersion := "2.11.2"
 
   autoCompilerPlugins := true
@@ -285,8 +281,9 @@ Special care is taken of tuples, by representing input and output values of stre
 
 Careful tracking of input, transformation and output of tuploids across stream components allows to optimize unneeded tuples away, while materializing or preserving needed ones (making `TransformationClosure` the most complex piece of code of the project).
 
-Finally, the cake pattern is used to assemble the source, ops, sink and stream extractors together with macro or compiler plugin universes.
+A conservative whitelist-based side-effect analysis allows to detect "pure" functions (e.g. `(x: Int) => x + 1`), and "probably pure" ones (e.g. `(x: Any) => x.toString`). Different optimizations strategies then decide what is worth / safe to optimize (for instance, most `List` operations are highly optimized in the standard Scala library, so it only makes sense to optimize `List`-based streams if there's more than one operation in the call chain).
 
+Finally, the cake pattern is used to assemble the source, ops, sink and stream extractors together with macro or compiler plugin universes.
 
 # Optimization Strategies
 
@@ -295,8 +292,8 @@ Some collection streams should not be optimized, either because they're known to
 There are 4 different optimization strategies:
 * `none`: don't optimize anything.
 * `safe` (default): only perform rewrites with an expected runtime benefit; assumes some common methods are reasonably side-effect-free: `hashCode`, `toString`, `equals`, `+`, `++`...
-* `safer`: like `safe` but does not trust `toString` methods and al.
-* `aggressive`: only perform rewrites with an expected runtime benefit, but don't pay attention to side-effects (some warnings will be issued, though). Code optimized with the `aggressive` strategy might behave differently than normal code: for instance, streams typically become lazy (akin to chained Iterators), so the optimization might change the number and order of side-effects:
+* `safer`: like `safe` but does not trust `toString`, `equals`... methods (except when on truly immutable classes such as `Int`)
+* `aggressive`: only perform rewrites with an expected runtime benefit, but don't pay attention to side-effects (warnings will be issued accordingly). Code optimized with the `aggressive` strategy might behave differently than normal code: for instance, streams typically become lazy (akin to chained Iterators), so the optimization might change the number and order of side-effects:
 
     ```scala
       import scalaxy.streams.optimize
@@ -336,7 +333,7 @@ When using the `optimize` macro, strategies can be enabled locally by an import:
     }
     ```
 
-The global strategy can also be set through the `SCALAXY_STREAMS_STRATEGY` environment variable, or the `scalaxy.streams.strategy` Java property:
+The global default strategy can also be set through the `SCALAXY_STREAMS_STRATEGY` environment variable, or the `scalaxy.streams.strategy` Java property:
 
     ```
     SCALAXY_STREAMS_STRATEGY=aggressive sbt clean run
@@ -379,11 +376,11 @@ Incidentally, using Scalaxy will reduce the number of classes generated by scala
 
 # TODO
 
-* Remove lingering untypecheck calls
 * Null tests for tuple unapply withFilter calls
-* Experiment with more optimization metrics: number of intermediate collections instead of lambdaCount?
-* Make sure scala-library builds with the plugin (safe mode)
+* Make sure scala-library builds with the plugin (safe mode), again.
 * Fix `a pure expression does nothing in statement position` warnings.
+* Remove any lingering references to untypecheck
+* Experiment with more optimization metrics: number of intermediate collections seems better than lambdaCount?
 * Improve performance tests with compilation time, binary size and peak memory usage measurements:
 
   ```scala
