@@ -42,12 +42,12 @@ This is a rejuvenation of some code initially written for [ScalaCL](http://scala
 
 If you're using `sbt` 0.13.0+, just put the following lines in `build.sbt`:
 ```scala
-scalaVersion := "2.11.1"
+scalaVersion := "2.11.2"
 // Or:
 // scalaVersion := "2.10.4"
 
 // Dependency at compilation-time only (not at runtime).
-libraryDependencies += "com.nativelibs4java" %% "scalaxy-loops" % "0.1.1" % "provided"
+libraryDependencies += "com.nativelibs4java" %% "scalaxy-loops" % "0.3.0" % "provided"
 
 // If you care about speed, you may want to enable these:
 // scalacOptions ++= Seq("-optimise", "-Yclosure-elim", "-Yinline")
@@ -62,7 +62,7 @@ for (i <- 0 until n optimized; j <- i until n optimized) {
 
 If you like to live on the bleeding edge, try the latest snapshot out:
 ```scala
-libraryDependencies += "com.nativelibs4java" %% "scalaxy-loops" % "0.3-SNAPSHOT" % "provided"
+libraryDependencies += "com.nativelibs4java" %% "scalaxy-loops" % "0.4-SNAPSHOT" % "provided"
 
 // Scalaxy snapshots are published on the Sonatype repository.
 resolvers += Resolver.sonatypeRepo("snapshots")
@@ -88,7 +88,7 @@ With Maven, you'll need this in your `pom.xml` file:
     <!-- Or:
     <artifactId>scalaxy-loops_2.10</artifactId>
     -->
-    <version>0.1</version>
+    <version>0.3.3</version>
   </dependency>
 </dependencies>
 ```
@@ -102,7 +102,7 @@ If you like to live on the bleeding edge, try the latest snapshot out:
     <!-- Or:
     <artifactId>scalaxy-loops_2.10</artifactId>
     -->
-    <version>0.3-SNAPSHOT</version>
+    <version>0.4-SNAPSHOT</version>
   </dependency>
 </dependencies>
 
