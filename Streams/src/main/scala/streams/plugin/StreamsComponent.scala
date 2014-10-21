@@ -115,7 +115,7 @@ private[streams] class StreamsComponent(
                     super.transform(tree)
                 }
               } else {
-                if (impl.veryVerbose) {
+                if (impl.veryVerbose && !stream.isDummy) {
                   reporter.info(
                     tree.pos,
                     Optimizations.messageHeader + s"Stream ${stream.describe()} is not worth optimizing with strategy $strategy",

@@ -72,10 +72,28 @@ private[streams] trait FlatMapOps
     override def canAlterSize = true
 
     override def transmitOutputNeedsBackwards(paths: Set[TuploidPath]) = {
-      super.transmitOutputNeedsBackwards(paths) ++
-      nestedStream.toList.flatMap(_.ops.foldRight(paths)({ case (op, refs) =>
-        op.transmitOutputNeedsBackwards(refs)
-      }))
+      val sup = super.transmitOutputNeedsBackwards(paths)
+      val result = nestedStream.map(stream => {
+        val nestedNeeds = stream.ops.foldRight(paths)({
+          case (op, refs) =>
+            op.transmitOutputNeedsBackwards(refs)
+        })
+
+        nestedNeeds
+
+      }).getOrElse(sup)
+
+      // println(s"""
+      //   transmitOutputNeedsBackwards($paths) = $result
+      //     nestedStream.desc: ${nestedStream.map(_.describe())}
+      //     nestedStream: $nestedStream
+      // """)
+      // result
+
+      if (result.isEmpty)
+        Set()
+      else
+        Set(RootTuploidPath)
     }
 
     override val sinkOption = canBuildFrom.map(CanBuildFromSink(_))

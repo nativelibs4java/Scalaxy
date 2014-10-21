@@ -128,6 +128,15 @@ object IntegrationTests
     "Some(10).map(_ * 2).get"
       -> streamMsg("Some.map.get"),
 
+    "for (o <- Some(Some(10)); v <- o) yield v"
+      -> streamMsg("Some.flatMap(Option.map) -> Option"),
+
+    "Some(Some((1, 2))).flatMap(o => o.map(p => (p._1, p._2)))"
+      -> streamMsg("Some.flatMap(Option.map) -> Option"),
+
+    "for (o <- Some(Some((1, 2))); (a, b) <- o) yield a + b"
+      -> streamMsg("Some.flatMap(Option.withFilter.map) -> Option"),
+
     "List(1, 2, 3).map(_ * 2)"
       -> streamMsg("List.map -> List"),
 

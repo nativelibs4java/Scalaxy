@@ -69,6 +69,12 @@ private[streams] trait OptionStreamSources
       """)
       val (extractionCode, outputVars) = createTuploidPathsExtractionDecls(itemValRef, outputNeeds, fresh, typed)
 
+      // println(s"""
+      //   outputNeeds: $outputNeeds
+      //   extractionCode: $extractionCode
+      //   outputVars: $outputVars
+      // """)
+
       val interruptor = new StreamInterruptor(input, nextOps)
       val sub = emitSub(
         input.copy(

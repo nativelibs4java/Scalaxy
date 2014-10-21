@@ -43,6 +43,9 @@ private[streams] trait Streams
   {
     // println("FOUND STREAM: " + describe())
 
+    def isDummy: Boolean =
+      ops.isEmpty && !hasExplicitSink
+
     def describe(describeSink: Boolean = true) =
       (source :: ops).flatMap(_.describe).mkString(".") +
       sink.describe.filter(_ => describeSink).map(" -> " + _).getOrElse("")
@@ -57,6 +60,12 @@ private[streams] trait Streams
     lazy val subTrees: List[Tree] =
       components.flatMap(_.subTrees)
 
+    private[streams] def computeOutputNeedsBackwards(sinkNeeds: Set[TuploidPath]) =
+      ops.scanRight(sinkNeeds)({
+        case (op, refs) =>
+          op.transmitOutputNeedsBackwards(refs)
+      })
+
     def emitStream(fresh: String => TermName,
                    transform: Tree => Tree,
                    typed: Tree => Tree,
@@ -65,9 +74,9 @@ private[streams] trait Streams
                    sinkNeeds: Set[TuploidPath] = sink.outputNeeds,
                    loopInterruptor: Option[Tree] = None): StreamOutput =
     {
-      val sourceNeeds :: outputNeeds = ops.scanRight(sinkNeeds)({ case (op, refs) =>
-        op.transmitOutputNeedsBackwards(refs)
-      })
+      val sourceNeeds :: outputNeeds =
+        computeOutputNeedsBackwards(sinkNeeds)
+
       val nextOps = ops.zip(outputNeeds) :+ (sink, sinkNeeds)
       // println(s"source = $source")
       // println(s"""ops =\n\t${ops.map(_.getClass.getName).mkString("\n\t")}""")
