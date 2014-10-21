@@ -20,31 +20,24 @@ package streams
 {
   object impl
   {
-    private[this] val verboseProperty = "scalaxy.streams.verbose"
-    private[this] val veryVerboseProperty = "scalaxy.streams.veryVerbose"
-    private[this] val optimizeProperty = "scalaxy.streams.optimize"
-
-    private[streams] def disabled: Boolean =
+    private[streams] var disabled: Boolean =
       System.getenv("SCALAXY_STREAMS_OPTIMIZE") == "0" ||
-      System.getProperty(optimizeProperty) == "false"
+      System.getProperty("scalaxy.streams.optimize") == "false"
 
     // TODO: optimize this (trait).
-    private[streams] def verbose: Boolean =
+    private[streams] var verbose: Boolean =
       veryVerbose ||
       System.getenv("SCALAXY_STREAMS_VERBOSE") == "1" ||
-      System.getProperty(verboseProperty) == "true"
+      System.getProperty("scalaxy.streams.verbose") == "true"
 
-    private[streams] def verbose_=(v: Boolean) {
-      System.setProperty(verboseProperty, v.toString)
-    }
+    private[streams] var debug: Boolean =
+      System.getenv("SCALAXY_STREAMS_DEBUG") == "1" ||
+      System.getProperty("scalaxy.streams.debug") == "true"
 
-    private[streams] def veryVerbose: Boolean =
+    private[streams] var veryVerbose: Boolean =
+      debug ||
       System.getenv("SCALAXY_STREAMS_VERY_VERBOSE") == "1" ||
-      System.getProperty(veryVerboseProperty) == "true"
-
-    private[streams] def veryVerbose_=(v: Boolean) {
-      System.setProperty(veryVerboseProperty, v.toString)
-    }
+      System.getProperty("scalaxy.streams.veryVerbose") == "true"
 
     def recursivelyOptimize[A : c.WeakTypeTag](c: Context)(a: c.Expr[A]): c.Expr[A] = {
       optimize[A](c)(a, recurse = true)
@@ -106,7 +99,7 @@ package streams
                           untyped = untyped)
                         .compose(apiTypecheck(_))
 
-                      if (impl.veryVerbose) {
+                      if (impl.debug) {
                         c.info(
                           cast(tree.pos),
                           Optimizations.messageHeader + s"Result for ${stream.describe()}:\n$result",
