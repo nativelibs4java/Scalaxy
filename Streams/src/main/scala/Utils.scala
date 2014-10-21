@@ -57,6 +57,11 @@ private[streams] trait Utils {
     typeOf[Float] -> 0.0f,
     typeOf[Double] -> 0.0)
 
+  def normalize(tpe: Type): Type = tpe.dealias match {
+    case t @ ConstantType(_) => t.typeSymbol.asType.toType
+    case t => t
+  }
+
   def defaultValue(tpe: Type): Any =
-    defaultValues.get(tpe.dealias).getOrElse(null)
+    defaultValues.get(normalize(tpe)).getOrElse(null)
 }

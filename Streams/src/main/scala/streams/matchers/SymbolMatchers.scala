@@ -48,7 +48,18 @@ private[streams] trait SymbolMatchers
         val reusableName: Option[Tree] =
           if (t.alias.exists(inputSymbols)) {
             // t is already somewhere in inputs. find it.
-            val inputPath = outputPathToInputPath(path)
+            val inputPath = outputPathToInputPath.get(path).getOrElse {
+              // println(s"""
+              //   path = $path
+              //   t: $t
+              //   inputSymbols = $inputSymbols
+              //   outputs = $outputs
+              //   outputPathToInputPath = $outputPathToInputPath
+              //   streamInput = $streamInput
+              //   outputNeeds = $outputNeeds
+              // """)
+              sys.error(s"Failed to find $path in $outputPathToInputPath")
+            }
             val inputVar = streamInput.vars.get(inputPath)
 
             inputVar.alias.map(_.duplicate)
@@ -59,14 +70,15 @@ private[streams] trait SymbolMatchers
         def generateVarIfNeeded(tpe: Type, value: => Tree, sideEffectValues: => List[Tree]): Option[Tree] = {
           if (needed && reusableName.isEmpty) {
             val name = fresh("_" + path.map(_ + 1).mkString("_"))
-            val uninitializedValue = Literal(Constant(defaultValue(tpe)))
-            // TODO: ${tpe.dealias}?
-            val Block(List(decl), ref) = typed(q"""
-              private[this] var $name: $tpe = $uninitializedValue;
+            val t = normalize(tpe)
+            val uninitializedValue = Literal(Constant(defaultValue(t)))
+            val Block(List(decl, assignment), ref) = typed(q"""
+              private[this] var $name: $t = $uninitializedValue;
+              $name = $value;
               $name
             """)
             pre += decl
-            post += q"$ref = $value"
+            post += assignment
 
             Some(ref)
           } else {
@@ -82,6 +94,7 @@ private[streams] trait SymbolMatchers
           case TupleValue(tpe, values, alias, _) =>
             underNeededParent = needed :: underNeededParent
 
+            // println(s"t = $t")
             val subValues = values.map({ case (i, value) =>
               (i, transform(path :+ i, value))
             })
@@ -114,6 +127,8 @@ private[streams] trait SymbolMatchers
         }
       }
     } transform (RootTuploidPath, outputs)
+
+    // println(s"outputVars = $outputVars")
 
     ClosureWiringResult(pre.result, post.result, outputVars)
   }

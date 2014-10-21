@@ -20,16 +20,6 @@ package streams
 {
   object impl
   {
-    private[streams] var disabled: Boolean =
-      System.getenv("SCALAXY_STREAMS_OPTIMIZE") == "0" ||
-      System.getProperty("scalaxy.streams.optimize") == "false"
-
-    // TODO: optimize this (trait).
-    private[streams] var verbose: Boolean =
-      veryVerbose ||
-      System.getenv("SCALAXY_STREAMS_VERBOSE") == "1" ||
-      System.getProperty("scalaxy.streams.verbose") == "true"
-
     private[streams] var debug: Boolean =
       System.getenv("SCALAXY_STREAMS_DEBUG") == "1" ||
       System.getProperty("scalaxy.streams.debug") == "true"
@@ -38,6 +28,16 @@ package streams
       debug ||
       System.getenv("SCALAXY_STREAMS_VERY_VERBOSE") == "1" ||
       System.getProperty("scalaxy.streams.veryVerbose") == "true"
+
+    // TODO: optimize this (trait).
+    private[streams] var verbose: Boolean =
+      veryVerbose ||
+      System.getenv("SCALAXY_STREAMS_VERBOSE") == "1" ||
+      System.getProperty("scalaxy.streams.verbose") == "true"
+
+    private[streams] var disabled: Boolean =
+      System.getenv("SCALAXY_STREAMS_OPTIMIZE") == "0" ||
+      System.getProperty("scalaxy.streams.optimize") == "false"
 
     /** For testing */
     private[streams] var quietWarnings = false
