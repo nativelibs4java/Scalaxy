@@ -90,6 +90,9 @@ object IntegrationTests
     "(1 to 10).count(_ < 5)"
       -> streamMsg("Range.count"),
 
+    "(1L to 10L).map(_ + 1)"
+      -> streamMsg("Range.map -> "),
+
     "List(1, 2, 3).flatMap(v => List(v * 2, v * 2 + 1)).count(_ % 2 == 0)"
       -> streamMsg("List.flatMap(List).count"),
 

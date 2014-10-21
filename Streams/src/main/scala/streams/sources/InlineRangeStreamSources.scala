@@ -109,7 +109,7 @@ private[streams] trait InlineRangeStreamSources
         private[this] val $size = {
           val $gap = $endVal - $startVal
           ${divideTree(q"$gap", q"$by")} + ${ifTree(hasStubTree, q"1", q"0")}
-        };
+        }.toInt;
         $size;
         $iVal;
         $iVar;
