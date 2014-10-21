@@ -10,7 +10,11 @@ import scala.collection.JavaConversions._
 
 import IntegrationTests.{streamMsg, potentialSideEffectMsgs}
 
-class StrategyTest extends StreamComponentsTestBase with StreamTransforms {
+object StrategyTest extends StreamComponentsTestBase with StreamTransforms
+
+class StrategyTest {
+  import StrategyTest._
+
   scalaxy.streams.impl.verbose = true
   scalaxy.streams.impl.veryVerbose = false
 

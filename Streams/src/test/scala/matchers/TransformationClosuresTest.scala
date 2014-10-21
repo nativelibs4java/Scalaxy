@@ -94,6 +94,26 @@ class TransformationClosureTest extends StreamComponentsTestBase with Transforma
     val List() = tc.getPreviousReferencedPaths(Set()).toList
   }
 
+  @Test
+  def testScalarToTuple2 {
+    val f = typecheck(q"(x: Int) => (x, x)")
+
+    val SomeTransformationClosure(
+      tc @ TransformationClosure(inputs, statements, outputs, closureSymbol)) = f
+    val ScalarValue(_, None, Some(S("x"))) = inputs
+    val TupleValue(
+      _,
+      values,
+      None,
+      false) = outputs
+
+    val List(
+      (0, ScalarValue(_, None, Some(S("x")))),
+      (1, ScalarValue(_, None, Some(S("x"))))) = values.toList
+
+    val List() = tc.getPreviousReferencedPaths(Set()).toList
+  }
+
 
   @Test
   def tupleMappedToTuple {
