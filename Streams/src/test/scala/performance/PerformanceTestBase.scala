@@ -42,7 +42,7 @@ class PerformanceTestBase extends StreamComponentsTestBase {
     """
 
     val (compiled, messages) = try {
-      compile(functionCode)
+      compileOpt(functionCode)
     } catch { case ex: Throwable =>
       // ex.printStackTrace()
       throw new RuntimeException(s"Failed to compile:\n$functionCode", ex)

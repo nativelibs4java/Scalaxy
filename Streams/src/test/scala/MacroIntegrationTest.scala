@@ -9,14 +9,19 @@ import org.junit.runners.Parameterized.Parameters
 import scala.collection.JavaConversions._
 
 @RunWith(classOf[Parallelized])
-class MacroIntegrationTest(name: String, source: String, expectedMessages: CompilerMessages)
-    extends StreamComponentsTestBase with StreamTransforms {
+class MacroIntegrationTest(
+    name: String,
+    source: String,
+    expectedMessages: CompilerMessages)
+{
+  import MacroIntegrationTest._
 
   @Test
-  def test = testMessages(source, expectedMessages)(MacroIntegrationTest.strategy)
+  def test = testMessages(source, expectedMessages)(strategy)
 }
 
-object MacroIntegrationTest {
+object MacroIntegrationTest
+    extends StreamComponentsTestBase with StreamTransforms {
   scalaxy.streams.impl.verbose = true
   scalaxy.streams.impl.veryVerbose = false
   scalaxy.streams.impl.quietWarnings = true

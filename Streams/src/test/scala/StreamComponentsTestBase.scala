@@ -16,15 +16,19 @@ case class CompilerMessages(
 trait StreamComponentsTestBase extends Utils
 {
   val global = scala.reflect.runtime.universe
-  val commonOptions = "-usejavacp -optimise -Yclosure-elim -Yinline "//-Ybackend:GenBCode"
+  val commonOptions = "-usejavacp "
+  val optOptions = "-optimise -Yclosure-elim -Yinline "//-Ybackend:GenBCode"
   import scala.reflect.runtime.currentMirror
 
-  def typecheck(t: global.Tree): global.Tree = {
-    val toolbox = currentMirror.mkToolBox(options = commonOptions)
-    toolbox.typecheck(t.asInstanceOf[toolbox.u.Tree]).asInstanceOf[global.Tree]
-  }
+  private[this] lazy val toolbox = currentMirror.mkToolBox(options = commonOptions)
 
-  def compile(source: String): (() => Any, CompilerMessages) = {
+  def typecheck(t: global.Tree): global.Tree =
+    toolbox.typecheck(t.asInstanceOf[toolbox.u.Tree]).asInstanceOf[global.Tree]
+
+  def compileOpt(source: String) = compile(source, opt = true)
+  def compileFast(source: String) = compile(source, opt = true)
+
+  private[this] def compile(source: String, opt: Boolean = false): (() => Any, CompilerMessages) = {
     val infosBuilder = ListBuffer[String]()
     val warningsBuilder = ListBuffer[String]()
     val errorsBuilder = ListBuffer[String]()
@@ -40,7 +44,9 @@ trait StreamComponentsTestBase extends Utils
       }
       override def interactive() {}
     }
-    val toolbox = currentMirror.mkToolBox(frontEnd = frontEnd, options = commonOptions)
+    val toolbox = currentMirror.mkToolBox(
+      frontEnd = frontEnd,
+      options = if (opt) commonOptions + optOptions else commonOptions)
     import toolbox.u._
 
     try {
@@ -131,8 +137,8 @@ trait StreamComponentsTestBase extends Utils
   }
 
   def assertMacroCompilesToSameValue(source: String, strategy: OptimizationStrategy): CompilerMessages = {
-    val (unoptimized, unoptimizedMessages) = compile(source)
-    val (optimized, optimizedMessages) = compile(optimizedCode(source, strategy))
+    val (unoptimized, unoptimizedMessages) = compileFast(source)
+    val (optimized, optimizedMessages) = compileFast(optimizedCode(source, strategy))
 
     assertEqualValues(source, unoptimized(), optimized())
 
