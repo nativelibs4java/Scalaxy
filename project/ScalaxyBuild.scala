@@ -36,7 +36,7 @@ object Scalaxy extends Build {
 
   lazy val infoSettings = Seq(
              organization := "com.nativelibs4java",
-                  version := "0.3-SNAPSHOT",
+                  version := "0.4-SNAPSHOT",
                  licenses := Seq("BSD-3-Clause" -> url("http://www.opensource.org/licenses/BSD-3-Clause")),
                  homepage := Some(url("https://github.com/ochafik/Scalaxy")),
             gitRemoteRepo := "git@github.com:ochafik/Scalaxy.git",
@@ -365,20 +365,20 @@ object Scalaxy extends Build {
 
   lazy val loops =
     Project(id = "scalaxy-loops", base = file("Loops"), settings = reflectSettings ++ Seq(
-      // version := "0.1.1"
+      version := "0.3.0"
     ))
     .dependsOn(streams)
 
   lazy val loops210 =
     Project(id = "scalaxy-loops-210", base = file("Loops-2.10"), settings = reflectSettings ++ Seq(
-      // version := "0.1.1",
+      version := "0.3.0",
       name := "scalaxy-loops",
       scalaVersion := "2.10.4"
     ))
 
   lazy val streams =
     Project(id = "scalaxy-streams", base = file("Streams"), settings = reflectSettings ++ Seq(
-      // version := "0.2.1",
+      version := "0.3.0",
       watchSources <++= baseDirectory map { path => (path / "examples" ** "*.scala").get }
     ))
 

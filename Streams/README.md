@@ -6,15 +6,14 @@ Quick links:
 * [Usage on Eclipse](#usage-on-eclipse)
 * [TODO](#todo)
 
-Scalaxy/Streams makes your Scala 2.1that1.x collections code faster (official heir to [ScalaCL](https://code.google.com/p/scalacl/) and [Scalaxy/Loops](https://github.com/ochafik/Scalaxy/tree/master/Loops), by same author):
+Scalaxy/Streams makes your Scala 2.11.x collections code faster (official heir to [ScalaCL](https://code.google.com/p/scalacl/) and [Scalaxy/Loops](https://github.com/ochafik/Scalaxy/tree/master/Loops), by same author):
 
 * Fuses collection streams down to while loops (see [some examples](https://github.com/ochafik/Scalaxy/blob/master/Streams/src/test/scala/MacroIntegrationTest.scala#L55))
 * Avoids many unnecessary tuples (for instance, those introduced by `zipWithIndex`).
+* Now "safe by default" (optimizations preserve Scala semantics, with side-effect analysis), with configurable optimization strategies.
 * Usable as a compiler plugin (whole project) or as a macro (surgical strikes)
 
-  **Watch out**: version 0.2.1's aggressive optimizations alter Scala semantics (see below).
-
-  Use with caution / [report bugs](https://github.com/ochafik/Scalaxy/issues/new) (_safe_ optimizations are on the TODO-list below)
+  Use with caution / [report bugs](https://github.com/ochafik/Scalaxy/issues/new)
 
 ```scala
 // For instance, given the following array:
@@ -56,33 +55,6 @@ while (i < length) {
 
         scalacOptions in Test += "-Xplugin-disable:scalaxy-streams"
 
-* Be aware that *optimized code might behave differently* than normal code, especially with regards to side-effects: for instance, streams typically become lazy (akin to chained Iterators), so the optimization might change the number and order of side-effects (if there are any):
-
-    ```scala
-      (1 to 2).map(i => { println("first map, " + i); i })
-              .map(i => { println("second map, " + i); i })
-              .take(1)
-      // Without optimizations, this will print:
-      //   first map, 1
-      //   first map, 2
-      //   second map, 1
-      //   second map, 2
-    
-      // With stream optimizations, this could *semantically* amount to the following:
-      (1 to 2).toIterator
-              .map(i => { println("first map, " + i); i })
-              .map(i => { println("second map, " + i); i })
-              .take(1)
-              .toSeq
-      // It will hence print:
-      //   first map, 1
-      //   second map, 1
-    }
-    ```
-    
-  A _safe_ optimization mode that retains the original Scala semantics is in the works, but focus for this release is to find bugs / crashes :-)
-  
-* If you're unsure about side effects in your streamed operations, just take it easy and introduce Scalaxy/Stream optimizations on a case-per-case basis, using its `optimized` macro (see below).
 * If you try and run micro-benchmarks, don't forget to use the following scalac optimization flags:
 
         -optimise -Yclosure-elim -Yinline
@@ -114,6 +86,57 @@ Scalaxy/Streams rewrites streams with the following components:
 
 The output type of each optimized stream is always the same as the original, but when nested streams are encountered in `flatMap` operations many intermediate outputs can typically be skipped, saving up on memory usage and execution time.
 
+# Optimization Strategies
+
+Some collection streams should not be optimized, either because they're known to be already "as fast as possible", or because some of their operations have side-effects would behave differently once "optimized".
+
+There are 4 different optimization strategies:
+* `none`: don't optimize anything. This can be used to force the compiler plugin to skip a file / block of code:
+
+    ```scala
+    import scalaxy.streams.strategy.none
+    ...
+    ```
+
+* `safe` (default): only perform rewrites with an expected runtime benefit; assumes some common methods are reasonably side-effect-free: `hashCode`, `toString`, `equals`, `+`, `++`...
+* `safer`: like `safe` but does not trust `toString` methods and al.
+* `aggressive`: only perform rewrites with an expected runtime benefit, but don't pay attention to side-effects (some warnings will be issued, though). Code optimized with the `aggressive` strategy might behave differently than normal code: for instance, streams typically become lazy (akin to chained Iterators), so the optimization might change the number and order of side-effects:
+
+    ```scala
+      import scalaxy.streams.strategy.aggressive
+      (1 to 2).map(i => { println("first map, " + i); i })
+              .map(i => { println("second map, " + i); i })
+              .take(1)
+      // Without optimizations, this will print:
+      //   first map, 1
+      //   first map, 2
+      //   second map, 1
+      //   second map, 2
+
+      // With stream optimizations, this could *semantically* amount to the following:
+      (1 to 2).toIterator
+              .map(i => { println("first map, " + i); i })
+              .map(i => { println("second map, " + i); i })
+              .take(1)
+              .toSeq
+      // It will hence print:
+      //   first map, 1
+      //   second map, 1
+    }
+    ```
+
+* `foolish`: rewrites everything it can, even if it doesn't make sense regarding side-effects or performance. Don't use this unless you have specific goals such as reducing your code's runtime dependency to the standard library ([ScalaCL](https://code.google.com/p/scalacl/) uses this strategy).
+
+A strategy can be enabled by importing it in the scope of the compilation (works with the `optimize` macro as well as the compiler plugin):
+
+    ```scala
+    import scalaxy.streams.optimize
+    import scalaxy.streams.strategy.safer
+    optimize {
+      ...
+    }
+    ```
+
 # Usage
 
 You can either use Scalaxy/Streams's compiler plugin to compile your whole project, or use its `optimize` macro to choose specific blocks of code to optimize.
@@ -138,7 +161,7 @@ If you're using `sbt` 0.13.0+, just put the following lines in `build.sbt`:
   scalaVersion := "2.11.2"
 
   // Dependency at compilation-time only (not at runtime).
-  libraryDependencies += "com.nativelibs4java" %% "scalaxy-streams" % "0.2.1" % "provided"
+  libraryDependencies += "com.nativelibs4java" %% "scalaxy-streams" % "0.3.0" % "provided"
   ```
 
   And wrap some code with the `optimize` macro:
@@ -153,7 +176,7 @@ If you're using `sbt` 0.13.0+, just put the following lines in `build.sbt`:
 
   You'll need an extra repository resolver for the latest snapshot out:
   ```scala
-  libraryDependencies += "com.nativelibs4java" %% "scalaxy-streams" % "0.3-SNAPSHOT" % "provided"
+  libraryDependencies += "com.nativelibs4java" %% "scalaxy-streams" % "0.4-SNAPSHOT" % "provided"
 
   // Scalaxy snapshots are published on the Sonatype repository.
   resolvers += Resolver.sonatypeRepo("snapshots")
@@ -167,14 +190,14 @@ If you're using `sbt` 0.13.0+, just put the following lines in `build.sbt`:
 
   autoCompilerPlugins := true
 
-  addCompilerPlugin("com.nativelibs4java" %% "scalaxy-streams" % "0.2.1")
+  addCompilerPlugin("com.nativelibs4java" %% "scalaxy-streams" % "0.3.0")
 
   scalacOptions += "-Xplugin-require:scalaxy-streams"
   ```
 
   You'll need an extra repository resolver for the latest snapshot out:
   ```scala
-  addCompilerPlugin("com.nativelibs4java" %% "scalaxy-streams" % "0.3-SNAPSHOT")
+  addCompilerPlugin("com.nativelibs4java" %% "scalaxy-streams" % "0.4-SNAPSHOT")
 
   // Scalaxy snapshots are published on the Sonatype repository.
   resolvers += Resolver.sonatypeRepo("snapshots")
@@ -197,7 +220,7 @@ With Maven, you'll need this in your `pom.xml` file:
     <dependency>
       <groupId>com.nativelibs4java</groupId>
       <artifactId>scalaxy-streams_2.11.1</artifactId>
-      <version>0.2.1</version>
+      <version>0.3.0</version>
     </dependency>
   </dependencies>
   ```
@@ -208,7 +231,7 @@ With Maven, you'll need this in your `pom.xml` file:
     <dependency>
       <groupId>com.nativelibs4java</groupId>
       <artifactId>scalaxy-streams_2.11.1</artifactId>
-      <version>0.3-SNAPSHOT</version>
+      <version>0.4-SNAPSHOT</version>
     </dependency>
   </dependencies>
 
@@ -253,7 +276,7 @@ With Maven, you'll need this in your `pom.xml` file:
             <compilerPlugin>
               <groupId>com.nativelibs4java</groupId>
               <artifactId>scalaxy-streams_${scala.version}</artifactId>
-              <version>0.2.1</version>
+              <version>0.3.0</version>
             </compilerPlugin>
           </compilerPlugins>
         </configuration>
@@ -348,13 +371,8 @@ Incidentally, using Scalaxy will reduce the number of classes generated by scala
 # TODO
 
 * Remove lingering untypecheck calls
-* Cleanup test side-effects (don't split test values out)
 * Null tests for tuple unapply withFilter calls
-* Implement optimization strategies:
-  * By default, the code should be safe (using "at-most-one-lambda" thumb rule or some best-effort side-effect analysis)
-  * none, safe, aggressive
-  * Provide implicits to alter both plugin and macro when in scope
-  * Project-wide defaults: -Dscalaxy.optimizations=[force]none/safe/aggressive
+* Experiment with more optimization metrics: number of intermediate collections instead of lambdaCount?
 * Make sure scala-library builds with the plugin (safe mode)
 * Fix `a pure expression does nothing in statement position` warnings.
 * Improve performance tests with compilation time, binary size and peak memory usage measurements:
@@ -368,5 +386,4 @@ Incidentally, using Scalaxy will reduce the number of classes generated by scala
     println(String.format("%s: %,d", pool.getName, pool.getPeakUsage.getUsed.asInstanceOf[AnyRef]))
   }
   ```
-* Test plugin as well as macros
 
