@@ -42,8 +42,10 @@ private[streams] trait ArrayOpsSinks extends ArrayBuilderSinks {
         anyValOpsClassNameByType.get(componentTpe) match {
           case Some(primitiveOpsClass) =>
             q"new ${rootMirror.staticClass(primitiveOpsClass)}($array)"
-          case None =>
+          case _ if componentTpe <:< typeOf[AnyRef] =>
             q"new scala.collection.mutable.ArrayOps.ofRef[$componentTpe]($array)"
+          case _ =>
+            q"genericArrayOps[$componentTpe]($array)"
         }
       )
 

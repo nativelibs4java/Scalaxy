@@ -60,16 +60,21 @@ private[streams] trait Strategies
       }
     }
 
+    def hasTakeOrDropWhileOp: Boolean = stream.ops.exists({
+      case TakeWhileOp(_, _) | DropWhileOp(_, _) => true
+      case _ => false
+    })
     def isKnownNotToBeWorthOptimizing = stream match {
       //case Stream(_, ListStreamSource(_, _, _), List(Map(_, _) | Filter(_, _, _)), _) =>
-      case Stream(_, ListStreamSource(_, _, _), _, _, _) if stream.lambdaCount == 1 =>
+      case Stream(_, ListStreamSource(_, _, _), _, _, _)
+          if stream.lambdaCount == 1 =>
         // List operations are now quite heavily optimized. It only makes sense to
         // rewrite more than one operation.
         true
 
-      case Stream(_,
-          ArrayStreamSource(_, _, _),
-          List(ArrayOpsOp, (TakeWhileOp(_, _) | DropWhileOp(_, _))), _, _) =>
+      case Stream(_, ArrayStreamSource(_, _, _), ops, _, _)
+          if stream.lambdaCount == 1 &&
+             hasTakeOrDropWhileOp =>
         // Array.takeWhile / .dropWhile needs to be optimized better :-)
         true
 

@@ -155,7 +155,7 @@ class StrategyTest extends StreamComponentsTestBase with StreamTransforms {
 
     { import scalaxy.streams.strategy.safer
       testMessages(src, streamMsg(
-        "Array.map -> Array"//, "Array.filter -> Array", "Array.map -> Array"
+        "Array.map -> ArrayOps"//, "Array.filter -> Array", "Array.map -> Array"
       )) }
 
     { import scalaxy.streams.strategy.safe
