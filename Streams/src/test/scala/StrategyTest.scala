@@ -149,16 +149,60 @@ class StrategyTest extends StreamComponentsTestBase with StreamTransforms {
   def testProbablySafe {
     val src = """
       import language.reflectiveCalls
-      type Tpe = { def +++(rhs: Any): Any }
-      def f(v: List[Tpe]) = v.map(_ +++ "ha!").filter(_.toString == null).map(_.hashCode)
+      type Tpe = { def ++(rhs: Any): Any }
+      def f(v: Array[Tpe]) = v.map(_ ++ "ha!").filter(_.toString == null).map(_.hashCode)
     """
 
     { import scalaxy.streams.strategy.safer
       testMessages(src, streamMsg(
-        "List.map -> List"//, "List.filter -> List", "List.map -> List"
+        "Array.map -> Array"//, "Array.filter -> Array", "Array.map -> Array"
       )) }
 
     { import scalaxy.streams.strategy.safe
-      testMessages(src, streamMsg("List.map.filter.map -> List")) }
+      testMessages(src, streamMsg("Array.map.filter.map -> Array")) }
+  }
+
+  @Test
+  def testFoolishListMap {
+    val src = "val c = List(1, 2); c.map(_ * 2)"
+
+    { import scalaxy.streams.strategy.safer
+      testMessages(src, CompilerMessages()) }
+
+    { import scalaxy.streams.strategy.foolish
+      testMessages(src, streamMsg("List.map -> List")) }
+  }
+
+  @Test
+  def testFoolishListFilter {
+    val src = "val c = List(1, 2); c.filter(_ < 2)"
+
+    { import scalaxy.streams.strategy.safer
+      testMessages(src, CompilerMessages()) }
+
+    { import scalaxy.streams.strategy.foolish
+      testMessages(src, streamMsg("List.filter -> List")) }
+  }
+
+  @Test
+  def testFoolishArrayTakeWhile {
+    val src = "val c = Array(1, 2); c.takeWhile(_ < 2)"
+
+    { import scalaxy.streams.strategy.safer
+      testMessages(src, CompilerMessages()) }
+
+    { import scalaxy.streams.strategy.foolish
+      testMessages(src, streamMsg("Array.takeWhile -> Array")) }
+  }
+
+  @Test
+  def testFoolishArrayDropWhile {
+    val src = "val c = Array(1, 2); c.dropWhile(_ < 2)"
+
+    { import scalaxy.streams.strategy.safer
+      testMessages(src, CompilerMessages()) }
+
+    { import scalaxy.streams.strategy.foolish
+      testMessages(src, streamMsg("Array.dropWhile -> Array")) }
   }
 }

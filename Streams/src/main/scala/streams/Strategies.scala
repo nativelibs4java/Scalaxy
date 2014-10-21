@@ -4,6 +4,8 @@ private[streams] trait Strategies
     extends Streams
     with SideEffectsDetection
 {
+  self: StreamTransforms =>
+
   val global: scala.reflect.api.Universe
   import global._
 
@@ -58,6 +60,29 @@ private[streams] trait Strategies
       }
     }
 
+    def isKnownNotToBeWorthOptimizing = stream match {
+      //case Stream(_, ListStreamSource(_, _, _), List(Map(_, _) | Filter(_, _, _)), _) =>
+      case Stream(_, ListStreamSource(_, _, _), _, _, _) if stream.lambdaCount == 1 =>
+        // List operations are now quite heavily optimized. It only makes sense to
+        // rewrite more than one operation.
+        true
+
+      case Stream(_,
+          ArrayStreamSource(_, _, _),
+          List(ArrayOpsOp, (TakeWhileOp(_, _) | DropWhileOp(_, _))), _, _) =>
+        // Array.takeWhile / .dropWhile needs to be optimized better :-)
+        true
+
+      case Stream(_, source, ops, sink, _) =>
+        // println(s"""
+        //   NAH:
+        //     source: $source
+        //     ops: $ops
+        //     sink: $sink
+        // """)
+        false
+    }
+
     val worthOptimizing = strategy match {
 
       // TODO: List.map is not worth optimizing, because of its (unfair) hand-optimized implementation.
@@ -67,6 +92,7 @@ private[streams] trait Strategies
         // At least one lambda, at most one closure with unsafe side-effects.
         // For safer mode, ProbablySafe are treated as Unsafe.
 
+        !isKnownNotToBeWorthOptimizing &&
         stream.lambdaCount >= 1 &&
         stream.closureSideEffectss.count(hasUnsafeEffect) <= 1 &&
         !couldSkipSideEffects
@@ -75,6 +101,7 @@ private[streams] trait Strategies
         // At least one lambda, warn if there is more than one closure with Unsafe side-effects.
         reportIgnoredUnsafeSideEffects()
 
+        !isKnownNotToBeWorthOptimizing &&
         stream.lambdaCount >= 1
 
       case scalaxy.streams.strategy.foolish =>

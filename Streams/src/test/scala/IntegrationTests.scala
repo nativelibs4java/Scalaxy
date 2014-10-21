@@ -294,7 +294,7 @@ object IntegrationTests
                 tot += (i * 1 + j * 10 + k * 100 + l * 1000) / 10;
       tot
     """
-      -> streamMsg("Range.foreach", "Range.foreach", "Range.foreach", "Range.foreach"),
+      -> streamMsg((1 to 10).map(_ => "Range.foreach"):_*),
 
     "var tot = 0; for (i <- 0 until 10; x = new AnyRef) { tot += i }; tot"
       -> streamMsg("Range.map.foreach"),

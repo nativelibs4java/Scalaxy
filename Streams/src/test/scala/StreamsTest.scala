@@ -28,6 +28,14 @@ class StreamsTest extends StreamComponentsTestBase with StreamTransforms {
   }
 
   @Test
+  def testArrayMapFilterMap {
+    val SomeStream(Stream(_, ArrayStreamSource(_, _, _), ops, ArrayBuilderSink, false)) = typecheck(q"""
+      (null: Array[Int]).map(_ + 2).filter(_ < 3).map(_.hashCode)
+    """)
+    val List(ArrayOpsOp, MapOp(_, _), ArrayOpsOp, FilterOp(_, false, "filter"), ArrayOpsOp, MapOp(_, _)) = ops
+  }
+
+  @Test
   def testArrayMap {
     val SomeStream(Stream(_, ArrayStreamSource(_, _, _), ops, ArrayBuilderSink, false)) = typecheck(q"""
       Array(1).map(_ + 1)

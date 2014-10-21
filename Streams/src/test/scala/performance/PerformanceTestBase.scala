@@ -12,8 +12,8 @@ case class PerfRun(optimized: Boolean, output: Any, nanoTime: Long)
 
 class PerformanceTestBase extends StreamComponentsTestBase {
 
-  val perfRuns = 4
-  val defaultExpectedFasterFactor = 0.95
+  val perfRuns = 5
+  val defaultExpectedFasterFactor = 0.93
   val testSizes = Array(2, 10, 1000, 100000)
   // val testSizes = Array(10)
 

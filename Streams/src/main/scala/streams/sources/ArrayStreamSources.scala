@@ -13,8 +13,12 @@ private[streams] trait ArrayStreamSources
     // lazy val ArrayTpe = typeOf[Array[_]]
     private[this] lazy val ArraySym = rootMirror.staticClass("scala.Array")
 
+    private[this] def isArrayType(tpe: Type) =
+      Option(tpe).map(_.dealias.etaExpand).filter(_ != NoType).exists(_.typeSymbol == ArraySym)
+
     def unapply(tree: Tree): Option[ArrayStreamSource] = Option(tree) collect {
-      case _ if tree.tpe != null && tree.tpe != NoType && tree.tpe.typeSymbol == ArraySym =>
+      case _ if isArrayType(tree.tpe) =>
+                // || tree.symbol != null && isArrayType(tree.symbol.typeSignature) =>
         ArrayStreamSource(tree)
     }
   }

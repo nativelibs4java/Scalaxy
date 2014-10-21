@@ -89,7 +89,10 @@ trait StreamComponentsTestBase extends Utils
       throw new RuntimeException(ex)
     }
 
-    assertEquals(expectedMessages.infos, actualMessages.infos)
+    if (expectedMessages.infos != actualMessages.infos) {
+      actualMessages.infos.foreach(println)
+      assertEquals(expectedMessages.infos, actualMessages.infos)
+    }
     expectWarningRegexp match {
       case Some(rxs) =>
         val warnings = filterWarnings(actualMessages.warnings)

@@ -18,11 +18,17 @@ private[streams] trait ArrayOpsOps
     }
   }
 
-  object SomeArrayOpsOp extends StreamOpExtractor {
-    override def unapply(tree: Tree) = Option(tree) collect {
-      case q"scala.this.Predef.${AnyValArrayOpsName()}($array)" => (array, ArrayOpsOp)
-      case q"scala.this.Predef.refArrayOps[${_}]($array)" => (array, ArrayOpsOp)
+  object SomeArrayOp {
+    def unapply(tree: Tree): Option[Tree] = Option(tree) collect {
+      case q"scala.this.Predef.${AnyValArrayOpsName()}($array)" => array
+      case q"scala.this.Predef.refArrayOps[${_}]($array)" => array
+      case q"scala.this.Predef.genericArrayOps[${_}]($array)" => array
     }
+  }
+
+  object SomeArrayOpsOp extends StreamOpExtractor {
+    override def unapply(tree: Tree): Option[(Tree, StreamOp)] =
+      SomeArrayOp.unapply(tree).map(array => (array, ArrayOpsOp))
   }
 
   case object ArrayOpsOp extends PassThroughStreamOp {

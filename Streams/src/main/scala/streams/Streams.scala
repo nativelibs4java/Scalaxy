@@ -25,9 +25,9 @@ private[streams] trait Streams
         findSink(source :: ops).filter(_ != InvalidSink)
           .map(sink => new Stream(tree, source, ops, sink, hasExplicitSink = false))
 
-      case SomeStreamSource(source) =>
-        findSink(List(source)).filter(_ != InvalidSink)
-          .map(sink => new Stream(tree, source, Nil, sink, hasExplicitSink = false))
+      // case SomeStreamSource(source) =>
+      //   findSink(List(source)).filter(_ != InvalidSink)
+      //     .map(sink => new Stream(tree, source, Nil, sink, hasExplicitSink = false))
 
       case _ =>
         None
