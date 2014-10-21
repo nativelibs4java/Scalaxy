@@ -65,8 +65,14 @@ trait StreamComponentsTestBase extends Utils
     src
   }
 
+  // case class MessageTest(source: String,
+  //                        expectedMessages: expectedMessages,
+  //                        expectWarningCount: Option[Int] = None)
+  //                       (implicit strategy: OptimizationStrategy)
+
   def testMessages(source: String, expectedMessages: CompilerMessages,
-                   expectWarningCount: Option[Int] = None)
+                   // expectWarningCount: Option[Int] = None,
+                   expectWarningRegexp: Option[List[String]] = None)
                   (implicit strategy: OptimizationStrategy) {
 
     def filterWarnings(warnings: List[String]) =
@@ -84,11 +90,18 @@ trait StreamComponentsTestBase extends Utils
     }
 
     assertEquals(expectedMessages.infos, actualMessages.infos)
-    expectWarningCount match {
-      case Some(count) =>
+    expectWarningRegexp match {
+      case Some(rxs) =>
+        val warnings = filterWarnings(actualMessages.warnings)
         assert(expectedMessages.warnings.isEmpty)
-        assertEquals(actualMessages.warnings.toString,
-          count, actualMessages.warnings.size)
+        assertEquals(warnings.toString,
+          rxs.size, warnings.size)
+        for ((rx, warning) <- rxs.zip(warnings)) {
+          assertTrue(s"Expected '$rx', got '$warning'\n(full warnings: ${actualMessages.warnings})",
+            warning.matches(rx))
+        }
+        // assertEquals(actualMessages.warnings.toString,
+        //   count, actualMessages.warnings.size)
 
       case None =>
         assertEquals(

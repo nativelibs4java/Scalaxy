@@ -35,7 +35,7 @@ private[streams] trait Strategies
 
     def couldSkipSideEffects: Boolean = {
       var foundCanInterruptLoop = false
-      for (op <- stream.ops) {
+      for (op <- stream.ops.reverse) {
         if (op.canInterruptLoop) {
           foundCanInterruptLoop = true
         } else {
@@ -49,7 +49,6 @@ private[streams] trait Strategies
     }
 
     def reportIgnoredUnsafeSideEffects(): Unit = {
-      // if (hasMoreThanOneLambdaWithUnsafeSideEffect) {
       for (effects <- stream.closureSideEffectss;
            effect <- effects;
            if effect.severity == SideEffectSeverity.Unsafe) {
@@ -57,7 +56,6 @@ private[streams] trait Strategies
         warning(effect.tree.pos, Optimizations.messageHeader +
           s"Potential side effect could cause issues with ${strategy.name} optimization strategy: ${effect.description}")
       }
-      // }
     }
 
     val worthOptimizing = strategy match {

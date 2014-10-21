@@ -20,7 +20,7 @@ object MacroIntegrationTest {
   scalaxy.streams.impl.verbose = true
   scalaxy.streams.impl.veryVerbose = false
 
-  implicit def strategy = scalaxy.streams.strategy.default
+  implicit def strategy = scalaxy.streams.strategy.aggressive
 
   @Parameters(name = "{0}")
   def data: java.util.Collection[Array[AnyRef]] =

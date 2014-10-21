@@ -14,6 +14,9 @@ class StrategyTest extends StreamComponentsTestBase with StreamTransforms {
   scalaxy.streams.impl.verbose = true
   scalaxy.streams.impl.veryVerbose = false
 
+  val newObjectRx = raw".*java\.lang\.Object\.<init>.*"
+  val fnRx = raw".*scala\.Function0\.apply.*"
+
   @Test
   def testPrints {
     val src = """
@@ -36,25 +39,109 @@ class StrategyTest extends StreamComponentsTestBase with StreamTransforms {
         copy(warnings = potentialSideEffectMsgs("scala.Predef.print"))) }
   }
 
+
+  @Test
+  def testMap2FunctionApply {
+    val src = "(0 to 2).map(i => () => i).map(f => (f(), f)).map(_._2())"
+
+    { import scalaxy.streams.strategy.safer
+      testMessages(src, streamMsg("Range.map.map -> IndexedSeq")) }
+
+    { import scalaxy.streams.strategy.safe
+      testMessages(src, streamMsg("Range.map.map -> IndexedSeq")) }
+
+    { import scalaxy.streams.strategy.aggressive
+      testMessages(src, streamMsg("Range.map.map.map -> IndexedSeq"),
+        expectWarningRegexp = Some(List(fnRx, fnRx))) }
+
+    { import scalaxy.streams.strategy.foolish
+      testMessages(src, streamMsg("Range.map.map.map -> IndexedSeq"),
+        expectWarningRegexp = Some(List(fnRx, fnRx))) }
+  }
+
+
+  @Test
+  def testInterruptedStream {
+    val src = "(0 to 2).map(i => () => i).map(_()).takeWhile(_ < 1)"
+
+    { import scalaxy.streams.strategy.safer
+      testMessages(src, streamMsg("Range.map.map -> IndexedSeq")) }
+
+    { import scalaxy.streams.strategy.safe
+      testMessages(src, streamMsg("Range.map.map -> IndexedSeq")) }
+
+    { import scalaxy.streams.strategy.aggressive
+      testMessages(src, streamMsg("Range.map.map.takeWhile -> IndexedSeq"),
+        expectWarningRegexp = Some(List(fnRx, fnRx))) }
+
+    { import scalaxy.streams.strategy.foolish
+      testMessages(src, streamMsg("Range.map.map.takeWhile -> IndexedSeq"),
+        expectWarningRegexp = Some(List(fnRx, fnRx))) }
+  }
+
+  @Test
+  def testMapFunctionApply {
+    val src = "(0 to 2).map(i => (() => i)())"
+
+    { import scalaxy.streams.strategy.safer
+      testMessages(src, streamMsg("Range.map -> IndexedSeq")) }
+
+    { import scalaxy.streams.strategy.safe
+      testMessages(src, streamMsg("Range.map -> IndexedSeq")) }
+
+    { import scalaxy.streams.strategy.aggressive
+      testMessages(src, streamMsg("Range.map -> IndexedSeq"),
+        expectWarningRegexp = Some(List(fnRx))) }
+  }
+
   // @Ignore
   @Test
   def testOutsider {
     val src = """
       def outsider[A](a: A) = a
-      print((0 to 10).map(outsider).map(_.toString + new Object().toString).map(outsider))
+      print((0 to 1).map(outsider).map(_.toString + new Object().toString).map(outsider))
     """
+
+    val outsiderRx = raw".*outsider.*"
 
     { import scalaxy.streams.strategy.safer
       testMessages(src, streamMsg("Range.map -> IndexedSeq")) }
 
-    // TODO: proper warnings regexp instead of just dummy count
     { import scalaxy.streams.strategy.safe
-      testMessages(src, streamMsg("Range.map -> IndexedSeq"),
-        expectWarningCount = Some(2)) }
+      testMessages(src, streamMsg("Range.map -> IndexedSeq")) }
 
     { import scalaxy.streams.strategy.aggressive
       testMessages(src, streamMsg("Range.map.map.map -> IndexedSeq"),
-        expectWarningCount = Some(5)) }
+        expectWarningRegexp = Some(List(outsiderRx, newObjectRx, outsiderRx))) }
+
+    { import scalaxy.streams.strategy.foolish
+      testMessages(src, streamMsg("Range.map.map.map -> IndexedSeq"),
+        expectWarningRegexp = Some(List(outsiderRx, newObjectRx, outsiderRx))) }
+  }
+
+  // @Ignore
+  @Test
+  def testTwoSideEffects {
+    val src = """
+      var tot = 0;
+      for (i <- 0 until 2; x = new AnyRef) { tot += i }
+    """
+
+    val totRx = raw".*\.tot\b.*"
+
+    { import scalaxy.streams.strategy.safer
+      testMessages(src, streamMsg("Range.map -> IndexedSeq")) }
+
+    { import scalaxy.streams.strategy.safe
+      testMessages(src, streamMsg("Range.map -> IndexedSeq")) }
+
+    { import scalaxy.streams.strategy.aggressive
+      testMessages(src, streamMsg("Range.map.foreach"),
+        expectWarningRegexp = Some(List(newObjectRx, totRx))) }
+
+    { import scalaxy.streams.strategy.foolish
+      testMessages(src, streamMsg("Range.map.foreach"),
+        expectWarningRegexp = Some(List(newObjectRx, totRx))) }
   }
 
   // @Ignore
