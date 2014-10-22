@@ -36,44 +36,23 @@ class AdHocManualTest
 
   @Ignore
   @Test
-  def testTuple {
+  def testFlatMap {
     val src = """
-      val o = Option(10)
-      def foo(v: Option[Option[Int]]) = v.flatMap(a => {
-        val m = a//.map(_.toString)
-
-        m
-      })
+      List(Some(List(1)), None).flatMap(_.getOrElse(List(-1)))
     """
 
     { import scalaxy.streams.strategy.safe
       testMessages(src, streamMsg("Option.flatMap -> Option")) }
   }
+
+  @Ignore
+  @Test
+  def testFM {
+    val src = """
+      for ((a, b) <- List(null, (1, 2)); if a < b) yield a + b
+    """
+
+    { import scalaxy.streams.strategy.aggressive
+      testMessages(src, streamMsg("List.flatMap -> List")) }
+  }
 }
-
-/*
-
-      def inferForApproxPt =
-        if (isFullyDefined(pt)) {
-          inferFor(pt.instantiateTypeParams(ptparams, ptparams map (x => WildcardType))) flatMap { targs =>
-            val ctorTpInst = tree.tpe.instantiateTypeParams(undetparams, targs)
-            val resTpInst  = skipImplicit(ctorTpInst.finalResultType)
-            val ptvars     =
-              ptparams map {
-                // since instantiateTypeVar wants to modify the skolem that corresponds to the method's type parameter,
-                // and it uses the TypeVar's origin to locate it, deskolemize the existential skolem to the method tparam skolem
-                // (the existential skolem was created by adaptConstrPattern to introduce the type slack necessary to soundly deal with variant type parameters)
-                case skolem if skolem.isGADTSkolem => freshVar(skolem.deSkolemize.asInstanceOf[TypeSymbol])
-                case p => freshVar(p)
-              }
-
-            val ptV        = pt.instantiateTypeParams(ptparams, ptvars)
-
-            if (isPopulated(resTpInst, ptV)) {
-              ptvars foreach instantiateTypeVar
-              debuglog("isPopulated "+ resTpInst +", "+ ptV +" vars= "+ ptvars)
-              Some(targs)
-            } else None
-          }
-        } else None
-*/

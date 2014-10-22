@@ -1,23 +1,45 @@
 package scalaxy.streams
 
-private[streams] trait ReductionSinks extends StreamComponents {
+private[streams] trait ReductionOps
+    extends StreamComponents
+    with UnusableSinks
+{
   val global: scala.reflect.api.Universe
   import global._
 
-  trait SimpleReductorSink extends StreamSink
+  object SomeReductionOp extends StreamOpExtractor {
+    override def unapply(tree: Tree) = Option(tree) collect {
+      case q"$target.sum[${tpt}](${_})" =>
+        (target, SumOp(tpt.tpe))
+
+      case q"$target.product[${tpt}](${_})" =>
+        (target, ProductOp(tpt.tpe))
+    }
+  }
+
+  trait SimpleReductorOp extends StreamOp
   {
     def throwsIfEmpty: Boolean
     def tpe: Type
     def initialAccumulatorValue: Tree
+    def canAlterSize = true
     def accumulate(accumulator: Tree, newValue: Tree): Tree
 
-    override def lambdaCount = 0
+    override def transmitOutputNeedsBackwards(paths: Set[TuploidPath]) =
+      Set(RootTuploidPath)
 
-    override def emit(input: StreamInput, outputNeeds: OutputNeeds, nextOps: OpsAndOutputNeeds): StreamOutput =
+    override def lambdaCount = 0
+    override def sinkOption = Some(ScalarSink)
+
+    override def emit(input: StreamInput,
+                      outputNeeds: OutputNeeds,
+                      nextOps: OpsAndOutputNeeds): StreamOutput =
     {
+      val List((ScalarSink, _)) = nextOps
+
       import input._
 
-      requireSinkInput(input, outputNeeds, nextOps)
+      // requireSinkInput(input, outputNeeds, nextOps)
 
       val result = fresh("result")
       val empty = fresh("empty")
@@ -52,7 +74,7 @@ private[streams] trait ReductionSinks extends StreamComponents {
     }
   }
 
-  case class SumSink(tpe: Type) extends SimpleReductorSink
+  case class SumOp(tpe: Type) extends SimpleReductorOp
   {
     override def describe = Some("sum")
     override def initialAccumulatorValue = q"0"
@@ -62,7 +84,7 @@ private[streams] trait ReductionSinks extends StreamComponents {
       q"$accumulator + $newValue"
   }
 
-  case class ProductSink(tpe: Type) extends SimpleReductorSink
+  case class ProductOp(tpe: Type) extends SimpleReductorOp
   {
     override def describe = Some("product")
     override def initialAccumulatorValue = q"1"

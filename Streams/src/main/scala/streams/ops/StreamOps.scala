@@ -12,6 +12,7 @@ private[streams] trait StreamOps
     with ForeachOps
     with MapOps
     with OptionOps
+    with ReductionOps
     with ToCollectionOps
     with WhileOps
     with ZipWithIndexOps
@@ -33,6 +34,7 @@ private[streams] trait StreamOps
       SomeForeachOp,
       SomeMapOp,
       SomeOptionOp,
+      SomeReductionOp,
       SomeToCollectionOp,
       SomeWhileOp,
       SomeZipWithIndexOp

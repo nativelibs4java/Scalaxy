@@ -5,7 +5,6 @@ private[streams] trait StreamSinks
     with ArrayBuilderSinks
     with ListBufferSinks
     with SetBuilderSinks
-    with ReductionSinks
     with VectorBuilderSinks
 {
   val global: scala.reflect.api.Universe
@@ -24,12 +23,6 @@ private[streams] trait StreamSinks
 
       case q"$target.toVector" =>
         (target, VectorBuilderSink)
-
-      case q"$target.sum[${tpt}](${_})" =>
-        (target, SumSink(tpt.tpe))
-
-      case q"$target.product[${tpt}](${_})" =>
-        (target, ProductSink(tpt.tpe))
 
       // case _ if { println(tree); false } => null
     }

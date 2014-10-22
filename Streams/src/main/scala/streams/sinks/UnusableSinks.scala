@@ -22,5 +22,7 @@ private[streams] trait UnusableSinks extends StreamComponents {
   case object InvalidSink extends UnusableSinkBase
 
   /// Sink that outputs a Unit (e.g. for a foreach).
-  case object ScalarSink extends UnusableSinkBase
+  case object ScalarSink extends UnusableSinkBase {
+    override def canBeElided = false
+  }
 }

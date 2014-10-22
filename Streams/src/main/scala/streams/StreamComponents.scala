@@ -51,6 +51,8 @@ private[streams] trait StreamComponents
   {
     /** If true, this sink is skipped unless it's at the end of the stream, i.e. after all ops. */
     def isFinalOnly: Boolean = false
+    /** Sinks are "neutral" and chainable / elidable by default, except for scalar sinks. */
+    def canBeElided = true
     override def canAlterSize = false
     override def sinkOption = Some(this)
 

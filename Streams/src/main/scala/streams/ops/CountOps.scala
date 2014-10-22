@@ -20,8 +20,8 @@ private[streams] trait CountOps
     override def canInterruptLoop = false
     override def canAlterSize = true
     override def isMapLike = false
-    override def sinkOption = Some(ScalarSink)
     override def describe = Some("count")
+    override def sinkOption = Some(ScalarSink)
 
     override def emit(input: StreamInput,
                       outputNeeds: OutputNeeds,

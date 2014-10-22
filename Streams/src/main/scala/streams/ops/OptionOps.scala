@@ -1,7 +1,7 @@
 package scalaxy.streams
 
 private[streams] trait OptionOps
-    extends OptionSinks
+    extends UnusableSinks
 {
   val global: scala.reflect.api.Universe
   import global._
@@ -9,25 +9,81 @@ private[streams] trait OptionOps
   object SomeOptionOp extends StreamOpExtractor {
     override def unapply(tree: Tree) = Option(tree) collect {
       case q"$target.get" =>
-        (target, OptionOp("get", OptionGetOrElseSink(q"""
+        (target, OptionGetOrElseOp("get", q"""
           throw new NoSuchElementException("None.get")
-        """)))
+        """))
 
       case q"$target.getOrElse[${_}]($v)" =>
-        (target, OptionOp("getOrElse", OptionGetOrElseSink(v)))
+        (target, OptionGetOrElseOp("getOrElse", v))
 
       case q"$target.isEmpty" =>
-        (target, OptionOp("isEmpty", OptionIsEmptySink))
+        (target, OptionIsEmptyOp)
     }
   }
 
-  case class OptionOp(name: String, sink: StreamSink) extends PassThroughStreamOp
+  trait OptionOpBase extends StreamOp
   {
-    override def describe = Some(name)
+    override def lambdaCount = 0
 
-    override val sinkOption = Some(sink)
+    override def subTrees = Nil
 
-    /// Since this output scalars, the size is brought down to 0.
+    def whenSome(value: Tree): Tree
+    def whenNone(): Tree
+
+    override def emit(input: StreamInput, outputNeeds: OutputNeeds, nextOps: OpsAndOutputNeeds): StreamOutput =
+    {
+      import input._
+
+      // TODO: needed in ops and sink.
+      // requireSinkInput(input, outputNeeds, nextOps)
+
+      val value = fresh("value")
+      val nonEmpty = fresh("nonEmpty")
+      require(input.vars.alias.nonEmpty, s"input.vars = $input.vars")
+
+      val tpe = input.vars.tpe
+      val Block(List(
+          valueDef,
+          nonEmptyDef,
+          assignment,
+          result), _) = typed(q"""
+        private[this] var $value: $tpe =
+          ${Literal(Constant(defaultValue(input.vars.tpe)))};
+        private[this] var $nonEmpty = false;
+        {
+          $value = ${input.vars.alias.get};
+          $nonEmpty = true;
+        };
+        if ($nonEmpty) ${whenSome(q"$value")} else ${whenNone};
+        ""
+      """)
+
+      println(s"result = $result")
+
+      StreamOutput(
+        prelude = List(valueDef, nonEmptyDef),
+        body = List(assignment),
+        ending = List(result))
+    }
+  }
+
+  case class OptionGetOrElseOp(name: String, defaultValue: Tree) extends OptionOpBase {
+    override def sinkOption = Some(ScalarSink)
     override def canAlterSize = true
+    override def describe = Some(name)
+    override def whenSome(value: Tree) = value
+    override def whenNone() = defaultValue
+    override def transmitOutputNeedsBackwards(paths: Set[TuploidPath]) =
+      Set(RootTuploidPath) // TODO: refine this.
+  }
+
+  case object OptionIsEmptyOp extends OptionOpBase {
+    override def sinkOption = Some(ScalarSink)
+    override def canAlterSize = true
+    override def describe = Some("isEmpty")
+    override def whenSome(value: Tree) = q"false"
+    override def whenNone() = q"true"
+    override def transmitOutputNeedsBackwards(paths: Set[TuploidPath]) =
+      Set() // TODO: check this.
   }
 }

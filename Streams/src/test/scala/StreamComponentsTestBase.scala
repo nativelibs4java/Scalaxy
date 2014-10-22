@@ -140,7 +140,7 @@ trait StreamComponentsTestBase extends Utils
     val (unoptimized, unoptimizedMessages) = compileFast(source)
     val (optimized, optimizedMessages) = compileFast(optimizedCode(source, strategy))
 
-    assertEqualValues(source, unoptimized(), optimized())
+    assertEqualValues(source + "\n" + optimizedMessages, unoptimized(), optimized())
 
     assertEquals("Unexpected messages during unoptimized compilation",
       CompilerMessages(), unoptimizedMessages)
