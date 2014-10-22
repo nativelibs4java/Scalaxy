@@ -1,5 +1,7 @@
 # Scalaxy/Streams
 
+Latest release: 0.3.1
+
 Quick links:
 * [Usage with Sbt](#usage-with-sbt)
 * [Usage with Maven](#usage-with-maven)
