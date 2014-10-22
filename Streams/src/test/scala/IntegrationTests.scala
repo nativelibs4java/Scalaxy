@@ -317,6 +317,12 @@ object IntegrationTests
     """
       -> streamMsg((1 to 10).map(_ => "Range.foreach"):_*),
 
+    """
+      def foo[T](v: List[(Int, T)]) = v.map(_._2).filter(_ != null);
+      foo(List((1, "a")))
+    """
+      -> streamMsg("List.map.filter -> List"),
+
     "var tot = 0; for (i <- 0 until 10; x = new AnyRef) { tot += i }; tot"
       -> streamMsg("Range.map.foreach"),
 

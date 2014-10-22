@@ -73,7 +73,7 @@ private[streams] trait SymbolMatchers
             val t = normalize(tpe)
             val uninitializedValue = Literal(Constant(defaultValue(t)))
             val Block(List(decl, assignment), ref) = typed(q"""
-              private[this] var $name: $t = $uninitializedValue;
+              private[this] var $name: $t = $uninitializedValue.asInstanceOf[$t];
               $name = $value;
               $name
             """)
