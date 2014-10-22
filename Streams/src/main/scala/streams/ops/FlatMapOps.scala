@@ -135,8 +135,15 @@ private[streams] trait FlatMapOps
                 index = None),
               outputNeeds)
 
-          val TypeRef(_, _, List(componentTpe)) =
-            outputVars.tpe.baseType(GenTraversableOnceSym)
+          // println(s"outputVars = ${outputVars}")
+          val TypeRef(_, _, List(componentTpe)) = {
+            val tpe = outputVars.tpe.dealias
+            if (tpe <:< typeOf[Option[_]]) {
+              tpe
+            } else {
+              tpe.baseType(GenTraversableOnceSym)
+            }
+          }
 
           val itemVal = fresh("item")
           val Function(List(itemValDef @ ValDef(_, _, _, _)), itemValRef @ Ident(_)) = typed(q"""

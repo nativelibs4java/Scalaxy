@@ -323,6 +323,16 @@ object IntegrationTests
     """
       -> streamMsg("List.map.filter -> List"),
 
+    """
+      val o = Option(10)
+      def foo(v: Option[Option[Int]]) = v.flatMap(a => {
+        val m = a.map(_.toString)
+
+        m
+      })
+    """
+      -> streamMsg("Option.flatMap -> Option"),
+
     "var tot = 0; for (i <- 0 until 10; x = new AnyRef) { tot += i }; tot"
       -> streamMsg("Range.map.foreach"),
 
