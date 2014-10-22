@@ -34,8 +34,8 @@ private[streams] trait OptionOps
     {
       import input._
 
-      // TODO: needed in ops and sink.
-      // requireSinkInput(input, outputNeeds, nextOps)
+      // TODO: remove this restriction to unlock flatMap.
+      val List((ScalarSink, _)) = nextOps
 
       val value = fresh("value")
       val nonEmpty = fresh("nonEmpty")

@@ -195,13 +195,13 @@ object IntegrationTests
       -> streamMsg("Range.map.filter -> Array"),
 
     "(1 to 3).map(_ + 1).sum"
-      -> streamMsg("Range.map -> sum"),
+      -> streamMsg("Range.map.sum"),
 
     "Array(1, 2, 3).map(_ * 10).sum"
-      -> streamMsg("Array.map -> sum"),
+      -> streamMsg("Array.map.sum"),
 
     "Array(1, 2, 3).map(_ * 10).product"
-      -> streamMsg("Array.map -> product"),
+      -> streamMsg("Array.map.product"),
 
     "val n = 10; for (v <- 0 to n) yield v"
       -> streamMsg("Range.map -> IndexedSeq"),
@@ -333,7 +333,8 @@ object IntegrationTests
       -> streamMsg("Option.flatMap -> Option"),
 
     "List(Some(List(1)), None).flatMap(_.getOrElse(List(-1)))"
-      -> streamMsg("List.flatMap(Option.getOrElse) -> List"),
+      -> streamMsg("List.flatMap -> List"),
+      // TODO: -> streamMsg("List.flatMap(Option.getOrElse) -> List"),
 
     "var tot = 0; for (i <- 0 until 10; x = new AnyRef) { tot += i }; tot"
       -> streamMsg("Range.map.foreach"),
