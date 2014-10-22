@@ -1,6 +1,6 @@
 # Scalaxy/Streams
 
-Latest release: 0.3.1
+Latest release: 0.3.2
 
 Quick links:
 * [Usage with Sbt](#usage-with-sbt)
@@ -111,7 +111,7 @@ If you're using `sbt` 0.13.0+, just put the following lines in `build.sbt`:
   scalaVersion := "2.11.2"
 
   // Dependency at compilation-time only (not at runtime).
-  libraryDependencies += "com.nativelibs4java" %% "scalaxy-streams" % "0.3.1" % "provided"
+  libraryDependencies += "com.nativelibs4java" %% "scalaxy-streams" % "0.3.2" % "provided"
   ```
 
   And wrap some code with the `optimize` macro:
@@ -139,7 +139,7 @@ If you're using `sbt` 0.13.0+, just put the following lines in `build.sbt`:
 
   autoCompilerPlugins := true
 
-  addCompilerPlugin("com.nativelibs4java" %% "scalaxy-streams" % "0.3.1")
+  addCompilerPlugin("com.nativelibs4java" %% "scalaxy-streams" % "0.3.2")
 
   scalacOptions += "-Xplugin-require:scalaxy-streams"
   ```
@@ -169,7 +169,7 @@ With Maven, you'll need this in your `pom.xml` file:
     <dependency>
       <groupId>com.nativelibs4java</groupId>
       <artifactId>scalaxy-streams_2.11.1</artifactId>
-      <version>0.3.1</version>
+      <version>0.3.2</version>
     </dependency>
   </dependencies>
   ```
@@ -225,7 +225,7 @@ With Maven, you'll need this in your `pom.xml` file:
             <compilerPlugin>
               <groupId>com.nativelibs4java</groupId>
               <artifactId>scalaxy-streams_${scala.version}</artifactId>
-              <version>0.3.1</version>
+              <version>0.3.2</version>
             </compilerPlugin>
           </compilerPlugins>
         </configuration>
@@ -244,7 +244,7 @@ With Maven, you'll need this in your `pom.xml` file:
 ## Usage on Eclipse
 
 The Scalaxy/Stream compiler plugin is easy to setup in Eclipse with the Scala IDE plugin:
-* Download the [stable scalaxy_streams_2.11 JAR on Maven Central](http://search.maven.org/remotecontent?filepath=com/nativelibs4java/scalaxy-streams_2.11/0.3.1/scalaxy-streams_2.11-0.3.1.jar), or the [snapshot JAR on Sonatype OSS](https://oss.sonatype.org/#nexus-search;quick~scalaxy_streams_2.11)
+* Download the [stable scalaxy_streams_2.11 JAR on Maven Central](http://search.maven.org/remotecontent?filepath=com/nativelibs4java/scalaxy-streams_2.11/0.3.2/scalaxy-streams_2.11-0.3.2.jar), or the [snapshot JAR on Sonatype OSS](https://oss.sonatype.org/#nexus-search;quick~scalaxy_streams_2.11)
 * Provide the full path to the jar in Project / Properties / Scala Compiler / Advanced / Xplugin
 
   ![advanced scala settings panel in eclipse](https://raw.githubusercontent.com/ochafik/Scalaxy/master/Streams/resources/scalaxy_settings_eclipse.png)
