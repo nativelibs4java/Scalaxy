@@ -58,7 +58,7 @@ private[streams] trait OptionOps
         ""
       """)
 
-      println(s"result = $result")
+      // println(s"result = $result")
 
       StreamOutput(
         prelude = List(valueDef, nonEmptyDef),
