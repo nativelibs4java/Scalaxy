@@ -50,16 +50,14 @@ private[streams] trait ArrayStreamSources
           iVarDef,
           itemValDef,
           lengthValRef,
-          iVarRef,
-          itemValRef), _) = typed(q"""
+          iVarRef), itemValRef) = typed(q"""
         private[this] val $arrayVal = ${transform(array)};
         private[this] val $lengthVal = $arrayVal.length;
         private[this] var $iVar = 0;
         private[this] val $itemVal = $arrayVal($iVar);
         $lengthVal;
         $iVar;
-        $itemVal;
-        ""
+        $itemVal
       """)
       val (extractionCode, outputVars) = createTuploidPathsExtractionDecls(itemValRef, outputNeeds, fresh, typed)
 

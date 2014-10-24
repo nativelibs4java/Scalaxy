@@ -10,13 +10,13 @@ private[streams] trait FilterOps
   object SomeFilterOp extends StreamOpExtractor {
     override def unapply(tree: Tree)= Option(tree) collect {
       case q"$target.filter(${Closure(closure)})" =>
-        (target, FilterOp(closure, false, "filter"))
+        (target, FilterOp(closure, isNegative = false, "filter"))
 
       case q"$target.filterNot(${Closure(closure)})" =>
-        (target, FilterOp(closure, true, "filterNot"))
+        (target, FilterOp(closure, isNegative = true, "filterNot"))
 
       case q"$target.withFilter(${Closure(closure)})" =>
-        (target, FilterOp(closure, false, "withFilter"))
+        (target, FilterOp(closure, isNegative = false, "withFilter"))
     }
   }
   case class FilterOp(closure: Function, isNegative: Boolean, name: String)

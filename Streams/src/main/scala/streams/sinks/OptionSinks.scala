@@ -26,8 +26,7 @@ private[streams] trait OptionSinks extends StreamComponents {
       val Block(List(
           valueDef,
           nonEmptyDef,
-          assignment,
-          result), _) = typed(q"""
+          assignment), result) = typed(q"""
         private[this] var $value: $tpe =
           ${Literal(Constant(defaultValue(input.vars.tpe)))};
         private[this] var $nonEmpty = false;
@@ -35,8 +34,7 @@ private[streams] trait OptionSinks extends StreamComponents {
           $value = ${input.vars.alias.get};
           $nonEmpty = true;
         };
-        if ($nonEmpty) Some($value) else None;
-        ""
+        if ($nonEmpty) Some($value) else None
       """)
 
       StreamOutput(

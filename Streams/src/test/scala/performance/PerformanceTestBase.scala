@@ -10,7 +10,7 @@ import scala.tools.reflect.FrontEnd
 
 case class PerfRun(optimized: Boolean, output: Any, nanoTime: Long)
 
-class PerformanceTestBase extends StreamComponentsTestBase {
+trait PerformanceTestBase extends StreamComponentsTestBase {
 
   val perfRuns = 5
   val defaultExpectedFasterFactor = 0.93
@@ -70,6 +70,7 @@ class PerformanceTestBase extends StreamComponentsTestBase {
   def ensureFasterCodeWithSameResult(
       decls: String,
       code: String,
+      nonOptimizedCode: Option[String] = None,
       params: Seq[Int] = testSizes,
       minFaster: Double = 1.0,
       nRuns: Int = perfRuns): Unit = {
@@ -82,7 +83,7 @@ class PerformanceTestBase extends StreamComponentsTestBase {
         normalRunner
       ) = Array(
         getPerformanceRunner(optimized = true, decls = decls, code = code),
-        getPerformanceRunner(optimized = false, decls = decls, code = code)
+        getPerformanceRunner(optimized = false, decls = decls, code = nonOptimizedCode.getOrElse(code))
       )
 
     def run = params.toList.sorted.map(param => {

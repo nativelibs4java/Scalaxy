@@ -16,7 +16,7 @@ private[streams] trait StreamInterruptors extends StreamComponents
         continueVarRef), _) = typed(q"""
       private[this] var $continue = true;
       $continue;
-      ""
+      ${dummyStatement(fresh)}
     """)
 
     private[this] val needsContinue = nextOps.exists(_._1.canInterruptLoop)

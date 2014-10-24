@@ -45,15 +45,13 @@ private[streams] trait ArrayBuilderSinks extends BuilderSinks {
               arrayCreation,
               indexDef,
               append,
-              incr,
-              arrayRef), _) = typed(q"""
+              incr), arrayRef) = typed(q"""
             private[this] var $array: Array[$componentTpe] = null;
             $array = new Array[$componentTpe]($outputSize);
             private[this] var $index = 0;
             $array($index) = ${input.vars.alias.get};
             $index += 1;
-            $array;
-            ""
+            $array
           """)
 
           StreamOutput(

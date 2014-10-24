@@ -51,14 +51,12 @@ private[streams] trait ReductionOps
           resultDef,
           emptyDef,
           resultAdd,
-          resultRef,
-          throwIfEmpty), _) = typed(q"""
+          throwIfEmpty), resultRef) = typed(q"""
         private[this] var $result: $tpe = ${initialAccumulatorValue};
         private[this] var $empty = true;
         $result = ${accumulate(Ident(result), input.vars.alias.get)};
-        $result;
         if ($empty) throw new UnsupportedOperationException($emptyMessage);
-        ""
+        $result
       """)
 
       if (throwsIfEmpty)

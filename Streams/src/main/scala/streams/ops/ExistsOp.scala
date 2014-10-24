@@ -53,13 +53,11 @@ private[streams] trait ExistsOps
       val Block(List(
           resultVarDef,
           resultFalse,
-          resultTrue,
-          resultVarRef), _) = typed(q"""
+          resultTrue), resultVarRef) = typed(q"""
         private[this] var $result = ${if (exists) q"false" else q"true"};
         $result = false;
         $result = true;
-        $result;
-        ""
+        $result
       """)
 
       StreamOutput(

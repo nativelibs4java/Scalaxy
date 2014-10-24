@@ -115,7 +115,7 @@ private[streams] trait InlineRangeStreamSources
         $iVar;
         $iVar $testOperator $endVal;
         $iVar = $iVar + $by;
-        ""
+        ${dummyStatement(fresh)}
       """)
 
       val outputVars = ScalarValue[Tree](tpe = tpe, alias = Some(iValRef))

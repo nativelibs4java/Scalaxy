@@ -27,13 +27,11 @@ private[streams] trait BuilderSinks extends StreamComponents {
       val Block(List(
           builderDef,
           sizeHint,
-          builderAdd,
-          result), _) = typed(q"""
+          builderAdd), result) = typed(q"""
         private[this] val $builder = ${createBuilder(input.vars, typed)};
         ${sizeHintOpt.getOrElse(Literal(Constant("")))};
         $builder += ${input.vars.alias.get};
-        $builder.result();
-        ""
+        $builder.result()
       """)
 
       StreamOutput(

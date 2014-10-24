@@ -47,6 +47,10 @@ private[streams] trait Utils {
       None
     }
 
+  def dummyStatement(fresh: String => TermName) =
+    q"{}"
+    // q"val ${fresh("dummy")} = null"
+
   private lazy val defaultValues = Map[Type, Any](
     typeOf[Int] -> 0,
     typeOf[Boolean] -> false,

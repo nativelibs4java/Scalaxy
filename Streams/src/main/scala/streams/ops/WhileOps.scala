@@ -82,12 +82,10 @@ private[streams] trait WhileOps
       // Force typing of declarations and get typed references to various vars and vals.
       val Block(List(
           doneDroppingVarDef,
-          combinedTest,
-          setDoneDropping), _) = typed(q"""
+          setDoneDropping), combinedTest) = typed(q"""
         private[this] var $doneDropping = false;
-        $doneDropping || !$test;
         $doneDropping = true;
-        ""
+        $doneDropping || !$test
       """)
 
       val sub = emitSub(input.copy(outputSize = None), nextOps)

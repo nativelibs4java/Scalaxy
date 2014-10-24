@@ -62,15 +62,13 @@ private[streams] trait CollectOps
           collectedVarDef,
           valueVarDef,
           collectedFalse,
-          collectedVarRef,
-          valueVarRef), _) = typed(q"""
+          collectedVarRef), valueVarRef) = typed(q"""
         private[this] var $collected = true;
         private[this] var $value: $outputTpe =
           ${Literal(Constant(defaultValue(input.vars.tpe)))};
         $collected = false;
         $collected;
-        $value;
-        ""
+        $value
       """)
 
       val caseUntyper = new Transformer {

@@ -45,8 +45,7 @@ private[streams] trait OptionOps
       val Block(List(
           valueDef,
           nonEmptyDef,
-          assignment,
-          result), _) = typed(q"""
+          assignment), result) = typed(q"""
         private[this] var $value: $tpe =
           ${Literal(Constant(defaultValue(input.vars.tpe)))};
         private[this] var $nonEmpty = false;
@@ -54,8 +53,7 @@ private[streams] trait OptionOps
           $value = ${input.vars.alias.get};
           $nonEmpty = true;
         };
-        if ($nonEmpty) ${whenSome(q"$value")} else ${whenNone};
-        ""
+        if ($nonEmpty) ${whenSome(q"$value")} else ${whenNone}
       """)
 
       // println(s"result = $result")

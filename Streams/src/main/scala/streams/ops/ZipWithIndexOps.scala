@@ -54,16 +54,14 @@ private[streams] trait ZipWithIndexOps
           indexVarIncr,
           indexValDef,
           indexValRef,
-          pairDef,
-          pairRef), _) = typed(q"""
+          pairDef), pairRef) = typed(q"""
         private[this] var $indexVar = 0;
         $indexVar;
         $indexVar += 1;
         private[this] val $indexVal = $indexVar;
         $indexVal;
         private[this] val $pairName = (${input.vars.alias.getOrElse(EmptyTree)}, $indexVal);
-        $pairName;
-        ()
+        $pairName
       """)
 
       import compat._

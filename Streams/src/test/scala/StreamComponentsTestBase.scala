@@ -126,7 +126,7 @@ trait StreamComponentsTestBase extends Utils
 
       val f = File.createTempFile("test-", ".scala")
       val out = new PrintStream(f)
-      out.println(s"object Test { $source }")
+      out.println(s"object Test { def run = { $source } }")
       out.close()
 
       f

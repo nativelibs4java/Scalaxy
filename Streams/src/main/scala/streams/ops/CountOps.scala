@@ -43,12 +43,10 @@ private[streams] trait CountOps
       // Force typing of declarations and get typed references to various vars and vals.
       val Block(List(
           countVarDef,
-          countIncr,
-          countVarRef), _) = typed(q"""
+          countIncr), countVarRef) = typed(q"""
         private[this] var $count = 0;
         $count += 1;
-        $count;
-        ""
+        $count
       """)
 
       StreamOutput(
