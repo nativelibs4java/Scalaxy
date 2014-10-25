@@ -35,6 +35,18 @@ object IntegrationTests
     // (0 until n).dropWhile(x => x < n / 2).toSeq
     // (0 until n).filter(v => (v % 2) == 0).map(_ * 2).toArray.toSeq
 
+    "for ((a, b) <- Array(null, (1, 2))) yield (a + b)"
+      -> streamMsg("Array.withFilter.map -> Array"),
+
+    "for ((a, b) <- Some[(Int, Int)](null)) yield (a + b)"
+      -> streamMsg("Some.withFilter.map -> Option"),
+
+    """
+      val list = List(null, (1, 2))
+      for ((a, b) <- list) yield (a + b)
+    """
+      -> streamMsg("List.withFilter.map -> List"),
+
     "(0 to 10).filter(v => (v % 2) == 0).map(_ * 2).toArray.toSeq"
       -> streamMsg("Range.filter.map.toArray -> ArrayOps"),
 

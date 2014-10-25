@@ -40,31 +40,76 @@ private[streams] trait TuploidValues extends Utils
     paths: Set[TuploidPath],
     fresh: String => TermName,
     typed: Tree => Tree,
-    coercionLoopInterruptor: Option[Tree] = None)
+    coercionSuccessVarDefRef: (Option[Tree], Option[Tree]) = (None, None))
       : (List[Tree], TuploidValue[Tree]) =
   {
+    def aux(tpe: Type, target: Tree, paths: Set[TuploidPath])
+        : (List[Tree], List[Tree], TuploidValue[Tree]) = {
+      val headToSubs = for ((head, pathsWithSameHead) <- paths.filter(_.nonEmpty).groupBy(_.head)) yield {
+        val subPaths = pathsWithSameHead.map(_.tail)
+        val selector = "_" + (head + 1)
+        val name = fresh(selector)
 
-    val headToSubs = for ((head, pathsWithSameHead) <- paths.filter(_.nonEmpty).groupBy(_.head)) yield {
-      val subPaths = pathsWithSameHead.map(_.tail)
-      val selector = "_" + (head + 1)
-      val subName = fresh(selector)
-      val Block(List(subDecl), subRef) = typed(q"""
-        private[this] val $subName = $target.${TermName(selector)};
-        $subName
-      """)
-      val (subExtraction, subValue) = createTuploidPathsExtractionDecls(subRef, subPaths, fresh, typed)
+        val rhs = typed(q"$target.${TermName(selector)}")
+        val subTpe = rhs.tpe
+        val Block(List(decl, assign), ref) = typed(q"""
+          ${newVar(name, subTpe)};
+          $name = $rhs;
+          $name
+        """)
 
-      (subDecl :: subExtraction, head -> subValue)
+        val (subDecls, subAssigns, subValue) =
+          aux(rhs.tpe, ref, subPaths)
+
+        (decl :: subDecls, assign :: subAssigns, head -> subValue)
+      }
+
+      val subDecls: List[Tree] = headToSubs.flatMap(_._1).toList
+      val subAssigns: List[Tree] = headToSubs.flatMap(_._2).toList
+      val assigns: List[Tree] = coercionSuccessVarDefRef match {
+        case (Some(successVarDef), Some(successVarRef))
+            if subAssigns != Nil =>
+          val Block(statements, _) = typed(q"""
+            $successVarDef;
+            if ((${target.duplicate} ne null) &&
+                ${successVarRef.duplicate}) {
+              ..$subAssigns
+            } else {
+              ${successVarRef.duplicate} = false;
+            };
+            null
+          """)
+
+          statements
+
+        case _ =>
+          subAssigns
+      }
+
+      (
+        subDecls,
+        assigns,
+        TupleValue[Tree](
+          tpe = tpe,//target.tpe,
+          values = headToSubs.map(_._3).toMap,
+          alias = target.asOption,
+          couldBeNull = false)
+      )
     }
 
-    (
-      headToSubs.flatMap(_._1).toList,
-      TupleValue[Tree](
-        tpe = target.tpe,
-        values = headToSubs.map(_._2).toMap,
-        alias = target.asOption,
-        couldBeNull = false)
-    )
+    val (defs, assigns, value) = aux(target.tpe, target, paths)
+
+    val all =
+      if (defs.isEmpty && assigns.isEmpty)
+        Nil
+      else {
+        val Block(all, _) = typed(q"""
+          ..${defs ++ assigns};
+          ""
+        """)
+        all
+      }
+    (all, value)
   }
 
   /** A tuploid value is either a scalar or a tuple of tuploid values. */

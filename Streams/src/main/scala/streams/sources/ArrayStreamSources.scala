@@ -57,7 +57,13 @@ private[streams] trait ArrayStreamSources
         private[this] val $itemVal = $arrayVal($iVar);
         ($lengthVal, $iVar, $itemVal)
       """)
-      val (extractionCode, outputVars) = createTuploidPathsExtractionDecls(itemValRef, outputNeeds, fresh, typed)
+
+      val coercionSuccessVarDefRef =
+        newCoercionSuccessVarDefRef(nextOps, fresh, typed)
+      val (extractionCode, outputVars) =
+        createTuploidPathsExtractionDecls(
+          itemValRef, outputNeeds, fresh, typed,
+          coercionSuccessVarDefRef)
 
       val interruptor = new StreamInterruptor(input, nextOps)
 
@@ -66,7 +72,8 @@ private[streams] trait ArrayStreamSources
           vars = outputVars,
           loopInterruptor = interruptor.loopInterruptor,
           outputSize = Some(lengthValRef)),
-        nextOps)
+        nextOps,
+        coercionSuccessVarDefRef._2)
 
       sub.copy(
         beforeBody = Nil,

@@ -21,11 +21,11 @@ private[streams] trait OptionStreamSources
     }
 
     def unapply(tree: Tree): Option[StreamSource] = Option(tree).filter(hasOptionType(_)) collect {
-      case q"scala.Option.apply[${_}]($value)" =>
-        InlineOptionStreamSource(value, isSome = false)
+      case q"scala.Option.apply[$tpt]($value)" =>
+        InlineOptionStreamSource(tpt.tpe, value, isSome = false)
 
-      case q"scala.Some.apply[${_}]($value)" =>
-        InlineOptionStreamSource(value, isSome = true)
+      case q"scala.Some.apply[$tpt]($value)" =>
+        InlineOptionStreamSource(tpt.tpe, value, isSome = true)
 
       case _ =>
         GenericOptionStreamSource(tree)
@@ -65,7 +65,12 @@ private[streams] trait OptionStreamSources
         private[this] val $itemVal = $optionVal.get;
         ($nonEmptyVal, $itemVal)
       """)
-      val (extractionCode, outputVars) = createTuploidPathsExtractionDecls(itemValRef, outputNeeds, fresh, typed)
+      val coercionSuccessVarDefRef =
+        newCoercionSuccessVarDefRef(nextOps, fresh, typed)
+      val (extractionCode, outputVars) =
+        createTuploidPathsExtractionDecls(
+          itemValRef, outputNeeds, fresh, typed,
+          coercionSuccessVarDefRef)
 
       // println(s"""
       //   outputNeeds: $outputNeeds
@@ -79,7 +84,8 @@ private[streams] trait OptionStreamSources
           vars = outputVars,
           loopInterruptor = interruptor.loopInterruptor,
           outputSize = None), // TODO 1 if nonEmpty, 0 otherwise.
-        nextOps)
+        nextOps,
+        coercionSuccessVarDefRef._2)
       sub.copy(body = List(typed(q"""
         $optionValDef;
         $nonEmptyValDef;
@@ -95,6 +101,7 @@ private[streams] trait OptionStreamSources
   }
 
   case class InlineOptionStreamSource(
+      tpe: Type,
       item: Tree,
       isSome: Boolean,
       sinkOption: Option[StreamSink] = Some(OptionSink))
@@ -127,11 +134,16 @@ private[streams] trait OptionStreamSources
           nonEmptyValDef),
           TupleCreation(List(
             nonEmptyValRef, itemValRef))) = typed(q"""
-        private[this] val $itemVal = ${transform(item)};
+        private[this] val $itemVal: $tpe = ${transform(item)};
         private[this] val $nonEmptyVal = $nonEmptyTest;
         ($nonEmptyVal, $itemVal)
       """)
-      val (extractionCode, outputVars) = createTuploidPathsExtractionDecls(itemValRef, outputNeeds, fresh, typed)
+      val coercionSuccessVarDefRef =
+        newCoercionSuccessVarDefRef(nextOps, fresh, typed)
+      val (extractionCode, outputVars) =
+        createTuploidPathsExtractionDecls(
+          itemValRef, outputNeeds, fresh, typed,
+          coercionSuccessVarDefRef)
 
       val interruptor = new StreamInterruptor(input, nextOps)
       val sub = emitSub(
@@ -139,7 +151,8 @@ private[streams] trait OptionStreamSources
           vars = outputVars,
           loopInterruptor = interruptor.loopInterruptor,
           outputSize = None), // TODO 1 if nonEmpty, 0 otherwise.
-        nextOps)
+        nextOps,
+        coercionSuccessVarDefRef._2)
       sub.copy(
         beforeBody = Nil,
         body = List(typed(q"""
