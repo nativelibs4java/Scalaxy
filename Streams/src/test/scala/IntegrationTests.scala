@@ -309,13 +309,13 @@ object IntegrationTests
       var tot = 0;
       val n, m, o, p = 3;
       for (i <- 0 until n)
-          for (j <- 0 until m)
-            for (k <- 0 until o)
-              for (l <- 0 until p)
-                tot += (i * 1 + j * 10 + k * 100 + l * 1000) / 10;
+        for (j <- 0 until m)
+          for (k <- 0 until o)
+            for (l <- 0 until p)
+              tot += (i * 1 + j * 10 + k * 100 + l * 1000) / 10;
       tot
     """
-      -> streamMsg((1 to 10).map(_ => "Range.foreach"):_*),
+      -> streamMsg((1 to 4).map(_ => "Range.foreach"):_*),
 
     """
       def foo[T](v: List[(Int, T)]) = v.map(_._2).filter(_ != null);

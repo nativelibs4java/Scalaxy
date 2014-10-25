@@ -22,12 +22,11 @@ private[streams] trait OptionSinks extends StreamComponents {
       val nonEmpty = fresh("nonEmpty")
       require(input.vars.alias.nonEmpty, s"input.vars = $input.vars")
 
-      val ntpe = normalize(input.vars.tpe)
       val Block(List(
           valueDef,
           nonEmptyDef,
           assignment), result) = typed(q"""
-        private[this] var $value: $ntpe = null.asInstanceOf[$ntpe];
+        ${newVar(value, input.vars.tpe)};
         private[this] var $nonEmpty = false;
         {
           $value = ${input.vars.alias.get};

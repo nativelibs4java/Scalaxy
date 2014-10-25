@@ -12,11 +12,10 @@ private[streams] trait StreamInterruptors extends StreamComponents
     private[this] val continue = fresh("continue")
 
     private[this] val Block(List(
-        continueVarDef,
-        continueVarRef), _) = typed(q"""
+        continueVarDef),
+        continueVarRef) = typed(q"""
       private[this] var $continue = true;
-      $continue;
-      ${dummyStatement(fresh)}
+      $continue
     """)
 
     private[this] val needsContinue = nextOps.exists(_._1.canInterruptLoop)

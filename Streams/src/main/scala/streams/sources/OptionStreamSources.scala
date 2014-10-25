@@ -57,13 +57,13 @@ private[streams] trait OptionStreamSources
       val Block(List(
           optionValDef,
           nonEmptyValDef,
-          itemValDef,
-          nonEmptyValRef), itemValRef) = typed(q"""
+          itemValDef),
+          TupleCreation(List(
+            nonEmptyValRef, itemValRef))) = typed(q"""
         private[this] val $optionVal = ${transform(option)};
         private[this] val $nonEmptyVal = $optionVal.nonEmpty;
         private[this] val $itemVal = $optionVal.get;
-        $nonEmptyVal;
-        $itemVal
+        ($nonEmptyVal, $itemVal)
       """)
       val (extractionCode, outputVars) = createTuploidPathsExtractionDecls(itemValRef, outputNeeds, fresh, typed)
 
@@ -124,14 +124,12 @@ private[streams] trait OptionStreamSources
       // Early typing / symbolization.
       val Block(List(
           itemValDef,
-          nonEmptyValDef,
-          nonEmptyValRef,
-          itemValRef), _) = typed(q"""
+          nonEmptyValDef),
+          TupleCreation(List(
+            nonEmptyValRef, itemValRef))) = typed(q"""
         private[this] val $itemVal = ${transform(item)};
         private[this] val $nonEmptyVal = $nonEmptyTest;
-        $nonEmptyVal;
-        $itemVal;
-        ${dummyStatement(fresh)}
+        ($nonEmptyVal, $itemVal)
       """)
       val (extractionCode, outputVars) = createTuploidPathsExtractionDecls(itemValRef, outputNeeds, fresh, typed)
 

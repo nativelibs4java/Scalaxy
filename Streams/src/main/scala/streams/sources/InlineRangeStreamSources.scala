@@ -97,11 +97,9 @@ private[streams] trait InlineRangeStreamSources
           iVarDef,
           iValDef,
           sizeDef,
-          sizeRef,
-          iValRef,
-          iVarRef,
-          test,
-          iVarIncr), _) = typed(q"""
+          iVarIncr),
+          TupleCreation(List(
+            sizeRef, iValRef, iVarRef, test))) = typed(q"""
         private[this] val $startVal: $tpe = ${transform(start)};
         private[this] val $endVal: $tpe = ${transform(end)};
         private[this] var $iVar: $tpe = $startVal;
@@ -110,12 +108,8 @@ private[streams] trait InlineRangeStreamSources
           val $gap = $endVal - $startVal
           ${divideTree(q"$gap", q"$by")} + ${ifTree(hasStubTree, q"1", q"0")}
         }.toInt;
-        $size;
-        $iVal;
-        $iVar;
-        $iVar $testOperator $endVal;
         $iVar = $iVar + $by;
-        ${dummyStatement(fresh)}
+        ($size, $iVal, $iVar, $iVar $testOperator $endVal)
       """)
 
       val outputVars = ScalarValue[Tree](tpe = tpe, alias = Some(iValRef))

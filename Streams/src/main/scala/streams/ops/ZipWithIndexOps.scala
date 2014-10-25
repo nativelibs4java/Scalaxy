@@ -50,18 +50,16 @@ private[streams] trait ZipWithIndexOps
       // Early typing / symbolization.
       val Block(List(
           indexVarDef,
-          indexVarRef,
-          indexVarIncr,
           indexValDef,
-          indexValRef,
-          pairDef), pairRef) = typed(q"""
+          pairDef,
+          indexVarIncr),
+          TupleCreation(List(
+            indexVarRef, indexValRef, pairRef))) = typed(q"""
         private[this] var $indexVar = 0;
-        $indexVar;
-        $indexVar += 1;
         private[this] val $indexVal = $indexVar;
-        $indexVal;
         private[this] val $pairName = (${input.vars.alias.getOrElse(EmptyTree)}, $indexVal);
-        $pairName
+        $indexVar += 1;
+        ($indexVar, $indexVal, $pairName)
       """)
 
       import compat._

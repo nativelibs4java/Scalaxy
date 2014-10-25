@@ -81,9 +81,6 @@ trait StreamComponentsTestBase extends Utils
                    expectWarningRegexp: Option[List[String]] = None)
                   (implicit strategy: OptimizationStrategy) {
 
-    def filterWarnings(warnings: List[String]) =
-      warnings.filterNot(_ == "a pure expression does nothing in statement position; you may be omitting necessary parentheses")
-
     val actualMessages = try {
       assertMacroCompilesToSameValue(
         source,
@@ -101,7 +98,7 @@ trait StreamComponentsTestBase extends Utils
     }
     expectWarningRegexp match {
       case Some(rxs) =>
-        val warnings = filterWarnings(actualMessages.warnings)
+        val warnings = actualMessages.warnings
         assert(expectedMessages.warnings.isEmpty)
         assertEquals(warnings.toString,
           rxs.size, warnings.size)
@@ -114,8 +111,8 @@ trait StreamComponentsTestBase extends Utils
 
       case None =>
         assertEquals(
-          filterWarnings(expectedMessages.warnings).toSet,
-          filterWarnings(actualMessages.warnings).toSet)
+          expectedMessages.warnings.toSet,
+          actualMessages.warnings.toSet)
     }
     assertEquals(expectedMessages.errors, actualMessages.errors)
   }

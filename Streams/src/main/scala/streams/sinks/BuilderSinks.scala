@@ -29,7 +29,7 @@ private[streams] trait BuilderSinks extends StreamComponents {
           sizeHint,
           builderAdd), result) = typed(q"""
         private[this] val $builder = ${createBuilder(input.vars, typed)};
-        ${sizeHintOpt.getOrElse(Literal(Constant("")))};
+        ${sizeHintOpt.getOrElse(dummyStatement(fresh))};
         $builder += ${input.vars.alias.get};
         $builder.result()
       """)

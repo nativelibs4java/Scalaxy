@@ -16,13 +16,33 @@ private[streams] trait TuploidValues extends Utils
     }
   }
   object TupleType {
-    def unapply(tpe: Type): Boolean = tpe.typeSymbol.fullName.toString.matches("scala\\.Tuple\\d+")
+    def unapply(tpe: Type): Boolean =
+      Option(tpe).exists(
+        _.typeSymbol.fullName.toString.matches("scala\\.Tuple\\d+"))
+  }
+
+  object TupleCreation {
+    def unapply(tree: Tree): Option[List[Tree]] =
+      Option(tree).filter(tree => TupleType.unapply(tree.tpe)) collect {
+        case q"${Tuple()}[..${_}](..$subs)" =>
+          subs
+
+        case q"${Tuple()}.apply[..${_}](..$subs)" =>
+          subs
+      }
   }
 
   type TuploidPath = List[Int]
   val RootTuploidPath = Nil
 
-  def createTuploidPathsExtractionDecls(target: Tree, paths: Set[TuploidPath], fresh: String => TermName, typed: Tree => Tree): (List[Tree], TuploidValue[Tree]) = {
+  def createTuploidPathsExtractionDecls(
+    target: Tree,
+    paths: Set[TuploidPath],
+    fresh: String => TermName,
+    typed: Tree => Tree,
+    coercionLoopInterruptor: Option[Tree] = None)
+      : (List[Tree], TuploidValue[Tree]) =
+  {
 
     val headToSubs = for ((head, pathsWithSameHead) <- paths.filter(_.nonEmpty).groupBy(_.head)) yield {
       val subPaths = pathsWithSameHead.map(_.tail)
@@ -180,10 +200,7 @@ private[streams] trait TuploidValues extends Utils
         })(breakOut)
 
       tree match {
-        case q"${Tuple()}[..${_}](..$subs)" =>
-          TupleValue(tree.tpe, values = sub(subs), alias = alias, couldBeNull = isInsideCasePattern)
-
-        case q"${Tuple()}.apply[..${_}](..$subs)" =>
+        case TupleCreation(subs) =>
           TupleValue(tree.tpe, values = sub(subs), alias = alias, couldBeNull = isInsideCasePattern)
 
         case Ident(termNames.WILDCARD) =>

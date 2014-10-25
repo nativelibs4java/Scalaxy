@@ -48,8 +48,7 @@ private[streams] trait Utils {
     }
 
   def dummyStatement(fresh: String => TermName) =
-    q"{}"
-    // q"val ${fresh("dummy")} = null"
+    q"val ${fresh("dummy")} = null"
 
   // private lazy val defaultValues = Map[Type, Any](
   //   typeOf[Int] -> 0,
@@ -61,12 +60,24 @@ private[streams] trait Utils {
   //   typeOf[Float] -> 0.0f,
   //   typeOf[Double] -> 0.0)
 
-  def normalize(tpe: Type): Type = tpe.dealias match {
+  private[this] def normalize(tpe: Type): Type = tpe.dealias match {
     case t @ ConstantType(_) =>
       /// There's no `deconst` in the api (only in internal). Work around it:
       t.typeSymbol.asType.toType
     case t =>
       t
+  }
+
+  def newVar(name: TermName, tpe: Type, rhs: Tree = EmptyTree): ValDef = {
+    val ntpe = normalize(tpe)
+    val initialValue = rhs match {
+      case EmptyTree =>
+        q"null.asInstanceOf[$ntpe]"
+      case _ =>
+        rhs
+    }
+    // Note: this looks weird, but it does give 0 for Int :-).
+    q"private[this] var $name: $ntpe = $initialValue"
   }
 
   // def defaultValue(tpe: Type): Any =

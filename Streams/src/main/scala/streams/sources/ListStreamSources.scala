@@ -43,16 +43,14 @@ private[streams] trait ListStreamSources
           listValDef,
           listVarDef,
           itemValDef,
-          listSize,
-          nonEmptyListTest,
-          listVarUpdate), itemValRef) = typed(q"""
+          listVarUpdate),
+          TupleCreation(List(
+            listSize, nonEmptyListTest, itemValRef))) = typed(q"""
         private[this] val $listVal = ${transform(list)}
         private[this] var $listVar = $listVal;
         private[this] val $itemVal = $listVar.head;
-        $listVal.size;
-        $listVar ne Nil;
         $listVar = $listVar.tail;
-        $itemVal
+        ($listVal.size, $listVar ne Nil, $itemVal)
       """)
       val (extractionCode, outputVars) = createTuploidPathsExtractionDecls(itemValRef, outputNeeds, fresh, typed)
 

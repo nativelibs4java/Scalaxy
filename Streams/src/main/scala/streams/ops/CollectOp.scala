@@ -58,17 +58,16 @@ private[streams] trait CollectOps
       val collected = fresh("collected")
 
       // Force typing of declarations and get typed references to various vars and vals.
-      val ntpe = normalize(outputTpe)
       val Block(List(
           collectedVarDef,
           valueVarDef,
-          collectedFalse,
-          collectedVarRef), valueVarRef) = typed(q"""
+          collectedFalse),
+          TupleCreation(List(
+            collectedVarRef, valueVarRef))) = typed(q"""
         private[this] var $collected = true;
-        private[this] var $value: $ntpe = null.asInstanceOf[$ntpe];
+        ${newVar(value, outputTpe)};
         $collected = false;
-        $collected;
-        $value
+        ($collected, $value)
       """)
 
       val caseUntyper = new Transformer {
