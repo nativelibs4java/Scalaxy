@@ -111,7 +111,7 @@ private[streams] class StreamsComponent(
                   result
                 } catch {
                   case ex: Throwable =>
-                    ex.printStackTrace()
+                    logException(tree.pos, ex, reporter.warning)
                     super.transform(tree)
                 }
               } else {

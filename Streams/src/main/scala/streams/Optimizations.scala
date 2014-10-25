@@ -9,6 +9,15 @@ private[streams] object Optimizations
       "Optimized stream " + streamDescription +
       " (strategy: " + strategy.name + ")"
 
+
+  def logException(pos: Position, ex: Throwable,
+                   warning: (Position, String) => Unit) = {
+    warning(pos, messageHeader + "An exception ocurred: " + ex)
+    if (impl.veryVerbose) {
+      ex.printStackTrace()
+    }
+  }
+
   def matchStrategyTree(u: scala.reflect.api.Universe)
                        (staticClass: String => u.TypeSymbol,
                         inferImplicitValue: u.Type => u.Tree): OptimizationStrategy = 
