@@ -25,11 +25,26 @@ private[streams] trait StreamComponents
              outputNeeds: OutputNeeds,
              nextOps: OpsAndOutputNeeds): StreamOutput
 
-    protected def emitSub(input: StreamInput, nextOps: OpsAndOutputNeeds): StreamOutput =
+    protected def emitSub(
+      input: StreamInput, 
+      nextOps: OpsAndOutputNeeds,
+      coercionSuccessVarRef: Option[Tree] = None): StreamOutput =
     {
       nextOps match {
         case (firstOp, outputNeeds) :: otherOpsAndOutputNeeds =>
-          firstOp.emit(input, outputNeeds, otherOpsAndOutputNeeds)
+          val sub =
+            firstOp.emit(input, outputNeeds, otherOpsAndOutputNeeds)
+          coercionSuccessVarRef match {
+            case Some(varRef) =>
+              sub.copy(body = List(q"""
+                if ($varRef) {
+                  ..${sub.body};
+                }
+              """))
+
+            case _ =>
+              sub
+          }
 
         case Nil =>
           sys.error("Cannot call base emit at the end of an ops stream.")
@@ -43,6 +58,7 @@ private[streams] trait StreamComponents
   {
     def canInterruptLoop: Boolean = false
     def canAlterSize: Boolean
+    def isPassThrough = false
 
     def transmitOutputNeedsBackwards(paths: Set[TuploidPath]): Set[TuploidPath]
   }
@@ -76,6 +92,8 @@ private[streams] trait StreamComponents
   }
 
   trait PassThroughStreamOp extends StreamOp {
+
+    override def isPassThrough = true
 
     override def describe: Option[String] = None
 

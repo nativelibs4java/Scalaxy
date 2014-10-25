@@ -52,7 +52,12 @@ private[streams] trait ListStreamSources
         $listVar = $listVar.tail;
         ($listVal.size, $listVar ne Nil, $itemVal)
       """)
-      val (extractionCode, outputVars) = createTuploidPathsExtractionDecls(itemValRef, outputNeeds, fresh, typed)
+      val coercionSuccessVarDefRef =
+        newCoercionSuccessVarDefRef(nextOps, fresh, typed)
+      val (extractionCode, outputVars) =
+        createTuploidPathsExtractionDecls(
+          itemValRef, outputNeeds, fresh, typed,
+          coercionSuccessVarDefRef)
 
       val interruptor = new StreamInterruptor(input, nextOps)
 
@@ -61,7 +66,8 @@ private[streams] trait ListStreamSources
           vars = outputVars,
           loopInterruptor = interruptor.loopInterruptor,
           outputSize = Some(listSize)),
-        nextOps)
+        nextOps,
+        coercionSuccessVarDefRef._2)
       sub.copy(
         beforeBody = Nil,
         body = List(typed(q"""

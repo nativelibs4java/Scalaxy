@@ -1,6 +1,8 @@
 package scalaxy.streams
 
-private[streams] trait StreamInterruptors extends StreamComponents
+private[streams] trait StreamInterruptors
+  extends StreamComponents
+  with CoerceOps
 {
   val global: scala.reflect.api.Universe
   import global._
