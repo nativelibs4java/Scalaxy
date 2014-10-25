@@ -47,12 +47,13 @@ private[streams] trait ReductionOps
 
       // println("inputVars.alias.get = " + inputVars.alias.get + ": " + inputVars.tpe)
       val emptyMessage = s"empty.${describe.get}"
+      val ntpe = normalize(tpe)
       val Block(List(
           resultDef,
           emptyDef,
           resultAdd,
           throwIfEmpty), resultRef) = typed(q"""
-        private[this] var $result: $tpe = ${initialAccumulatorValue};
+        private[this] var $result: $ntpe = ${initialAccumulatorValue};
         private[this] var $empty = true;
         $result = ${accumulate(Ident(result), input.vars.alias.get)};
         if ($empty) throw new UnsupportedOperationException($emptyMessage);

@@ -61,13 +61,13 @@ private[streams] trait Utils {
   //   typeOf[Float] -> 0.0f,
   //   typeOf[Double] -> 0.0)
 
-  // def normalize(tpe: Type): Type = tpe.dealias match {
-  //   case t @ ConstantType(_) =>
-  //     /// There's no `deconst` in the api (only in internal). Work around it:
-  //     t.typeSymbol.asType.toType
-  //   case t =>
-  //     t
-  // }
+  def normalize(tpe: Type): Type = tpe.dealias match {
+    case t @ ConstantType(_) =>
+      /// There's no `deconst` in the api (only in internal). Work around it:
+      t.typeSymbol.asType.toType
+    case t =>
+      t
+  }
 
   // def defaultValue(tpe: Type): Any =
   //   defaultValues.get(normalize(tpe)).getOrElse(null)

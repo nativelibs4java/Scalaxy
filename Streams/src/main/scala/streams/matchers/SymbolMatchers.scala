@@ -70,10 +70,10 @@ private[streams] trait SymbolMatchers
         def generateVarIfNeeded(tpe: Type, value: => Tree, sideEffectValues: => List[Tree]): Option[Tree] = {
           if (needed && reusableName.isEmpty) {
             val name = fresh("_" + path.map(_ + 1).mkString("_"))
-            // val t = normalize(tpe)
+            val ntpe = normalize(tpe)
             // val uninitializedValue = Literal(Constant(defaultValue(t)))
             val Block(List(decl, assignment), ref) = typed(q"""
-              private[this] var $name: $tpe = null.asInstanceOf[$tpe];
+              private[this] var $name: $ntpe = null.asInstanceOf[$ntpe];
               $name = $value;
               $name
             """)
