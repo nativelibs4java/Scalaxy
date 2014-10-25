@@ -60,6 +60,16 @@ private[streams] trait CoerceOps
 
       val pathsThatNeedToBeNullChecked = coercedTuplePaths.filterNot(pathsThatCantBeNull)
 
+      // val pathsThatNeedToBeNullChecked = coercedTuplePaths.filter(pathsThatCantBeNull)
+
+      // println(s"""
+      //   pathsThatCantBeNull: $pathsThatCantBeNull
+      //   coercedTuplePaths: $coercedTuplePaths
+      //   pathsThatNeedToBeNullChecked: $pathsThatNeedToBeNullChecked
+      //   pathsThatNeedToBeNullChecked.isEmpty = ${pathsThatNeedToBeNullChecked.isEmpty}
+      //   sub: ${sub}
+      // """)
+
       if (pathsThatNeedToBeNullChecked.isEmpty) {
         sub
       } else {
@@ -78,8 +88,36 @@ private[streams] trait CoerceOps
             ..${sub.body};
           }
         """)))
+        // sub.copy(
+        //   beforeBody = Nil,
+        //   body = List(typed(q"""
+        //     if ($condition) {
+        //       ..${sub.beforeBody}
+        //       ..${sub.body};
+        //     }
+        //   """)))
       }
     }
 
+  }
+
+  def newCoercionSuccessVarDefRef(
+    nextOps: OpsAndOutputNeeds,
+    fresh: String => TermName,
+    typed: Tree => Tree)
+      : (Option[Tree], Option[Tree]) =
+  {
+    nextOps.find(!_._1.isPassThrough) match {
+      case Some((CoerceOp(_), _)) =>
+        val name = fresh("coercionSuccess")
+        val Block(List(varDef), varRef) = typed(q"""
+          private[this] var $name = true;
+          $name
+        """)
+        (Some(varDef), Some(varRef))
+
+      case _ =>
+        (None, None)
+    }
   }
 }
