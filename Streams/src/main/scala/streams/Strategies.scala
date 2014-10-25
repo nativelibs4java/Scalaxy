@@ -38,7 +38,7 @@ private[streams] trait Strategies
     def couldSkipSideEffects: Boolean = {
       var foundCanInterruptLoop = false
       for (op <- stream.ops.reverse) {
-        if (op.canInterruptLoop) {
+        if (op.canInterruptLoop || op.canAlterSize) {
           foundCanInterruptLoop = true
         } else {
           if (foundCanInterruptLoop &&
