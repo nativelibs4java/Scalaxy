@@ -113,7 +113,7 @@ package streams
 
                     } catch {
                       case ex: Throwable =>
-                        logException(tree.pos, ex, c.warning)
+                        logException(cast(tree.pos), ex, warning)
                         apiDefault(tree)
                     }
                   } else {
@@ -139,7 +139,7 @@ package streams
             })
           } catch {
             case ex: Throwable =>
-              logException(a.tree.pos, ex, c.warning)
+              logException(cast(a.tree.pos), ex, warning)
               a.tree
           }
         }

@@ -134,4 +134,12 @@ private[streams] trait Strategies
 
     worthOptimizing
   }
+
+  def logException(pos: Position, ex: Throwable,
+                   warning: (Position, String) => Unit) = {
+    warning(pos, Optimizations.messageHeader + "An exception ocurred: " + ex)
+    if (impl.veryVerbose) {
+      ex.printStackTrace()
+    }
+  }
 }
