@@ -71,13 +71,7 @@ trait StreamComponentsTestBase extends Utils
     src
   }
 
-  // case class MessageTest(source: String,
-  //                        expectedMessages: expectedMessages,
-  //                        expectWarningCount: Option[Int] = None)
-  //                       (implicit strategy: OptimizationStrategy)
-
   def testMessages(source: String, expectedMessages: CompilerMessages,
-                   // expectWarningCount: Option[Int] = None,
                    expectWarningRegexp: Option[List[String]] = None)
                   (implicit strategy: OptimizationStrategy) {
 
