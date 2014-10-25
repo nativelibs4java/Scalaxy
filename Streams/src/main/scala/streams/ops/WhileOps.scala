@@ -27,13 +27,13 @@ private[streams] trait WhileOps
 
   trait WhileOp extends ClosureStreamOp {
     // override def sinkOption = None
-    override def canInterruptLoop = true
     override def canAlterSize = true
     override def isMapLike = false
   }
 
   case class TakeWhileOp(closure: Function, sinkOption: Option[StreamSink]) extends WhileOp
   {
+    override def canInterruptLoop = true
     override def describe = Some("takeWhile")
 
     override def emit(input: StreamInput,
@@ -63,6 +63,7 @@ private[streams] trait WhileOps
 
   case class DropWhileOp(closure: Function, sinkOption: Option[StreamSink]) extends WhileOp
   {
+    override def canInterruptLoop = false
     override def describe = Some("dropWhile")
 
     override def emit(input: StreamInput,

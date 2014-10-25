@@ -65,7 +65,7 @@ class StrategyTest {
 
 
   @Test
-  def testInterruptedStream {
+  def testStreamInterruptedByTakeWhile {
     val src = "(0 to 2).map(i => () => i).map(_()).takeWhile(_ < 1)"
 
     { import scalaxy.streams.strategy.safer
@@ -80,6 +80,26 @@ class StrategyTest {
 
     { import scalaxy.streams.strategy.foolish
       testMessages(src, streamMsg("Range.map.map.takeWhile -> IndexedSeq"),
+        expectWarningRegexp = Some(List(fnRx))) }
+  }
+
+
+  @Test
+  def testStreamAlteredByFilter {
+    val src = "(0 to 2).map(i => () => i).map(_()).filter(_ > 1)"
+
+    { import scalaxy.streams.strategy.safer
+      testMessages(src, streamMsg("Range.map.map -> IndexedSeq")) }
+
+    { import scalaxy.streams.strategy.safe
+      testMessages(src, streamMsg("Range.map.map -> IndexedSeq")) }
+
+    { import scalaxy.streams.strategy.aggressive
+      testMessages(src, streamMsg("Range.map.map.filter -> IndexedSeq"),
+        expectWarningRegexp = Some(List(fnRx))) }
+
+    { import scalaxy.streams.strategy.foolish
+      testMessages(src, streamMsg("Range.map.map.filter -> IndexedSeq"),
         expectWarningRegexp = Some(List(fnRx))) }
   }
 
