@@ -65,7 +65,7 @@ private[streams] trait CollectOps
           collectedVarRef), valueVarRef) = typed(q"""
         private[this] var $collected = true;
         private[this] var $value: $outputTpe =
-          ${Literal(Constant(defaultValue(input.vars.tpe)))};
+          null.asInstanceOf[${input.vars.tpe}];
         $collected = false;
         $collected;
         $value

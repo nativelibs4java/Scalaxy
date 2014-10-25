@@ -46,8 +46,7 @@ private[streams] trait OptionOps
           valueDef,
           nonEmptyDef,
           assignment), result) = typed(q"""
-        private[this] var $value: $tpe =
-          ${Literal(Constant(defaultValue(input.vars.tpe)))};
+        private[this] var $value: $tpe = null.asInstanceOf[${input.vars.tpe}];
         private[this] var $nonEmpty = false;
         {
           $value = ${input.vars.alias.get};
