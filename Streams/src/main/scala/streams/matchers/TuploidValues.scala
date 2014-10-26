@@ -296,6 +296,9 @@ private[streams] trait TuploidValues extends Utils
           }
           TupleValue(restpe, values.toMap)
 
+        case UnApply(_, _) =>
+          sys.error("Cannot handle " + tree)
+
         case _ =>
           ScalarValue(tree.tpe, value = Some(tree), alias = alias)
       }
@@ -340,8 +343,8 @@ private[streams] trait TuploidValues extends Utils
               case ident @ Ident(n) =>
                 ScalarValue[Symbol](tpe = ident.tpe, alias = ident.symbol.asOption)
 
-              case TuploidValue(v) =>
-                v
+              case _ =>
+                TuploidValue.extractSymbols(b, isInsideCasePattern = true)
             })
         })(breakOut)
 

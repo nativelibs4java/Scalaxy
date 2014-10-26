@@ -75,6 +75,13 @@ object IntegrationTests
       -> streamMsg("Option.withFilter.flatMap(Option.map).getOrElse"),
 
     """
+      case class Interval(b: Int, c: Int)
+      val col = List((1, Interval(2, 3)), (10, Interval(20, 30)))
+      for ((a, Interval(b, c)) <- col) yield a + b + c
+    """
+      -> streamMsg("List.withFilter.map -> List"),
+
+    """
       class Foo {
         val res = (for (i <- 0 to 10 by 2) yield (() => (i * 3))).map(_())
       }

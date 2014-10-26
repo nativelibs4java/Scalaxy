@@ -75,6 +75,8 @@ package streams
             c.internal.typingTransform(cast(a.tree))((tree_, api) => {
               val tree: Tree = cast(tree_)
 
+              // println(s"tree = $tree")
+
               // TODO(ochafik): Remove these warts (needed because of dependent types mess).
               def apiDefault(tree: Tree): Tree = cast(api.default(cast(tree)))
               def apiRecur(tree: Tree): Tree = cast(api.recur(cast(tree)))
@@ -83,10 +85,9 @@ package streams
               val result = tree match {
                 case tree @ SomeStream(stream) =>
                   if (isWorthOptimizing(stream, strategy, info, warning)) {
-                    // println(s"""
-                    //   stream = $stream
-                    //   source: ${stream.source.getClass}
-                    // """)
+                    // println(s"stream = $stream")
+                    // source: ${stream.source.getClass}
+
                     // TODO: move this (+ equiv code in StreamsComponent) to isWorthOptimizing
                     c.info(
                       cast(tree.pos),

@@ -35,7 +35,8 @@ private[streams] trait Utils {
     try {
       Some(v)
     } catch { case ex: Throwable =>
-      ex.printStackTrace
+      if (impl.debug)
+        ex.printStackTrace()
       None
     }
 
@@ -43,7 +44,8 @@ private[streams] trait Utils {
     try {
       v
     } catch { case ex: Throwable =>
-      ex.printStackTrace
+      if (impl.debug)
+        ex.printStackTrace()
       None
     }
 
