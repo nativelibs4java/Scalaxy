@@ -59,6 +59,21 @@ object IntegrationTests
     """
       -> streamMsg("Range.map -> IndexedSeq"),
 
+    // Reduced from scala.tools.nsc.CompileSocket:
+    """
+      def parse(x: String): Option[Int] =
+        try { Some(x.toInt) }
+        catch { case _: NumberFormatException => None }
+
+      val op: Option[(String, String)] = Some(("name", "8080"))
+
+      (for ((name, portStr) <- op ;
+             port <- parse(portStr)) yield
+          List(name, port)
+      ) getOrElse (throw new RuntimeException("Malformed"))
+    """
+      -> streamMsg("Option.withFilter.flatMap(Option.map).getOrElse"),
+
     """
       class Foo {
         val res = (for (i <- 0 to 10 by 2) yield (() => (i * 3))).map(_())

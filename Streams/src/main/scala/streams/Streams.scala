@@ -80,6 +80,7 @@ private[streams] trait Streams
       val nextOps = ops.zip(outputNeeds) :+ (sink, sinkNeeds)
       // println(s"source = $source")
       // println(s"""ops =\n\t${ops.map(_.getClass.getName).mkString("\n\t")}""")
+      // println(s"stream = ${describe()}")
       // println(s"outputNeeds = ${nextOps.map(_._2)}")
       source.emit(
         input = StreamInput(

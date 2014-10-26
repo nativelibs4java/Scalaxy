@@ -65,17 +65,16 @@ private[streams] trait OptionStreamSources
         private[this] val $itemVal = $optionVal.get;
         ($nonEmptyVal, $itemVal)
       """)
-      val coercionSuccessVarDefRef =
-        newCoercionSuccessVarDefRef(nextOps, fresh, typed)
-      val (extractionCode, outputVars) =
+      val TuploidPathsExtractionDecls(extractionCode, outputVars, coercionSuccessVarDefRef) =
         createTuploidPathsExtractionDecls(
-          itemValRef, outputNeeds, fresh, typed,
-          coercionSuccessVarDefRef)
+          itemValRef.tpe, itemValRef, outputNeeds, fresh, typed,
+          newCoercionSuccessVarDefRef(nextOps, fresh, typed))
 
       // println(s"""
       //   outputNeeds: $outputNeeds
       //   extractionCode: $extractionCode
       //   outputVars: $outputVars
+      //   coercionSuccessVarDefRef: $coercionSuccessVarDefRef
       // """)
 
       val interruptor = new StreamInterruptor(input, nextOps)
@@ -138,12 +137,10 @@ private[streams] trait OptionStreamSources
         private[this] val $nonEmptyVal = $nonEmptyTest;
         ($nonEmptyVal, $itemVal)
       """)
-      val coercionSuccessVarDefRef =
-        newCoercionSuccessVarDefRef(nextOps, fresh, typed)
-      val (extractionCode, outputVars) =
+      val TuploidPathsExtractionDecls(extractionCode, outputVars, coercionSuccessVarDefRef) =
         createTuploidPathsExtractionDecls(
-          itemValRef, outputNeeds, fresh, typed,
-          coercionSuccessVarDefRef)
+          tpe, itemValRef, outputNeeds, fresh, typed,
+          newCoercionSuccessVarDefRef(nextOps, fresh, typed))
 
       val interruptor = new StreamInterruptor(input, nextOps)
       val sub = emitSub(

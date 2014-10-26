@@ -35,14 +35,21 @@ private[streams] trait TuploidValues extends Utils
   type TuploidPath = List[Int]
   val RootTuploidPath = Nil
 
+  case class TuploidPathsExtractionDecls(
+    statements: List[Tree],
+    value: TuploidValue[Tree],
+    coercionSuccessVarDefRef: (Option[Tree], Option[Tree]))
+
   def createTuploidPathsExtractionDecls(
+    tpe: Type,
     target: Tree,
     paths: Set[TuploidPath],
     fresh: String => TermName,
     typed: Tree => Tree,
     coercionSuccessVarDefRef: (Option[Tree], Option[Tree]) = (None, None))
-      : (List[Tree], TuploidValue[Tree]) =
+      : TuploidPathsExtractionDecls =
   {
+    var coerces = false
     def aux(tpe: Type, target: Tree, paths: Set[TuploidPath])
         : (List[Tree], List[Tree], TuploidValue[Tree]) = {
       val headToSubs = for ((head, pathsWithSameHead) <- paths.filter(_.nonEmpty).groupBy(_.head)) yield {
@@ -69,6 +76,7 @@ private[streams] trait TuploidValues extends Utils
       val assigns: List[Tree] = coercionSuccessVarDefRef match {
         case (Some(successVarDef), Some(successVarRef))
             if subAssigns != Nil =>
+          coerces = true
           val Block(statements, _) = typed(q"""
             $successVarDef;
             if ((${target.duplicate} ne null) &&
@@ -97,19 +105,35 @@ private[streams] trait TuploidValues extends Utils
       )
     }
 
-    val (defs, assigns, value) = aux(target.tpe, target, paths)
+    val (defs, assigns, value) = aux(tpe, target, paths)
 
-    val all =
+    val statements =
       if (defs.isEmpty && assigns.isEmpty)
         Nil
       else {
-        val Block(all, _) = typed(q"""
+        val Block(list, _) = typed(q"""
           ..${defs ++ assigns};
           ""
         """)
-        all
+        list
       }
-    (all, value)
+
+    val ret = TuploidPathsExtractionDecls(
+      statements = statements,
+      value = value,
+      if (coerces) coercionSuccessVarDefRef else (None, None))
+
+    // println(s"""
+    // createTuploidPathsExtractionDecls
+    //   target: $target
+    //   paths: $paths
+    //   ret: $ret
+    //   defs: $defs
+    //   assigns: $assigns
+    //   statements: $statements
+    //   coercionSuccessVarDefRef: $coercionSuccessVarDefRef
+    // """)
+    ret
   }
 
   /** A tuploid value is either a scalar or a tuple of tuploid values. */

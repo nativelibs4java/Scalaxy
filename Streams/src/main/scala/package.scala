@@ -83,6 +83,10 @@ package streams
               val result = tree match {
                 case tree @ SomeStream(stream) =>
                   if (isWorthOptimizing(stream, strategy, info, warning)) {
+                    // println(s"""
+                    //   stream = $stream
+                    //   source: ${stream.source.getClass}
+                    // """)
                     // TODO: move this (+ equiv code in StreamsComponent) to isWorthOptimizing
                     c.info(
                       cast(tree.pos),

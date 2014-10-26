@@ -84,11 +84,12 @@ private[streams] trait FlatMapOps
       }).getOrElse(sup)
 
       // println(s"""
-      //   transmitOutputNeedsBackwards($paths) = $result
+      //   FlatMapOp.transmitOutputNeedsBackwards($paths) = $result
       //     nestedStream.desc: ${nestedStream.map(_.describe())}
       //     nestedStream: $nestedStream
+      //     sup: $sup
+      //     closure: $closure
       // """)
-      // result
 
       if (result.isEmpty)
         Set()
