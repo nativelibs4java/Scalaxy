@@ -177,6 +177,7 @@ private[streams] trait TuploidValues extends Utils
 
     def find(target: A): Option[TuploidPath]
     def get(path: TuploidPath): TuploidValue[A]
+    def exists(path: TuploidPath): Boolean
 
     def alias: Option[A]
     def tpe: Type
@@ -193,6 +194,8 @@ private[streams] trait TuploidValues extends Utils
       val RootTuploidPath = path
       this
     }
+    override def exists(path: TuploidPath) =
+      path == RootTuploidPath
   }
 
   case class TupleValue[A](
@@ -222,6 +225,14 @@ private[streams] trait TuploidValues extends Utils
 
       case i :: subPath =>
         values(i).get(subPath)
+    }
+    override def exists(path: TuploidPath) = path match {
+      case RootTuploidPath =>
+        true
+
+      case i :: subPath =>
+        i < values.size &&
+        values(i).exists(subPath)
     }
   }
 

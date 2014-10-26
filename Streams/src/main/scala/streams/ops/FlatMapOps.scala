@@ -73,7 +73,7 @@ private[streams] trait FlatMapOps
 
     override def transmitOutputNeedsBackwards(paths: Set[TuploidPath]) = {
       val sup = super.transmitOutputNeedsBackwards(paths)
-      val result = nestedStream.map(stream => {
+      val nested = nestedStream.map(stream => {
         val nestedNeeds = stream.ops.foldRight(paths)({
           case (op, refs) =>
             op.transmitOutputNeedsBackwards(refs)
@@ -81,20 +81,18 @@ private[streams] trait FlatMapOps
 
         nestedNeeds
 
-      }).getOrElse(sup)
+      }).getOrElse(Set())
 
+      val result = (nested ++ sup).filter(transformationClosure.inputs.exists(_))
       // println(s"""
       //   FlatMapOp.transmitOutputNeedsBackwards($paths) = $result
       //     nestedStream.desc: ${nestedStream.map(_.describe())}
       //     nestedStream: $nestedStream
       //     sup: $sup
+      //     nested: $nested
       //     closure: $closure
       // """)
-
-      if (result.isEmpty)
-        Set()
-      else
-        Set(RootTuploidPath)
+      result
     }
 
     override val sinkOption = canBuildFrom.map(CanBuildFromSink(_))
