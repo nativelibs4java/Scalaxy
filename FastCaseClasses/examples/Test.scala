@@ -1,4 +1,7 @@
 object Test extends App {
+  case class Papa(x: Int) {
+    case class Fiston(y: Int)
+  }
   // case class Foo(x: Int)
   trait Bar {
     def a: Int

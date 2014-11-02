@@ -205,9 +205,9 @@ trait TypedFastCaseClassesTransforms extends CompanionTransformers {
         ))
 
         // println(s"result = $result")
-        info(tree.pos, s"Optimized case class ${classDef.name} for Option-less named extraction.")
+        info(comps.classDef.pos, s"Optimized case class ${classDef.name} for Option-less named extraction.")
 
-        result
+        expandTreeOrCompanions(result)
 
       case _ =>
         super.expandTreeOrCompanions(toc)
