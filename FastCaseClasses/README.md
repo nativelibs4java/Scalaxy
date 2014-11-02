@@ -2,11 +2,13 @@
 
 This simple experiment makes all case classes use that new trick, thanks to a compiler plugin!
 
-It can be combined with [Scalaxy/Streams](https://github.com/ochafik/Scalaxy/tree/master/Streams) (which avoids tuples and intermediate collections in for-comprehensions), getting you one step closer to GC paradise :-)
+It can be combined with [Scalaxy/Streams](https://github.com/ochafik/Scalaxy/tree/master/Streams) (which avoids creating many tuples and intermediate collections in for-comprehensions), getting you one step closer to GC paradise :-)
 
 # Usage
 
     scalaVersion := "2.11.4"
+
+    resolvers += Resolver.sonatypeRepo("snapshots")
 
     autoCompilerPlugins := true
 
@@ -14,7 +16,10 @@ It can be combined with [Scalaxy/Streams](https://github.com/ochafik/Scalaxy/tre
 
     scalacOptions += "-Xplugin-require:scalaxy-fastcaseclasses"
 
-    resolvers += Resolver.sonatypeRepo("snapshots")
+    // Uncomment these lines to use Scalaxy/Streams.
+    // addCompilerPlugin("com.nativelibs4java" %% "scalaxy-streams" % "0.4-SNAPSHOT")
+
+    // scalacOptions += "-Xplugin-require:scalaxy-streams"
 
 # What does it do?
 
