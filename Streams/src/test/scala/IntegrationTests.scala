@@ -309,7 +309,7 @@ object IntegrationTests
       val col: List[Int] = (0 to 2).toList;
       col.filter(v => (v % 2) == 0).map(_ * 2)
     """
-      -> streamMsg("List.filter.map -> List"),
+      -> streamMsg("Range.toList", "List.filter.map -> List"),
 
     """val n = 10;
       for (i <- 0 to n;
