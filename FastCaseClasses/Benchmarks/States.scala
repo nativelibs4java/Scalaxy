@@ -4,8 +4,11 @@ import java.util.concurrent.TimeUnit
 
 import org.openjdk.jmh.annotations._
 
-case class Scalar(x: Int) extends AnyVal
-case class Scalar_NoFastCaseClasses(x: Int) extends AnyVal
+case class Scalar(x: Int)
+case class Scalar_NoFastCaseClasses(x: Int)
+
+case class ScalarVal(x: Int) extends AnyVal
+case class ScalarVal_NoFastCaseClasses(x: Int) extends AnyVal
 
 case class Point(x: Int, y: Int, z: Int)
 case class Vertex(a: Point, b: Point)
@@ -38,6 +41,26 @@ class ScalarArray_NoFastCaseClasses extends BaseState {
   @Setup
   def init {
     scalarArray = Array.tabulate(size)(i => Scalar_NoFastCaseClasses(i))
+  }
+}
+
+@State(Scope.Thread)
+class ScalarValArray extends BaseState {
+  var scalarValArray: Array[ScalarVal] = _
+
+  @Setup
+  def init {
+    scalarValArray = Array.tabulate(size)(i => ScalarVal(i))
+  }
+}
+
+@State(Scope.Thread)
+class ScalarValArray_NoFastCaseClasses extends BaseState {
+  var scalarValArray: Array[ScalarVal_NoFastCaseClasses] = _
+
+  @Setup
+  def init {
+    scalarValArray = Array.tabulate(size)(i => ScalarVal_NoFastCaseClasses(i))
   }
 }
 

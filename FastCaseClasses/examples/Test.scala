@@ -3,7 +3,8 @@ case class Outsider(x: Int)
 object Test extends App {
   case class Typed[A](a: A, b: Option[A])
   case class Typed2[A, B](a: A, b: B)
-  case class TypedContra[+A](a: A, b: Option[A])
+  case class TypedCo[+A](a: A, b: Option[A])
+  case class TypedContra[-A]()
 
   case class Papa(x: Int) {
     case class Fiston(y: Int)
@@ -38,6 +39,8 @@ object Test extends App {
 
   val Foo(a, b, _) = foo
   println(a + ", " + b)
+
+  // val ffoo: Foo = Foo.unapply(foo)
 
   val foo2 = Foo(10, 12)
   println(s"foo.hashCode == foo2.hashCode: ${foo.hashCode == foo2.hashCode} (${foo.hashCode}, ${foo2.hashCode})")

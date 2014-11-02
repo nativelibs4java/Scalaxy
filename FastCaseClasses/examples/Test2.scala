@@ -1,15 +1,13 @@
-package foo
+case class Scalar(x: Int)
+case class ScalarVal(x: Int) extends AnyVal
 
-object ClassPath {
-}
-import ClassPath._
+object ScalarTest {
+  def main(args: Array[String]) {
 
+    val s = Scalar(10)
+    val Scalar(x) = s
 
-abstract class ClassPath[T] {
-  case class ClassRep(binary: Option[T], source: Option[String]) {
+    val sv = ScalarVal(10)
+    val ScalarVal(xv) = sv
   }
-}
-
-class JavaClassPath extends ClassPath {
-
 }
