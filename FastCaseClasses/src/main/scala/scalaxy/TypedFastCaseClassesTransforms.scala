@@ -49,12 +49,13 @@ trait TypedFastCaseClassesTransforms extends CompanionTransformers {
       val sym = comps.classDef.symbol.asType.toType
       val osym = comps.moduleDef.symbol.moduleClass.asType.toType
 
-      comps.classDef.tparams.forall({
-        case t @ TypeDef(mods, _, _, _) if mods.hasFlag(Flag.COVARIANT) =>
-          false
-        case _ =>
-          true
-      }) &&
+      !comps.classDef.symbol.name.toString.endsWith("_NoFastCaseClasses") &&
+        comps.classDef.tparams.forall({
+          case t @ TypeDef(mods, _, _, _) if mods.hasFlag(Flag.COVARIANT) =>
+            false
+          case _ =>
+            true
+        }) &&
         (sym member TermName("isEmpty")) == NoSymbol &&
         (sym member TermName("get")) == NoSymbol &&
         (sym member TermName("_1")) == NoSymbol &&
