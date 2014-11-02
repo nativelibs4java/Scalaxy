@@ -156,6 +156,15 @@ object IntegrationTests
     "Option(10).map(_ * 2).getOrElse(10)"
       -> streamMsg("Option.map.getOrElse"),
 
+    "(None: Option[Int]).getOrElse(10)"
+      -> streamMsg("Option.getOrElse"),
+
+    "(Option[Any](null).getOrElse(10)"
+      -> streamMsg("Option.getOrElse"),
+
+    "(Option[AnyRef](null).getOrElse(10)"
+      -> streamMsg("Option.getOrElse"),
+
     "Option(10).filter(_ < 5).isEmpty"
       -> streamMsg("Option.filter.isEmpty"),
 

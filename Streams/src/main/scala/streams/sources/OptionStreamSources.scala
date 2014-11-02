@@ -122,7 +122,7 @@ private[streams] trait OptionStreamSources
       val nonEmptyVal = fresh("nonEmpty")
 
       val nonEmptyTest =
-        if (isSome || input.vars.tpe <:< typeOf[AnyVal])
+        if (isSome || tpe <:< typeOf[AnyVal])
           q"true"
         else
           q"$itemVal != null"
