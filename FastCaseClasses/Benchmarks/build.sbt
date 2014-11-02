@@ -14,7 +14,8 @@ scalacOptions += "-Xplugin-require:scalaxy-streams"
 
 scalacOptions ++= Seq("-optimise", "-Yclosure-elim", "-Yinline")
 
-// scalacOptions += "-Xprint:cleanup"
+libraryDependencies += "com.nativelibs4java" %% "scalaxy-streams" % "0.4-SNAPSHOT" % "provided"
 
-// Scalaxy snapshots are published on the Sonatype repository.
+// scalacOptions += "-Xprint:scalaxy-streams"
+
 resolvers += Resolver.sonatypeRepo("snapshots")

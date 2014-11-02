@@ -5,6 +5,7 @@ import java.util.concurrent.TimeUnit
 import org.openjdk.jmh.annotations._
 
 /**
+ * http://java-performance.info/jmh/
  * http://java-performance.info/introduction-jmh-profilers/
  * -prof cl,comp
  * -prof HS_GC

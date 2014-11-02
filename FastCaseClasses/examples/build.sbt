@@ -10,3 +10,7 @@ scalacOptions += "-Xprint:cleanup"
 
 // Scalaxy snapshots are published on the Sonatype repository.
 resolvers += Resolver.sonatypeRepo("snapshots")
+
+libraryDependencies += "com.nativelibs4java" %% "scalaxy-streams" % "0.4-SNAPSHOT" % "provided"
+
+fork := true
