@@ -122,7 +122,7 @@ package streams
                         apiDefault(tree)
                     }
                   } else {
-                    if (impl.veryVerbose) {
+                    if (impl.veryVerbose && !stream.isDummy && !impl.quietWarnings) {
                       c.info(
                         cast(tree.pos),
                         Optimizations.messageHeader + s"Stream ${stream.describe()} is not worth optimizing with strategy $strategy",
