@@ -159,10 +159,10 @@ object IntegrationTests
     "(None: Option[Int]).getOrElse(10)"
       -> streamMsg("Option.getOrElse"),
 
-    "(Option[Any](null).getOrElse(10)"
+    "Option[Any](null).getOrElse(10)"
       -> streamMsg("Option.getOrElse"),
 
-    "(Option[AnyRef](null).getOrElse(10)"
+    "Option[AnyRef](null).getOrElse(10)"
       -> streamMsg("Option.getOrElse"),
 
     "Option(10).filter(_ < 5).isEmpty"
@@ -170,6 +170,24 @@ object IntegrationTests
 
     "Some(10).map(_ * 2).get"
       -> streamMsg("Some.map.get"),
+
+    """(
+      (None: Option[Int]).isEmpty, Option[Any](null).isEmpty, Some(1).isEmpty,
+      (None: Option[Int]).isDefined, Option[Any](null).isDefined, Some(1).isDefined,
+      (None: Option[Int]).nonEmpty, Option[Any](null).nonEmpty, Some(1).nonEmpty
+    )"""
+      -> streamMsg(
+        "Option.isEmpty", "Option.isEmpty", "Some.isEmpty",
+        "Option.isDefined", "Option.isDefined", "Some.isDefined",
+        "Option.nonEmpty", "Option.nonEmpty", "Some.nonEmpty"),
+
+    """(
+      (Array[Int]()).isEmpty, List[Int]().isEmpty, (0 until 0).isEmpty,
+      (Array[Int]()).nonEmpty, List[Int]().nonEmpty, (0 until 0).nonEmpty
+    )"""
+      -> streamMsg(
+        "Array.isEmpty", "List.isEmpty", "Range.isEmpty",
+        "Array.nonEmpty", "List.nonEmpty", "Range.nonEmpty"),
 
     "for (o <- Some(Some(10)); v <- o) yield v"
       -> streamMsg("Some.flatMap(Option.map) -> Option"),
@@ -376,7 +394,7 @@ object IntegrationTests
       -> streamMsg("Option.flatMap -> Option"),
 
     "List(Some(List(1)), None).flatMap(_.getOrElse(List(-1)))"
-      -> streamMsg("List.flatMap -> List"),
+      -> streamMsg("List.flatMap -> List", "Option.getOrElse"),
       // TODO: -> streamMsg("List.flatMap(Option.getOrElse) -> List"),
 
     "var tot = 0; for (i <- 0 until 10; x = new AnyRef) { tot += i }; tot"

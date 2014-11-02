@@ -10,6 +10,7 @@ private[streams] trait StreamOps
     with ExistsOps
     with FlatMapOps
     with ForeachOps
+    with IsEmptyOps
     with MapOps
     with OptionOps
     with ReductionOps
@@ -32,6 +33,7 @@ private[streams] trait StreamOps
       SomeFindOp,
       SomeFlatMapOp,
       SomeForeachOp,
+      SomeIsEmptyOp,
       SomeMapOp,
       SomeOptionOp,
       SomeReductionOp,

@@ -26,7 +26,7 @@ object MacroIntegrationTest
   scalaxy.streams.impl.veryVerbose = false
   scalaxy.streams.impl.quietWarnings = true
 
-  implicit def strategy = scalaxy.streams.strategy.aggressive
+  implicit def strategy = scalaxy.streams.strategy.foolish
 
   @Parameters(name = "{0}")
   def data: java.util.Collection[Array[AnyRef]] =
