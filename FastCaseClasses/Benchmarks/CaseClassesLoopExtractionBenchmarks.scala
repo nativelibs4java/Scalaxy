@@ -9,13 +9,13 @@ import org.openjdk.jmh.annotations._
  * -prof cl,comp
  * -prof HS_GC
  */
-@BenchmarkMode(Array(Mode.AverageTime))
+@BenchmarkMode(Array(Mode.AverageTime, Mode.SingleShotTime))
 // @BenchmarkMode(Array(Mode.All))
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
-class CaseClassesBenchmarks
+class CaseClassesLoopExtractionBenchmarks
 {
   @Benchmark
-  def sumScalar(state: ScalarArray) = {
+  def loopScalar(state: ScalarArray) = {
     var tot = 0L
     val n = state.scalarArray.length
     for (Scalar(x) <- state.scalarArray) {
@@ -25,7 +25,7 @@ class CaseClassesBenchmarks
   }
 
   @Benchmark
-  def sumScalarNoOpt(state: ScalarArray_NoFastCaseClasses) = {
+  def loopScalarNoOpt(state: ScalarArray_NoFastCaseClasses) = {
     var tot = 0L
     val n = state.scalarArray.length
     for (Scalar_NoFastCaseClasses(x) <- state.scalarArray) {
@@ -35,7 +35,7 @@ class CaseClassesBenchmarks
   }
 
   @Benchmark
-  def sumValScalar(state: ScalarValArray) = {
+  def loopValScalar(state: ScalarValArray) = {
     var tot = 0L
     val n = state.scalarValArray.length
     for (ScalarVal(x) <- state.scalarValArray) {
@@ -45,7 +45,7 @@ class CaseClassesBenchmarks
   }
 
   @Benchmark
-  def sumValScalarNoOpt(state: ScalarValArray_NoFastCaseClasses) = {
+  def loopValScalarNoOpt(state: ScalarValArray_NoFastCaseClasses) = {
     var tot = 0L
     val n = state.scalarValArray.length
     for (ScalarVal_NoFastCaseClasses(x) <- state.scalarValArray) {
@@ -55,7 +55,7 @@ class CaseClassesBenchmarks
   }
 
   @Benchmark
-  def sumPoint(state: PointArray) = {
+  def loopPoint(state: PointArray) = {
     var tot = 0L
     val n = state.pointsArray.length
     for (Point(x, y, z) <- state.pointsArray) {
@@ -64,7 +64,7 @@ class CaseClassesBenchmarks
     tot
   }
   @Benchmark
-  def sumPointNoOpt(state: PointArray_NoFastCaseClasses) = {
+  def loopPointNoOpt(state: PointArray_NoFastCaseClasses) = {
     var tot = 0L
     val n = state.pointsArray.length
     for (Point_NoFastCaseClasses(x, y, z) <- state.pointsArray) {
@@ -74,7 +74,7 @@ class CaseClassesBenchmarks
   }
 
   @Benchmark
-  def sumVertex(state: PointArray) = {
+  def loopVertex(state: PointArray) = {
     var tot = 0L
     val n = state.vertexArray.length
     for (Vertex(Point(x, y, z), Point(x2, y2, z2)) <- state.vertexArray) {
@@ -84,7 +84,7 @@ class CaseClassesBenchmarks
     tot
   }
   @Benchmark
-  def sumVertexNoOpt(state: PointArray_NoFastCaseClasses) = {
+  def loopVertexNoOpt(state: PointArray_NoFastCaseClasses) = {
     var tot = 0L
     val n = state.vertexArray.length
     for (Vertex_NoFastCaseClasses(Point_NoFastCaseClasses(x, y, z), Point_NoFastCaseClasses(x2, y2, z2)) <- state.vertexArray) {
@@ -95,7 +95,7 @@ class CaseClassesBenchmarks
   }
 
   @Benchmark
-  def countVertex(state: PointArray) = {
+  def loopMatchVertex(state: PointArray) = {
     var tot = 0
     for (v <- state.vertexArray) {
       v match {
@@ -109,7 +109,7 @@ class CaseClassesBenchmarks
     tot
   }
   @Benchmark
-  def countVertexNoOpt(state: PointArray_NoFastCaseClasses) = {
+  def loopMatchVertexNoOpt(state: PointArray_NoFastCaseClasses) = {
     var tot = 0
     for (v <- state.vertexArray) {
       v match {

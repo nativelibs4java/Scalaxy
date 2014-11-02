@@ -16,6 +16,21 @@ case class Vertex(a: Point, b: Point)
 case class Point_NoFastCaseClasses(x: Int, y: Int, z: Int)
 case class Vertex_NoFastCaseClasses(a: Point_NoFastCaseClasses, b: Point_NoFastCaseClasses)
 
+
+@State(Scope.Thread)
+class SimpleState {
+  val scalar = Scalar(1)
+  val scalarVal = ScalarVal(1)
+  val point = Point(1, 2, 3)
+  val vertex = Vertex(Point(1, 2, 3), Point(1, 2, 3))
+
+  val scalar_NoFastCaseClasses = Scalar_NoFastCaseClasses(1)
+  val scalarVal_NoFastCaseClasses = ScalarVal_NoFastCaseClasses(1)
+  val point_NoFastCaseClasses = Point_NoFastCaseClasses(1, 2, 3)
+  val vertex_NoFastCaseClasses = Vertex_NoFastCaseClasses(Point_NoFastCaseClasses(1, 2, 3), Point_NoFastCaseClasses(1, 2, 3))
+  
+}
+
 // @State(Scope.Thread)
 trait BaseState {
   //@Param(Array("10", "15", "20", "25"))
