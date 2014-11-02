@@ -4,33 +4,65 @@ import java.util.concurrent.TimeUnit
 
 import org.openjdk.jmh.annotations._
 
+case class Scalar(x: Int) extends AnyVal
+case class Scalar_NoFastCaseClasses(x: Int) extends AnyVal
+
 case class Point(x: Int, y: Int, z: Int)
 case class Vertex(a: Point, b: Point)
 
 case class Point_NoFastCaseClasses(x: Int, y: Int, z: Int)
 case class Vertex_NoFastCaseClasses(a: Point_NoFastCaseClasses, b: Point_NoFastCaseClasses)
 
-@State(Scope.Thread)
-class ArrayState {
+// @State(Scope.Thread)
+trait BaseState {
   //@Param(Array("10", "15", "20", "25"))
   //@Param(Array("1000", "10000", "100000", "1000000"))
   @Param(Array("1000000"))
   var size: Int = 0
+}
 
+@State(Scope.Thread)
+class ScalarArray extends BaseState {
+  var scalarArray: Array[Scalar] = _
+
+  @Setup
+  def init {
+    scalarArray = Array.tabulate(size)(i => Scalar(i))
+  }
+}
+
+@State(Scope.Thread)
+class ScalarArray_NoFastCaseClasses extends BaseState {
+  var scalarArray: Array[Scalar_NoFastCaseClasses] = _
+
+  @Setup
+  def init {
+    scalarArray = Array.tabulate(size)(i => Scalar_NoFastCaseClasses(i))
+  }
+}
+
+@State(Scope.Thread)
+class PointArray extends BaseState {
   var pointsArray: Array[Point] = _
-  var pointsArrayNoOpt: Array[Point_NoFastCaseClasses] = _
-
   var vertexArray: Array[Vertex] = _
-  var vertexArrayNoOpt: Array[Vertex_NoFastCaseClasses] = _
 
   @Setup
   def init {
     pointsArray = Array.tabulate(size)(i => Point(i, i + 1, i + 2))
-    pointsArrayNoOpt = Array.tabulate(size)(i => Point_NoFastCaseClasses(i, i + 1, i + 2))
-
     vertexArray = Array.tabulate(size)(i =>
       Vertex(pointsArray(i), pointsArray((i + 1) % size)))
-    vertexArrayNoOpt = Array.tabulate(size)(i =>
-      Vertex_NoFastCaseClasses(pointsArrayNoOpt(i), pointsArrayNoOpt((i + 1) % size)))
+  }
+}
+
+@State(Scope.Thread)
+class PointArray_NoFastCaseClasses extends BaseState {
+  var pointsArray: Array[Point_NoFastCaseClasses] = _
+  var vertexArray: Array[Vertex_NoFastCaseClasses] = _
+
+  @Setup
+  def init {
+    pointsArray = Array.tabulate(size)(i => Point_NoFastCaseClasses(i, i + 1, i + 2))
+    vertexArray = Array.tabulate(size)(i =>
+      Vertex_NoFastCaseClasses(pointsArray(i), pointsArray((i + 1) % size)))
   }
 }
