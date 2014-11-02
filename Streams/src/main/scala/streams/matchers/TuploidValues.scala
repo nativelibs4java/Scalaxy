@@ -205,7 +205,7 @@ private[streams] trait TuploidValues extends Utils
     couldBeNull: Boolean = true)
       extends TuploidValue[A]
   {
-    assert((tpe + "") != "Null" && tpe != NoType)
+    assert((tpe + "") != "Null" && tpe != NoType, "Created tuple value with tpe " + tpe)
     override def find(target: A) = {
       if (alias.exists(_ == target))
         Some(RootTuploidPath)

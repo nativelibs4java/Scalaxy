@@ -2,9 +2,9 @@ scalaVersion := "2.11.2"
 
 autoCompilerPlugins := true
 
-addCompilerPlugin("com.nativelibs4java" %% "scalaxy-streams" % "0.3-SNAPSHOT")
+addCompilerPlugin("com.nativelibs4java" %% "scalaxy-streams" % "0.4-SNAPSHOT")
 
-libraryDependencies += "com.nativelibs4java" %% "scalaxy-streams" % "0.3-SNAPSHOT"
+libraryDependencies += "com.nativelibs4java" %% "scalaxy-streams" % "0.4-SNAPSHOT" % "provided"
 
 // addCompilerPlugin("com.nativelibs4java" %% "scalaxy-streams" % "0.2.1")
 
