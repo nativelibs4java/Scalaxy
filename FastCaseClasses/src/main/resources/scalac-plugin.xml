@@ -1,0 +1,4 @@
+<plugin>
+  <name>scalaxy-fastcaseclasses</name>
+  <classname>scalaxy.fastcaseclasses.FastCaseClassesPlugin</classname>
+</plugin>

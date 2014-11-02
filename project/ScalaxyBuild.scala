@@ -105,7 +105,7 @@ object Scalaxy extends Build {
       libraryDependencies ++= Seq(
         // "org.scalatest" % "scalatest" % "2.2.0" % "test",
         "junit" % "junit" % "4.11" % "test",
-        "com.novocode" % "junit-interface" % "0.10" % "test"
+        "com.novocode" % "junit-interface" % "0.11" % "test"
       )
     )
 
@@ -394,6 +394,13 @@ object Scalaxy extends Build {
 
   lazy val parano =
     Project(id = "scalaxy-parano", base = file("Parano"),
+      settings = reflectSettings ++ scalariformSettings ++ Seq(
+        watchSources <+= baseDirectory map { _ / "examples" },
+        scalacOptions in console in Compile <+= (packageBin in Compile) map("-Xplugin:" + _)
+      ))
+
+  lazy val fastcaseclasses =
+    Project(id = "scalaxy-fastcaseclasses", base = file("FastCaseClasses"),
       settings = reflectSettings ++ scalariformSettings ++ Seq(
         watchSources <+= baseDirectory map { _ / "examples" },
         scalacOptions in console in Compile <+= (packageBin in Compile) map("-Xplugin:" + _)
