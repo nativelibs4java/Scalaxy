@@ -1,4 +1,8 @@
 object Test extends App {
+  case class Typed[A](a: A, b: Option[A])
+  case class Typed2[A, B](a: A, b: B)
+  case class TypedContra[+A](a: A, b: Option[A])
+
   case class Papa(x: Int) {
     case class Fiston(y: Int)
   }
@@ -21,6 +25,9 @@ object Test extends App {
 
   trait Beep {}
   object Beep {}
+
+  val bat = Bat(1)
+  val Bat(x: Int) = bat
 
   val foo = Foo(10, 12)
   println(foo)

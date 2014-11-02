@@ -7,7 +7,7 @@ import scala.reflect.api.Universe
 import scala.tools.nsc.Mode
 
 /**
- * Make case classes faster!
+ * Make case classes faster by making them named-based extractors.
  */
 trait TypedFastCaseClassesTransforms extends CompanionTransformers {
   // val global: Universe
@@ -49,7 +49,12 @@ trait TypedFastCaseClassesTransforms extends CompanionTransformers {
       val sym = comps.classDef.symbol.asType.toType
       val osym = comps.moduleDef.symbol.moduleClass.asType.toType
 
-      comps.classDef.tparams.isEmpty &&
+      comps.classDef.tparams.forall({
+        case t @ TypeDef(mods, _, _, _) if mods.hasFlag(Flag.COVARIANT) =>
+          false
+        case _ =>
+          true
+      }) &&
         (sym member TermName("isEmpty")) == NoSymbol &&
         (sym member TermName("get")) == NoSymbol &&
         (sym member TermName("_1")) == NoSymbol &&
@@ -204,7 +209,9 @@ trait TypedFastCaseClassesTransforms extends CompanionTransformers {
           )
         ))
 
-        // println(s"result = $result")
+        // if (unit.source.file.toString.contains("PathResolver.scala"))
+        //   println(s"result = $result")
+
         info(comps.classDef.pos, s"Optimized case class ${classDef.name} for Option-less named extraction.")
 
         expandTreeOrCompanions(result)
