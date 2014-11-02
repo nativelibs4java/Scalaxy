@@ -1,3 +1,5 @@
+case class Outsider(x: Int)
+
 object Test extends App {
   case class Typed[A](a: A, b: Option[A])
   case class Typed2[A, B](a: A, b: B)

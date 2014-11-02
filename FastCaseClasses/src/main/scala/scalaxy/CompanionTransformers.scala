@@ -99,6 +99,11 @@ trait CompanionTransformers
           self,
           expandMany(body))
 
+      case PackageDef(pid, stats) =>
+        treeCopy.PackageDef(tree,
+          transformAndCast(pid),
+          expandMany(stats))
+
       case DefDef(mods, name, tparams, vparamss, tpt, rhs) =>
         treeCopy.DefDef(tree,
           mods,
