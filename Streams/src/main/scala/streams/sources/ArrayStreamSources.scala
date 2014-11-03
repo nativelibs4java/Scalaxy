@@ -51,7 +51,7 @@ private[streams] trait ArrayStreamSources
           itemValDef),
           TupleCreation(List(
             lengthValRef, iVarRef, itemValRef))) = typed(q"""
-        private[this] val $arrayVal = ${transform(array)};
+        private[this] val $arrayVal: ${normalize(array.tpe)} = ${transform(array)};
         private[this] val $lengthVal = $arrayVal.length;
         private[this] var $iVar = 0;
         private[this] val $itemVal = $arrayVal($iVar);

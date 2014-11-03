@@ -52,7 +52,9 @@ private[streams] trait Utils {
   def dummyStatement(fresh: String => TermName) =
     q"val ${fresh("dummy")} = null"
 
-  private[this] def normalize(tpe: Type): Type = tpe.dealias match {
+  def normalize(tpe: Type): Type = tpe.dealias match {
+    case t @ SingleType(_, _) =>
+      t.widen
     case t @ ConstantType(_) =>
       /// There's no `deconst` in the api (only in internal). Work around it:
       t.typeSymbol.asType.toType

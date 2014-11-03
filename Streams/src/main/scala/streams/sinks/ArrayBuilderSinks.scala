@@ -38,7 +38,7 @@ private[streams] trait ArrayBuilderSinks extends BuilderSinks {
           val array = fresh("array")
           val index = fresh("i")
 
-          val componentTpe = input.vars.tpe
+          val componentTpe = normalize(input.vars.tpe)
 
           val Block(List(
               arrayDecl,
