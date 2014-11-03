@@ -43,6 +43,13 @@ private[streams] trait ArrayStreamSources
       val iVar = fresh("i")
       val itemVal = fresh("item")
 
+      val arrayTpe = {
+        if (array.tpe == null)
+          array.symbol.typeSignature
+        else
+          normalize(array.tpe)
+      }
+
       // Early typing / symbolization.
       val Block(List(
           arrayValDef,
@@ -51,7 +58,7 @@ private[streams] trait ArrayStreamSources
           itemValDef),
           TupleCreation(List(
             lengthValRef, iVarRef, itemValRef))) = typed(q"""
-        private[this] val $arrayVal: ${normalize(array.tpe)} = ${transform(array)};
+        private[this] val $arrayVal: $arrayTpe = ${transform(array)};
         private[this] val $lengthVal = $arrayVal.length;
         private[this] var $iVar = 0;
         private[this] val $itemVal = $arrayVal($iVar);

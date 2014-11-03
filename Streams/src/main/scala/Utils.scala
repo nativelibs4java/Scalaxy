@@ -52,7 +52,7 @@ private[streams] trait Utils {
   def dummyStatement(fresh: String => TermName) =
     q"val ${fresh("dummy")} = null"
 
-  def normalize(tpe: Type): Type = tpe.dealias match {
+  def normalize(tpe: Type): Type = Option(tpe).map(_.dealias) collect {
     case t @ SingleType(_, _) =>
       t.widen
     case t @ ConstantType(_) =>
@@ -60,7 +60,7 @@ private[streams] trait Utils {
       t.typeSymbol.asType.toType
     case t =>
       t
-  }
+  } orNull
 
   def newVar(name: TermName, tpe: Type, rhs: Tree = EmptyTree): ValDef = {
     val ntpe = normalize(tpe)
