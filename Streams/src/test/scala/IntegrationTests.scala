@@ -172,6 +172,14 @@ object IntegrationTests
       -> streamMsg("Some.map.get"),
 
     """(
+      (None: Option[Any]).getOrElse(2), Option[Any](null).getOrElse(2), Some(1).getOrElse(2),
+      (None: Option[Any]).orNull, Option[Any](null).orNull, Some[Any](1).orNull
+    )"""
+      -> streamMsg(
+        "Option.getOrElse", "Option.getOrElse", "Some.getOrElse",
+        "Option.orNull", "Option.orNull", "Some.orNull"),
+
+    """(
       (None: Option[Int]).isEmpty, Option[Any](null).isEmpty, Some(1).isEmpty,
       (None: Option[Int]).isDefined, Option[Any](null).isDefined, Some(1).isDefined,
       (None: Option[Int]).nonEmpty, Option[Any](null).nonEmpty, Some(1).nonEmpty

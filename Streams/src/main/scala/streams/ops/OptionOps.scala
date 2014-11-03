@@ -2,6 +2,7 @@ package scalaxy.streams
 
 private[streams] trait OptionOps
     extends UnusableSinks
+    with OptionSinks
 {
   val global: scala.reflect.api.Universe
   import global._
@@ -13,28 +14,31 @@ private[streams] trait OptionOps
           throw new NoSuchElementException("None.get")
         """))
 
+      case q"$target.orNull[${_}](${_})" =>
+        (target, OptionGetOrElseOp("orNull", q"null"))
+
       case q"$target.getOrElse[${_}]($v)" =>
         (target, OptionGetOrElseOp("getOrElse", v))
 
-      case q"$target.isEmpty" =>
-        (target, OptionIsEmptyOp)
+      // case q"$target.orElse[${_}]($v)" =>
+      //   (target, OptionOrElseOp(v))
     }
   }
 
-  trait OptionOpBase extends StreamOp
-  {
-    override def lambdaCount = 0
-
+  case class OptionGetOrElseOp(name: String, defaultValue: Tree) extends StreamOp {
+    override def lambdaCount = 1
+    override def sinkOption = Some(ScalarSink)
+    override def canAlterSize = true
+    override def describe = Some(name)
     override def subTrees = Nil
-
-    def whenSome(value: Tree): Tree
-    def whenNone(): Tree
+    override def transmitOutputNeedsBackwards(paths: Set[TuploidPath]) =
+      Set(RootTuploidPath) // TODO: refine this.
 
     override def emit(input: StreamInput, outputNeeds: OutputNeeds, nextOps: OpsAndOutputNeeds): StreamOutput =
     {
       import input._
 
-      // TODO: remove this restriction to unlock flatMap.
+      // TODO: remove this to unlock flatMap
       val List((ScalarSink, _)) = nextOps
 
       val value = fresh("value")
@@ -51,10 +55,8 @@ private[streams] trait OptionOps
           $value = ${input.vars.alias.get};
           $nonEmpty = true;
         };
-        if ($nonEmpty) ${whenSome(q"$value")} else ${whenNone}
+        if ($nonEmpty) $value else $defaultValue
       """)
-
-      // println(s"result = $result")
 
       StreamOutput(
         prelude = List(valueDef, nonEmptyDef),
@@ -63,23 +65,60 @@ private[streams] trait OptionOps
     }
   }
 
-  case class OptionGetOrElseOp(name: String, defaultValue: Tree) extends OptionOpBase {
-    override def sinkOption = Some(ScalarSink)
-    override def canAlterSize = true
-    override def describe = Some(name)
-    override def whenSome(value: Tree) = value
-    override def whenNone() = defaultValue
-    override def transmitOutputNeedsBackwards(paths: Set[TuploidPath]) =
-      Set(RootTuploidPath) // TODO: refine this.
-  }
+  // case class OptionOrElseOp(defaultValue: Tree) extends StreamOp {
+  //   override def lambdaCount = 1
+  //   override def sinkOption = Some(OptionSink)
+  //   override def canAlterSize = true
+  //   override def describe = Some("orElse")
+  //   override def subTrees = Nil
+  //   override def transmitOutputNeedsBackwards(paths: Set[TuploidPath]) =
+  //     Set(RootTuploidPath) // TODO: refine this.
 
-  case object OptionIsEmptyOp extends OptionOpBase {
-    override def sinkOption = Some(ScalarSink)
-    override def canAlterSize = true
-    override def describe = Some("isEmpty")
-    override def whenSome(value: Tree) = q"false"
-    override def whenNone() = q"true"
-    override def transmitOutputNeedsBackwards(paths: Set[TuploidPath]) =
-      Set() // TODO: check this.
-  }
+  //   override def emit(input: StreamInput, outputNeeds: OutputNeeds, nextOps: OpsAndOutputNeeds): StreamOutput =
+  //   {
+  //     import input._
+
+  //     val value = fresh("value")
+  //     val nonEmpty = fresh("nonEmpty")
+  //     require(input.vars.alias.nonEmpty, s"input.vars = $input.vars")
+
+  //     val Block(List(
+  //         valueDef,
+  //         nonEmptyDef,
+  //         assignment),
+  //         TupleCreation(List(
+  //           valueRef, nonEmptyRef))) = typed(q"""
+  //       ${newVar(value, input.vars.tpe)};
+  //       private[this] var $nonEmpty = false;
+  //       {
+  //         $value = ${input.vars.alias.get};
+  //         $nonEmpty = true;
+  //       };
+  //       (
+  //         $value,
+  //         $nonEmpty
+  //       )
+  //     """)
+
+  //     val flatSink = FlattenedOptionSink(valueRef, nonEmptyRef)
+
+  //     val sub = emitSub(
+  //       input.copy(
+  //         vars = ScalarValue(input.vars.tpe, alias = Some(valueRef)),
+  //         outputSize = None,
+  //         index = None),
+  //       nextOps)
+  //     // ..${sub.body.map(untyped)};
+  //     sub.copy(
+  //       // beforeBody = sub.beforeBody,
+  //       body = List(q"""
+  //         $valueDef;
+  //         $nonEmptyDef;
+  //         if ($nonEmptyRef) {
+  //           $assignment;
+  //           ..${sub.body};
+  //         }
+  //       """))
+  //   }
+  // }
 }
