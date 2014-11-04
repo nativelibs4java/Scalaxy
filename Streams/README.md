@@ -1,6 +1,6 @@
 # Scalaxy/Streams
 
-Latest release: 0.3.4 (2014-11-04) (see [Changelog](#changelog) below)
+Latest release: 0.3.4 (2014-11-04, see [Changelog](#changelog))
 
 Quick links:
 * [Usage with Sbt](#usage-with-sbt)
