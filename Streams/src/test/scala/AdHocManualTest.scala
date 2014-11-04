@@ -19,42 +19,45 @@ class AdHocManualTest
   import global._
 
   scalaxy.streams.impl.verbose = true
-  // scalaxy.streams.impl.veryVerbose = true
-  // scalaxy.streams.impl.debug = true
+  scalaxy.streams.impl.veryVerbose = true
+  scalaxy.streams.impl.debug = true
+  scalaxy.streams.impl.quietWarnings = true
 
   val fnRx = raw".*scala\.Function0\.apply.*"
 
   // @Ignore
   // @Test
-  // def testArrayMapFilterMap {
-  //   // (_: Array[Int]).map(_ + 2).filter(_ < 3).map(_.hashCode)
-  //   val SomeStream(stream) = typecheck(q"""
-  //     (null: Array[String]).map(_ + "ha").filter(_.length < 3).map(_.hashCode)
-  //   """)
-  //   val Stream(_, ArrayStreamSource(_, _, _), ops, ArrayBuilderSink, false) = stream
-  //   val List(ArrayOpsOp, MapOp(_, _), ArrayOpsOp, FilterOp(_, false, "filter"), ArrayOpsOp, MapOp(_, _)) = ops
-  // }
-
-  // @Ignore
-  // @Test
-  def testFlatMap {
+  def testComp {
+    // val src = """(
+    //   Some[Any](1).orNull
+    // )"""
     val src = """
       List(Some(List(1)), None).flatMap(_.getOrElse(List(-1)))
     """
+    // val src = """
+    //   (
+    //     (None: Option[Int]).orElse(None),
+    //       Option[Any](null).orElse(None),
+    //       Some(1).orElse(None),
+    //     (None: Option[Int]).orElse(Some(2)),
+    //       Option[Any](null).orElse(Some(2)),
+    //       Some(1).orElse(Some(2)),
+    //     (None: Option[Int]).orElse(Option(3)),
+    //       Option[Any](null).orElse(Option(3)),
+    //       Some(1).orElse(Option(3)),
+    //     (None: Option[String]).orElse(Option(null)),
+    //       Option[String](null).orElse(Option(null)),
+    //       Some("a").orElse(Option(null))
+    //   )
+    // """
 
-    { import scalaxy.streams.strategy.safe
-      testMessages(src, streamMsg("Option.flatMap -> Option")) }
-  }
+    {
+      import scalaxy.streams.strategy.foolish
+      testMessages(src, streamMsg("Array.map -> Array"))
 
-  // @Ignore
-  // @Test
-  def testFM {
-    val src = """
-      for ((a, b) <- List(null, (1, 2)); if a < b) yield a + b
-    """
-
-    { import scalaxy.streams.strategy.aggressive
-      testMessages(src, streamMsg("List.flatMap -> List")) }
+      // val (_, messages) = compileFast(src)
+      // println(messages)
+    }
   }
 
   // @Test
@@ -73,23 +76,6 @@ class AdHocManualTest
              k <- (i + j) to n)
           yield ii * jj * k
       """,
-      params = Array(2, 10, 100),
-      minFaster = 30)
-  }
-
-  // @Test
-  def testPerf2 {
-    // streamMsg("Range.map.flatMap(Range.map.withFilter.flatMap(Range.map)) -> IndexedSeq"),
-
-    ensureFasterCodeWithSameResult(
-      decls = "",
-      // val n = 20;
-      code = """
-        (0 until n).filter(v => (v % 2) == 0).map(_ * 2).forall(_ < n / 2)
-      """,
-      nonOptimizedCode = Some("""
-        (0 until n).toIterator.filter(v => (v % 2) == 0).map(_ * 2).forall(_ < n / 2)
-      """),
       params = Array(2, 10, 100),
       minFaster = 30)
   }

@@ -365,20 +365,20 @@ object Scalaxy extends Build {
 
   lazy val loops =
     Project(id = "scalaxy-loops", base = file("Loops"), settings = reflectSettings ++ Seq(
-      // version := "0.3.3"
+      version := "0.3.4"
     ))
     .dependsOn(streams)
 
   lazy val loops210 =
     Project(id = "scalaxy-loops-210", base = file("Loops-2.10"), settings = reflectSettings ++ Seq(
-      // version := "0.3.3",
+      version := "0.3.4",
       name := "scalaxy-loops",
       scalaVersion := "2.10.4"
     ))
 
   lazy val streams =
     Project(id = "scalaxy-streams", base = file("Streams"), settings = reflectSettings ++ Seq(
-      // version := "0.3.3",
+      version := "0.3.4",
       watchSources <++= baseDirectory map { path => (path / "examples" ** "*.scala").get }
     ))
 

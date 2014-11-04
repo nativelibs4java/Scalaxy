@@ -27,12 +27,14 @@ object Example1 extends App {
 
 
   case class Ident(name: String)
-  def example = {
-    val a = new Array[Ident](10)
-    optimize {
+  def example {
+    val a = new Array[Ident](10);
+    optimize
+    {
       for (Ident(name) <- a) {
         println(name)
       }
     }
   }
+  example
 }
