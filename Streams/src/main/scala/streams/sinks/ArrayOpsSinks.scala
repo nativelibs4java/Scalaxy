@@ -9,6 +9,7 @@ private[streams] trait ArrayOpsSinks extends ArrayBuilderSinks {
   case object ArrayOpsSink extends StreamSink
   {
     override def isFinalOnly = true
+    override def isJustAWrapper = true
     override def describe = Some("ArrayOps")
     override def lambdaCount = 0
     override def subTrees = Nil

@@ -44,7 +44,7 @@ private[streams] trait Streams
     // println("FOUND STREAM: " + describe())
 
     def isDummy: Boolean =
-      ops.isEmpty && !hasExplicitSink
+      ops.isEmpty && (!hasExplicitSink || sink.isJustAWrapper)
 
     def describe(describeSink: Boolean = true) =
       (source :: ops).flatMap(_.describe).mkString(".") +

@@ -69,6 +69,7 @@ private[streams] trait StreamComponents
     def isFinalOnly: Boolean = false
     /** Sinks are "neutral" and chainable / elidable by default, except for scalar sinks. */
     def canBeElided = true
+    def isJustAWrapper: Boolean = false
     override def canAlterSize = false
     override def sinkOption = Some(this)
 
