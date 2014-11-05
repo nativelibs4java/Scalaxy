@@ -89,6 +89,8 @@ Scalaxy/Streams rewrites streams with the following components:
 
 The output type of each optimized stream is always the same as the original, but when nested streams are encountered in `flatMap` operations many intermediate outputs can typically be skipped, saving up on memory usage and execution time.
 
+Note: known bugs are usually accommodated in `Strategies.hasKnownLimitationOrBug` when possible.
+
 # Usage
 
 You can either use Scalaxy/Streams's compiler plugin to compile your whole project, or use its `optimize` macro to choose specific blocks of code to optimize.
