@@ -1,6 +1,6 @@
 package scalaxy.streams
 
-private[streams] trait WhileOps
+private[streams] trait TakeWhileOps
     extends ClosureStreamOps
     with Strippers
     with OptionSinks
@@ -9,7 +9,7 @@ private[streams] trait WhileOps
   val global: scala.reflect.api.Universe
   import global._
 
-  object SomeWhileOp extends StreamOpExtractor {
+  object SomeTakeWhileOp extends StreamOpExtractor {
     def sinkOptionForReturnType(tpe: Type) =
       if (tpe <:< typeOf[Range])
         Some(InvalidSink)

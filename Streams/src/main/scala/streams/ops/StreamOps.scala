@@ -15,7 +15,8 @@ private[streams] trait StreamOps
     with OptionOps
     with ReductionOps
     with ToCollectionOps
-    with WhileOps
+    with TakeDropOps
+    with TakeWhileOps
     with ZipWithIndexOps
 {
   val global: scala.reflect.api.Universe
@@ -37,8 +38,9 @@ private[streams] trait StreamOps
       SomeMapOp,
       SomeOptionOp,
       SomeReductionOp,
+      SomeTakeDropOp,
+      SomeTakeWhileOp,
       SomeToCollectionOp,
-      SomeWhileOp,
       SomeZipWithIndexOp
     )
 
