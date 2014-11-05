@@ -36,6 +36,13 @@ private[streams] trait InlineRangeStreamSources
     }
   }
 
+  object RangeStreamSource {
+    def unapply(source: StreamSource) = Option(source) collect {
+      case InlineRangeStreamSource(_, _, _, _, _) =>
+        source
+    }
+  }
+
   case class InlineRangeStreamSource[T : Numeric : Liftable]
     (start: Tree, end: Tree, by: T, isInclusive: Boolean, tpe: Type)
       extends StreamSource

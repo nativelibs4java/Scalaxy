@@ -9,6 +9,64 @@ private[streams] trait Strategies
   val global: scala.reflect.api.Universe
   import global._
 
+  def hasKnownLimitationOrBug(stream: Stream): Boolean = {
+
+    def hasTakeOrDrop: Boolean = stream.ops.exists({
+      case TakeWhileOp(_, _) | DropWhileOp(_, _) | TakeOp(_) | DropOp(_) =>
+        true
+
+      case _ =>
+        false
+    })
+
+    def hasTrySubTrees: Boolean = stream.components.exists(_.subTrees.exists {
+      case Try(_, _, _) =>
+        true
+
+      case _ =>
+        false
+    })
+
+    def isRangeTpe(tpe: Type): Boolean =
+      tpe <:< typeOf[Range] ||
+      tpe <:< typeOf[collection.immutable.NumericRange[_]]
+
+    def isOptionTpe(tpe: Type): Boolean =
+      tpe <:< typeOf[Option[_]]
+
+    def streamTpe: Option[Type] = findType(stream.tree)
+
+    stream.source match {
+      case RangeStreamSource(_) if hasTakeOrDrop && streamTpe.exists(isRangeTpe) =>
+        // Range.take / drop / takeWhile / dropWhile return Ranges: not handled yet.
+        true
+
+      case OptionStreamSource(_) if hasTakeOrDrop && streamTpe.exists(isOptionTpe) =>
+        // Option.take / drop / takeWhile / dropWhile return Lists: not handled yet.
+        true
+
+      case _ if hasTrySubTrees =>
+        // This one is... interesting.
+        // Something horrible (foo not found) happens to the following snippet in lambdalift:
+        //
+        //     val msg = {
+        //       try {
+        //         val foo = 10
+        //         Some(foo)
+        //       } catch {
+        //         case ex: Throwable => None
+        //       }
+        //     } get;
+        //     msg
+        //
+        // I'm being super-mega cautious with try/catch here, until the bug is understood / fixed.
+        true
+
+      case _ =>
+        false
+    }
+  }
+
   // TODO: refine this.
   def isWorthOptimizing(stream: Stream,
                         strategy: OptimizationStrategy,

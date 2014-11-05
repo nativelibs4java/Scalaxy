@@ -46,12 +46,14 @@ private[streams] trait Streams
     def isDummy: Boolean =
       ops.isEmpty && (!hasExplicitSink || sink.isJustAWrapper)
 
-    def describe(describeSink: Boolean = true) =
-      (source :: ops).flatMap(_.describe).mkString(".") +
-      sink.describe.filter(_ => describeSink).map(" -> " + _).getOrElse("")
+    private[this] val sourceAndOps = source :: ops
 
     val components: List[StreamComponent] =
-      (source :: ops) :+ sink
+      sourceAndOps :+ sink
+
+    def describe(describeSink: Boolean = true) =
+      sourceAndOps.flatMap(_.describe).mkString(".") +
+      sink.describe.filter(_ => describeSink).map(" -> " + _).getOrElse("")
 
     def lambdaCount: Int =
       components.map(_.lambdaCount).sum

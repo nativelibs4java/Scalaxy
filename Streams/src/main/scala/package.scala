@@ -56,10 +56,6 @@ package streams
         c.mirror.staticClass(_),
         tpe => c.inferImplicitValue(tpe, pos = a.tree.pos))
 
-      // if (impl.veryVerbose) {
-      //   c.info(a.tree.pos, Optimizations.messageHeader + s"Strategy = $strategy", force = true)
-      // }
-
       if (disabled) {
         a
       } else {
@@ -75,15 +71,13 @@ package streams
             c.internal.typingTransform(cast(a.tree))((tree_, api) => {
               val tree: Tree = cast(tree_)
 
-              // println(s"tree = $tree")
-
               // TODO(ochafik): Remove these warts (needed because of dependent types mess).
               def apiDefault(tree: Tree): Tree = cast(api.default(cast(tree)))
               def apiRecur(tree: Tree): Tree = cast(api.recur(cast(tree)))
               def apiTypecheck(tree: Tree): Tree = cast(api.typecheck(cast(tree)))
 
               val result = tree match {
-                case tree @ SomeStream(stream) =>
+                case tree @ SomeStream(stream) if !hasKnownLimitationOrBug(stream) =>
                   if (isWorthOptimizing(stream, strategy, info, warning)) {
                     // println(s"stream = $stream")
                     // source: ${stream.source.getClass}
@@ -101,7 +95,6 @@ package streams
                         .emitStream(
                           n => TermName(c.freshName(n)),
                           apiRecur(_),
-  //                        t => apiRecur(apiTypecheck(t)),//
                           currentOwner = cast[Symbol](api.currentOwner),
                           typed = apiTypecheck(_),
                           untyped = untyped)
@@ -113,7 +106,6 @@ package streams
                           Optimizations.messageHeader + s"Result for ${stream.describe()}:\n$result",
                           force = impl.verbose)
                       }
-                      // safelyUnSymbolize(c)(cast(result))
                       result
 
                     } catch {

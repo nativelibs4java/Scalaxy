@@ -32,6 +32,13 @@ private[streams] trait OptionStreamSources
     }
   }
 
+  object OptionStreamSource {
+    def unapply(source: StreamSource) = Option(source) collect {
+      case GenericOptionStreamSource(_, _) | InlineOptionStreamSource(_, _, _, _) =>
+        source
+    }
+  }
+
   case class GenericOptionStreamSource(
       option: Tree,
       sinkOption: Option[StreamSink] = Some(OptionSink))

@@ -313,6 +313,45 @@ object IntegrationTests
         .map({ case (k, l) => k + l })"""
       -> streamMsg("Array.map.map -> Array"),
 
+    "Array(1, 3, 4).take(2)"
+      -> streamMsg("Array.take -> Array"),
+
+    "List(1, 3, 4).take(2)"
+      -> streamMsg("List.take -> List"),
+
+    """
+      // Range.drop returns a Range.
+      // Option.drop returns a List.
+      // Both these cases are not handled by Streams yet, causing
+      // the relevant streams to be discarded by Strategies.hasKnownLimitationOrBug.
+      def f(i: Int) = true;
+      (
+        (0 to 2).takeWhile(f),
+          Option(1).takeWhile(f), Some(1).takeWhile(f), None.takeWhile(f),
+        (0 to 2).dropWhile(f),
+          Option(1).dropWhile(f), Some(1).dropWhile(f), None.dropWhile(f),
+        (0 to 2).take(2), Option(1).take(2), Some(1).take(2), None.take(2),
+        (0 to 2).drop(2), Option(1).drop(2), Some(1).drop(2), None.drop(2)
+      )
+    """
+      -> streamMsg(),
+
+    """
+      // This one throws in LambdaLift because symbol foo is not found.
+      // Because of this, any Try sub-tree in a stream causes the stream to
+      // be discarded by Strategies.hasKnownLimitationOrBug.
+      val msg = {
+        try {
+          val foo = 10
+          Some(foo)
+        } catch {
+          case ex: Throwable => None
+        }
+      } get;
+      msg
+    """
+      -> streamMsg(),
+
     """
       val col: List[Int] = (0 to 2).toList;
       col.filter(v => (v % 2) == 0).map(_ * 2)

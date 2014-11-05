@@ -62,6 +62,11 @@ private[streams] trait Utils {
       t
   } orNull
 
+  def findType(tree: Tree): Option[Type] =
+    Option(tree.tpe).orElse(Option(tree.symbol).map(_.typeSignature))
+      .filter(_ != NoType)
+      .map(normalize)
+
   def newVar(name: TermName, tpe: Type, rhs: Tree = EmptyTree): ValDef = {
     val ntpe = normalize(tpe)
     val initialValue = rhs match {
