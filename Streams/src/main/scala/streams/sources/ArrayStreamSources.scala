@@ -10,17 +10,13 @@ private[streams] trait ArrayStreamSources
 
   object SomeArrayStreamSource {
     // Testing the type would be so much better, but yields an awkward MissingRequirementError.
-    // lazy val ArrayTpe = typeOf[Array[_]]
     private[this] lazy val ArraySym = rootMirror.staticClass("scala.Array")
 
-    private[this] def isArrayType(tpe: Type) =
-      Option(tpe).map(_.dealias.etaExpand).filter(_ != NoType).exists(_.typeSymbol == ArraySym)
+    private[this] def isArrayType(tree: Tree) =
+      findType(tree).exists(_.typeSymbol == ArraySym)
 
-    def unapply(tree: Tree): Option[ArrayStreamSource] = Option(tree) collect {
-      case _ if isArrayType(tree.tpe) =>
-                // || tree.symbol != null && isArrayType(tree.symbol.typeSignature) =>
-        ArrayStreamSource(tree)
-    }
+    def unapply(tree: Tree): Option[ArrayStreamSource] =
+      Option(tree).filter(isArrayType).map(ArrayStreamSource(_))
   }
 
   case class ArrayStreamSource(
@@ -43,11 +39,8 @@ private[streams] trait ArrayStreamSources
       val iVar = fresh("i")
       val itemVal = fresh("item")
 
-      val arrayTpe = {
-        if (array.tpe == null)
-          array.symbol.typeSignature
-        else
-          normalize(array.tpe)
+      val arrayTpe = findType(array).getOrElse {
+        sys.err(s"Failed to find type of $array")
       }
 
       // Early typing / symbolization.

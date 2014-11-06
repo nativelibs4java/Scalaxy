@@ -11,11 +11,7 @@ private[streams] trait TakeDropOps
 
   object SomeTakeDropOp extends StreamOpExtractor {
 
-    private[this] def isOption(tree: Tree): Boolean =
-      Option(tree.tpe).orElse(Option(tree.symbol).map(_.typeSignature)).
-        exists(_ <:< typeOf[Option[_]])
-
-    override def unapply(tree: Tree) = Option(tree).filter(!isOption(_)) collect {
+    override def unapply(tree: Tree) = Option(tree) collect {
       case q"$target.take($n)" =>
         (target, TakeOp(n))
 
