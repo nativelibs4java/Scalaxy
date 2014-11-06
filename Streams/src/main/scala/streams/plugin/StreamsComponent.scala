@@ -35,28 +35,35 @@ private[streams] class StreamsComponent(
   override val runsAfter = runsRightAfter.toList
   override val runsBefore = List("patmat")
 
-  // lazy val OptimizationStrategyTpe = rootMirror.staticClass("scalaxy.streams.OptimizationStrategy")
+  override def info(pos: Position, msg: String, force: Boolean) {
+    reporter.info(pos, msg, force = force)
+  }
+  override def warning(pos: Position, msg: String) {
+    reporter.warning(pos, msg)
+  }
+  override def error(pos: Position, msg: String) {
+    reporter.error(pos, msg)
+  }
 
   override def newPhase(prev: Phase) = new StdPhase(prev) {
     def apply(unit: CompilationUnit) {
       if (!impl.disabled) {
         val transformer = new TypingTransformer(unit) {
 
-          private[this] val typed: Tree => Tree =
-            (tree: Tree) => try {
-              localTyper.typed(tree)
-            } catch { case ex: Throwable =>
-              throw new RuntimeException("Failed to type " + tree + "\n(" + ex + ")", ex)
-            }
+          def typed(tree: Tree) = try {
+            localTyper.typed(tree)
+          } catch { case ex: Throwable =>
+            throw new RuntimeException("Failed to type " + tree + "\n(" + ex + ")", ex)
+          }
 
-          private[this] val untyped: Tree => Tree =
-            (tree: Tree) => try {
-              resetAttrs(tree)
-              // localTyper.untypecheck(tree)
-            } catch { case ex: Throwable =>
-              throw new RuntimeException("Failed to untype " + tree, ex)
-            }
+          def untyped(tree: Tree) = try {
+            resetAttrs(tree)
+            // localTyper.untypecheck(tree)
+          } catch { case ex: Throwable =>
+            throw new RuntimeException("Failed to untype " + tree, ex)
+          }
 
+          // TODO: this is probably a very slow way to get the strategy :-S
           def getStrategy(pos: Position) =
             Optimizations.matchStrategyTree(global)(
               rootMirror.staticClass(_),
@@ -71,61 +78,23 @@ private[streams] class StreamsComponent(
               ).tree
             )
 
-          override def transform(tree: Tree) = tree match {
-            case SomeStream(stream) if !hasKnownLimitationOrBug(stream) =>
-              val strategy = getStrategy(tree.pos)
-              if (isWorthOptimizing(stream, strategy, reporter.info(_, _, force = true), reporter.warning)) {
+          override def transform(tree: Tree) = {
+            val opt = try {
+              transformStream(
+                tree = tree,
+                strategy = getStrategy(tree.pos),
+                fresh = unit.fresh.newName,
+                currentOwner = currentOwner,
+                recur = transform(_),
+                typecheck = typed(_),
+                untypecheck = untyped(_))
+            } catch {
+              case ex: Throwable =>
+                logException(tree.pos, ex, warning)
+                None
+            }
 
-                reporter.info(
-                  tree.pos,
-                  Optimizations.optimizedStreamMessage(stream.describe(), strategy),
-                  force = impl.verbose)
-
-                try {
-                  val result = {
-                    stream
-                      .emitStream(
-                        n => TermName(unit.fresh.newName(n)),
-                        transform(_),
-                        currentOwner = currentOwner,
-                        typed = typed,
-                        untyped = untyped)
-                      .compose(localTyper.typed(_))
-                  }
-
-                  if (impl.veryVerbose) {
-                    reporter.info(
-                      tree.pos,
-                      Optimizations.messageHeader + s"Result for ${stream.describe()}:\n$result",
-                      force = impl.verbose)
-                  }
-                  // println(result)
-
-                  // def resetLocalAttrs(tree: Tree): Tree =
-                  //   resetAttrs(duplicateAndKeepPositions(tree))
-                  //
-                  // def untypecheck(tree: Tree): Tree =
-                  //   resetLocalAttrs(tree)
-                  // 
-                  // typed(untypecheck(result))
-                  result
-                } catch {
-                  case ex: Throwable =>
-                    logException(tree.pos, ex, reporter.warning)
-                    super.transform(tree)
-                }
-              } else {
-                if (impl.veryVerbose && !stream.isDummy && !impl.quietWarnings) {
-                  reporter.info(
-                    tree.pos,
-                    Optimizations.messageHeader + s"Stream ${stream.describe()} is not worth optimizing with strategy $strategy",
-                    force = impl.verbose)
-                }
-                super.transform(tree)
-              }
-
-            case _ =>
-              super.transform(tree)
+            opt.getOrElse(super.transform(tree))
           }
         }
 

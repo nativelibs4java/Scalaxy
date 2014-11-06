@@ -3,6 +3,7 @@ package scalaxy.streams
 private[streams] trait Strategies
     extends Streams
     with SideEffectsDetection
+    with Reporters
 {
   self: StreamTransforms =>
 
@@ -69,9 +70,7 @@ private[streams] trait Strategies
 
   // TODO: refine this.
   def isWorthOptimizing(stream: Stream,
-                        strategy: OptimizationStrategy,
-                        info: (Position, String) => Unit,
-                        warning: (Position, String) => Unit) = {
+                        strategy: OptimizationStrategy) = {
     var reportedSideEffects = Set[SideEffect]()
 
     val safeSeverities: Set[SideEffectSeverity] = strategy match {

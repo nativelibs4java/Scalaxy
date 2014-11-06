@@ -63,8 +63,15 @@ package streams
           override val global = c.universe
           import global._
 
-          val info = (pos: Position, msg: String) => c.info(cast(pos), cast(msg), force = impl.verbose)
-          val warning = (pos: Position, msg: String) => c.warning(cast(pos), cast(msg))
+          override def info(pos: Position, msg: String, force: Boolean) {
+            c.info(cast(pos), msg, force = force)
+          }
+          override def warning(pos: Position, msg: String) {
+            c.warning(cast(pos), msg)
+          }
+          override def error(pos: Position, msg: String) {
+            c.error(cast(pos), msg)
+          }
 
           val result = try {
 
@@ -73,61 +80,30 @@ package streams
 
               // TODO(ochafik): Remove these warts (needed because of dependent types mess).
               def apiDefault(tree: Tree): Tree = cast(api.default(cast(tree)))
-              def apiRecur(tree: Tree): Tree = cast(api.recur(cast(tree)))
+              def apiRecur(tree: Tree): Tree =
+                if (recurse)
+                  cast(api.recur(cast(tree)))
+                else
+                  tree
               def apiTypecheck(tree: Tree): Tree = cast(api.typecheck(cast(tree)))
+              def untyped(tree: Tree): Tree = cast(c.untypecheck(cast(tree)))
 
-              val result = tree match {
-                case tree @ SomeStream(stream) if !hasKnownLimitationOrBug(stream) =>
-                  if (isWorthOptimizing(stream, strategy, info, warning)) {
-                    // println(s"stream = $stream")
-                    // source: ${stream.source.getClass}
+              val result = transformStream(
+                tree = tree,
+                strategy = strategy,
+                fresh = c.freshName(_),
+                currentOwner = cast(api.currentOwner),
+                recur = apiRecur,
+                typecheck = apiTypecheck,
+                untypecheck = untyped) match {
 
-                    // TODO: move this (+ equiv code in StreamsComponent) to isWorthOptimizing
-                    c.info(
-                      cast(tree.pos),
-                      Optimizations.optimizedStreamMessage(stream.describe(), strategy),
-                      force = impl.verbose)
+                case Some(result) =>
+                  result
 
-                    def untyped(tree: Tree): Tree = cast(c.untypecheck(cast(tree)))
-
-                    try {
-                      val result = stream
-                        .emitStream(
-                          n => TermName(c.freshName(n)),
-                          apiRecur(_),
-                          currentOwner = cast[Symbol](api.currentOwner),
-                          typed = apiTypecheck(_),
-                          untyped = untyped)
-                        .compose(apiTypecheck(_))
-
-                      if (impl.debug) {
-                        c.info(
-                          cast(tree.pos),
-                          Optimizations.messageHeader + s"Result for ${stream.describe()}:\n$result",
-                          force = impl.verbose)
-                      }
-                      result
-
-                    } catch {
-                      case ex: Throwable =>
-                        logException(cast(tree.pos), ex, warning)
-                        apiDefault(tree)
-                    }
-                  } else {
-                    if (impl.veryVerbose && !stream.isDummy && !impl.quietWarnings) {
-                      c.info(
-                        cast(tree.pos),
-                        Optimizations.messageHeader + s"Stream ${stream.describe()} is not worth optimizing with strategy $strategy",
-                        force = impl.verbose)
-                    }
-                    apiDefault(tree)
-                  }
-
-                case tree if recurse =>
+                case _ if recurse =>
                   apiDefault(tree)
 
-                case tree =>
-                  assert(!recurse)
+                case _ =>
                   tree
               }
 
