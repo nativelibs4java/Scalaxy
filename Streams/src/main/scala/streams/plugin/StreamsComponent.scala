@@ -56,13 +56,6 @@ private[streams] class StreamsComponent(
             throw new RuntimeException("Failed to type " + tree + "\n(" + ex + ")", ex)
           }
 
-          def untyped(tree: Tree) = try {
-            resetAttrs(tree)
-            // localTyper.untypecheck(tree)
-          } catch { case ex: Throwable =>
-            throw new RuntimeException("Failed to untype " + tree, ex)
-          }
-
           // TODO: this is probably a very slow way to get the strategy :-S
           def getStrategy(pos: Position) =
             Optimizations.matchStrategyTree(global)(
@@ -86,8 +79,7 @@ private[streams] class StreamsComponent(
                 fresh = unit.fresh.newName,
                 currentOwner = currentOwner,
                 recur = transform(_),
-                typecheck = typed(_),
-                untypecheck = untyped(_))
+                typecheck = typed(_))
             } catch {
               case ex: Throwable =>
                 logException(tree.pos, ex, warning)

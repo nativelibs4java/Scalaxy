@@ -20,8 +20,7 @@ private[streams] trait StreamTransforms
                       fresh: String => String,
                       currentOwner: Symbol,
                       recur: Tree => Tree,
-                      typecheck: Tree => Tree,
-                      untypecheck: Tree => Tree): Option[Tree]
+                      typecheck: Tree => Tree): Option[Tree]
   = tree match {
     case tree @ SomeStream(stream) if !hasKnownLimitationOrBug(stream) =>
       if (isWorthOptimizing(stream, strategy)) {
@@ -38,8 +37,7 @@ private[streams] trait StreamTransforms
               n => TermName(fresh(n)),
               recur,
               currentOwner = currentOwner,
-              typed = typecheck,
-              untyped = untypecheck)
+              typed = typecheck)
             .compose(typecheck)
 
           if (impl.debug) {

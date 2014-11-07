@@ -72,7 +72,6 @@ private[streams] trait Streams
                    transform: Tree => Tree,
                    typed: Tree => Tree,
                    currentOwner: Symbol,
-                   untyped: Tree => Tree,
                    sinkNeeds: Set[TuploidPath] = sink.outputNeeds,
                    loopInterruptor: Option[Tree] = None): StreamOutput =
     {
@@ -91,8 +90,7 @@ private[streams] trait Streams
           fresh = fresh,
           transform = transform,
           currentOwner = currentOwner,
-          typed = typed,
-          untyped = untyped),
+          typed = typed),
         outputNeeds = sourceNeeds,
         nextOps = nextOps)
     }

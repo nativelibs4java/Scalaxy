@@ -29,6 +29,5 @@ private[streams] trait StreamResults extends TuploidValues {
     fresh: String => TermName,
     transform: Tree => Tree,
     currentOwner: Symbol,
-    typed: Tree => Tree,
-    untyped: Tree => Tree)
+    typed: Tree => Tree)
 }

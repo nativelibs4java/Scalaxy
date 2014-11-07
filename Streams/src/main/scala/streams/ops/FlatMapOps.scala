@@ -97,20 +97,11 @@ private[streams] trait FlatMapOps
 
     override val sinkOption = canBuildFrom.map(CanBuildFromSink(_))
 
-    // val TypeRef(_, _, List(componentTpe)) = {
-    //   val tpe = outputVars.tpe.dealias
-    //   if (tpe <:< typeOf[Option[_]]) {
-    //     tpe
-    //   } else {
-    //     tpe.baseType(GenTraversableOnceSym)
-    //   }
-    // }
-
     override def emit(input: StreamInput,
                       outputNeeds: OutputNeeds,
                       nextOps: OpsAndOutputNeeds): StreamOutput =
     {
-      import input.{ fresh, transform, typed, untyped, currentOwner }
+      import input.{ fresh, transform, typed, currentOwner }
 
       nestedStream match {
         case Some(stream) =>
@@ -126,51 +117,18 @@ private[streams] trait FlatMapOps
           }
           val subTransform = (tree: Tree) => subTransformer.transform(transform(tree))
 
-          // if (stream.sink.canBeNested) {
-            val modifiedStream = {
-              val (outerSink: StreamSink) :: outerOpsRev = nextOps.map(_._1).reverse
-              val outerOps = outerOpsRev.reverse
+          val modifiedStream = {
+            val (outerSink: StreamSink) :: outerOpsRev = nextOps.map(_._1).reverse
+            val outerOps = outerOpsRev.reverse
 
-              stream.copy(ops = stream.ops ++ outerOps, sink = outerSink)
-            }
+            stream.copy(ops = stream.ops ++ outerOps, sink = outerSink)
+          }
 
-            modifiedStream.emitStream(
-              fresh, subTransform,
-              currentOwner = currentOwner,
-              typed = typed, untyped = untyped,
-              loopInterruptor = input.loopInterruptor).map(replacer)
-          // } else {
-          //   println("NESTING")
-          //   val nestedTree: Tree =
-          //     stream.emitStream(
-          //       fresh, subTransform,
-          //       currentOwner = currentOwner,
-          //       typed = typed, untyped = untyped,
-          //       loopInterruptor = None).map(replacer).
-          //     compose(typed(_))
-
-          //   println(s"NESTED: $nestedTree")
-          //   val nested = fresh("nested")
-
-          //   // Force typing of declarations and get typed references to various vars and vals.
-          //   val Block(List(
-          //       nestedValDef,
-          //       nestedVarRef), _) = typed(q"""
-          //     private[this] val $nested = $nestedTree;
-          //     $nested;
-          //     ""
-          //   """)
-
-          //   var sub = emitSub(
-          //     input.copy(vars = ScalarValue(tpe, alias = Some(nestedVarRef))),
-          //     nextOps)
-
-          //   println(s"SUB: $sub")
-          //   sub.copy(body = List(q"""
-          //     ..$nestedValDef;
-          //     ..${sub.body};
-          //   """))
-          // }
+          modifiedStream.emitStream(
+            fresh, subTransform,
+            currentOwner = currentOwner,
+            typed = typed,
+            loopInterruptor = input.loopInterruptor).map(replacer)
 
         case _ =>
           val (replacedStatements, outputVars) =
@@ -179,8 +137,6 @@ private[streams] trait FlatMapOps
                 outputSize = None,
                 index = None),
               outputNeeds)
-
-          // println(s"outputVars = ${outputVars}")
 
           val itemVal = fresh("item")
           val Function(List(itemValDef @ ValDef(_, _, _, _)), itemValRef @ Ident(_)) = typed(q"""
@@ -193,11 +149,11 @@ private[streams] trait FlatMapOps
               outputSize = None,
               index = None),
             nextOps)
-          // It's important to untype sub.body because local vars will now live inside the new lambda.
           sub.copy(body = List(typed(q"""
             ..$replacedStatements;
+            // TODO: plug that lambda's symbol as the new owner of sub.body's decls.
             ${outputVars.alias.get}.foreach(($itemValDef) => {
-              ..${sub.body.map(untyped)};
+              ..${sub.body};
             })
           """)))
       }

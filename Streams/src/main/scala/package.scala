@@ -86,7 +86,6 @@ package streams
                 else
                   tree
               def apiTypecheck(tree: Tree): Tree = cast(api.typecheck(cast(tree)))
-              def untyped(tree: Tree): Tree = cast(c.untypecheck(cast(tree)))
 
               val result = transformStream(
                 tree = tree,
@@ -94,8 +93,7 @@ package streams
                 fresh = c.freshName(_),
                 currentOwner = cast(api.currentOwner),
                 recur = apiRecur,
-                typecheck = apiTypecheck,
-                untypecheck = untyped) match {
+                typecheck = apiTypecheck) match {
 
                 case Some(result) =>
                   result
@@ -117,7 +115,6 @@ package streams
           }
         }
 
-        //c.Expr[A](c.typecheck(c.untypecheck(Optimize.result)))
         c.Expr[A](Optimize.result)
       }
     }
