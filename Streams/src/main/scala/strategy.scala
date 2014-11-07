@@ -1,6 +1,6 @@
 package scalaxy.streams;
 
-sealed class OptimizationStrategy(val name: String) {
+sealed abstract class OptimizationStrategy(val name: String) {
   def fullName = getClass.getPackage.getName + ".strategy." + name
 }
 
