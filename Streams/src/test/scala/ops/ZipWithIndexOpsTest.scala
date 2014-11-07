@@ -10,6 +10,6 @@ class ZipWithIndexOpsTest extends StreamComponentsTestBase with StreamTransforms
   @Test
   def testMapExtractor {
     val v @ SomeZipWithIndexOp(_, ZipWithIndexOp(_)) = typecheck(q"Array(1).zipWithIndex")
-    val SomeStreamOp(_, _ :: _ :: Nil) = v
+    val SomeStreamOps(_, _ :: _ :: Nil) = v
   }
 }

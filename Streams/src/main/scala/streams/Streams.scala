@@ -18,10 +18,10 @@ private[streams] trait Streams
     }
 
     def unapply(tree: Tree): Option[Stream] = tree match {
-      case SomeStreamSink(SomeStreamOp(SomeStreamSource(source), ops), sink) =>
+      case SomeStreamSink(SomeStreamOps(SomeStreamSource(source), ops), sink) =>
         Some(new Stream(tree, source, ops, sink, hasExplicitSink = true))
 
-      case SomeStreamOp(SomeStreamSource(source), ops) =>
+      case SomeStreamOps(SomeStreamSource(source), ops) =>
         findSink(source :: ops).filter(_ != InvalidSink)
           .map(sink => new Stream(tree, source, ops, sink, hasExplicitSink = false))
 

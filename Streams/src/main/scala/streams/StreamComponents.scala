@@ -115,7 +115,7 @@ private[streams] trait StreamComponents
 
   // Allow loose coupling between sources, ops and sinks traits:
   val SomeStreamSource: Extractor[Tree, StreamSource]
-  val SomeStreamOp: Extractor[Tree, (Tree, List[StreamOp])]
+  val SomeStreamOps: Extractor[Tree, (Tree, List[StreamOp])]
   val SomeStreamSink: Extractor[Tree, (Tree, StreamSink)]
 
   type StreamOpExtractor = Extractor[Tree, (Tree, StreamOp)]

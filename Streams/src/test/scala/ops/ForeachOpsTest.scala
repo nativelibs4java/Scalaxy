@@ -10,6 +10,6 @@ class ForeachOpsTest extends StreamComponentsTestBase with StreamTransforms {
   @Test
   def testForeachExtractor {
     val v @ SomeForeachOp(_, ForeachOp(_)) = typecheck(q"(1 to 10).foreach(println _)")
-    val SomeStreamOp(_, _ :: Nil) = v
+    val SomeStreamOps(_, _ :: Nil) = v
   }
 }

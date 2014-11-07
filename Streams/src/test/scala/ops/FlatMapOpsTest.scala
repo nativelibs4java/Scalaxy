@@ -12,6 +12,6 @@ class FlatMapOpsTest extends StreamComponentsTestBase with StreamTransforms {
     val v @ SomeFlatMapOp(_, FlatMapOp(_, _, _)) = typecheck(q"""
       Array(1).flatMap(v => Seq(v + 1))
     """)
-    val SomeStreamOp(_, _ :: _ :: Nil) = v
+    val SomeStreamOps(_, _ :: _ :: Nil) = v
   }
 }
