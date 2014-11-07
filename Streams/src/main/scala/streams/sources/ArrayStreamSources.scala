@@ -39,9 +39,10 @@ private[streams] trait ArrayStreamSources
       val iVar = fresh("i")
       val itemVal = fresh("item")
 
-      val arrayTpe = findType(array).getOrElse {
-        sys.error(s"Failed to find type of $array")
-      }
+      val arrayTpe = findType(array).orNull
+      // getOrElse {
+      //   sys.error(s"Failed to find type of $array")
+      // }
 
       // Early typing / symbolization.
       val Block(List(
