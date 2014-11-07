@@ -10,7 +10,7 @@ import scala.reflect.macros.blackbox.Context
 
 import scala.reflect.runtime.{ universe => ru }
 
-import scalaxy.streams.HacksAndWorkarounds.{cast, safelyUnSymbolize}
+import scalaxy.streams.HacksAndWorkarounds.cast
 
 package object streams {
   def optimize[A](a: A): A = macro impl.recursivelyOptimize[A]

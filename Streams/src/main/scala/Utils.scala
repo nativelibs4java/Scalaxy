@@ -1,5 +1,7 @@
 package scalaxy.streams
 
+import scala.language.postfixOps
+
 private[streams] trait Utils {
   val global: scala.reflect.api.Universe
   import global._
