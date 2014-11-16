@@ -340,6 +340,7 @@ object IntegrationTests
       // This one throws in LambdaLift because symbol foo is not found.
       // Because of this, any Try sub-tree in a stream causes the stream to
       // be discarded by Strategies.hasKnownLimitationOrBug.
+      // See https://github.com/ochafik/Scalaxy/issues/20.
       val msg = {
         try {
           val foo = 10
@@ -349,6 +350,15 @@ object IntegrationTests
         }
       } get;
       msg
+    """
+      -> streamMsg(),
+
+    """
+      // By-value params in method called by sub-trees seem to cause symbol
+      // ownership issues. Here it's because of x, which is not found anymore.
+      // See https://github.com/ochafik/Scalaxy/issues/21.
+      def wrap[T](body: => T): Option[T] = Option(body)
+      wrap({ val x = 10; Option(x) }) getOrElse 0
     """
       -> streamMsg(),
 

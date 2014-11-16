@@ -1,5 +1,7 @@
 package scalaxy.streams
 
+import scala.language.existentials
+
 private[streams] trait Strategies
     extends Streams
     with SideEffectsDetection
@@ -20,9 +22,15 @@ private[streams] trait Strategies
         false
     })
 
-    def hasTrySubTrees: Boolean = stream.components.exists(_.subTrees.exists {
+    def hasTryOrByValueSubTrees: Boolean = stream.components.exists(_.subTrees.exists {
       case Try(_, _, _) =>
         true
+
+      case t @ Apply(target, args)
+          if Option(t.symbol).exists(_.isMethod) =>
+        // If one of the subtrees is a method call with by-name params, then
+        // weird symbol ownership issues arise.
+        t.symbol.asMethod.paramLists.exists(_.exists(_.asTerm.isByNameParam))
 
       case _ =>
         false
@@ -46,7 +54,7 @@ private[streams] trait Strategies
         // Option.take / drop / takeWhile / dropWhile return Lists: not handled yet.
         true
 
-      case _ if hasTrySubTrees =>
+      case _ if hasTryOrByValueSubTrees =>
         // This one is... interesting.
         // Something horrible (foo not found) happens to the following snippet in lambdalift:
         //
