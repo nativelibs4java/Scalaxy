@@ -24,6 +24,20 @@ private[streams] trait Strategies
 
     def hasTryOrByValueSubTrees: Boolean = stream.components.exists(_.subTrees.exists {
       case Try(_, _, _) =>
+        // This one is... interesting.
+        // Something horrible (foo not found) happens to the following snippet in lambdalift:
+        //
+        //     val msg = {
+        //       try {
+        //         val foo = 10
+        //         Some(foo)
+        //       } catch {
+        //         case ex: Throwable => None
+        //       }
+        //     } get;
+        //     msg
+        //
+        // I'm being super-mega cautious with try/catch here, until the bug is understood / fixed.
         true
 
       case t @ Apply(target, args)
@@ -43,6 +57,11 @@ private[streams] trait Strategies
     def isOptionTpe(tpe: Type): Boolean =
       tpe <:< typeOf[Option[_]]
 
+    def isWithFilterOp(op: StreamOp): Boolean = op match {
+      case WithFilterOp(_) => true
+      case _ => false
+    }
+
     def streamTpe: Option[Type] = findType(stream.tree)
 
     stream.source match {
@@ -54,21 +73,11 @@ private[streams] trait Strategies
         // Option.take / drop / takeWhile / dropWhile return Lists: not handled yet.
         true
 
+      case _ if stream.ops.lastOption.exists(isWithFilterOp) =>
+        // Option.withFilter returns an Option#WithFilter
+        true
+
       case _ if hasTryOrByValueSubTrees =>
-        // This one is... interesting.
-        // Something horrible (foo not found) happens to the following snippet in lambdalift:
-        //
-        //     val msg = {
-        //       try {
-        //         val foo = 10
-        //         Some(foo)
-        //       } catch {
-        //         case ex: Throwable => None
-        //       }
-        //     } get;
-        //     msg
-        //
-        // I'm being super-mega cautious with try/catch here, until the bug is understood / fixed.
         true
 
       case _ =>

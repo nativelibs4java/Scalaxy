@@ -10,17 +10,28 @@ private[streams] trait FilterOps
   object SomeFilterOp extends StreamOpExtractor {
     override def unapply(tree: Tree)= Option(tree) collect {
       case q"$target.filter(${Closure(closure)})" =>
-        (target, FilterOp(closure, isNegative = false, "filter"))
+        (target, FilterOp(closure))
 
       case q"$target.filterNot(${Closure(closure)})" =>
-        (target, FilterOp(closure, isNegative = true, "filterNot"))
+        (target, FilterNotOp(closure))
 
       case q"$target.withFilter(${Closure(closure)})" =>
-        (target, FilterOp(closure, isNegative = false, "withFilter"))
+        (target, WithFilterOp(closure))
     }
   }
-  case class FilterOp(closure: Function, isNegative: Boolean, name: String)
-      extends ClosureStreamOp
+
+  case class FilterOp(override val closure: Function)
+    extends FilterLikeOp(closure, isNegative = false, "filter")
+
+  case class FilterNotOp(override val closure: Function)
+    extends FilterLikeOp(closure, isNegative = true, "filterNot")
+
+  case class WithFilterOp(override val closure: Function)
+    extends FilterLikeOp(closure, isNegative = false, "withFilter")
+
+  class FilterLikeOp(val closure: Function,
+                     val isNegative: Boolean,
+                     val name: String) extends ClosureStreamOp
   {
     override def describe = Some(name)
 
@@ -55,4 +66,5 @@ private[streams] trait FilterOps
       """))
     }
   }
+
 }
