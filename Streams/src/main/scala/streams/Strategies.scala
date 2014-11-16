@@ -22,6 +22,7 @@ private[streams] trait Strategies
         false
     })
 
+    // Detects two potentially-related issues.
     def hasTryOrByValueSubTrees: Boolean = stream.components.exists(_.subTrees.exists {
       case Try(_, _, _) =>
         // This one is... interesting.
@@ -43,7 +44,11 @@ private[streams] trait Strategies
       case t @ Apply(target, args)
           if Option(t.symbol).exists(_.isMethod) =>
         // If one of the subtrees is a method call with by-name params, then
-        // weird symbol ownership issues arise.
+        // weird symbol ownership issues arise (x not found in the following snippet)
+        //
+        //     def wrap[T](body: => T): Option[T] = Option(body)
+        //     wrap({ val x = 10; Option(x) }) getOrElse 0
+        //
         t.symbol.asMethod.paramLists.exists(_.exists(_.asTerm.isByNameParam))
 
       case _ =>
