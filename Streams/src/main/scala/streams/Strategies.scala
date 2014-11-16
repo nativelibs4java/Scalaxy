@@ -63,6 +63,7 @@ private[streams] trait Strategies
       tpe <:< typeOf[Option[_]]
 
     def isWithFilterOp(op: StreamOp): Boolean = op match {
+      case CoerceOp(_) => true
       case WithFilterOp(_) => true
       case _ => false
     }
