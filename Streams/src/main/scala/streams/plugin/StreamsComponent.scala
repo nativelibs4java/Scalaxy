@@ -82,7 +82,7 @@ private[streams] class StreamsComponent(
                 typecheck = typed(_))
             } catch {
               case ex: Throwable =>
-                logException(tree.pos, ex, warning)
+                logException(tree.pos, ex)
                 None
             }
 
