@@ -7,6 +7,7 @@ private[streams] trait StreamTransforms
   with StreamOps
   with Strategies
   with Reporters
+  with Blacklists
 {
   import global._
 
@@ -23,7 +24,15 @@ private[streams] trait StreamTransforms
                       typecheck: Tree => Tree): Option[Tree]
   = tree match {
     case tree @ SomeStream(stream) if !hasKnownLimitationOrBug(stream) =>
-      if (isWorthOptimizing(stream, strategy)) {
+      if (isBlacklisted(tree.pos, currentOwner)) {
+        if (impl.verbose) {
+          info(
+              tree.pos,
+              Optimizations.messageHeader + s"Skipped stream ${stream.describe()}",
+              force = impl.verbose)
+        }
+        None
+      } else if (isWorthOptimizing(stream, strategy)) {
         // println(s"stream = $stream")
 
         info(
@@ -43,7 +52,7 @@ private[streams] trait StreamTransforms
           if (impl.debug) {
             info(
               tree.pos,
-              Optimizations.messageHeader + s"Result for ${stream.describe()}:\n$result",
+              Optimizations.messageHeader + s"Result for ${stream.describe()} (owner: $currentOwner.fullName}):\n$result",
               force = impl.verbose)
           }
           Some(result)

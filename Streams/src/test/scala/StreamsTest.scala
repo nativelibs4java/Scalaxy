@@ -14,7 +14,7 @@ class StreamsTest extends StreamComponentsTestBase with StreamTransforms {
   def testFindSink {
     assertEquals(Some(ArrayOpsSink), SomeStream.findSink(List(ArrayOpsOp)))
     assertEquals(Some(VectorBuilderSink), SomeStream.findSink(List(ArrayOpsOp, VectorBuilderSink)))
-    assertEquals(None, SomeStream.findSink(List(ArrayOpsOp, FilterOp(null, false, null))))
+    assertEquals(None, SomeStream.findSink(List(ArrayOpsOp, FilterOp(null))))
     // val Some(CanBuildFromSink(null)) = SomeStream.findSink(List(ListBufferSink, ZipWithIndexOp(null)))
     assertEquals(Some(ListBufferSink), SomeStream.findSink(List(ArrayBuilderSink, ListBufferSink)))
   }
@@ -24,7 +24,7 @@ class StreamsTest extends StreamComponentsTestBase with StreamTransforms {
     val SomeStream(Stream(_, ArrayStreamSource(_, _, _), ops, ArrayBuilderSink, false)) = typecheck(q"""
       Array(1).map(_ + 1).map(_ * 10).filter(_ < 10)
     """)
-    val List(ArrayOpsOp, MapOp(_, _), ArrayOpsOp, MapOp(_, _), ArrayOpsOp, FilterOp(_, false, "filter")) = ops
+    val List(ArrayOpsOp, MapOp(_, _), ArrayOpsOp, MapOp(_, _), ArrayOpsOp, FilterOp(_)) = ops
   }
 
   @Test
@@ -32,7 +32,7 @@ class StreamsTest extends StreamComponentsTestBase with StreamTransforms {
     val SomeStream(Stream(_, ArrayStreamSource(_, _, _), ops, ArrayBuilderSink, false)) = typecheck(q"""
       (null: Array[Int]).map(_ + 2).filter(_ < 3).map(_.hashCode)
     """)
-    val List(ArrayOpsOp, MapOp(_, _), ArrayOpsOp, FilterOp(_, false, "filter"), ArrayOpsOp, MapOp(_, _)) = ops
+    val List(ArrayOpsOp, MapOp(_, _), ArrayOpsOp, FilterOp(_), ArrayOpsOp, MapOp(_, _)) = ops
   }
 
   @Test
@@ -58,7 +58,7 @@ class StreamsTest extends StreamComponentsTestBase with StreamTransforms {
     val SomeStream(Stream(_, InlineRangeStreamSource(_, _, 2, true, _), ops, CanBuildFromSink(_), false)) = typecheck(q"""
       (1 to 10 by 2).map(_ + 1).map(_ * 10).filter(_ < 10)
     """)
-    val List(MapOp(_, _), MapOp(_, _), FilterOp(_, false, "filter")) = ops
+    val List(MapOp(_, _), MapOp(_, _), FilterOp(_)) = ops
   }
 
   @Test

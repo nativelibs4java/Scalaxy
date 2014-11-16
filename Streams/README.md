@@ -349,7 +349,9 @@ The global default strategy can also be set through the `SCALAXY_STREAMS_STRATEG
     scalac -J-Dscalaxy.streams.strategy=aggressive ...
     ```
 
-# Hacking
+# Hacking / helping
+
+Found a bug? Please [report it](https://github.com/ochafik/Scalaxy/issues/new) (your help will be much appreciated!).
 
 If you want to build / test / hack on this project:
 
@@ -369,7 +371,17 @@ If you want to build / test / hack on this project:
 
         SCALAXY_TEST_PERF=1 sbt "project scalaxy-streams" "; clean ; ~test"
 
-Found a bug? Please [report it](https://github.com/ochafik/Scalaxy/issues/new) (your help will be much appreciated!).
+* Want to build scala itself with the plugin? (assumes you downloaded the plugin's JAR to the current directory and you've checked out the scala 2.11.x branch)
+
+        # Make sure you've built locker:
+        ant build locker.unlock
+        # Make sure you're rebuilding quick:
+        rm -fR build/quick
+        # Build quick with the Scalaxy/Stream plugin:
+        # (note: there are 2 lingering problematic rewrites that must be skipped)
+        SCALAXY_STREAMS_SKIP=Typers.scala:computeParamAliases \
+          SCALAXY_STREAMS_VERY_VERBOSE=1 \
+          ant "-Dscalac.args=-Xplugin-require:scalaxy-streams -Xplugin:${PWD}/scalaxy-streams_2.11.jar" build
 
 # Size optimizations
 
