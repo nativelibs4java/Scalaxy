@@ -1,7 +1,6 @@
 package scalaxy.streams
-package test
 
-trait TestReporters extends Reporters
+trait ConsoleReporters extends Reporters
 {
   val global: scala.reflect.api.Universe
   import global._

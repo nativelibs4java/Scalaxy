@@ -4,7 +4,7 @@ import scala.collection.mutable.ListBuffer
 
 import scalaxy.streams.SideEffectsWhitelists._
 
-private[streams] trait SideEffectsDetection
+trait SideEffectsDetection
     extends Streams
     with SideEffectsMessages
 {

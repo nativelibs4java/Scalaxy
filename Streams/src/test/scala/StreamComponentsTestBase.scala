@@ -13,7 +13,7 @@ case class CompilerMessages(
   warnings: List[String] = Nil,
   errors: List[String] = Nil)
 
-trait StreamComponentsTestBase extends Utils with TestReporters
+trait StreamComponentsTestBase extends Utils with ConsoleReporters
 {
   val global = scala.reflect.runtime.universe
   val commonOptions = "-usejavacp "

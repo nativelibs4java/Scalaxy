@@ -1,6 +1,6 @@
 package scalaxy.streams
 
-private[streams] trait Streams
+trait Streams
     extends StreamComponents
     with UnusableSinks
 {

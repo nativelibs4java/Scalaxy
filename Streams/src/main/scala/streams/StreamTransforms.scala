@@ -1,6 +1,7 @@
 package scalaxy.streams
 
-private[streams] trait StreamTransforms
+// private[scalaxy] 
+trait StreamTransforms
   extends Streams
   with StreamSources
   with StreamSinks

@@ -1,10 +1,11 @@
 package scalaxy.streams
 import scala.collection.breakOut
 
-private[streams] trait TuploidValues extends Utils
+trait TuploidValues extends Utils with Tuploids
 {
   val global: scala.reflect.api.Universe
   import global._
+  import definitions._
 
   object Tuple {
     def unapply(tree: Tree): Boolean = tree match {
@@ -15,10 +16,60 @@ private[streams] trait TuploidValues extends Utils
         false
     }
   }
+
+  // private[this] def isTupleType(tpe: Type): Boolean =
+  //   Option(tpe).exists(t => isTupleSymbol(t.typeSymbol))
+
+  // private[this] def isTupleSymbol(sym: Symbol): Boolean =
+  //   Option(sym).exists(_.fullName.toString.matches("scala\\.Tuple\\d+"))
+
   object TupleType {
-    def unapply(tpe: Type): Boolean =
-      Option(tpe).exists(
-        _.typeSymbol.fullName.toString.matches("scala\\.Tuple\\d+"))
+    def unapply(tpe: Type): Boolean = isTupleType(tpe)
+  }
+
+
+  private[this] lazy val primTypes =
+    Set(IntTpe, LongTpe, ShortTpe, CharTpe, BooleanTpe, DoubleTpe, FloatTpe, ByteTpe)
+
+  private[this] def isPrimitiveType(tpe: Type) =
+    Option(tpe).map(normalize).exists(primTypes.contains)
+
+  private[this] def getTupleComponentTypes(tpe: Type): List[Type] = {
+    tpe match {
+      case ref @ TypeRef(pre, sym, args @ (_ :: _)) if isTupleTypeRef(ref) => args
+    }
+  }
+
+  // def isTupleTypeRef(ref: TypeRef): Boolean = {
+  //   !ref.args.isEmpty &&
+  //     ref.pre.typeSymbol == ScalaPackageClass &&
+  //     isTupleSymbol(ref.sym)
+  // }
+
+  def isValOrVar(s: Symbol): Boolean =
+    s.isTerm && !s.isMethod && !s.isJava
+
+  def isStableNonLazyVal(ts: TermSymbol): Boolean =
+    ts.isStable && ts.isVal && !ts.isLazy
+
+  def isImmutableClassMember(s: Symbol): Boolean = {
+    //println(s + " <- " + s.owner + " overrides " + s.allOverriddenSymbols)
+    //println(s"\tisFinal = ${s.isFinal}, isMethod = ${s.isMethod}, isTerm = ${s.isTerm}")
+    if (isValOrVar(s)) {
+      isStableNonLazyVal(s.asTerm)
+    } else {
+      // Either a method or a sub-type
+      true
+    }
+  }
+  // A tuploid is a scalar, a tuple of tuploids or an immutable case class with tuploid fields.
+  def isTuploidType(tpe: Type): Boolean = tpe != null && {
+    isPrimitiveType(tpe) ||
+      isTupleType(tpe) && getTupleComponentTypes(tpe).forall(isTuploidType _) ||
+      {
+        tpe.decls.exists(isValOrVar _) &&
+          tpe.decls.forall(isImmutableClassMember _)
+      }
   }
 
   object TupleCreation {
