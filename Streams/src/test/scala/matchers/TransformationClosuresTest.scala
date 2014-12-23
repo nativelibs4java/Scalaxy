@@ -71,7 +71,7 @@ class TransformationClosureTest extends StreamComponentsTestBase with Transforma
     val SomeTransformationClosure(
       tc @ TransformationClosure(inputs, statements, outputs, closureSymbol)) = f
     val ScalarValue(_, None, Some(S("x"))) = inputs
-    val ScalarValue(_, Some(q"scala.this.Predef.println(x)"), None) = outputs
+    val ScalarValue(_, Some(q"${Predef()}.println(x)"), None) = outputs
   }
 
   @Test

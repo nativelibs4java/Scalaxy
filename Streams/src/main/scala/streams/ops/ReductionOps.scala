@@ -19,6 +19,8 @@ private[streams] trait ReductionOps
 
   trait SimpleReductorOp extends StreamOp
   {
+    def opName: String
+    override def describe = Some(opName)
     def throwsIfEmpty: Boolean
     def tpe: Type
     def initialAccumulatorValue: Tree
@@ -41,12 +43,12 @@ private[streams] trait ReductionOps
 
       // requireSinkInput(input, outputNeeds, nextOps)
 
-      val result = fresh("result")
+      val result = fresh(opName)
       val empty = fresh("empty")
       require(input.vars.alias.nonEmpty, s"input.vars = $input.vars")
 
       // println("inputVars.alias.get = " + inputVars.alias.get + ": " + inputVars.tpe)
-      val emptyMessage = s"empty.${describe.get}"
+      val emptyMessage = s"empty.$opName"
       val Block(List(
           resultDef,
           emptyDef,
@@ -74,7 +76,7 @@ private[streams] trait ReductionOps
 
   case class SumOp(tpe: Type) extends SimpleReductorOp
   {
-    override def describe = Some("sum")
+    override def opName = "sum"
     override def initialAccumulatorValue = q"0"
     override def throwsIfEmpty = false
     override def subTrees = Nil
@@ -84,7 +86,7 @@ private[streams] trait ReductionOps
 
   case class ProductOp(tpe: Type) extends SimpleReductorOp
   {
-    override def describe = Some("product")
+    override def opName = "product"
     override def initialAccumulatorValue = q"1"
     override def throwsIfEmpty = false
     override def subTrees = Nil

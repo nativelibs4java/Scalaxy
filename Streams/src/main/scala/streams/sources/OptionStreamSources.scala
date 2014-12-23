@@ -10,21 +10,23 @@ private[streams] trait OptionStreamSources
   object SomeOptionStreamSource {
     // Testing the type would be so much better, but yields an awkward MissingRequirementError.
     // lazy val OptionTpe = typeOf[Option[_]]
-    private[this] lazy val OptionSym = rootMirror.staticClass("scala.Option");
-    private[this] lazy val SomeSym = rootMirror.staticClass("scala.Some");
+    private[this] lazy val OptionClass = rootMirror.staticClass("scala.Option")
+    private[this] lazy val OptionModule = rootMirror.staticModule("scala.Option")
+    private[this] lazy val SomeClass = rootMirror.staticClass("scala.Some")
+    private[this] lazy val SomeModule = rootMirror.staticModule("scala.Some")
 
     def hasOptionType(tree: Tree): Boolean = {
       val tpe = tree.tpe
 
       tpe != null && tpe != NoType &&
-      (tpe.typeSymbol == OptionSym || tpe.typeSymbol == SomeSym)
+      (tpe.typeSymbol == OptionClass || tpe.typeSymbol == SomeClass)
     }
 
     def unapply(tree: Tree): Option[StreamSource] = Option(tree).filter(hasOptionType(_)) collect {
-      case q"scala.Option.apply[$tpt]($value)" =>
+      case q"$option.apply[$tpt]($value)" if option.symbol == OptionModule =>
         InlineOptionStreamSource(tpt.tpe, value, isSome = false)
 
-      case q"scala.Some.apply[$tpt]($value)" =>
+      case q"$some.apply[$tpt]($value)" if some.symbol == SomeModule =>
         InlineOptionStreamSource(tpt.tpe, value, isSome = true)
 
       case _ =>

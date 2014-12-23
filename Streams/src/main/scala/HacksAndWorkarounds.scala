@@ -25,14 +25,31 @@ private[scalaxy] object HacksAndWorkarounds
       override def traverse(tree: Tree) {
         for (sym <- Option(tree.symbol); if sym != NoSymbol) {
           if (sym.owner == deletedOwner) {
+            assert(sym != deletedOwner)
+            assert(newOwner != sym)
+            assert(newOwner != sym.owner)
+
             call(sym, "owner_=", newOwner)
-            if (tree.isInstanceOf[DefTree]) {
+            if (tree.isInstanceOf[DefTreeApi]) {
               val decls = newOwner.info.decls
               if (decls.toString == "[]") {
                 // println(s"\nENTERING SYM IN NEW OWNER.")
                 call(decls, "enter", sym)
               }
             }
+            // } catch {
+            //   case ex: Throwable =>
+            //     // ex.printStackTrace()
+            //     println(s"""
+            //       ex: $ex
+            //       sym: $sym
+            //       deletedOwner: $deletedOwner
+            //       deletedOwner.owner: ${deletedOwner.owner}
+            //       newOwner: $newOwner
+            //       newOwner.owner: ${newOwner.owner}
+            //     """)
+            //     throw ex
+            // }
           }
         }
         super.traverse(tree)

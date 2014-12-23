@@ -59,19 +59,9 @@ package streams
       if (disabled) {
         a
       } else {
-        object Optimize extends StreamTransforms {
-          override val global = c.universe
+        object Optimize extends StreamTransforms with WithMacroContext {
+          override val context = c
           import global._
-
-          override def info(pos: Position, msg: String, force: Boolean) {
-            c.info(cast(pos), msg, force = force)
-          }
-          override def warning(pos: Position, msg: String) {
-            c.warning(cast(pos), msg)
-          }
-          override def error(pos: Position, msg: String) {
-            c.error(cast(pos), msg)
-          }
 
           val result = try {
 

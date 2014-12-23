@@ -22,16 +22,16 @@ private[streams] trait InlineRangeStreamSources
   object SomeInlineRangeStreamSource
   {
     def unapply(tree: Tree): Option[InlineRangeStreamSource[_]] = Option(tree) collect {
-      case q"scala.this.Predef.intWrapper($start) ${ToUntil(isInclusive)} $end" =>
+      case q"${Predef()}.intWrapper($start) ${ToUntil(isInclusive)} $end" =>
         InlineRangeStreamSource[Int](start, end, by = 1, isInclusive, tpe = typeOf[Int])
 
-      case q"scala.this.Predef.intWrapper($start) ${ToUntil(isInclusive)} $end by ${Literal(Constant(by: Int))}" =>
+      case q"${Predef()}.intWrapper($start) ${ToUntil(isInclusive)} $end by ${Literal(Constant(by: Int))}" =>
         InlineRangeStreamSource[Int](start, end, by, isInclusive, tpe = typeOf[Int])
 
-      case q"scala.this.Predef.longWrapper($start) ${ToUntil(isInclusive)} $end" =>
+      case q"${Predef()}.longWrapper($start) ${ToUntil(isInclusive)} $end" =>
         InlineRangeStreamSource[Long](start, end, by = 1, isInclusive, tpe = typeOf[Long])
 
-      case q"scala.this.Predef.longWrapper($start) ${ToUntil(isInclusive)} $end by ${Literal(Constant(by: Long))}" =>
+      case q"${Predef()}.longWrapper($start) ${ToUntil(isInclusive)} $end by ${Literal(Constant(by: Long))}" =>
         InlineRangeStreamSource[Long](start, end, by, isInclusive, tpe = typeOf[Long])
     }
   }

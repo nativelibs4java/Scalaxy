@@ -7,16 +7,6 @@ trait TuploidValues extends Utils with Tuploids
   import global._
   import definitions._
 
-  object Tuple {
-    def unapply(tree: Tree): Boolean = tree match {
-      case q"scala.$n" if n.toString.matches("Tuple\\d+") =>
-        true
-
-      case _ =>
-        false
-    }
-  }
-
   // private[this] def isTupleType(tpe: Type): Boolean =
   //   Option(tpe).exists(t => isTupleSymbol(t.typeSymbol))
 
@@ -75,10 +65,10 @@ trait TuploidValues extends Utils with Tuploids
   object TupleCreation {
     def unapply(tree: Tree): Option[List[Tree]] =
       Option(tree).filter(tree => TupleType.unapply(tree.tpe)) collect {
-        case q"${Tuple()}[..${_}](..$subs)" =>
+        case q"$tup[..${_}](..$subs)" if isTupleSymbol(tup.symbol) =>
           subs
 
-        case q"${Tuple()}.apply[..${_}](..$subs)" =>
+        case q"$tup.apply[..${_}](..$subs)" if isTupleSymbol(tup.symbol) =>
           subs
       }
   }

@@ -30,6 +30,14 @@ trait Utils {
   }
   implicit def N2TermName(n: N) = n()
 
+  object Predef {
+    private[this] lazy val PredefModule =
+      rootMirror.staticModule("scala.Predef")
+
+    def unapply(tree: Tree): Boolean =
+      tree.symbol == PredefModule
+  }
+
   implicit class SymbolExtensions(s: Symbol) {
     def asOption: Option[Symbol] =
       if (s == NoSymbol) None else Some(s)

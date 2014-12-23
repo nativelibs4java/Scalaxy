@@ -7,22 +7,25 @@ private[streams] trait ArrayOpsOps
   val global: scala.reflect.api.Universe
   import global._
 
-  object AnyValArrayOpsName {
-    def unapply(name: Name): Boolean = String.valueOf(name) match {
-      case "intArrayOps" | "longArrayOps" | "byteArrayOps" | "shortArrayOps" |
-        "charArrayOps" | "booleanArrayOps" | "floatArrayOps" | "doubleArrayOps" =>
-        true
-
-      case _ =>
-        false
-    }
-  }
-
   object SomeArrayOp {
     def unapply(tree: Tree): Option[Tree] = Option(tree) collect {
-      case q"scala.this.Predef.${AnyValArrayOpsName()}($array)" => array
-      case q"scala.this.Predef.refArrayOps[${_}]($array)" => array
-      case q"scala.this.Predef.genericArrayOps[${_}]($array)" => array
+      case Apply(
+          Select(Predef(), N(
+            "intArrayOps" |
+            "longArrayOps" |
+            "byteArrayOps" |
+            "shortArrayOps" |
+            "charArrayOps" |
+            "booleanArrayOps" |
+            "floatArrayOps" |
+            "doubleArrayOps")) |
+          TypeApply(
+            Select(Predef(), N(
+              "refArrayOps" |
+              "genericArrayOps")),
+            List(_)),
+          List(array)) =>
+        array
     }
   }
 
@@ -32,7 +35,6 @@ private[streams] trait ArrayOpsOps
   }
 
   case object ArrayOpsOp extends PassThroughStreamOp {
-    // override def describe = Some("arrayOps")
     override val sinkOption = Some(ArrayOpsSink)
   }
 
