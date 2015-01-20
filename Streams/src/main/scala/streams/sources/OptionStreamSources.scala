@@ -19,36 +19,21 @@ private[streams] trait OptionStreamSources
     private[this] lazy val OptionClasses: Set[Symbol] =
       Set(OptionClass, SomeClass, NoneClass)
 
-    def hasOptionType(tree: Tree): Boolean = tree.symbol == NoneModule || {
+    private[this] def hasOptionType(tree: Tree): Boolean = tree.symbol == NoneModule || {
       val tpe = tree.tpe
 
       tpe != null && tpe != NoType && OptionClasses(tpe.typeSymbol)
     }
 
-    private[this] def getSinkOption(tree: Tree) = {
-      val TypeRef(_, _, List(componentTpe)) = tree.tpe.baseType(OptionClass)
-      Some(OptionSink(componentTpe = Some(componentTpe)))
-    }
-
     def unapply(tree: Tree): Option[StreamSource] = Option(tree).filter(hasOptionType(_)) collect {
       case q"$option.apply[$tpt]($value)" if option.symbol == OptionModule =>
-        InlineOptionStreamSource(
-          tpt.tpe,
-          value,
-          isSome = false,
-          sinkOption = getSinkOption(tree))
+        InlineOptionStreamSource(tpt.tpe, value, isSome = false)
 
       case q"$some.apply[$tpt]($value)" if some.symbol == SomeModule =>
-        InlineOptionStreamSource(
-          tpt.tpe,
-          value,
-          isSome = true,
-          sinkOption = getSinkOption(tree))
+        InlineOptionStreamSource(tpt.tpe, value, isSome = true)
 
       case _ =>
-        GenericOptionStreamSource(
-          tree,
-          sinkOption = getSinkOption(tree))
+        GenericOptionStreamSource(tree)
     }
   }
 
@@ -61,7 +46,7 @@ private[streams] trait OptionStreamSources
 
   case class GenericOptionStreamSource(
       option: Tree,
-      sinkOption: Option[StreamSink])
+      sinkOption: Option[StreamSink] = Some(OptionSink))
     extends StreamSource
   {
     override def describe = Some("Option")
@@ -130,7 +115,7 @@ private[streams] trait OptionStreamSources
       tpe: Type,
       item: Tree,
       isSome: Boolean,
-      sinkOption: Option[StreamSink])
+      sinkOption: Option[StreamSink] = Some(OptionSink))
     extends StreamSource
   {
     override def describe = Some(if (isSome) "Some" else "Option")

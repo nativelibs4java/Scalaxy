@@ -4,7 +4,7 @@ private[streams] trait OptionSinks extends StreamComponents {
   val global: scala.reflect.api.Universe
   import global._
 
-  case class OptionSink(componentTpe: Option[Type]) extends StreamSink 
+  case object OptionSink extends StreamSink 
   {
     override def lambdaCount = 0
 
@@ -22,12 +22,11 @@ private[streams] trait OptionSinks extends StreamComponents {
       val nonEmpty = fresh("nonEmpty")
       require(input.vars.alias.nonEmpty, s"input.vars = $input.vars")
 
-      val tpe = componentTpe.getOrElse(input.vars.tpe)
       val Block(List(
           valueDef,
           nonEmptyDef,
           assignment), result) = typed(q"""
-        ${newVar(value, tpe)};
+        ${newVar(value, input.vars.tpe)};
         private[this] var $nonEmpty = false;
         {
           $value = ${input.vars.alias.get};

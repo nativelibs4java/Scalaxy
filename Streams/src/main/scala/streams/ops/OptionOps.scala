@@ -95,7 +95,7 @@ private[streams] trait OptionOps
     override def canAlterSize = true
 
     override def sinkOption: Option[StreamSink] =
-      Some(OptionSink(componentTpe = Some(componentTpe)))
+      Some(OptionSink)
 
     override def transmitOutputNeedsBackwards(paths: Set[TuploidPath]) =
       Set(RootTuploidPath) // TODO: refine this.
