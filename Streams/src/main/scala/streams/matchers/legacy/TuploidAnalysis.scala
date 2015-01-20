@@ -161,19 +161,27 @@ trait TupleAnalysis
       TupleSlice(baseSymbol, sliceOffset + offset, length)
 
     def toTreeGen(analyzer: TupleAnalyzer): TreeGen = () => {
-      val info = getTupleInfo(baseSymbol.typeSignature)
       val rootTpe = baseSymbol.typeSignature
-      val root: TreeGen = () => ident(baseSymbol, rootTpe)
-      assert(sliceLength == 1)
-      //TupleCreation((0 until sliceLength).map(i => applyFiberPath(root, info.flattenPaths(sliceOffset + i))):_*)
+      val info = getTupleInfo(rootTpe)
       val flatPaths = info.flattenPaths
+      
+      assert(sliceLength == 1)
       assert(sliceOffset < flatPaths.size, "slice offset = " + sliceOffset + ", flat paths = " + flatPaths)
-      //println(s"baseSymbol = $baseSymbol, ${baseSymbol.typeSignature}, ${root().symbol.typeSignature}")
-      var (res, resTpe) = applyFiberPath(root, rootTpe, flatPaths(sliceOffset))
-      //analyzer.setSlice(res, this)
-      //res = replace(res)
-      analyzer.setSlice(res, this)
-      res
+
+      val root: TreeGen = () => ident(baseSymbol, rootTpe)
+      // println(s"FLATPATHS($baseSymbol: ${rootTpe}) = $flatPaths")
+      if (flatPaths.size == 1) {
+        assert(sliceOffset == 0)
+        root()
+      } else {
+        //TupleCreation((0 until sliceLength).map(i => applyFiberPath(root, info.flattenPaths(sliceOffset + i))):_*)
+        //println(s"baseSymbol = $baseSymbol, ${baseSymbol.typeSignature}, ${root().symbol.typeSignature}")
+        var (res, resTpe) = applyFiberPath(root, rootTpe, flatPaths(sliceOffset))
+        //analyzer.setSlice(res, this)
+        //res = replace(res)
+        analyzer.setSlice(res, this)
+        res
+      }
     }
   }
   class BoundTuple(rootSlice: TupleSlice) {
