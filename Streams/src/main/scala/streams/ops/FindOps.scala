@@ -19,7 +19,7 @@ private[streams] trait FindOps
   {
     override def describe = Some("find")
 
-    override def sinkOption = Some(OptionSink)
+    override def sinkOption = Some(OptionSink(componentTpe = None))
 
     override def canInterruptLoop = true
 

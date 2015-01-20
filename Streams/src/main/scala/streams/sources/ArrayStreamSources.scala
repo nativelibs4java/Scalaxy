@@ -88,7 +88,9 @@ private[streams] trait ArrayStreamSources
             ..${sub.body};
             $iVarRef += 1
           }
-        """))
+          ..${sub.afterBody}
+        """)),
+        afterBody = Nil
       )
     }
   }

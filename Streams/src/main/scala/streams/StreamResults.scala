@@ -10,13 +10,22 @@ private[streams] trait StreamResults extends TuploidValues {
       prelude: List[Tree] = Nil,
       beforeBody: List[Tree] = Nil,
       body: List[Tree] = Nil,
+      afterBody: List[Tree] = Nil,
       ending: List[Tree] = Nil)
   {
+    def flatten: List[Tree] =
+      prelude ++ beforeBody ++ body ++ afterBody ++ ending
+
     def compose(typed: Tree => Tree) =
-      typed(q"..${prelude ++ beforeBody ++ body ++ ending}")
+      typed(q"..$flatten")
 
     def map(f: Tree => Tree): StreamOutput =
-      copy(prelude = prelude.map(f), body = body.map(f), ending = ending.map(f))
+      copy(
+        prelude = prelude.map(f),
+        beforeBody = beforeBody.map(f),
+        body = body.map(f),
+        afterBody = afterBody.map(f),
+        ending = ending.map(f))
   }
 
   val NoStreamOutput = StreamOutput()

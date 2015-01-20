@@ -53,7 +53,7 @@ trait StreamTransforms
           if (impl.debug) {
             info(
               tree.pos,
-              Optimizations.messageHeader + s"Result for ${stream.describe()} (owner: $currentOwner.fullName}):\n$result",
+              Optimizations.messageHeader + s"Result for ${stream.describe()} (owner: ${currentOwner.fullName}):\n$result",
               force = impl.verbose)
           }
           Some(result)

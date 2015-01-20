@@ -14,23 +14,41 @@ private[streams] trait OptionStreamSources
     private[this] lazy val OptionModule = rootMirror.staticModule("scala.Option")
     private[this] lazy val SomeClass = rootMirror.staticClass("scala.Some")
     private[this] lazy val SomeModule = rootMirror.staticModule("scala.Some")
+    private[this] lazy val NoneClass = rootMirror.staticClass("scala.None")
+    private[this] lazy val NoneModule = rootMirror.staticModule("scala.None")
+    private[this] lazy val OptionClasses: Set[Symbol] =
+      Set(OptionClass, SomeClass, NoneClass)
 
-    def hasOptionType(tree: Tree): Boolean = {
+    def hasOptionType(tree: Tree): Boolean = tree.symbol == NoneModule || {
       val tpe = tree.tpe
 
-      tpe != null && tpe != NoType &&
-      (tpe.typeSymbol == OptionClass || tpe.typeSymbol == SomeClass)
+      tpe != null && tpe != NoType && OptionClasses(tpe.typeSymbol)
+    }
+
+    private[this] def getSinkOption(tree: Tree) = {
+      val TypeRef(_, _, List(componentTpe)) = tree.tpe.baseType(OptionClass)
+      Some(OptionSink(componentTpe = Some(componentTpe)))
     }
 
     def unapply(tree: Tree): Option[StreamSource] = Option(tree).filter(hasOptionType(_)) collect {
       case q"$option.apply[$tpt]($value)" if option.symbol == OptionModule =>
-        InlineOptionStreamSource(tpt.tpe, value, isSome = false)
+        InlineOptionStreamSource(
+          tpt.tpe,
+          value,
+          isSome = false,
+          sinkOption = getSinkOption(tree))
 
       case q"$some.apply[$tpt]($value)" if some.symbol == SomeModule =>
-        InlineOptionStreamSource(tpt.tpe, value, isSome = true)
+        InlineOptionStreamSource(
+          tpt.tpe,
+          value,
+          isSome = true,
+          sinkOption = getSinkOption(tree))
 
       case _ =>
-        GenericOptionStreamSource(tree)
+        GenericOptionStreamSource(
+          tree,
+          sinkOption = getSinkOption(tree))
     }
   }
 
@@ -43,7 +61,7 @@ private[streams] trait OptionStreamSources
 
   case class GenericOptionStreamSource(
       option: Tree,
-      sinkOption: Option[StreamSink] = Some(OptionSink))
+      sinkOption: Option[StreamSink])
     extends StreamSource
   {
     override def describe = Some("Option")
@@ -112,7 +130,7 @@ private[streams] trait OptionStreamSources
       tpe: Type,
       item: Tree,
       isSome: Boolean,
-      sinkOption: Option[StreamSink] = Some(OptionSink))
+      sinkOption: Option[StreamSink])
     extends StreamSource
   {
     override def describe = Some(if (isSome) "Some" else "Option")
@@ -170,7 +188,9 @@ private[streams] trait OptionStreamSources
             ..$extractionCode
             ..${sub.body};
           }
-        """))
+          ..${sub.afterBody}
+        """)),
+        afterBody = Nil
       )
     }
   }

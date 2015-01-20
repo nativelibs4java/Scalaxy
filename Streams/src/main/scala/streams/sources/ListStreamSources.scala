@@ -79,7 +79,9 @@ private[streams] trait ListStreamSources
             ..${sub.body};
             $listVarUpdate
           }
-        """))
+          ..${sub.afterBody}
+        """)),
+        afterBody = Nil
       )
     }
   }
