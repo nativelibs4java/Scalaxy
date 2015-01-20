@@ -14,10 +14,9 @@ private[streams] trait OptionStreamSources
     private[this] lazy val OptionModule = rootMirror.staticModule("scala.Option")
     private[this] lazy val SomeClass = rootMirror.staticClass("scala.Some")
     private[this] lazy val SomeModule = rootMirror.staticModule("scala.Some")
-    private[this] lazy val NoneClass = rootMirror.staticClass("scala.None")
     private[this] lazy val NoneModule = rootMirror.staticModule("scala.None")
     private[this] lazy val OptionClasses: Set[Symbol] =
-      Set(OptionClass, SomeClass, NoneClass)
+      Set(OptionClass, SomeClass)
 
     private[this] def hasOptionType(tree: Tree): Boolean = tree.symbol == NoneModule || {
       val tpe = tree.tpe
