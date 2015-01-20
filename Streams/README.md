@@ -5,7 +5,7 @@ Latest release: 0.3.4 (2014-11-04, see [Changelog](#changelog))
 Quick links:
 * [Usage with Sbt](#usage-with-sbt)
 * [Usage with Maven](#usage-with-maven)
-* [Usage on Eclipse](#usage-on-eclipse)
+* [Usage with Eclipse](#usage-with-eclipse)
 * [Optimization Strategies](#optimization-strategies)
 * [TODO](#todo)
 * [Why is this not part of Scala](#why-is-this-not-part-of-scala)
@@ -245,7 +245,7 @@ With Maven, you'll need this in your `pom.xml` file:
   </repositories>
   ```
 
-## Usage on Eclipse
+## Usage with Eclipse
 
 The Scalaxy/Stream compiler plugin is easy to setup in Eclipse with the Scala IDE plugin:
 * Download the [stable scalaxy_streams_2.11 JAR on Maven Central](http://search.maven.org/remotecontent?filepath=com/nativelibs4java/scalaxy-streams_2.11/0.3.4/scalaxy-streams_2.11-0.3.4.jar), or the [snapshot JAR on Sonatype OSS](https://oss.sonatype.org/#nexus-search;quick~scalaxy_streams_2.11)
