@@ -19,6 +19,7 @@ class AdHocManualTest
   import global._
 
   scalaxy.streams.impl.verbose = true
+
   // scalaxy.streams.impl.veryVerbose = true
   // scalaxy.streams.impl.debug = true
   // scalaxy.streams.impl.quietWarnings = true
@@ -41,32 +42,132 @@ class AdHocManualTest
           } traverse t
 */
 
-  @Test
-  def foo {
-    val src = "(1 to 10).takeWhile(_ < 5).map(_ * 2)"
 
-    import scalaxy.streams.strategy.foolish
-    testMessages(src, streamMsg("Range.takeWhile.map -> IndexedSeq"))
+  // @Test
+  def testComp2 {
+
+    // assertPluginCompilesSnippetFine(src)
+    val src = """
+      def foo[T](v: List[(Int, T)]) = v.map(_._2).filter(_ != null);
+      foo(List((1, "a")))
+    """
+    // val src = s"""
+    //   def f1(x: Any) = x.toString + "1"
+    //   def f2(x: Any) = x.toString + "2"
+    //   def f3(x: Any) = x.toString + "3"
+
+    //   List(
+    //     ${{
+    //       val options = List(
+    //         "None",
+    //         "(None: Option[Int])",
+    //         "Option[Any](null)",
+    //         "Option[String](null)",
+    //         "Option[String](\"Y\")",
+    //         "Some(0)",
+    //         "Some(\"X\")")
+    //       for (lhs <- options; rhs <- options) yield
+    //         s"$lhs.map(f1).orElse($rhs.map(f2)).map(f3)"
+    //     }.mkString(",\n        ")}
+    //   )
+    // """
+    // println(src)
+
+    {
+      import scalaxy.streams.strategy.foolish
+      testMessages(src, streamMsg("List.map.filter -> List"),
+        expectWarningRegexp = Some(List("there were \\d+ inliner warnings; re-run with -Yinline-warnings for details")))
+    }
+  }
+  // @Test
+  def foo {
+    val src = """
+    object Test {
+      case class MyExample(x: Int)
+
+      def example = {
+        val ex: Array[MyExample] = new Array[MyExample](10)
+        optimize {
+          for (MyExample(x) <- ex) {
+            println(x)
+          }
+        }
+      }
+
+      example
+    }
+    """
+    // """
+    //   class Ident(val name: String)
+    //   object Ident {
+    //     def unapply(id: Ident): Option[String] = Some(id.name)
+    //   }
+    //   def foo {
+    //     val ints = List(1, 2, 3)
+    //     val idents = List("a", "b", "c").map(new Ident(_))
+    //     for ((i, id @ Ident(name)) <- ints zip idents) {
+    //       if (i > 0) {
+    //         println(s"$i: $name ($id)")
+    //       }
+    //     }
+    //   }
+    //   foo
+    //     // for ((superAcc, superArg @ Ident(name)) <- superParamAccessors zip superArgs) {
+    //     //   if (mexists(vparamss)(_.symbol == superArg.symbol)) {
+    //     //     val alias = (
+    //     //       superAcc.initialize.alias
+    //     //         orElse (superAcc getter superAcc.owner)
+    //     //         filter (alias => superClazz.info.nonPrivateMember(alias.name) == alias)
+    //     //     )
+    //     //     if (alias.exists && !alias.accessed.isVariable && !isRepeatedParamType(alias.accessed.info)) {
+    //     //       val ownAcc = clazz.info decl name suchThat (_.isParamAccessor) match {
+    //     //         case acc if !acc.isDeferred && acc.hasAccessorFlag => acc.accessed
+    //     //         case acc                                           => acc
+    //     //       }
+    //     //       ownAcc match {
+    //     //         case acc: TermSymbol if !acc.isVariable =>
+    //     //           debuglog(s"$acc has alias ${alias.fullLocationString}")
+    //     //           acc setAlias alias
+    //     //         case _ =>
+    //     //       }
+    //     //     }
+    //     //   }
+    //     // }
+    // """
+
+    val (_, messages) = compileFast(src)
+    println(messages)
+
+    // assertPluginCompilesSnippetFine(src)
+
+    // import scalaxy.streams.strategy.foolish
+    // testMessages(src, streamMsg("List.map -> List", "List.withFilter.foreach"))
   }
 
   // @Test
   def testTake {
     val src = """
-      def f(i: Int) = true;
-      (
-        (0 to 2).takeWhile(f), Option(1).takeWhile(f), Some(1).takeWhile(f), None.takeWhile(f),
-        (0 to 2).dropWhile(f), Option(1).dropWhile(f), Some(1).dropWhile(f), None.dropWhile(f),
-        (0 to 2).take(2), Option(1).take(2), Some(1).take(2), None.take(2),
-        (0 to 2).drop(2), Option(1).drop(2), Some(1).drop(2), None.drop(2)
-      )"""
+      val map = Map(1 -> 2, 4 -> 5);
+      val keys = List(1, 3);
+      def isOk(v: Int) = v % 2 == 0;
+      var res = 0;
+      for (k <- keys) {
+        for (v <- map get k if isOk(k)) {
+          res += v
+        }
+      }
+      res
+            // for (tree <- context.unit.synthetics get sym if shouldAdd(sym)) { // OPT: shouldAdd is usually true. Call it here, rather than in the outer loop
+            //   newStats += typedStat(tree) // might add even more synthetics to the scope
+            //   context.unit.synthetics -= sym
+            // }
+    """
 
-    {
-      import scalaxy.streams.strategy.foolish
-      testMessages(src, streamMsg())
+    import scalaxy.streams.strategy.safe
+    testMessages(src, streamMsg("Option.get"))
 
     //   // val (_, messages) = compileFast(src)
     //   // println(messages)
-    }
   }
 
   // @Ignore

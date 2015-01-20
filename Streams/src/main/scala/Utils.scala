@@ -103,15 +103,12 @@ trait Utils {
 
   private[streams] def newVar(name: TermName, tpe: Type, rhs: Tree = EmptyTree): ValDef = {
     val ntpe = normalize(tpe)
-    val initialValue = rhs.orElse(Literal(Constant(getDefaultValue(ntpe))))
-    // val initialValue = rhs match {
-    //   case EmptyTree =>
-    //     Literal(Constant(getDefaultValue(ntpe)))
-    //     // q"null.asInstanceOf[$ntpe]"
-    //   case _ =>
-    //     rhs
-    // }
-    // Note: this looks weird, but it does give 0 for Int :-).
+    val initialValue = rhs.orElse(
+      Option(getDefaultValue(ntpe))
+        .map(v => Literal(Constant(v)))
+        .getOrElse(q"null.asInstanceOf[$tpe]"))
+
+    // Note: null.asInstanceOf[T] would work in almost all cases as well.
     q"private[this] var $name: $ntpe = $initialValue"
   }
 }
