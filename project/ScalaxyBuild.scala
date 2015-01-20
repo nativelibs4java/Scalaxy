@@ -30,7 +30,7 @@ object Scalaxy extends Build {
     .setPreference(PreserveDanglingCloseParenthesis, false)
 
   lazy val scalaSettings = Seq(
-    scalaVersion := "2.11.2",
+    scalaVersion := "2.11.5",
     crossScalaVersions := Seq("2.10.4")
   )
 
@@ -274,6 +274,7 @@ object Scalaxy extends Build {
 
   lazy val components =
     Project(id = "scalaxy-components", base = file("Components"), settings = reflectSettings ++ scalariformSettings)
+    // .dependsOn(streams)
 
   lazy val obsolete_compiletsApi =
     Project(
@@ -317,6 +318,10 @@ object Scalaxy extends Build {
     Project(id = "scalaxy-js", base = file("Experiments/JS"), settings = reflectSettings ++ Seq(
       libraryDependencies += "com.google.javascript" % "closure-compiler" % "v20130722"
     ))
+
+  lazy val native =
+    Project(id = "scalaxy-native", base = file("Native"), settings = reflectSettings ++ Seq(
+      libraryDependencies += "com.nativelibs4java" % "bridj" % "0.6.2"))
 
   lazy val json =
     Project(id = "scalaxy-json", base = file("JSON"), settings = reflectSettings ++ Seq(
