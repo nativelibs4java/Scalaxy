@@ -287,6 +287,15 @@ object IntegrationTests
     "(20 to 7 by -3).map(_ * 2).filter(_ < 3)"
       -> streamMsg("Range.map.filter -> IndexedSeq"),
 
+    """List(1, 2, 3).mkString("pre", ";", "post")"""
+      -> streamMsg("List.mkString"),
+
+    """List(1, 2, 3).mkString(" ")"""
+      -> streamMsg("List.mkString"),
+
+    """List(1, 2, 3).mkString"""
+      -> streamMsg("List.mkString"),
+
     "Array(1, 2, 3).map(_ * 2).map(_ < 3)"
       -> streamMsg("Array.map.map -> Array"),
 

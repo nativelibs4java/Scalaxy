@@ -12,6 +12,7 @@ private[streams] trait StreamOps
     with ForeachOps
     with IsEmptyOps
     with MapOps
+    with MkStringOps
     with OptionOps
     with ReductionOps
     with ToCollectionOps
@@ -36,6 +37,7 @@ private[streams] trait StreamOps
       SomeForeachOp,
       SomeIsEmptyOp,
       SomeMapOp,
+      SomeMkStringOp,
       SomeOptionOp,
       SomeReductionOp,
       SomeTakeDropOp,
