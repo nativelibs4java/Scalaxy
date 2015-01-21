@@ -1,4 +1,4 @@
-scalaVersion := "2.11.2"
+scalaVersion := "2.11.5"
 
 autoCompilerPlugins := true
 
@@ -8,7 +8,7 @@ libraryDependencies += "com.nativelibs4java" %% "scalaxy-streams" % "0.4-SNAPSHO
 
 // addCompilerPlugin("com.nativelibs4java" %% "scalaxy-streams" % "0.3.4")
 
-// scalacOptions += "-Xplugin-require:scalaxy-streams"
+scalacOptions += "-Xplugin-require:scalaxy-streams"
 
 scalacOptions ++= Seq("-optimise", "-Yclosure-elim", "-Yinline")
 
