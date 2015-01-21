@@ -201,6 +201,11 @@ trait SideEffectsDetection
             traverse(guard)
             traverse(body)
 
+          case If(cond, thenp, elsep) =>
+            traverse(cond)
+            traverse(thenp)
+            traverse(elsep)
+
           case _ =>
             val msg = s"TODO: proper message for ${tree.getClass.getName}: $tree"
 
