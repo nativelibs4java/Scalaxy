@@ -13,7 +13,7 @@ trait StreamTransforms
   import global._
 
   /**
-   * Transforms the a stream if it can, or returns None if it can't.
+   * Transforms a stream if it can, or returns None if it can't.
    *
    * Recurses in to stream's subTrees with recur.
    */

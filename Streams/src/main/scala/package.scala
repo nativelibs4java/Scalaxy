@@ -77,22 +77,22 @@ package streams
                   tree
               def apiTypecheck(tree: Tree): Tree = cast(api.typecheck(cast(tree)))
 
-              val result = transformStream(
-                tree = tree,
-                strategy = strategy,
-                fresh = c.freshName(_),
-                currentOwner = cast(api.currentOwner),
-                recur = apiRecur,
-                typecheck = apiTypecheck) match {
+              def opt(tree: Tree) =
+                transformStream(
+                  tree = tree,
+                  strategy = strategy,
+                  fresh = c.freshName(_),
+                  currentOwner = cast(api.currentOwner),
+                  recur = apiRecur,
+                  typecheck = apiTypecheck)
 
-                case Some(result) =>
-                  result
-
-                case _ if recurse =>
-                  apiDefault(tree)
-
-                case _ =>
+              val result = opt(tree).getOrElse {
+                if (recurse) {
+                  val sup = apiDefault(tree)
+                  opt(sup).getOrElse(sup)
+                } else {
                   tree
+                }
               }
 
               // println(s"result = $result")

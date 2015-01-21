@@ -72,7 +72,7 @@ private[streams] class StreamsComponent(
             )
 
           override def transform(tree: Tree) = {
-            val opt = try {
+            def opt(tree: Tree) = try {
               transformStream(
                 tree = tree,
                 strategy = getStrategy(tree.pos),
@@ -86,7 +86,10 @@ private[streams] class StreamsComponent(
                 None
             }
 
-            opt.getOrElse(super.transform(tree))
+            opt(tree).getOrElse {
+              val sup = super.transform(tree)
+              opt(sup).getOrElse(sup)
+            }
           }
         }
 
