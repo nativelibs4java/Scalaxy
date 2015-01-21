@@ -206,6 +206,10 @@ trait SideEffectsDetection
             traverse(thenp)
             traverse(elsep)
 
+          case Throw(ex) =>
+            addEffect(SideEffect(tree, "Throw statement", SideEffectSeverity.Unsafe))
+            super.traverse(tree)
+
           case _ =>
             val msg = s"TODO: proper message for ${tree.getClass.getName}: $tree"
 

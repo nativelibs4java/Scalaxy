@@ -22,6 +22,7 @@ private[streams] object SideEffectsWhitelists {
   )
 
   private[this] lazy val whitelistedMethods = Set[String](
+    "scala.Option.option2Iterable", // What about indirect .toString?
     "scala.Array.canBuildFrom",
     "scala.collection.generic.GenericCompanion.apply"
   )
@@ -77,6 +78,9 @@ private[streams] object SideEffectsWhitelists {
     // "scala.collection.SetLike",
     // "scala.collection.SeqLike",
     // "scala.collection.generic.GenericCompanion",
+    "scala.Option",
+    "scala.Some",
+    "scala.None",
 
     "scala.LowPriorityImplicits",
     "scala.Predef.any2stringadd",
@@ -121,6 +125,7 @@ private[streams] object SideEffectsWhitelists {
   )
 
   private[this] lazy val whitelistedPredefSymbols = Set(
+    "scala.Option.apply",
     "scala.Array.apply",
     "scala.Array.length",
     "scala.Predef.classOf",
