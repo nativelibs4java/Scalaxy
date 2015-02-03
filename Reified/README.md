@@ -36,7 +36,7 @@ println(compiledF(1))
 
 If you're using `sbt` 0.13.0+, just put the following lines in `build.sbt`:
 ```scala
-scalaVersion := "2.10.4"
+scalaVersion := "2.11.5"
 
 // Dependency at compilation-time only (not at runtime).
 libraryDependencies += "com.nativelibs4java" %% "scalaxy-reified" % "0.3-SNAPSHOT"

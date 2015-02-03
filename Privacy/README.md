@@ -99,7 +99,7 @@ If that wasn't long enough, have a look at the following tests:
 
 If you're using `sbt` 0.13.0+, just put the following lines in `build.sbt`:
 ```scala
-scalaVersion := "2.10.4"
+scalaVersion := "2.11.5"
 
 autoCompilerPlugins := true
 
