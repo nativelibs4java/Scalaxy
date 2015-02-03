@@ -5,6 +5,7 @@ import javafx.beans._
 import javafx.beans.binding._
 import javafx.beans.property._
 import javafx.beans.value._
+import javafx.collections._
 
 import scala.language.experimental.macros
 import scala.reflect.macros.blackbox.Context
@@ -106,6 +107,8 @@ private[fx] object BindingMacros
       else if (T =:= typeOf[Double]) typeOf[DoubleBinding]
       else if (T =:= typeOf[String]) typeOf[StringBinding]
       else if (T =:= typeOf[Boolean]) typeOf[BooleanBinding]
+      else if (T <:< typeOf[ObservableList[_]]) typeOf[ListBinding[_]] // TODO
+      else if (T <:< typeOf[ObservableMap[_, _]]) typeOf[MapBinding[_, _]] // TODO
       else weakTypeOf[ObjectBinding[T]]
     )
     c.Expr[B](c.typecheck(q"new $BindingType { super.bind(..$observables) ; override def computeValue: $T = $value.asInstanceOf[$T] }"))

@@ -4,6 +4,7 @@ import scala.language.implicitConversions
 
 import javafx.beans.binding._
 import javafx.beans.property._
+import javafx.collections._
 
 import scala.language.experimental.macros
 
@@ -31,6 +32,12 @@ private[fx] trait Properties
   implicit def propertyValue(p: SimpleBooleanProperty): Boolean =
     macro impl.PropertyMacros.propertyValue[Boolean, SimpleBooleanProperty]
 
+  implicit def propertyValue[A](p: SimpleListProperty[A]): ObservableList[A] =
+    macro impl.PropertyMacros.propertyValue[ObservableList[A], SimpleListProperty[A]]
+
+  implicit def propertyValue[A, B](p: SimpleMapProperty[A, B]): ObservableMap[A, B] =
+    macro impl.PropertyMacros.propertyValue[ObservableMap[A, B], SimpleMapProperty[A, B]]
+
 
   implicit def bindingValue(b: IntegerBinding): Int =
     macro impl.PropertyMacros.bindingValue[Int, IntegerBinding]
@@ -46,5 +53,11 @@ private[fx] trait Properties
 
   implicit def bindingValue(b: BooleanBinding): Boolean =
     macro impl.PropertyMacros.bindingValue[Boolean, BooleanBinding]
+
+  implicit def bindingValue[A](b: SimpleListProperty[A]): ObservableList[A] =
+    macro impl.PropertyMacros.bindingValue[ObservableList[A], SimpleListProperty[A]]
+
+  implicit def bindingValue[A, B](b: SimpleMapProperty[A, B]): ObservableMap[A, B] =
+    macro impl.PropertyMacros.bindingValue[ObservableMap[A, B], SimpleMapProperty[A, B]]
 
 }

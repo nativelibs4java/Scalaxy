@@ -13,16 +13,16 @@ private[fx] trait ObservableValueExtensions
   /** Methods on observable values */
   implicit def observableValuesExtensions[T](value: ObservableValue[T]) = new
   {
-    /** Add change listener to the observable value using a function
-     *  that takes the new value.
-     */
-    def onChange[V <: T](f: V => Unit): Unit =
-      macro impl.ObservableValueExtensionMacros.onChangeFunction[V]
+    // /** Add change listener to the observable value using a function
+    //  *  that takes the new value.
+    //  */
+    // def onChange[V <: T](f: V => Unit): Unit =
+    //   macro impl.ObservableValueExtensionMacros.onChangeFunction[V]
 
     /** Add change listener to the observable value using a function
      *  that takes the old value and the new value.
      */
-    def onChange[V <: T](f: (V, V) => Unit): Unit =
+    def onChangeWithValues[V <: T](f: (V, V) => Unit): Unit =
       macro impl.ObservableValueExtensionMacros.onChangeFunction2[V]
 
     /** Add change listener to the observable value using a block (passed `by name`). */
