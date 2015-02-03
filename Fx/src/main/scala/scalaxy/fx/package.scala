@@ -10,4 +10,5 @@ package object fx
     with GenericTypes
     with ObservableValueExtensions
     with Properties
+    with PropertyGetters
 
