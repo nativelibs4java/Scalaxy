@@ -280,7 +280,7 @@ import scala.language.experimental.macros
 private[fx] trait PropertyGetters
 {
 """)
-  for ((baseName, group) <- list.toSeq.groupBy(_._1);
+  for ((baseName, group) <- list.toSeq.groupBy(_._1).toSeq.sortBy(_._1);
        ((_, printer), i) <- group.zipWithIndex) {
     printer(if (group.size == 1) baseName else baseName + (i + 1))
   }
