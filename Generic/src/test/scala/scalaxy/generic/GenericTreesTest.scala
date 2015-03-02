@@ -36,10 +36,10 @@ class GenericTreesTest {
     val genericDoubleTree = genericOpTree[Double]
     val doubleTree = reify({
       var a = 1.0
-      a = (a + 10.0).asInstanceOf[Double]
-      a = (a * 2.0).asInstanceOf[Double]
-      a = (a / 3.0).asInstanceOf[Double]
-      a.toDouble.asInstanceOf[Double]
+      a = (a + 10.0).asInstanceOf[Double]: Double
+      a = (a * 2.0).asInstanceOf[Double]: Double
+      a = (a / 3.0).asInstanceOf[Double]: Double
+      a.toDouble.asInstanceOf[Double]: Double
     }).tree
     assertEquals(
       tb.typecheck(doubleTree).toString,

@@ -7,40 +7,35 @@ import scala.reflect.NameTransformer
 import scala.reflect.runtime.universe._
 import scala.reflect.runtime.currentMirror
 
-import scalaxy.debug._
+//import scalaxy.debug._
 
 object GenericTrees {
 
   private lazy val genericPackageSymbol = currentMirror.staticModule("scalaxy.generic.package")
 
+  private object StringConstant {
+    def unapply(tree: Tree) = Option(tree) collect {
+      case Literal(Constant(s: String)) => s
+    }
+  }
   private object GenericPackage {
     def unapply(tree: Tree): Boolean = tree.symbol == genericPackageSymbol
   }
   private object GenericOpsCreation {
+    def isGenericOp(tree: Tree) =
+      tree.tpe != null && tree.tpe <:< typeOf[GenericOps[_]]
+
     def unapply(tree: Tree): Option[(Tree, Type)] = {
-      if (tree != null && tree.tpe != null && tree.tpe <:< typeOf[GenericOps[_]]) {
-        // println("GenericOpsCreation: " + tree)
-        Option(tree) collect {
-          //case q"scalaxy.generic.mkGenericOps[$tpe]($value)" =>
-          case Apply(
-            Apply(
-              TypeApply(
-                Select(GenericPackage(), name),
-                List(tpt)),
-              List(value)),
-            implicits) =>
-            value -> tpt.tpe
-        }
-      } else {
-        // println("NOT A GenericOpsCreation: " + tree.tpe)
-        None
+      Option(tree).filter(isGenericOp) collect {
+        case q"$pack.mkGenericOps[$tpt]($value)($evidence)" if pack.symbol == genericPackageSymbol =>
+          value -> tpt.tpe
       }
     }
   }
   private object GenericOpsCall {
     def unapply(tree: Tree): Option[(Tree, Type, String, String)] = Option(tree) collect {
 
-      case Apply(Select(GenericOpsCreation(target, tpe), callName), List(Literal(Constant(methodName: String)))) =>
+      case Apply(Select(GenericOpsCreation(target, tpe), callName), List(StringConstant(methodName))) =>
         (target, tpe, callName.toString, methodName)
     }
   }

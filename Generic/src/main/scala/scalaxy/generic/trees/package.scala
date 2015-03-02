@@ -11,7 +11,7 @@ package trees {
   }
   private[trees] object ConcreteType {
     def unapply(tpe: Type): Boolean = {
-      !tpe.typeSymbol.asType.isAbstract
+      !tpe.dealias.etaExpand.typeSymbol.asType.isAbstractType
     }
   }
   private[trees] object AsInstanceOf {
@@ -30,7 +30,7 @@ package trees {
 }
 
 package object trees {
-  private[trees] val typesToNumerics: Map[scala.reflect.runtime.universe.Type, Numeric[_]] = {
+  private[trees] val typesToNumerics: Map[Type, Numeric[_]] = {
     import Numeric._
     Map(
       typeOf[Byte] -> implicitly[Numeric[Byte]],
