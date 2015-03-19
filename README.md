@@ -93,6 +93,8 @@ Collection of Scala Macro goodies ([BSD-licensed](https://github.com/ochafik/Sca
 
 # Discuss
 
+[![Join the chat at https://gitter.im/nativelibs4java/Scalaxy](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/nativelibs4java/Scalaxy?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 If you have suggestions / questions:
 - [@ochafik on Twitter](http://twitter.com/ochafik)
 - [NativeLibs4Java mailing-list](groups.google.com/group/nativelibs4java)
