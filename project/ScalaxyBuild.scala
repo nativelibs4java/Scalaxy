@@ -177,8 +177,9 @@ object Scalaxy extends Build {
     .aggregate(
       integration, loops,
       // obsolete_compilets, obsolete_extensions,
-      fx, json, beans, components, debug, reified, scalaxyDoc,
-      parano, privacyPlugin)
+      // privacyPlugin, fx
+      json, beans, components, debug, reified, scalaxyDoc,
+      parano)
 
   lazy val integration =
     Project(
