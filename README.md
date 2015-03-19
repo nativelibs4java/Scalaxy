@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/nativelibs4java/Scalaxy.svg)](https://travis-ci.org/nativelibs4java/Scalaxy)
+[![Join the chat at https://gitter.im/nativelibs4java/Scalaxy](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/nativelibs4java/Scalaxy?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Build Status](https://travis-ci.org/nativelibs4java/Scalaxy.svg)](https://travis-ci.org/nativelibs4java/Scalaxy)
 
 Collection of Scala Macro goodies ([BSD-licensed](https://github.com/ochafik/Scalaxy/blob/master/LICENSE))
 - *[Loops](https://github.com/ochafik/Scalaxy/tree/master/Loops)* provide a macro that optimizes simple foreach loops on Ranges by rewriting them to equivalent while loops (Scala 2.10.x):
