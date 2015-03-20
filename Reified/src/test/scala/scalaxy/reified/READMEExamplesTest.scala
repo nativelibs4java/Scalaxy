@@ -8,7 +8,7 @@ import scala.reflect.runtime.universe.TypeTag
 import scala.reflect.runtime.currentMirror
 
 import scalaxy.reified._
-import scalaxy.debug._
+//import scalaxy.debug._
 
 /**
  * Examples from the README
