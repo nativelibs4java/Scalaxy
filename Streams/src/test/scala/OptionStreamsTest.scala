@@ -25,37 +25,38 @@ class OptionStreamsTest
   // scalaxy.streams.impl.quietWarnings = true
 
   @Test
-  def testComp2 {
+  def testOptionCombinations {
     val options = List(
-      "None",
-      "(None: Option[Int])",
-      "Option[Any](null)",
-      "Option[String](null)",
-      "Option[String](\"Y\")",
-      "Some(0)",
-      "Some(\"X\")")
+      "None" -> "None",
+      "(None: Option[Int])" -> "Option",
+      "Option[Any](null)" -> "Option",
+      "Option[String](null)" -> "Option",
+      "Option[String](\"Y\")" -> "Option",
+      "Some(0)" -> "Some",
+      "Some(\"X\")" -> "Some")
     val suffixes = List(
       None,
-      Some("orNull"),
-      Some("getOrElse(\"Z\")"),
-      Some("get"),
-      Some("find(_.contains(\"2\"))"))
+      Some("orNull" -> "orNull"),
+      Some("getOrElse(\"Z\")" -> "getOrElse"),
+      Some("get" -> "get"),
+      Some("find(_.contains(\"2\"))" -> "find"))
 
     val src = s"""
       def f1(x: Any) = x.toString + "1"
       def f2(x: Any) = x.toString + "2"
       def f3(x: Any) = x.toString + "3"
+      def wrap[A](a: => A): Either[A, String] = try { Left(a) } catch { case ex => Right(ex.getMessage) }
 
       List(
         ${{
-          for (lhs <- options; rhs <- options; suf <- suffixes) yield {
+          for ((lhs, _) <- options; (rhs, _) <- options; suf <- suffixes) yield {
             val stream = s"$lhs.map(f1).orElse($rhs.map(f2)).map(f3)"
-            suf.map(s => stream + "." + s).getOrElse(stream)
+            suf.map({case (s, _) => stream + "." + s}).getOrElse(stream)
           }
-        }.mkString(",\n        ")}
+        }.map("wrap(" + _ + ")").mkString(",\n        ")}
       )
     """
-    println(src)
+    // println(src)
 
     assertMacroCompilesToSameValue(
       src,
