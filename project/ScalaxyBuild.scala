@@ -177,8 +177,9 @@ object Scalaxy extends Build {
     .aggregate(
       integration, loops,
       // obsolete_compilets, obsolete_extensions,
-      fx, json, beans, components, debug, reified, scalaxyDoc,
-      parano, privacyPlugin)
+      // privacyPlugin, fx
+      json, beans, components, debug, reified, scalaxyDoc,
+      parano)
 
   lazy val integration =
     Project(
@@ -201,10 +202,10 @@ object Scalaxy extends Build {
     // "Parano" -> parano,
     "Loops" -> loops,
     "Streams" -> streams,
-    //"Components" -> components,
-    "Debug" -> debug,
+    // "Components" -> components,
+    // "Debug" -> debug,
     // "CasbahDSL" -> casbahDSL,
-    //"MacroExtensions" -> extensions,
+    // "MacroExtensions" -> extensions,
     "Reified" -> reifiedDoc)
 
   lazy val scalaxyDoc =
@@ -395,7 +396,6 @@ object Scalaxy extends Build {
 
   lazy val union =
     Project(id = "scalaxy-union", base = file("Union"), settings = reflectSettings ++ scalariformSettings)
-    .dependsOn(debug)
 
   lazy val parano =
     Project(id = "scalaxy-parano", base = file("Parano"),
@@ -428,11 +428,10 @@ object Scalaxy extends Build {
 
   lazy val generic =
     Project(id = "scalaxy-generic", base = file("Generic"), settings = reflectSettings ++ scalariformSettings)
-    .dependsOn(debug)
 
   lazy val reifiedBase =
     Project(id = "scalaxy-reified-base", base = file("Reified/Base"), settings = reflectSettings ++ scalariformSettings)
-    .dependsOn(debug, union, generic)
+    .dependsOn(union, generic)
 
   lazy val reified =
     Project(id = "scalaxy-reified", base = file("Reified"),

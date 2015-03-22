@@ -1,5 +1,7 @@
+[![Join the chat at https://gitter.im/nativelibs4java/Scalaxy](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/nativelibs4java/Scalaxy?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Build Status](https://travis-ci.org/nativelibs4java/Scalaxy.svg)](https://travis-ci.org/nativelibs4java/Scalaxy)
+
 Collection of Scala Macro goodies ([BSD-licensed](https://github.com/ochafik/Scalaxy/blob/master/LICENSE))
-- *[Loops](https://github.com/ochafik/Scalaxy/tree/master/Loops)* provide a macro that optimizes simple foreach loops on Ranges by rewriting them to equivalent while loops (Scala 2.10.x):
+- *[Loops](https://github.com/ochafik/Scalaxy/tree/master/Loops)* [![Maven Central](https://img.shields.io/maven-central/v/com.nativelibs4java/scalaxy-loops_2.11.svg)]() provide a macro that optimizes simple foreach loops on Ranges by rewriting them to equivalent while loops (Scala 2.10.x):
 
     ```scala
     import scalaxy.loops._
@@ -8,7 +10,7 @@ Collection of Scala Macro goodies ([BSD-licensed](https://github.com/ochafik/Sca
     ```
     (special case of / superseeded by Streams below)
 
-- *[Streams](https://github.com/ochafik/Scalaxy/tree/master/Streams)* provide a macro and a compiler plugin that optimize streamed collection operations / for comprehensions by rewriting them to equivalent while loops (Scala 2.11.x):
+- *[Streams](https://github.com/ochafik/Scalaxy/tree/master/Streams)* [![Maven Central](https://img.shields.io/maven-central/v/com.nativelibs4java/scalaxy-streams_2.11.svg)]() provide a macro and a compiler plugin that optimize streamed collection operations / for comprehensions by rewriting them to equivalent while loops (Scala 2.11.x):
 
     ```scala
     for (i <- 0 to n;
@@ -90,6 +92,8 @@ Collection of Scala Macro goodies ([BSD-licensed](https://github.com/ochafik/Sca
     Please prefer [Assertions and DiagrammedAssertions](http://doc.scalatest.org/2.2.0/index.html#org.scalatest.DiagrammedAssertions) from ScalaTest.
 
 # Discuss
+
+[![Join the chat at https://gitter.im/nativelibs4java/Scalaxy](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/nativelibs4java/Scalaxy?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 If you have suggestions / questions:
 - [@ochafik on Twitter](http://twitter.com/ochafik)

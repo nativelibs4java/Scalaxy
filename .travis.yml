@@ -1,0 +1,12 @@
+# Use container-based arch
+# http://docs.travis-ci.com/user/workers/container-based-infrastructure/
+sudo: false
+
+language: scala
+scala:
+   - 2.11.5
+
+cache:
+  directories:
+  - $HOME/.m2
+  - $HOME/.ivy2

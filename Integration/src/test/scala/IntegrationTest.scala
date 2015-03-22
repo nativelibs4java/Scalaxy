@@ -1,6 +1,6 @@
 package com.acme.integration
 
-import scalaxy.debug._
+// import scalaxy.debug._
 import scalaxy.loops._
 import scalaxy.beans._
 import scalaxy.reified._
