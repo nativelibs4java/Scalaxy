@@ -10,6 +10,7 @@ private[streams] trait OptionStreamSources
   object SomeOptionStreamSource {
     // Testing the type would be so much better, but yields an awkward MissingRequirementError.
     // lazy val OptionTpe = typeOf[Option[_]]
+    private[this] lazy val NothingClass = rootMirror.staticClass("scala.Nothing")
     private[this] lazy val OptionClass = rootMirror.staticClass("scala.Option")
     private[this] lazy val OptionModule = rootMirror.staticModule("scala.Option")
     private[this] lazy val SomeClass = rootMirror.staticClass("scala.Some")
@@ -18,13 +19,19 @@ private[streams] trait OptionStreamSources
     private[this] lazy val OptionClasses: Set[Symbol] =
       Set(OptionClass, SomeClass)
 
-    private[this] def hasOptionType(tree: Tree): Boolean = tree.symbol == NoneModule || {
-      val tpe = tree.tpe
+    private[this] def hasOptionType(tree: Tree): Boolean =
+      Option(tree.tpe)
+        .map(_.baseType(OptionClass))
+        .collect({
+          case TypeRef(_, _, List(componentTpe)) =>
+            !(
+              componentTpe =:= NoneModule.typeSignature ||
+              componentTpe =:= NothingClass.typeSignature
+            )
+          })
+        .getOrElse(false)
 
-      tpe != null && tpe != NoType && OptionClasses(tpe.typeSymbol)
-    }
-
-    def unapply(tree: Tree): Option[StreamSource] = Option(tree).filter(hasOptionType(_)) collect {
+    def unapply(tree: Tree): Option[StreamSource] = Option(tree).filter(hasOptionType) collect {
       case q"$option.apply[$tpt]($value)" if option.symbol == OptionModule =>
         InlineOptionStreamSource(tpt.tpe, value, isSome = false)
 
@@ -135,6 +142,8 @@ private[streams] trait OptionStreamSources
       val nonEmptyTest =
         if (isSome || tpe <:< typeOf[AnyVal])
           q"true"
+        else if (tpe <:< typeOf[AnyRef])
+          q"$itemVal ne null"
         else
           q"$itemVal != null"
 
