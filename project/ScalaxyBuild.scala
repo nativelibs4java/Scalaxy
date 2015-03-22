@@ -175,23 +175,19 @@ object Scalaxy extends Build {
         standardSettings ++
         Seq(publish := { }))
     .aggregate(
-      integration, loops,
-      // obsolete_compilets, obsolete_extensions,
-      // privacyPlugin, fx
-      json, beans, components, debug, reified, scalaxyDoc,
-      parano)
+      streams, loops, json, beans, reified, parano)
 
-  lazy val integration =
-    Project(
-      id = "scalaxy-integration",
-      base = file("Integration"),
-      settings =
-        standardSettings ++
-        Seq(publish := { }))
-    .dependsOn(loops,
-      // obsolete_compilets, obsolete_extensions,
-      fx, json, beans, components, debug, reified,
-      parano, privacyPlugin)
+  // lazy val integration =
+  //   Project(
+  //     id = "scalaxy-integration",
+  //     base = file("Integration"),
+  //     settings =
+  //       standardSettings ++
+  //       Seq(publish := { }))
+  //   .dependsOn(loops,
+  //     // obsolete_compilets, obsolete_extensions,
+  //     fx, json, beans, components, debug, reified,
+  //     parano, privacyPlugin)
 
   lazy val docProjects = Map(
     // "Compilets" -> compilets,
@@ -313,7 +309,7 @@ object Scalaxy extends Build {
         watchSources <++= baseDirectory map { path => (path / "examples" ** "*.scala").get }
       )
     )
-    .dependsOn(debug)
+    .dependsOn(obsolete_debug)
 
   lazy val js =
     Project(id = "scalaxy-js", base = file("Experiments/JS"), settings = reflectSettings ++ Seq(
@@ -388,7 +384,7 @@ object Scalaxy extends Build {
       watchSources <++= baseDirectory map { path => (path / "examples" ** "*.scala").get }
     ))
 
-  lazy val debug =
+  lazy val obsolete_debug =
     Project(id = "scalaxy-debug", base = file("Obsolete/Debug"), settings = reflectSettings)
 
   lazy val enum =
