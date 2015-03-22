@@ -11,6 +11,4 @@ cache:
   - $HOME/.m2
   - $HOME/.ivy2
 
-sbt_args:
-  - 'set javaOptions += "-Djunit.parallel.threads=1"'
-  - 'set parallelExecution in Test := false'
+sbt_args: 'set javaOptions += "-Djunit.parallel.threads=1"' 'set parallelExecution in Test := false'
