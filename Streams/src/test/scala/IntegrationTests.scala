@@ -463,6 +463,24 @@ object IntegrationTests
       -> streamMsg("List.flatMap -> List", "Option.getOrElse"),
       // TODO: -> streamMsg("List.flatMap(Option.getOrElse) -> List"),
 
+    "Option(Some(2)).flatten"
+      -> streamMsg("Option.flatten -> Option", "Option.foreach"),
+
+    "Option(Option(1)).flatten"
+      -> streamMsg("Option.flatten -> Option", "Option.foreach"),
+
+    "Seq(Option(None).flatten)"
+      -> streamMsg(),
+
+    "List(List(1, 2), List(3, 4)).flatten"
+      -> streamMsg("List.flatten -> List", "List.foreach"),
+
+    "List(List(1, 2), Seq(3, 4), Set(5, 6)).flatten"
+      -> streamMsg("List.flatten -> List"),
+
+    "List(Option(1), None, Some(2)).flatten"
+      -> streamMsg("List.flatten -> List", "Option.foreach"),
+
     "var tot = 0; for (i <- 0 until 10; x = new AnyRef) { tot += i }; tot"
       -> streamMsg("Range.map.foreach"),
 

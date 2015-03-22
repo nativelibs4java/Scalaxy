@@ -42,6 +42,16 @@ package streams
     /** For testing */
     private[streams] var quietWarnings = false
 
+    private[streams] def withQuietWarnings[A](a: => A): A = {
+      val old = quietWarnings
+      try {
+        quietWarnings = true
+        a
+      } finally {
+        quietWarnings = old
+      }
+    }
+
     def recursivelyOptimize[A : c.WeakTypeTag](c: Context)(a: c.Expr[A]): c.Expr[A] = {
       optimize[A](c)(a, recurse = true)
     }

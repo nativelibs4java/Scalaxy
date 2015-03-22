@@ -31,7 +31,7 @@ private[streams] trait Strippers
 
   private[this] lazy val OptionModule = rootMirror.staticModule("scala.Option")
 
-  private[this] object Option2Iterable {
+  private[streams] object Option2Iterable {
     def unapply(tree: Tree): Option[Tree] = Option(tree) collect {
       case q"$target.option2Iterable[${_}]($value)" if target.symbol == OptionModule =>
         value
