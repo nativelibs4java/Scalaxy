@@ -15,28 +15,26 @@ private[streams] trait FlattenOps
 
   object SomeFlattenOp extends StreamOpExtractor {
     private[this] lazy val PredefSymbol = rootMirror.staticModule("scala.Predef")
-    override def unapply(tree: Tree) = Option(tree) collect {
-      case q"$target.flatten[$tpt]($asTraversable)" if {
-        asTraversable match {
-          case q"$predef.`$conforms`[$colTpt]" if predef.symbol == PredefSymbol =>
-            // println(s"colTpt = $colTpt, target.tpe = ${target.tpe}")
-            target.tpe match {
-              case TypeRef(_, _, List(internalColTpe)) =>
-                internalColTpe =:= colTpt.tpe
-              case _ =>
-                false
-            }
 
-          case Strip(Function(List(param), Option2Iterable(ref))) if param.symbol == ref.symbol =>
-            true
+    private[this] def isAKnownAsTraversable(asTrav: Tree, targetTpe: Type) = asTrav match {
+      case q"$predef.`$conforms`[$colTpt]" if predef.symbol == PredefSymbol =>
+        targetTpe match {
+          case TypeRef(_, _, List(internalColTpe)) =>
+            internalColTpe =:= colTpt.tpe
+          case _ =>
+            false
         }
-      } =>
+
+      case Strip(Function(List(param), Option2Iterable(ref))) if param.symbol == ref.symbol =>
+        true
+
+      case _ =>
+        false
+    }
+
+    override def unapply(tree: Tree) = Option(tree) collect {
+      case q"$target.flatten[$tpt]($asTrav)" if isAKnownAsTraversable(asTrav, target.tpe) =>
         (target, FlattenOp(tpt.tpe))
-      // case _ if {
-      //   println("NOT A FLATTEN: " + tree)
-      //   false
-      // } =>
-      //   ???
     }
   }
 
@@ -75,7 +73,6 @@ private[streams] trait FlattenOps
         nextOps)
 
       sub.copy(body = List(withQuietWarnings(transform(typed(q"""
-        // TODO: plug that lambda's symbol as the new owner of sub.body's decls.
         ${vars.alias.get}.foreach(($itemValDef) => {
           ..${sub.body};
         })
