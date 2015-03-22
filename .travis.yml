@@ -11,4 +11,6 @@ cache:
   - $HOME/.m2
   - $HOME/.ivy2
 
-sbt_args: 'set javaOptions += "-Djunit.parallel.threads=1"' 'set parallelExecution in Test := false'
+script:
+  - sbt ++$TRAVIS_SCALA_VERSION 'set javaOptions += "-Djunit.parallel.threads=1"' 'set parallelExecution in Test := false' test
+
