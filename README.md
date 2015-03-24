@@ -1,16 +1,7 @@
-[![Join the chat at https://gitter.im/nativelibs4java/Scalaxy](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/nativelibs4java/Scalaxy?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Build Status](https://travis-ci.org/nativelibs4java/Scalaxy.svg)](https://travis-ci.org/nativelibs4java/Scalaxy)
+Collection of Scala Macro goodies ([BSD-licensed](./LICENSE))
 
-Collection of Scala Macro goodies ([BSD-licensed](https://github.com/ochafik/Scalaxy/blob/master/LICENSE))
-- *[Loops](https://github.com/ochafik/Scalaxy/tree/master/Loops)* [![Maven Central](https://img.shields.io/maven-central/v/com.nativelibs4java/scalaxy-loops_2.11.svg)]() provide a macro that optimizes simple foreach loops on Ranges by rewriting them to equivalent while loops (Scala 2.10.x):
 
-    ```scala
-    import scalaxy.loops._
-    
-    for (i <- 0 until 100000000 optimized) { ... }
-    ```
-    (special case of / superseeded by Streams below)
-
-- *[Streams](https://github.com/ochafik/Scalaxy/tree/master/Streams)* [![Maven Central](https://img.shields.io/maven-central/v/com.nativelibs4java/scalaxy-streams_2.11.svg)]() provide a macro and a compiler plugin that optimize streamed collection operations / for comprehensions by rewriting them to equivalent while loops (Scala 2.11.x):
+- *[Streams](https://github.com/nativelibs4java/scalaxy-streams)* (*NOW IN ITS OWN REPO*) provide a macro and a compiler plugin that optimize streamed collection operations / for comprehensions by rewriting them to equivalent while loops (Scala 2.11.x):
 
     ```scala
     for (i <- 0 to n;
@@ -22,13 +13,22 @@ Collection of Scala Macro goodies ([BSD-licensed](https://github.com/ochafik/Sca
       yield { (ii, jj, k) }
     ```
 
-- *[JSON](https://github.com/ochafik/Scalaxy/tree/master/JSON)* ([ScalaDoc](http://ochafik.github.io/Scalaxy/JSON/latest/api/index.html)) provides macro-based `json` string interpolation with smart error reporting, compile-time renormalization, deconstruction and more.
+- *[Loops](https://github.com/nativelibs4java/Scalaxy/tree/master/Loops)* provide a macro that optimizes simple foreach loops on Ranges by rewriting them to equivalent while loops (Scala 2.10.x):
 
-- *[Parano](https://github.com/ochafik/Scalaxy/tree/master/Parano)* provides compile-time checks to avoid common naming mistakes (ambiguous or swapped case class field extractor names, ambiguous unnamed param names with same type...)
+    ```scala
+    import scalaxy.loops._
+    
+    for (i <- 0 until 100000000 optimized) { ... }
+    ```
+    (special case of / superseeded by Streams below)
 
-- *[Privacy](https://github.com/ochafik/Scalaxy/tree/master/Privacy)* changes the default member visibily from public to private (unless the `@public` annotation is used)
+- *[JSON](https://github.com/nativelibs4java/Scalaxy/tree/master/JSON)* ([ScalaDoc](http://ochafik.github.io/Scalaxy/JSON/latest/api/index.html)) provides macro-based `json` string interpolation with smart error reporting, compile-time renormalization, deconstruction and more.
 
-- *[Beans](https://github.com/ochafik/Scalaxy/tree/master/Beans)* ([ScalaDoc](http://ochafik.github.io/Scalaxy/Beans/latest/api/index.html)) are a nifty combination of Dynamics and macros that provide a type-safe eye-candy syntax to set fields of regular Java Beans in a Scala way (without any runtime dependency at all!):
+- *[Parano](https://github.com/nativelibs4java/Scalaxy/tree/master/Parano)* provides compile-time checks to avoid common naming mistakes (ambiguous or swapped case class field extractor names, ambiguous unnamed param names with same type...)
+
+- *[Privacy](https://github.com/nativelibs4java/Scalaxy/tree/master/Privacy)* changes the default member visibily from public to private (unless the `@public` annotation is used)
+
+- *[Beans](https://github.com/nativelibs4java/Scalaxy/tree/master/Beans)* ([ScalaDoc](http://ochafik.github.io/Scalaxy/Beans/latest/api/index.html)) are a nifty combination of Dynamics and macros that provide a type-safe eye-candy syntax to set fields of regular Java Beans in a Scala way (without any runtime dependency at all!):
 
     ```scala
     import scalaxy.beans._
@@ -36,7 +36,7 @@ Collection of Scala Macro goodies ([BSD-licensed](https://github.com/ochafik/Sca
     new MyBean().set(foo = 10, bar = 12)
     ```
 
-- *[Fx](https://github.com/ochafik/Scalaxy/tree/master/Fx)* ([ScalaDoc](http://ochafik.github.io/Scalaxy/Fx/latest/api/index.html)) contains an experimental JavaFX DSL (with no runtime dependency) that makes it easy to build objects and define event handlers:
+- *[Fx](https://github.com/nativelibs4java/Scalaxy/tree/master/Fx)* ([ScalaDoc](http://ochafik.github.io/Scalaxy/Fx/latest/api/index.html)) contains an experimental JavaFX DSL (with no runtime dependency) that makes it easy to build objects and define event handlers:
 
     ```scala
     new Button().set(
@@ -49,7 +49,7 @@ Collection of Scala Macro goodies ([BSD-licensed](https://github.com/ochafik/Sca
     )
     ```
 
-- *[Reified](https://github.com/ochafik/Scalaxy/tree/master/Reified)* ([ScalaDoc](http://ochafik.github.io/Scalaxy/Reified/latest/api/index.html)) provides a powerful reified values mechanism that deals well with composition and captures of runtime values, allowing for complex ASTs to be generated during runtime for re-compilation or transformation purposes. It preserves the original value that was reified, allowing for flexible mixed usage of runtime value and compile-time AST.
+- *[Reified](https://github.com/nativelibs4java/Scalaxy/tree/master/Reified)* ([ScalaDoc](http://ochafik.github.io/Scalaxy/Reified/latest/api/index.html)) provides a powerful reified values mechanism that deals well with composition and captures of runtime values, allowing for complex ASTs to be generated during runtime for re-compilation or transformation purposes. It preserves the original value that was reified, allowing for flexible mixed usage of runtime value and compile-time AST.
 
     ```scala
     import scalaxy.reified._
@@ -67,7 +67,7 @@ Collection of Scala Macro goodies ([BSD-licensed](https://github.com/ochafik/Sca
 
 - Obsolete experiments (mostly because of quasiquotes):
 
-  - *[MacroExtensions](https://github.com/ochafik/Scalaxy/tree/master/Obsolete/MacroExtensions)* provides an extremely simple (and *experimental*) syntax to define extensions methods as macros:
+  - *[MacroExtensions](https://github.com/nativelibs4java/Scalaxy/tree/master/Obsolete/MacroExtensions)* provides an extremely simple (and *experimental*) syntax to define extensions methods as macros:
 
       ```scala
       @scalaxy.extension[Any] 
@@ -86,20 +86,18 @@ Collection of Scala Macro goodies ([BSD-licensed](https://github.com/ochafik/Sca
       // macro-expanded to `Array.fill(3)(new Entity)`
       ```
 
-  - *[Compilets](https://github.com/ochafik/Scalaxy/tree/master/Obsolete/Compilets)* provide an easy way to express AST rewrites, backed by a compiler plugin and an sbt plugin.
+  - *[Compilets](https://github.com/nativelibs4java/Scalaxy/tree/master/Obsolete/Compilets)* provide an easy way to express AST rewrites, backed by a compiler plugin and an sbt plugin.
 
-  - *[Debug](https://github.com/ochafik/Scalaxy/tree/master/Debug)* ([ScalaDoc](http://ochafik.github.io/Scalaxy/Debug/latest/api/index.html)) provides `assert`, `require` and `assume` macros that automatically add a useful message to the regular [Predef](http://www.scala-lang.org/api/current/index.html#scala.Predef$) calls.
+  - *[Debug](https://github.com/nativelibs4java/Scalaxy/tree/master/Debug)* ([ScalaDoc](http://ochafik.github.io/Scalaxy/Debug/latest/api/index.html)) provides `assert`, `require` and `assume` macros that automatically add a useful message to the regular [Predef](http://www.scala-lang.org/api/current/index.html#scala.Predef$) calls.
     Please prefer [Assertions and DiagrammedAssertions](http://doc.scalatest.org/2.2.0/index.html#org.scalatest.DiagrammedAssertions) from ScalaTest.
 
 # Discuss
-
-[![Join the chat at https://gitter.im/nativelibs4java/Scalaxy](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/nativelibs4java/Scalaxy?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 If you have suggestions / questions:
 - [@ochafik on Twitter](http://twitter.com/ochafik)
 - [NativeLibs4Java mailing-list](groups.google.com/group/nativelibs4java)
 
-You can also [file bugs and enhancement requests here](https://github.com/ochafik/Scalaxy/issues/new).
+You can also [file bugs and enhancement requests here](https://github.com/nativelibs4java/Scalaxy/issues/new).
 
 Any help (testing, patches, bug reports) will be greatly appreciated!
 
