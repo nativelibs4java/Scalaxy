@@ -17,7 +17,7 @@ package object parano {
   /**
    * Perform parano checks in the enclosing compilation unit.
    */
-  def verify() = macro impl
+  def verify(): Unit = macro impl
 
   /** getFragments("this_isTheEnd") == Array("this", "is", "The", "End") */
   private def getFragments(name: String) =
@@ -40,6 +40,9 @@ package object parano {
       class MacroParanoChecks(c: Context) extends ParanoChecks {
         override val global = c.universe
         import global._
+
+        override def info(pos: Position, msg: String, force: Boolean) =
+          c.info(pos.asInstanceOf[c.universe.Position], msg, force)
 
         override def error(pos: Position, msg: String) =
           c.error(pos.asInstanceOf[c.universe.Position], msg)

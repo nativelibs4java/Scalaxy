@@ -28,6 +28,7 @@ class ParanoComponent(
   override val runsAfter = List("typer")
   override val runsBefore = List("patmat")
 
+  override def info(pos: Position, msg: String, force: Boolean) = reporter.info(pos, msg, force)
   override def error(pos: Position, msg: String) = reporter.error(pos, msg)
 
   override def isSynthetic(mods: Modifiers) =
