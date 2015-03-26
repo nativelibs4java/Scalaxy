@@ -34,7 +34,7 @@ trait ParanoChecks {
     methodParams synchronized {
       methodParams.getOrElseUpdate(sym, {
         // Case class extractors only care about the first params group.
-        sym.paramss.map(_.map(param => RichName(param.name.toString)))
+        sym.paramLists.map(_.map(param => RichName(param.name.toString)))
       })
     }
   }
@@ -44,7 +44,7 @@ trait ParanoChecks {
       methodParamTypeGroups.getOrElseUpdate(sym, {
         // Case class extractors only care about the first params group.
         for (
-          (tpe, params) <- sym.paramss.flatten.zipWithIndex.groupBy(_._1.typeSignature);
+          (tpe, params) <- sym.paramLists.flatten.zipWithIndex.groupBy(_._1.typeSignature);
           if params.size > 1
         ) yield {
           val paramNames = params.map { case (param, i) => param.name.toString -> i }
@@ -60,13 +60,14 @@ trait ParanoChecks {
     caseClassesFields synchronized {
       caseClassesFields.getOrElseUpdate(sym, {
         val csym = sym.asClass
-        val ctor = csym.typeSignature.member(nme.CONSTRUCTOR).asMethod
+        val ctor = csym.typeSignature.member(termNames.CONSTRUCTOR).asMethod
         // Case class extractors only care about the first params group.
-        ctor.paramss.head.map(param => RichName(param.name.toString))
+        ctor.paramLists.head.map(param => RichName(param.name.toString))
       })
     }
   }
 
+  def info(pos: Position, msg: String, force: Boolean): Unit
   def error(pos: Position, msg: String): Unit
 
   def check(tree: Tree) {
@@ -88,8 +89,11 @@ trait ParanoChecks {
           val msym = target.symbol.asMethod
           val groups = getMethodParamTypeGroups(msym)
           val params = getMethodParams(msym).flatten
+          def isArgSpecified(arg: Tree): Boolean =
+            arg.pos != NoPosition && arg.pos != target.pos
+
           val decisiveIdents = args.zip(params).map({
-            case (arg, param) =>
+            case (arg, param) if isArgSpecified(arg) =>
               arg match {
                 case Ident(name) =>
                   val n = name.toString
@@ -114,26 +118,29 @@ trait ParanoChecks {
                   false
               }
           })
-          for ((arg, i) <- args.zipWithIndex; named <- isNamedParam(arg)) {
-            if (!named) {
-              for (
-                group <- groups.get(i);
-                if i != group.last._2 /* Report in all per group */ ) {
-                val (namedParams, unnamedParams) = group.partition({
-                  case (name, index) =>
-                    // TODO add unequivocal ident name check here.
-                    index < args.size && (
-                      isNamedParam(args(index)) == Some(true) ||
-                      decisiveIdents(index)
-                    )
-                })
-                if (namedParams.size < group.size - 1) {
-                  val param = msym.paramss.flatten.apply(i)
-                  val paramName = param.name.toString
-                  val others = unnamedParams.map(_._1).filter(_ != paramName)
-                  error(arg.pos,
-                    s"""Unnamed param $paramName can be confused with param${if (others.size == 1) "" else "s"} ${others.mkString(", ")} of same type ${param.typeSignature}""")
-                }
+          for {
+            (arg, i) <- args.zipWithIndex
+            named <- isNamedParam(arg)
+            if !named && isArgSpecified(arg)
+          } {
+            for {
+              group <- groups.get(i)
+              if i != group.last._2 /* Report in all per group */
+            } {
+              val (namedParams, unnamedParams) = group.partition({
+                case (name, index) =>
+                  // TODO add unequivocal ident name check here.
+                  index < args.size && (
+                    isNamedParam(args(index)) == Some(true) ||
+                    decisiveIdents(index)
+                  )
+              })
+              if (namedParams.size < group.size - 1) {
+                val param = msym.paramLists.flatten.apply(i)
+                val paramName = param.name.toString
+                val others = unnamedParams.map(_._1).filter(_ != paramName)
+                error(arg.pos,
+                  s"""Unnamed param $paramName can be confused with param${if (others.size == 1) "" else "s"} ${others.mkString(", ")} of same type ${param.typeSignature}""")
               }
             }
           }
