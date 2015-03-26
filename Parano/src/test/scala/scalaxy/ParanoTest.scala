@@ -10,9 +10,22 @@ class ParanoTest {
 
   case class Foo(a: Int, b: Foo)
   case class Foo2(a: Int)(b: Foo)
+  case class Bar(a: Int, b: Int)
+
+  case class StreamOutput(
+    a: List[String] = Nil,
+    b: List[String] = Nil,
+    c: List[String] = Nil)
 
   val f = Foo(1, Foo(2, null))
   val f2 = Foo2(1)(Foo(2, null))
+
+  Bar(1, 2)
+  Bar(a = 1, 2)
+  Bar(1, b = 2)
+  Bar(a = 1, b = 2)
+
+  StreamOutput(a = List(""))
 
   @Test
   def simple {

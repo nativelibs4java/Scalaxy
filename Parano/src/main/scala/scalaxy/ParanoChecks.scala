@@ -15,6 +15,8 @@ trait ParanoChecks {
   val global: Universe
   import global._
 
+  import ParanoChecks._
+
   /** getFragments("this_isTheEnd") == Array("this", "is", "The", "End") */
   private def getFragments(name: String) =
     name.split("""\b|[_-]|(?<=[a-z])(?=[A-Z])""").filter(_.length >= 3)
@@ -87,60 +89,64 @@ trait ParanoChecks {
           traverseChildren = false
         case Apply(target, args) if target.symbol.isMethod =>
           val msym = target.symbol.asMethod
-          val groups = getMethodParamTypeGroups(msym)
-          val params = getMethodParams(msym).flatten
-          def isArgSpecified(arg: Tree): Boolean =
-            arg.pos != NoPosition && arg.pos != target.pos
+          if (!whitelistedMethods((msym.owner.fullName, msym.name.toString))) {
+            val groups = getMethodParamTypeGroups(msym)
+            val params = getMethodParams(msym).flatten
+            def isArgSpecified(arg: Tree): Boolean =
+              arg.pos != NoPosition && arg.pos != target.pos
 
-          val decisiveIdents = args.zip(params).map({
-            case (arg, param) if isArgSpecified(arg) =>
-              arg match {
-                case Ident(name) =>
-                  val n = name.toString
-                  val matches = params.filter(_.containsExactFragment(n))
-                  if (matches.contains(param)) {
-                    // Decisive if not matched by any other.
-                    matches.size == 1
-                  } else {
-                    // Not decisive.
-                    if (!matches.isEmpty) {
-                      if (params.exists(_.name == n)) {
-                        error(arg.pos,
-                          s"""Confusing name: $n not used for same-named param but for param ${param.name}""")
-                      } else {
-                        error(arg.pos,
-                          s"""Confusing name: $n sounds like ${matches.map(_.name).mkString(",")} but used for param ${param.name}""")
+            val decisiveIdents = args.zip(params).map({
+              case (arg, param) if isArgSpecified(arg) =>
+                arg match {
+                  case Ident(name) =>
+                    val n = name.toString
+                    val matches = params.filter(_.containsExactFragment(n))
+                    if (matches.contains(param)) {
+                      // Decisive if not matched by any other.
+                      matches.size == 1
+                    } else {
+                      // Not decisive.
+                      if (!matches.isEmpty) {
+                        if (params.exists(_.name == n)) {
+                          error(arg.pos,
+                            s"""Confusing name: $n not used for same-named param but for param ${param.name}""")
+                        } else {
+                          error(arg.pos,
+                            s"""Confusing name: $n sounds like ${matches.map(_.name).mkString(",")} but used for param ${param.name}""")
+                        }
                       }
+                      false
                     }
+                  case _ =>
                     false
-                  }
-                case _ =>
-                  false
-              }
-          })
-          for {
-            (arg, i) <- args.zipWithIndex
-            named <- isNamedParam(arg)
-            if !named && isArgSpecified(arg)
-          } {
+                }
+              case _ =>
+                true
+            })
             for {
-              group <- groups.get(i)
-              if i != group.last._2 /* Report in all per group */
+              (arg, i) <- args.zipWithIndex
+              named <- isNamedParam(arg)
+              if !named && isArgSpecified(arg)
             } {
-              val (namedParams, unnamedParams) = group.partition({
-                case (name, index) =>
-                  // TODO add unequivocal ident name check here.
-                  index < args.size && (
-                    isNamedParam(args(index)) == Some(true) ||
-                    decisiveIdents(index)
-                  )
-              })
-              if (namedParams.size < group.size - 1) {
-                val param = msym.paramLists.flatten.apply(i)
-                val paramName = param.name.toString
-                val others = unnamedParams.map(_._1).filter(_ != paramName)
-                error(arg.pos,
-                  s"""Unnamed param $paramName can be confused with param${if (others.size == 1) "" else "s"} ${others.mkString(", ")} of same type ${param.typeSignature}""")
+              for {
+                group <- groups.get(i)
+                if i != group.last._2 /* Report in all per group */
+              } {
+                val (namedParams, unnamedParams) = group.partition({
+                  case (name, index) =>
+                    // TODO add unequivocal ident name check here.
+                    index < args.size && (
+                      isNamedParam(args(index)) == Some(true) ||
+                      decisiveIdents(index)
+                    )
+                })
+                if (namedParams.size < group.size - 1) {
+                  val param = msym.paramLists.flatten.apply(i)
+                  val paramName = param.name.toString
+                  val others = unnamedParams.map(_._1).filter(_ != paramName)
+                  error(arg.pos,
+                    s"""Unnamed param $paramName can be confused with param${if (others.size == 1) "" else "s"} ${others.mkString(", ")} of same type ${param.typeSignature} (method: ${msym.owner.fullName}.${msym.name}""")
+                }
               }
             }
           }
@@ -212,4 +218,11 @@ trait ParanoChecks {
       Some(src(i) == '=')
     }
   }
+}
+
+object ParanoChecks {
+  // TODO(ochafik): Add flag.
+  val whitelistedMethods = Set(
+    ("java.lang.String", "replace")
+  )
 }
