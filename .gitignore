@@ -24,3 +24,5 @@ Core/.cache
 CasbahDSL.original
 react-0.12.2
 .cache
+*.sublime-project
+*.sublime-workspace

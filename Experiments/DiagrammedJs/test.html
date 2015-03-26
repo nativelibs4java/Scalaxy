@@ -1,0 +1,30 @@
+<html>
+<body>
+  <script src="uglifyjs.js"></script>
+  <script src="diagrammed_asserter.js"></script>
+  <script>
+    (function() {
+      var assert = asserter(_ => eval(_));
+
+      var a = 1, b = 2, c = 3, d = 4;
+      assert(_ => a == 10);
+      assert(_ => a == b || c >= d)
+
+      var s = "abc";
+      assert(_ => s.indexOf("d") >= 0);
+
+      var o = {a: {b: {c: 10}}};
+      assert(_ => o . a . b . c == 11);
+
+      assert(_ => o['a'] == 11);
+
+      /* TODO:
+        assert(_ => [
+          a == 10,
+          a.contains(12),
+        ])
+      */
+    })();
+  </script>
+</body>
+</html>
