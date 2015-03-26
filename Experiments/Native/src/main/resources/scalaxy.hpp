@@ -1,0 +1,6 @@
+#include "error.hpp"
+#include "jni_type.hpp"
+#include "local_array.hpp"
+#include "method.hpp"
+#include "method_invocation.hpp"
+#include "static_method.hpp"

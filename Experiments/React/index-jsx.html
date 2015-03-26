@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>The Scala.js Tutorial</title>
+  </head>
+  <body>
+    <div id="container"></div>
+    <!-- Include Scala.js compiled code -->
+    <script src="http://fb.me/JSXTransformer-0.11.1.js"></script>
+    <script type="text/javascript" src="./target/scala-2.11/scala-js-tutorial-jsdeps.js"></script>
+    <script type="text/jsx;harmony=true">
+      var Timer = React.createClass({
+        getInitialState: function() {
+          return {secondsElapsed: 0};
+        },
+        tick: function() {
+          this.setState({secondsElapsed: this.state.secondsElapsed + 1});
+        },
+        componentDidMount: function() {
+          this.interval = setInterval(this.tick, 1000);
+        },
+        componentWillUnmount: function() {
+          clearInterval(this.interval);
+        },
+        render: function() {
+          return (
+            <div>Seconds Elapsed: {this.state.secondsElapsed}</div>
+          );
+        }
+      });
+      var mountNode = document.getElementById('container');
+      React.render(<Timer />, mountNode);
+    </script>
+
+  </body>
+</html>
