@@ -61,7 +61,7 @@ For more examples, [have a look at the tests](https://github.com/ochafik/Scalaxy
 
 If you're using `sbt` 0.13.0+, just put the following lines in `build.sbt`:
 ```scala
-scalaVersion := "2.11.5"
+scalaVersion := "2.11.6"
 
 // Dependency at compilation-time only (not at runtime).
 libraryDependencies += "com.nativelibs4java" %% "scalaxy-json-json4s-jackson" % "0.3-SNAPSHOT" % "provided"

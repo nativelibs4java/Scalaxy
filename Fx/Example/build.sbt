@@ -4,7 +4,7 @@ name := "scalaxy-fx-example"
 
 version := "1.0-SNAPSHOT"
 
-scalaVersion := "2.11.5"
+scalaVersion := "2.11.6"
 
 // Add JavaFX Runtime as an unmanaged dependency, hoping to find it in the JRE's library folder.
 unmanagedJars in Compile ++= Seq(new File(System.getProperty("java.home")) / "lib" / "jfxrt.jar")

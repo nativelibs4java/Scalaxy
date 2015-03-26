@@ -42,7 +42,7 @@ This is a rejuvenation of some code initially written for [ScalaCL](http://scala
 
 If you're using `sbt` 0.13.0+, just put the following lines in `build.sbt`:
 ```scala
-scalaVersion := "2.11.5"
+scalaVersion := "2.11.6"
 // Or:
 // scalaVersion := "2.10.4"
 

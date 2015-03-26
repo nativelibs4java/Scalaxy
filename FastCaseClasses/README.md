@@ -6,7 +6,7 @@ It can be combined with [Scalaxy/Streams](https://github.com/ochafik/Scalaxy/tre
 
 # Usage
 
-    scalaVersion := "2.11.5"
+    scalaVersion := "2.11.6"
 
     resolvers += Resolver.sonatypeRepo("snapshots")
 
