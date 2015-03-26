@@ -28,9 +28,8 @@ That's why some coding guidelines like Twitter's excellent [Effective Scala](htt
 
 While this is great practice, it can quickly lead to lots of `private[this]` boilerplate, which this compiler plugin aims to remove the need for. The bet here is that with Scalaxy/Privacy:
 * You'll pay more attention to what needs to be `@public`, because you'll need to make that explicit: your code will be better encapsulated throughout.
-* You'll type less `@public` annotations than you would've typed `private` or `private[this]` modifiers
-* You'll be able to migrate your code away from Scalaxy/Privacy when you're bored of it / whenever I die and henceworth fail to update the plugin on time for the subsequent Scala version.
-  (TODO write a migration diff generator)
+* You'll type less `@public` annotations than you would've typed `private` or `private[this]` modifiers, which means less code to write and read.
+* You'll be able to migrate your code away from Scalaxy/Privacy when you're bored of it / whenever I die or fail to update the plugin on time for the subsequent Scala version, using Scalaxy/Privacy's migration diff generator.
 
 Also, with the extra warnings about missing type annotations for public members with non-trivial bodies:
 * You'll make your code more readable,
@@ -42,8 +41,8 @@ Now well... one may consider this as a language fork, which it might well be, so
 
 ```scala
 @public object Foo {
-// Any val, def, class or object not marked with @public is assumed to be private[this].
-val privateByDefault = 10
+  // Any val, def, class or object not marked with @public is assumed to be private[this].
+  val privateByDefault = 10
 
   // The @public annotation is removed by the compiler plugin.
   @public val explicitlyPublic = 12
@@ -55,7 +54,7 @@ val privateByDefault = 10
   @public def g(x: Int): Int = f(x)
 }
 
-println(l.privateByDefault) // Error: Scalaxy/Privacy make that one private[this].
+println(Foo.privateByDefault) // Error: Scalaxy/Privacy made that one private[this].
 println(Foo.explicitlyPublic) // Ok.
 
 // Regular Scala visibility rules apply within elements tagged with @noprivacy
@@ -64,8 +63,8 @@ println(Foo.explicitlyPublic) // Ok.
   private val explicitlyPrivate = 12
 }
 
-println(Foo.publicByDefault)   // Ok.
-println(Foo.explicitlyPrivate) // Error.
+println(Bar.publicByDefault)   // Ok.
+println(Bar.explicitlyPrivate) // Error.
 ```
 
 If that wasn't long enough, have a look at the following tests:
@@ -77,7 +76,7 @@ If that wasn't long enough, have a look at the following tests:
 ## Private by default
 
 * `protected`, `private`, `override` and `abstract` definitions are unmodified
-* Accessors of case class canonical fields are unmodified:
+* Accessors of case classes' canonical fields are unmodified:
 
   ```scala
   case class Foo(thisIsPublic: Int) {
@@ -85,7 +84,7 @@ If that wasn't long enough, have a look at the following tests:
   }
   ```
 
-* Code that compiles with the plugin will most likely compile without, unless there's name clashes due to wildcard imports. This means that IDEs can grok code annotated with `@public` and `@noprivacy` without the need to run the plugin, because the code they'll see will also be valid Scala.
+* Code that compiles with the plugin will most likely compile without, unless there's name clashes due to wildcard imports (without the plugin, more names will be publicly visible). This means that IDEs can grok code annotated with `@public` and `@noprivacy` without the need to run the plugin, because the code they'll see will also be valid Scala.
 
 ## Warnings on missing type annotations for public declarations
 
