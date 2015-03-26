@@ -51,7 +51,7 @@ object MatchActionDefinitions
         if s.isMethod &&
            s.asMethod.returnType <:< u.typeOf[MatchAction] =>
           val m = s.asMethod
-          val args = m.paramss.flatten.map(_.typeSignature).map(defaultValue _)
+          val args = m.paramLists.flatten.map(_.typeSignature).map(defaultValue _)
           try {
             val methodMirror = instanceMirror.reflectMethod(m)
             val result = methodMirror(args:_*)
@@ -64,7 +64,7 @@ object MatchActionDefinitions
               "Args = " + args.mkString(", ") + "; " +
               "Method symbol = " + m + "; " +
               "paramss.typeSignature = " +
-                m.paramss.flatten.map(_.typeSignature).mkString(", ") + 
+                m.paramLists.flatten.map(_.typeSignature).mkString(", ") + 
               ";",
               ex)
           }

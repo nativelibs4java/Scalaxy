@@ -487,7 +487,7 @@ trait MiscMatchers extends Tuploids {
 
   object ArrayTabulate {
     /** This is the one all the other ones go through. */
-    lazy val tabulateSyms = ArrayModule.asModule.moduleClass.asType.toType.members.filter(_.name.toString == "tabulate").toSet //filter (_.paramss.flatten.size == 3)
+    lazy val tabulateSyms = ArrayModule.asModule.moduleClass.asType.toType.members.filter(_.name.toString == "tabulate").toSet //filter (_.paramLists.flatten.size == 3)
 
     def apply(componentType: Tree, lengths: List[Tree], function: Tree, manifest: Tree) = sys.error("not implemented")
     def unapply(tree: Tree): Option[(Tree, List[Tree], Tree, Tree)] = {

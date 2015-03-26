@@ -153,7 +153,7 @@ package loops
         Apply(
           Select(
             New(Ident(typeOf[scala.inline].typeSymbol)),
-            nme.CONSTRUCTOR),
+            termNames.CONSTRUCTOR),
           Nil)
       }
 
