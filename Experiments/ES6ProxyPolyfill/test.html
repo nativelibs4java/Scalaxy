@@ -1,0 +1,69 @@
+<html>
+
+<head>
+</head>
+
+<body>
+  <script src="proxy_polyfill.js"></script>
+  <script src="lenses.js"></script>
+  <script>
+    function main() {
+      "use strict";
+
+      var products = new Proxy({
+        browsers: ['Internet Explorer', 'Netscape']
+      },
+      {
+        'get': function(obj, prop) {
+          // An extra property
+          if (prop === 'latestBrowser') {
+            return obj.browsers[obj.browsers.length - 1];
+          }
+
+          // The default behavior to return the value
+          return obj[prop];
+        },
+        'set': function(obj, prop, value) {
+          // An extra property
+          if (prop === 'latestBrowser') {
+            obj.browsers.push(value);
+            return;
+          }
+
+          // Convert the value if it is not an array
+          if (typeof value === 'string') {
+            value = [value];
+          }
+
+          // The default behavior to store the value
+          obj[prop] = value;
+        }
+      });
+
+      console.log(products.browsers); // ['Internet Explorer', 'Netscape']
+      products.browsers = 'Firefox'; // pass a string (by mistake)
+      console.log(products.browsers); // ['Firefox'] <- no problem, the value is an array
+
+      products.latestBrowser = 'Chrome';
+      console.log(products.browsers); // ['Firefox', 'Chrome']
+      console.log(products.latestBrowser); // 'Chrome'
+
+      try {
+        var obj = {'foo': {'bar': function(x) { return x + 11 } } };
+        var f = _.foo.barr;//(100);
+        var ff = __.foo.bar;//(100);
+
+        console.log(f);
+        console.log(f(obj));
+        console.log(ff);
+        console.log(ff(obj));
+      } catch (e) {
+        console.log(e.stack);
+      }
+    }
+
+    registerOnLoad(main);
+  </script>
+  <script src="diagrammed.js"></script>
+</body>
+</html>
