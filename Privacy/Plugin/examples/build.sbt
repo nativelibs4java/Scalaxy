@@ -14,3 +14,14 @@ scalacOptions += "-Xplugin-require:scalaxy-privacy"
 
 // Scalaxy/Privacy snapshots are published on the Sonatype repository.
 resolvers += Resolver.sonatypeRepo("snapshots")
+
+// Vision: The following could be cool, couldn't it?
+//   initialize ~= { _ => {
+//     // Configure Scalaxy/Privacy warnings and errors.
+//     System.setProperty("scalaxy.privacy.warnings", "-returnTypes")
+//     System.setProperty("scalaxy.privacy.errors", "+explicitTypesOnPublicDecls")
+//     // Configure Scalaxy/Parano warnings and errors.
+//     // TODO...
+//     System.setProperty("scalaxy.privacy.diff", "migration.diff")
+//   }}
+//   // System.setProperty("scalaxy.privacy.errors", "+all")
