@@ -48,6 +48,8 @@ resolvers += Resolver.sonatypeRepo("snapshots")
 # TODO
 
 Ideas
+- Warn against non-lazy vals in traits
+- Add complete tests
 - Make an exception for natural progressions: `x, y, z`, `a, b, c, d`, `i1, i2, i3`... (they still need mismatching names check, but no ambiguity check)
 - Tuple return types in extractors: require an apply companion method with symmetric signature, take names from it and propagate accross matches:
 
