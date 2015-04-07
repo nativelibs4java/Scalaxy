@@ -24,7 +24,7 @@ Collection of Scala Macro goodies ([BSD-licensed](./LICENSE))
 
 - *[JSON](https://github.com/nativelibs4java/Scalaxy/tree/master/JSON)* ([ScalaDoc](http://ochafik.github.io/Scalaxy/JSON/latest/api/index.html)) provides macro-based `json` string interpolation with smart error reporting, compile-time renormalization, deconstruction and more.
 
-- *[Parano](https://github.com/nativelibs4java/Scalaxy/tree/master/Parano)* provides compile-time checks to avoid common naming mistakes (ambiguous or swapped case class field extractor names, ambiguous unnamed param names with same type...)
+- *[Parano](https://github.com/nativelibs4java/scalaxy-parano)* provides compile-time checks to avoid common naming mistakes (ambiguous or swapped case class field extractor names, ambiguous unnamed param names with same type...)
 
 - *[Privacy](https://github.com/nativelibs4java/Scalaxy/tree/master/Privacy)* changes the default member visibily from public to private (unless the `@public` annotation is used)
 
@@ -49,20 +49,20 @@ Collection of Scala Macro goodies ([BSD-licensed](./LICENSE))
     )
     ```
 
-- *[Reified](https://github.com/nativelibs4java/Scalaxy/tree/master/Reified)* ([ScalaDoc](http://ochafik.github.io/Scalaxy/Reified/latest/api/index.html)) provides a powerful reified values mechanism that deals well with composition and captures of runtime values, allowing for complex ASTs to be generated during runtime for re-compilation or transformation purposes. It preserves the original value that was reified, allowing for flexible mixed usage of runtime value and compile-time AST.
+- *[Reified](https://github.com/nativelibs4java/scalaxy-reified)* ([ScalaDoc](http://ochafik.github.io/Scalaxy/Reified/latest/api/index.html)) provides a powerful reified values mechanism that deals well with composition and captures of runtime values, allowing for complex ASTs to be generated during runtime for re-compilation or transformation purposes. It preserves the original value that was reified, allowing for flexible mixed usage of runtime value and compile-time AST.
 
     ```scala
     import scalaxy.reified._
     
     def comp(capture1: Int): ReifiedFunction1[Int, Int] = {
       val capture2 = Seq(10, 20, 30)
-      val f = reify((x: Int) => capture1 + capture2(x))
-      val g = reify((x: Int) => x * x)
+      val f = reified((x: Int) => capture1 + capture2(x))
+      val g = reified((x: Int) => x * x)
       
       g.compose(f)
     }
     
-    println("AST: " + comp(10).expr().tree)
+    println("AST: " + comp(10).expr.tree)
     ```
 
 - Obsolete experiments (mostly because of quasiquotes):
