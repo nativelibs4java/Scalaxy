@@ -1,7 +1,7 @@
 Collection of Scala Macro goodies ([BSD-licensed](./LICENSE))
 
 
-- *[Streams](https://github.com/nativelibs4java/scalaxy-streams)* (*NOW IN ITS OWN REPO*) provide a macro and a compiler plugin that optimize streamed collection operations / for comprehensions by rewriting them to equivalent while loops (Scala 2.11.x):
+- *[Streams](https://github.com/nativelibs4java/scalaxy-streams)* (*MIGRATED TO ITS OWN REPO*) provide a macro and a compiler plugin that optimize streamed collection operations / for comprehensions by rewriting them to equivalent while loops (Scala 2.11.x):
 
     ```scala
     for (i <- 0 to n;
@@ -24,7 +24,7 @@ Collection of Scala Macro goodies ([BSD-licensed](./LICENSE))
 
 - *[JSON](https://github.com/nativelibs4java/Scalaxy/tree/master/JSON)* ([ScalaDoc](http://ochafik.github.io/Scalaxy/JSON/latest/api/index.html)) provides macro-based `json` string interpolation with smart error reporting, compile-time renormalization, deconstruction and more.
 
-- *[Parano](https://github.com/nativelibs4java/scalaxy-parano)* provides compile-time checks to avoid common naming mistakes (ambiguous or swapped case class field extractor names, ambiguous unnamed param names with same type...)
+- *[Parano](https://github.com/nativelibs4java/scalaxy-parano)* (*MIGRATED TO ITS OWN REPO*) provides compile-time checks to avoid common naming mistakes (ambiguous or swapped case class field extractor names, ambiguous unnamed param names with same type...)
 
 - *[Privacy](https://github.com/nativelibs4java/Scalaxy/tree/master/Privacy)* changes the default member visibily from public to private (unless the `@public` annotation is used)
 
@@ -49,7 +49,7 @@ Collection of Scala Macro goodies ([BSD-licensed](./LICENSE))
     )
     ```
 
-- *[Reified](https://github.com/nativelibs4java/scalaxy-reified)* ([ScalaDoc](http://ochafik.github.io/Scalaxy/Reified/latest/api/index.html)) provides a powerful reified values mechanism that deals well with composition and captures of runtime values, allowing for complex ASTs to be generated during runtime for re-compilation or transformation purposes. It preserves the original value that was reified, allowing for flexible mixed usage of runtime value and compile-time AST.
+- *[Reified](https://github.com/nativelibs4java/scalaxy-reified)*  (*MIGRATED TO ITS OWN REPO*) provides a powerful reified values mechanism that deals well with composition and captures of runtime values, allowing for complex ASTs to be generated during runtime for re-compilation or transformation purposes. It preserves the original value that was reified, allowing for flexible mixed usage of runtime value and compile-time AST.
 
     ```scala
     import scalaxy.reified._
