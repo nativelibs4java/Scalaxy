@@ -175,7 +175,7 @@ object Scalaxy extends Build {
         standardSettings ++
         Seq(publish := { }))
     .aggregate(
-      streams, loops, json, beans, reified, parano)
+      loops, json, beans)
 
   // lazy val integration =
   //   Project(
@@ -196,13 +196,11 @@ object Scalaxy extends Build {
     // "JS" -> js,
     "JSON" -> json,
     // "Parano" -> parano,
-    "Loops" -> loops,
-    "Streams" -> streams,
+    "Loops" -> loops)
     // "Components" -> components,
     // "Debug" -> debug,
     // "CasbahDSL" -> casbahDSL,
     // "MacroExtensions" -> extensions,
-    "Reified" -> reifiedDoc)
 
   lazy val scalaxyDoc =
     Project(
@@ -271,7 +269,6 @@ object Scalaxy extends Build {
 
   lazy val components =
     Project(id = "scalaxy-components", base = file("Components"), settings = reflectSettings ++ scalariformSettings)
-    // .dependsOn(streams)
 
   lazy val obsolete_compiletsApi =
     Project(
@@ -367,21 +364,16 @@ object Scalaxy extends Build {
 
   lazy val loops =
     Project(id = "scalaxy-loops", base = file("Loops"), settings = reflectSettings ++ Seq(
+        libraryDependencies <+= version("com.nativelibs4java" %% "scalaxy-streams" %  _)
+      )
       // version := "0.3.4"
-    ))
-    .dependsOn(streams)
+    )
 
   lazy val loops210 =
     Project(id = "scalaxy-loops-210", base = file("Loops-2.10"), settings = reflectSettings ++ Seq(
       // version := "0.3.4",
       name := "scalaxy-loops",
       scalaVersion := "2.10.4"
-    ))
-
-  lazy val streams =
-    Project(id = "scalaxy-streams", base = file("Streams"), settings = reflectSettings ++ Seq(
-      // version := "0.3.4",
-      watchSources <++= baseDirectory map { path => (path / "examples" ** "*.scala").get }
     ))
 
   lazy val obsolete_debug =
@@ -392,13 +384,6 @@ object Scalaxy extends Build {
 
   lazy val union =
     Project(id = "scalaxy-union", base = file("Union"), settings = reflectSettings ++ scalariformSettings)
-
-  lazy val parano =
-    Project(id = "scalaxy-parano", base = file("Parano"),
-      settings = reflectSettings ++ scalariformSettings ++ Seq(
-        watchSources <+= baseDirectory map { _ / "examples" },
-        scalacOptions in console in Compile <+= (packageBin in Compile) map("-Xplugin:" + _)
-      ))
 
   lazy val fastcaseclasses =
     Project(id = "scalaxy-fastcaseclasses", base = file("FastCaseClasses"),
@@ -421,44 +406,6 @@ object Scalaxy extends Build {
       settings = reflectSettings ++ scalariformSettings ++ Seq(
         scalacOptions in console in Compile <+= (packageBin in Compile) map("-Xplugin:" + _)
       ))
-
-  lazy val generic =
-    Project(id = "scalaxy-generic", base = file("Generic"), settings = reflectSettings ++ scalariformSettings)
-
-  lazy val reifiedBase =
-    Project(id = "scalaxy-reified-base", base = file("Reified/Base"), settings = reflectSettings ++ scalariformSettings)
-    .dependsOn(union, generic)
-
-  lazy val reified =
-    Project(id = "scalaxy-reified", base = file("Reified"),
-      settings = reflectSettings ++
-        scalariformSettings ++
-        // shadeSettings ++
-        Seq(
-          fork in Test := true,
-          //javaOptions in Test ++= Seq("-Xdebug", "-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"),
-          scalacOptions in Test ++= Seq(
-            "-optimise",
-            "-Yclosure-elim",
-            "-Yinline"
-          )
-        ))
-    .dependsOn(reifiedBase)
-    .aggregate(reifiedBase, union, generic)
-
-  lazy val reifiedDoc =
-    Project(id = "scalaxy-reified-doc", base = file("Reified/Doc"), settings = reflectSettings ++
-      Seq(
-        publish := { },
-        (skip in compile) := true,
-        //site.siteMappings <++= Seq(file1 -> "location.html", file2 -> "image.png"),
-        unmanagedSourceDirectories in Compile <<= (
-          (Seq(reified, reifiedBase) map (unmanagedSourceDirectories in _ in Compile)).join.apply {
-            (s) => s.flatten.toSeq
-          }
-        )
-      )
-  ).dependsOn(reified, reifiedBase)
 
   lazy val fxSettings = reflectSettings ++ Seq(
     unmanagedJars in Compile ++= Seq(
