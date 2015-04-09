@@ -168,6 +168,7 @@ The syntactic facilities available so far are:
       }
     }
     ```
+- Natural Scala getters / setters for all of the JavaFX API, with IDE completion and still no runtime dependencies! (TODO document this / give examples)
 
 # Internals
 
